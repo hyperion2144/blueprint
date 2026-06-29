@@ -82,6 +82,9 @@ adhoc:
   - name: fix-state-overwrite
     status: archived
     depends_on: []
+  - name: fix-state-tracking
+    status: archived
+    depends_on: []
 ---
 
 # specwf — 状态机
@@ -160,6 +163,7 @@ planned → applying → applied → reviewing → verifying → archived
 | fix-ship-command | 修复 ship 输出内容太薄 | proposal | m1-core |
 | fix-continue-args | `specwf continue` 不支持指定目标 | proposal | m1-core |
 | fix-state-overwrite | `saveState` 写入时覆盖 body | archived | m1-core |
+| fix-state-tracking | 归档时未更新 adhoc 状态 | archived | m1-core |
 
 ## 历史
 
@@ -172,6 +176,7 @@ planned → applying → applied → reviewing → verifying → archived
 - **2026-06-29** — 仓库创建: https://github.com/hyperion2144/specwf
 - **2026-06-29** — adhoc changes 创建: fix-ship-command, fix-continue-args, fix-state-overwrite
 - **2026-06-29** — fix-state-overwrite archived: `saveState` 写入时保留现有 body
+- **2026-06-29** — fix-state-tracking archived: `specwf archive` 同时检查 state.adhoc
 
 ## 状态变更检查清单
 
