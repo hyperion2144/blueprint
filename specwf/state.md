@@ -85,3 +85,8 @@ Phase ? — shipped。
 项目层路径: `initialized → requirements-defined → researched → roadmap-defined`
 
 ## 历史
+
+- **2026-06-29** — Phase ship: m1-core 里程碑完成，6 个 Phase × 21 个 Change 全部归档。
+  - 初始提交 v0.1.0，涵盖类型系统、解析层、状态机、核心引擎、平台生成器、9 个 CLI 子命令。
+  - 集成测试通过（71 tests），`npm run build` 输出 50KB dist。
+  - 远程仓库创建: https://github.com/hyperion2144/specwf
