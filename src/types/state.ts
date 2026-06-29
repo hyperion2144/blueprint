@@ -64,7 +64,7 @@ export const STATE_TRANSITIONS: StateTransition[] = [
   { from: 'change-planning', command: 'apply', to: 'change-applying', slashCommand: '/specwf:apply', subagent: true },
   { from: 'change-applying', command: 'review', to: 'change-reviewing', slashCommand: '/specwf:review', subagent: true },
   { from: 'change-reviewing', command: 'verify', to: 'change-verifying', slashCommand: '/specwf:verify', subagent: true },
-  { from: 'change-verifying', command: 'archive', to: 'change-archiving', slashCommand: '/specwf:archive' },
+  { from: 'change-verifying', command: 'archive', to: 'change-archiving', slashCommand: '/specwf:archive', subagent: true },
   { from: 'change-archiving', command: 'archive-done', to: 'change-archived', slashCommand: '' },
 
   // 回环

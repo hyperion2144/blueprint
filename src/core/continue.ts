@@ -139,7 +139,15 @@ function formatContext(state: StateFile): string {
 function generateHint(state: StateFile): string | null {
   const status = state.project.status;
   if (status === 'milestone-shipped') {
-    return '当前 milestone 已完成。创建新 milestone: specwf state set-milestone <id>';
+    const pendingAdhoc = state.adhoc.filter((c) => c.status !== 'archived');
+    const hintParts: string[] = ['当前 milestone 已完成。创建新 milestone: specwf state set-milestone <id>'];
+    if (pendingAdhoc.length > 0) {
+      hintParts.push(
+        `待处理的临时 change: ${pendingAdhoc.map((c) => c.name).join(', ')}` +
+        `。使用: specwf continue change <name>`,
+      );
+    }
+    return hintParts.join('\n    ');
   }
   if (status === 'phase-shipped') {
     return '当前 phase 已完成。创建新 phase 或切换: specwf state set-milestone <id>';
