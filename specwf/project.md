@@ -40,8 +40,8 @@ Project → Milestone（恒存，默认 v1）→ Phase → Change
 ## 状态
 
 - [x] grill — 需求探讨完成（21 项决策确认）
-- [ ] research — 技术调研
-- [ ] roadmap — 路线图拆分
-- [ ] Phase 1 — 实现核心 CLI
+- [x] research — 技术调研完成
+- [x] roadmap — 路线图拆分完成
+- [x] Phase 1 — 实现核心 CLI（m1-core v0.1.0 已发布）
 
 详见 [state.md](state.md)。
