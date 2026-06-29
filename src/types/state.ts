@@ -72,6 +72,9 @@ export const STATE_TRANSITIONS: StateTransition[] = [
   { from: 'change-verifying', command: 'reapply', to: 'change-applying', slashCommand: '/specwf:apply', subagent: true },
   { from: 'change-reviewing', command: 'fix', to: 'change-applying', slashCommand: '/specwf:apply', subagent: true },
 
+  // Milestone 层（新里程碑 = 项目流程 - init）
+  { from: 'milestone-active', command: 'grill', to: 'requirements-defined', slashCommand: '/specwf:grill' },
+
   // Ship
   { from: 'change-archived', command: 'ship-phase', to: 'phase-shipped', slashCommand: '/specwf:ship' },
   { from: 'phase-shipped', command: 'next-phase', to: 'phase-discuss', slashCommand: '/specwf:discuss' },

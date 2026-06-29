@@ -61,13 +61,13 @@ function setMilestone(id: string) {
   updateState(specwfDir, (state) => {
     state.project.current_milestone = id;
     state.project.current_phase = null;
-    state.active_context.type = 'phase';
+    state.active_context.type = 'milestone';
     state.active_context.ref = `milestones/${id}`;
-    state.active_context.step = 'discuss';
-    state.project.status = 'phase-discuss';
+    state.active_context.step = 'active';
+    state.project.status = 'milestone-active';
   });
-  console.log(`✓ 切换到 milestone: ${id}（状态: phase-discuss）`);
-  console.log('→ 下一步: /specwf:discuss');
+  console.log(`✓ 切换到 milestone: ${id}（状态: milestone-active）`);
+  console.log('→ 下一步: 定义里程碑需求: /specwf:grill');
 }
 
 function setPhase(id: string) {
