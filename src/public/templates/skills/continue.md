@@ -24,26 +24,32 @@ STATE.md 包含：
 - 各个实体的状态
 - 下一步提示（如果有）
 
-### 2. 状态机匹配
-
-根据 STATE.md 数据，匹配状态转换规则：
+### 2. 查询特定 change 的状态
 
 \`\`\`
-# 状态转换规则
-
-无 phase → /specwf:roadmap
-phase 已定，无 context.md → /specwf:discuss
-context.md 存在，无 change → /specwf:split
-change 已拆分，无 proposal.md → /specwf:plan
-plan 完成，未 apply → /specwf:apply
-apply 完成，未 review → /specwf:review
-review 完成，未 verify → /specwf:verify
-verify passed，未 archive → /specwf:archive
-archive 完成，未 ship → /specwf:ship
-ship 完成，还有 phase → 看 state 的下一步提示
-ship 完成，本 milestone 完成 → /specwf:ship（milestone 级）
-全部完成 → 提示完成
+specwf continue change <name>
 \`\`\`
+
+查询指定 change 或临时 change 的当前状态和下一步建议。
+
+### 3. 状态机匹配
+
+根据 STATE.md 数据，状态引擎自动匹配合法转移。每个步骤对应一个 slash command：
+
+| 层级 | 当前步骤 | 下一步命令 | 子代理 |
+|------|---------|-----------|--------|
+| 项目层 | initialized | /specwf:grill | — |
+| 项目层 | requirements-defined | /specwf:research | researcher |
+| 项目层 | researched | /specwf:roadmap | — |
+| 项目层 | roadmap-defined | /specwf:discuss | — |
+| Phase | phase-discuss | /specwf:research-phase | researcher |
+| Phase | phase-research | /specwf:split | — |
+| Phase | phase-split 后 | /specwf:plan → apply → review → verify → archive | 各步对应 subagent |
+| Phase | change-archived | /specwf:ship | — |
+| Phase | phase-shipped | /specwf:ship（milestone）或 /specwf:discuss（下一 phase）| — |
+| 临时 change | adhoc-proposal | /specwf:plan | planner |
+
+完整的状态转移表见 `src/types/state.ts`。
 
 ### 3. 输出下一步
 
