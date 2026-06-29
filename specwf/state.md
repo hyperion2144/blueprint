@@ -1,13 +1,13 @@
 ---
 project:
   name: specwf
-  status: milestone-shipped
-  current_milestone: m1-core
+  status: milestone-active
+  current_milestone: m2-claude-code
   current_phase: null
 active_context:
   type: milestone
-  ref: milestones/m1-core
-  step: shipped
+  ref: milestones/m2-claude-code
+  step: active
 changes:
   - name: scaffold-project
     status: archived
@@ -86,7 +86,19 @@ adhoc:
     status: archived
     depends_on: []
   - name: ci-npm-publish
-    status: proposal
+    status: archived
+    depends_on: []
+  - name: fix-state-machine-adhoc
+    status: archived
+    depends_on: []
+  - name: fix-template-content
+    status: archived
+    depends_on: []
+  - name: fix-milestone-transitions
+    status: archived
+    depends_on: []
+  - name: fix-state-preconditions
+    status: archived
     depends_on: []
 ---
 
