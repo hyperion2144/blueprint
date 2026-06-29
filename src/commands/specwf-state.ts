@@ -4,6 +4,7 @@
 
 import { join } from 'node:path';
 import { loadState, updateState } from '../core/state-file.js';
+import { validateStepAdvance } from '../core/state-validator.js';
 
 export function register(program: any): void {
   const cmd = program
@@ -85,6 +86,32 @@ function setPhase(id: string) {
 
 function setStep(step: string) {
   const specwfDir = findSpecwfDir();
+  const state = loadState(specwfDir);
+
+  // 构造当前状态键
+  const ctx = state.active_context;
+  let currentStatus: string;
+  switch (ctx.type) {
+    case 'project': currentStatus = state.project.status; break;
+    case 'milestone': currentStatus = 'milestone-active'; break;
+    case 'phase': currentStatus = `phase-${ctx.step}`; break;
+    case 'change': currentStatus = `change-${ctx.step}`; break;
+    case 'adhoc': currentStatus = `adhoc-${ctx.step}`; break;
+    default: currentStatus = state.project.status;
+  }
+
+  // 校验当前步骤的退出条件
+  const result = validateStepAdvance(ctx.type, ctx.step, process.cwd());
+  if (!result.valid) {
+    console.log('─'.repeat(50));
+    console.log('❌ 前置条件未满足，无法推进:');
+    for (const err of result.errors) {
+      console.log(`   • ${err}`);
+    };
+    console.log('─'.repeat(50));
+    return;
+  }
+
   updateState(specwfDir, (state) => {
     state.active_context.step = step;
   });

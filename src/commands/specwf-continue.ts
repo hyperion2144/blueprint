@@ -26,13 +26,26 @@ function formatContinueResult(result: ContinueResult): void {
   console.log(`当前步骤: ${result.currentStep}`);
 
   if (result.nextCommand) {
+    const info = result.nextStepInfo;
     console.log('');
-    console.log(`→ 推荐下一步: ${result.nextCommand}`);
+    console.log(`→ 下一步: ${result.nextCommand}`);
     if (result.slashCommand) {
       console.log(`   Slash 命令: ${result.slashCommand}`);
     }
     if (result.needsSubagent) {
       console.log(`   需要子代理: 是`);
+    }
+    if (info) {
+      console.log(`   描述: ${info.description}`);
+      if (info.artifacts.length > 0) {
+        console.log(`   产出物:`);
+        for (const a of info.artifacts) {
+          console.log(`     - ${a}`);
+        }
+      }
+      if (info.fileRef) {
+        console.log(`   参考: ${info.fileRef}`);
+      }
     }
   } else {
     console.log('');
