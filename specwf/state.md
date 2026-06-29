@@ -190,6 +190,7 @@ planned → applying → applied → reviewing → verifying → archived
 - **2026-06-29** — milestone shipped: m1-core v0.1.0
 - **2026-06-29** — 仓库创建: https://github.com/hyperion2144/specwf
 - **2026-06-29** — adhoc changes 创建: fix-ship-command, fix-continue-args, fix-state-overwrite
+- **2026-06-29** — v0.2.1 released: 状态校验 + continue 输出增强 + 多项修复
 - **2026-06-29** — fix-state-overwrite archived: `saveState` 写入时保留现有 body
 - **2026-06-29** — fix-state-tracking archived: `specwf archive` 同时检查 state.adhoc
 - **2026-06-29** — fix-continue-args archived: `specwf continue change <name>` 查询 change 的下一步

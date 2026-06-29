@@ -39,7 +39,7 @@ Project → Milestone（恒存，默认 v1）→ Phase → Change
 
 ## 版本
 
-- **当前版本**: v0.2.0（v1 修复）
+- **当前版本**: v0.2.1（状态校验与输出增强）
 - **下一个**: m2-claude-code — Claude Code 平台支持
 
 ## 状态

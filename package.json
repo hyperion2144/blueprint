@@ -1,6 +1,6 @@
 {
   "name": "specwf",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "规格驱动开发工作流 — spec-driven development workflow for AI coding agents",
   "type": "module",
   "bin": {

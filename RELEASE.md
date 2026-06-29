@@ -1,3 +1,29 @@
+# v0.2.1 — 状态校验与输出增强
+
+> 2026-06-29
+
+前置校验、continue 输出增强、里程碑状态机修复。
+
+### 新增
+
+- 状态转移前置校验（state-validator）：推进状态前检查退出条件
+- continue 输出增加步骤描述、产出物列表、command 文件参考
+
+### 修复
+
+- 里程碑流程修正（milestone-active → grill → ...，不跳 phase）
+- Adhoc change 状态机完整路径（adhoc-proposal → ... → adhoc-archived）
+- archive 命令同时更新 state.adhoc 状态
+- continue 支持 change 子命令
+- saveState 保留现有 body
+- 模板内容充实（ship/adhoc/continue）
+
+### CI
+
+- GitHub Actions npm 自动发布
+
+---
+
 # v0.2.0 — v1 修复
 
 > 2026-06-29
