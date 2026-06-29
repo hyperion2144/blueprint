@@ -1,0 +1,46 @@
+{
+  "name": "specwf",
+  "version": "0.1.0",
+  "description": "规格驱动开发工作流 — spec-driven development workflow for AI coding agents",
+  "type": "module",
+  "bin": {
+    "specwf": "./bin/specwf.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run typecheck && npm run test && npm run build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "README.md"
+  ],
+  "dependencies": {
+    "@clack/prompts": "^1.6.0",
+    "commander": "^15.0.0",
+    "gray-matter": "^4.0.3",
+    "yaml": "^2.9.0",
+    "zod": "^4.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.7.0",
+    "vitest": "^4.0.0"
+  },
+  "license": "MIT",
+  "keywords": ["spec-driven", "workflow", "ai-agent", "cli", "openspec", "gsd"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/user/specwf"
+  },
+  "exports": {
+    ".": "./dist/cli.js"
+  }
+}
