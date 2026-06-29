@@ -37,6 +37,11 @@ Project → Milestone（恒存，默认 v1）→ Phase → Change
 - 测试: Vitest
 - 目标平台: OMP（优先）、Claude Code（后续）
 
+## 版本
+
+- **当前版本**: v0.1.0（m1-core）
+- **下一个**: m2-claude-code — Claude Code 平台支持
+
 ## 状态
 
 - [x] grill — 需求探讨完成（21 项决策确认）
