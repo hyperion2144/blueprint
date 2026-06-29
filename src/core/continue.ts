@@ -38,7 +38,7 @@ export function determineChangeNextStep(
     return determineFromChangeStatus(
       changeName,
       `adhoc-${adhoc.status}`,
-      adhoc.status === 'proposal' ? 'adhoc' : 'change',
+      'adhoc',
     );
   }
 

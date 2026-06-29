@@ -79,4 +79,6 @@ export const STATE_TRANSITIONS: StateTransition[] = [
 
   // 临时 change
   { from: 'adhoc-proposal', command: 'plan', to: 'change-planning', slashCommand: '/specwf:plan', subagent: true },
+  { from: 'change-archived', command: 'adhoc-done', to: 'adhoc-archived', slashCommand: '' },
+  { from: 'adhoc-archived', command: 'new-change', to: 'adhoc-proposal', slashCommand: '' },
 ];
