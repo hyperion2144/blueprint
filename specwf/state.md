@@ -77,13 +77,16 @@ adhoc:
     status: proposal
     depends_on: []
   - name: fix-continue-args
-    status: proposal
+    status: archived
     depends_on: []
   - name: fix-state-overwrite
     status: archived
     depends_on: []
   - name: fix-state-tracking
     status: archived
+    depends_on: []
+  - name: ci-npm-publish
+    status: proposal
     depends_on: []
 ---
 
@@ -161,7 +164,7 @@ planned → applying → applied → reviewing → verifying → archived
 |----|------|------|-----------|
 | bootstrap-specwf | 用 specwf 自身工作流自举项目结构 | archived | 全流程验证 |
 | fix-ship-command | 修复 ship 输出内容太薄 | proposal | m1-core |
-| fix-continue-args | `specwf continue` 不支持指定目标 | proposal | m1-core |
+| fix-continue-args | `specwf continue` 支持 change 子命令 | archived | m1-core |
 | fix-state-overwrite | `saveState` 写入时覆盖 body | archived | m1-core |
 | fix-state-tracking | 归档时未更新 adhoc 状态 | archived | m1-core |
 
@@ -177,6 +180,7 @@ planned → applying → applied → reviewing → verifying → archived
 - **2026-06-29** — adhoc changes 创建: fix-ship-command, fix-continue-args, fix-state-overwrite
 - **2026-06-29** — fix-state-overwrite archived: `saveState` 写入时保留现有 body
 - **2026-06-29** — fix-state-tracking archived: `specwf archive` 同时检查 state.adhoc
+- **2026-06-29** — fix-continue-args archived: `specwf continue change <name>` 查询 change 的下一步
 
 ## 状态变更检查清单
 
