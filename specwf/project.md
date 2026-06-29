@@ -39,7 +39,7 @@ Project → Milestone（恒存，默认 v1）→ Phase → Change
 
 ## 版本
 
-- **当前版本**: v0.1.0（m1-core）
+- **当前版本**: v0.2.0（v1 修复）
 - **下一个**: m2-claude-code — Claude Code 平台支持
 
 ## 状态
@@ -48,5 +48,6 @@ Project → Milestone（恒存，默认 v1）→ Phase → Change
 - [x] research — 技术调研完成
 - [x] roadmap — 路线图拆分完成
 - [x] Phase 1 — 实现核心 CLI（m1-core v0.1.0 已发布）
+- [x] v1 修复 — 审计发现的全部问题已修复（v0.2.0 已发布）
 
 详见 [state.md](state.md)。

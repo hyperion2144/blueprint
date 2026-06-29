@@ -1,34 +1,32 @@
-# v0.1.0 — CLI 核心可用
-
-**Milestone: m1-core**
+# v0.2.0 — v1 修复
 
 > 2026-06-29
 
-规格驱动开发工作流（specwf）初始版本。面向 AI 编码 agent 的 CLI，在写代码前对齐规格，在 fresh-context 子代理中执行重活，通过结构化产物让状态跨会话持久化。
+根据工作流审计结果修复的全部问题。
 
-## 功能
+## v0.1.0 功能
 
-- `specwf init` — 交互式初始化项目骨架
-- `specwf update` — 生成本地平台文件（commands + agents + skills）
-- `specwf config` / `specwf config set` — 读写 project.yml
-- `specwf state` — 格式输出当前状态
-- `specwf context <step>` — 输出步骤上下文文件清单
-- `specwf continue` — 读取状态并推送下一步
-- `specwf archive <change>` — delta-spec 合并 + 代码认知回灌 + 归档
-- `specwf list` — 列出 milestones/phases/changes
-- `specwf template <type>` — 从内置模板生成产物文件
+- 9 个 CLI 子命令：init / update / config / state / context / continue / archive / list / template
+- OMP 平台文件生成（14 commands + 6 agents + 14 skills）
+- delta-spec 合并 + 代码认知回灌
 
-## 技术栈
+## v0.2.0 变更
 
-- TypeScript + Node.js ≥ 20
-- CLI: commander + @clack/prompts
-- 解析: yaml(eemeli) + gray-matter + zod
-- 构建: tsup (ESM)
-- 测试: vitest (71 tests)
+### Bug 修复
 
-## 验证
+- `saveState` 写入时保留现有 body，不再覆盖用户编写的详细内容
+- `specwf archive` 同时检查 `state.adhoc`，修复 adhoc change 归档后状态不更新
+- `specwf continue change <name>` 新子命令，可查询指定 change/adhoc 的下一步
+- `archive` 状态转移增加 `subagent: true` 标注
+- 添加 adhoc change 完整状态机退出路径（adhoc-proposal → change-archived → adhoc-archived）
+- `continue` 无参数时提示 pending adhoc change
+- 模板内容充实：ship/adhoc/continue 命令指引更完整
+
+### CI
+
+- GitHub Actions npm 自动发布 workflow（tag push 触发）
+
+### 验证
 
 - tsc --noEmit: 0 errors
-- vitest run: 71/71 通过
-- npm run build: 50KB dist
-- specwf init → update → state → archive 完整流程可用
+- vitest: 79/79 tests passed
