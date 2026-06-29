@@ -47,7 +47,14 @@ export function loadState(specwfDir: string): StateFile {
 
 /** 写入 state.md（frontmatter + body） */
 export function saveState(specwfDir: string, state: StateFile): void {
-  const body = generateStateBody(state);
+  // 保留现有 body，只更新 frontmatter
+  let body: string;
+  try {
+    const existing = readFrontmatterFile(statePath(specwfDir));
+    body = existing.content;
+  } catch {
+    body = generateStateBody(state);
+  }
   const output = stringifyFrontmatter(state as unknown as Record<string, unknown>, body);
   writeFileSync(statePath(specwfDir), output, 'utf-8');
 }
