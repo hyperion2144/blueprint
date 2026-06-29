@@ -16,6 +16,71 @@ export function determineNextStep(specwfDir: string): ContinueResult {
   return determineFromState(loadState(specwfDir));
 }
 
+/**
+ * 查询指定 change 的下一步
+ * 同时在 state.changes 和 state.adhoc 中查找
+ */
+export function determineChangeNextStep(
+  specwfDir: string,
+  changeName: string,
+): ContinueResult | { error: string } {
+  const state = loadState(specwfDir);
+
+  // 先在普通 changes 中查找
+  const change = state.changes.find((c) => c.name === changeName);
+  if (change) {
+    return determineFromChangeStatus(changeName, `change-${change.status}`, 'change');
+  }
+
+  // 再在 adhoc changes 中查找
+  const adhoc = state.adhoc.find((c) => c.name === changeName);
+  if (adhoc) {
+    return determineFromChangeStatus(
+      changeName,
+      `adhoc-${adhoc.status}`,
+      adhoc.status === 'proposal' ? 'adhoc' : 'change',
+    );
+  }
+
+  return {
+    error: `change 不存在: ${changeName}。可用: ${listAvailableChanges(state)}`,
+  };
+}
+
+function determineFromChangeStatus(
+  name: string,
+  statusKey: string,
+  type: 'change' | 'adhoc',
+): ContinueResult {
+  const available = getNextSteps(statusKey);
+  const availableSteps = available.map((t) => ({
+    command: t.command,
+    slashCommand: t.slashCommand,
+    subagent: t.subagent ?? false,
+  }));
+  const first = available[0];
+
+  return {
+    currentStep: statusKey,
+    context: `${type === 'adhoc' ? '临时 Change' : 'Change'} (${name})`,
+    nextCommand: first?.command ?? null,
+    slashCommand: first?.slashCommand || null,
+    needsSubagent: first?.subagent ?? false,
+    availableSteps,
+    hint: available.length === 0
+      ? '该 change 已没有可用下一步。创建新 change 继续。'
+      : null,
+  };
+}
+
+function listAvailableChanges(state: StateFile): string {
+  const names = [
+    ...state.changes.map((c) => c.name),
+    ...state.adhoc.map((c) => c.name),
+  ];
+  return names.join(', ') || '(无)';
+}
+
 export function determineFromState(state: StateFile): ContinueResult {
   const ctx = state.active_context;
   const currentStatus = resolveStatus(state);

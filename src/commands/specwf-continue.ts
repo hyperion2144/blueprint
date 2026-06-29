@@ -3,20 +3,24 @@
  */
 
 import { join } from 'node:path';
-import { determineNextStep } from '../core/continue.js';
+import { determineNextStep, determineChangeNextStep } from '../core/continue.js';
+import type { ContinueResult } from '../core/continue.js';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function register(program: any): void {
-  program
+  const cmd = program
     .command('continue')
-    .description('自动推进到下一步（读 state.md → 确定下一步 → 输出）')
-    .action(continueHandler);
+    .description('自动推进到下一步（读 state.md → 确定下一步 → 输出）');
+
+  cmd
+    .command('change <name>')
+    .description('查询指定 change 的下一步')
+    .action(continueChangeHandler);
+
+  cmd.action(continueHandler);
 }
 
-function continueHandler() {
-  const specwfDir = join(process.cwd(), 'specwf');
-
-  const result = determineNextStep(specwfDir);
-
+function formatContinueResult(result: ContinueResult): void {
   console.log('─'.repeat(50));
   console.log(`当前位置: ${result.context}`);
   console.log(`当前步骤: ${result.currentStep}`);
@@ -38,4 +42,22 @@ function continueHandler() {
     }
   }
   console.log('─'.repeat(50));
+}
+
+function continueHandler(): void {
+  const specwfDir = join(process.cwd(), 'specwf');
+  const result = determineNextStep(specwfDir);
+  formatContinueResult(result);
+}
+
+function continueChangeHandler(name: string): void {
+  const specwfDir = join(process.cwd(), 'specwf');
+  const result = determineChangeNextStep(specwfDir, name);
+  if ('error' in result) {
+    console.log('─'.repeat(50));
+    console.log(result.error);
+    console.log('─'.repeat(50));
+    return;
+  }
+  formatContinueResult(result);
 }
