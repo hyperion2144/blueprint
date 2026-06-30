@@ -5,9 +5,9 @@ project:
   current_milestone: m2-claude-code
   current_phase: null
 active_context:
-  type: adhoc
-  ref: changes/update-conventions
-  step: change-applying
+  type: project
+  ref: null
+  step: requirements-defined
 changes:
   - name: scaffold-project
     status: archived
@@ -74,7 +74,7 @@ adhoc:
     status: archived
     depends_on: []
   - name: fix-ship-command
-    status: proposal
+    status: archived
     depends_on: []
   - name: fix-continue-args
     status: archived
@@ -128,7 +128,7 @@ adhoc:
     status: archived
     depends_on: []
   - name: update-conventions
-    status: planning
+    status: archived
     depends_on: []
 ---
 
