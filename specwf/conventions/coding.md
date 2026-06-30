@@ -1,39 +1,39 @@
-# 编码约定
+# Coding Conventions
 
-## 语言
+## Language
 
-- 代码、注释、文档使用中文
-- 变量名、函数名使用英文
+- Prose, comments, and documentation: English
+- Variable names and function names: English
 
 ## TypeScript
 
-- 严格模式: `strict: true`
-- 模块: ESM (`"type": "module"`)
-- 目标: ES2022
-- 路径别名: `@/` → `src/`
+- Strict mode: `strict: true`
+- Module: ESM (`"type": "module"`)
+- Target: ES2022
+- Path aliases: `@/` → `src/`
 
-## 命名
+## Naming
 
-- 源码文件: kebab-case (`specwf-init.ts`)
-- **Markdown 文件: 全小写** (`project.md`, `requirements.md`, `state.md`, `roadmap.md`)
-  - 不使用大写文件名（如 ~~PROJECT.md~~），统一全小写
-  - 交叉引用也使用小写：`详见 [state.md](state.md)`
-- 函数/变量: camelCase
-- 类/类型/接口: PascalCase
-- 常量: UPPER_SNAKE_CASE
-- CLI 命令: kebab-case (`specwf init`, `specwf update`)
+- Source files: kebab-case (`specwf-init.ts`)
+- **Markdown files: lowercase** (`project.md`, `requirements.md`, `state.md`, `roadmap.md`)
+  - No uppercase filenames (no `PROJECT.md`, `README.md` except root)
+  - Cross-references use lowercase: `see [state.md](state.md)`
+- Functions/variables: camelCase
+- Classes/types/interfaces: PascalCase
+- Constants: UPPER_SNAKE_CASE
+- CLI commands: kebab-case (`specwf init`, `specwf update`)
 
-## 测试
+## Testing
 
-- 框架: Vitest
-- 测试文件: `*.test.ts`，与源文件同目录
-- TDD: type:behavior 任务必须 RED→GREEN→REFACTOR
+- Framework: Vitest
+- Test files: `*.test.ts`, co-located with source
+- TDD: type:behavior tasks must follow RED→GREEN→REFACTOR
 
 ## Git
 
-- 提交消息: Conventional Commits
-- 分支策略: none（直接在主分支开发，除非配置 phase/milestone 分支）
+- Commit messages: Conventional Commits
+- Branch strategy: none (develop on main unless configured for phase/milestone branches)
 
-## 注入规则
+## Injection Rule
 
-此文件会被 `specwf context` 自动注入到所有步骤的 agent 上下文中。
+This file is auto-injected by `specwf context` into all step agent contexts.

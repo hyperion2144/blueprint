@@ -127,20 +127,8 @@ adhoc:
   - name: refactor-templates-i18n
     status: archived
     depends_on: []
-  - name: polish-cli-integration
-    status: proposal
-    depends_on: []
-  - name: add-fast-path
-    status: proposal
-    depends_on: []
-  - name: test-fast-path
+  - name: update-conventions
     status: planning
-    depends_on: []
-  - name: demo-fast
-    status: planning
-    depends_on: []
-  - name: demo-full
-    status: proposal
     depends_on: []
 ---
 
