@@ -2,6 +2,25 @@
 
 对关键技术方向进行前期调研，降低后续实现阶段的技术不确定性。并行派出多个 specwf-researcher subagent，每个 agent 独立调研一个技术方向（如框架选型、库对比、架构决策点）。调研结果合并输出到 `@specwf/research/` 目录，供 planner 在设计阶段使用。
 
+## 步骤
+
+### 步骤 1：检查状态
+
+```bash
+specwf state
+```
+
+确认当前处于 research 阶段。运行 `specwf continue` 校验前置条件。
+
+### 步骤 2：获取上下文
+
+```bash
+specwf context research
+```
+
+读取输出的文件清单。
+
+
 ## 子代理
 
 ### 子代理类型

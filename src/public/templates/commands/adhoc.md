@@ -12,6 +12,25 @@
 | **推进** | `specwf continue change <change-name>` |
 | **引用技能** | `skills/specwf-adhoc/SKILL.md` |
 
+## 步骤
+
+### 步骤 1：检查状态
+
+```bash
+specwf state
+```
+
+确认当前处于 adhoc 阶段。运行 `specwf continue` 校验前置条件。
+
+### 步骤 2：获取上下文
+
+```bash
+specwf context adhoc
+```
+
+读取输出的文件清单。
+
+
 ## 创建
 
 ```bash

@@ -2,6 +2,25 @@
 
 读取 `@specwf/state.md`，根据状态机当前位置确定下一步操作。
 
+## 步骤
+
+### 步骤 1：检查状态
+
+```bash
+specwf state
+```
+
+确认当前处于 continue 阶段。运行 `specwf continue` 校验前置条件。
+
+### 步骤 2：获取上下文
+
+```bash
+specwf context continue
+```
+
+读取输出的文件清单。
+
+
 ## 核心指令
 
 运行 `specwf continue`，读取输出中的"推荐下一步"，然后**立即执行对应的 command 文件**。这是整个工作流的自动导航器——不执行下一步，流程就会卡住。

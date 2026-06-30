@@ -1,50 +1,60 @@
 # Phase 讨论
 
-为当前 Phase 做详细的实现决策讨论，产出 context.md。这是进入技术实现前的最后一道设计关卡，确定 Phase 的目标、范围、设计方案和实现决策。
+为当前 Phase 做详细的实现决策讨论，产出 context.md。确定 Phase 的目标、范围、设计方案和实现决策。
 
-**子代理**: 无（由主工作流直接执行）
+---
 
-## 上下文
+## 步骤
 
-查看当前 Phase 信息和项目上下文：
+### 步骤 1：检查状态
 
 ```bash
-specwf context discuss
 specwf state
 ```
 
-## 产出
-
-写入当前 phase 目录下的 `context.md`，参考模板：
+确认当前处于 `discuss` 阶段。如果不是，运行 `specwf continue` 推进。
 
 ```bash
-specwf template artifacts/context.md
+specwf continue
+```
+
+### 步骤 2：获取上下文
+
+```bash
+specwf context discuss
+```
+
+读取以下文件：
+- `@specwf/roadmap.md` — 当前 Phase 的描述和边界
+- `@specwf/project.yml` — 项目配置
+
+### 步骤 3：讨论并记录决策
+
+与用户逐项讨论以下内容，每项达成共识后写入 `context.md`：
+
+```bash
+specwf template artifacts/context.md > milestones/<ms>/phases/<ph>/context.md
 ```
 
 context.md 包含：
-- Phase 目标和范围
-- 架构决策（D1/D2/...）
-- 接口契约和数据模型
-- 实现约束
-- Change 拆分方案
-- 非目标和不在此 phase 做的事项
+- **Phase 目标** — 本 Phase 交付什么
+- **架构决策（D1/D2/...）** — 每项决策编号记录
+- **接口契约** — 关键接口和数据模型
+- **实现约束** — 技术约束和限制
+- **Change 拆分方案** — 初步拆分思路
+- **非目标** — 不在此 Phase 做的事项
 
-## 执行步骤
+灰色地带标记 `[TODO: discuss]`。
 
-1. **确定 Phase 范围** — 回顾 roadmap.md 中当前 phase 的描述，确认输入/输出和与其他 phase 的接口边界
-2. **讨论技术决策** — 逐项讨论架构决策、数据结构、异常处理、测试策略，每项达成共识后记录
-3. **记录 context.md** — 将讨论结果写入 context.md，灰色地带标记 `[TODO: discuss]`
-4. **拆分 Change** — 将 Phase 拆分为 1-3 个独立可交付的 Change，标注依赖关系
-
-## 参考
-
-完整流程指引见：
+### 步骤 4：推进
 
 ```bash
-cat skills/discuss.md
+specwf continue
 ```
 
-## 下一步
+continue 检查 context.md 存在后，推进到 research-phase。
+
+---
 
 ## 参数
 
@@ -52,12 +62,14 @@ cat skills/discuss.md
 [phase <name>]
 ```
 
-不传时运行 `specwf continue` 查看当前 milestone 的待处理 phase。
+不传时查看当前 milestone 的待处理 phase。
 
-完成后：
+## 产出
 
-```bash
-specwf continue
-```
+| 文件 | 说明 | 模板 |
+|------|------|------|
+| `milestones/<ms>/phases/<ph>/context.md` | Phase 实现决策 | `specwf template artifacts/context.md` |
 
-然后根据输出的"推荐下一步"执行对应操作。
+## 参考
+
+技能文件：`.omp/skills/specwf-discuss/SKILL.md`

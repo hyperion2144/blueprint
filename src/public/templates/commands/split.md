@@ -1,54 +1,56 @@
 # Change 拆分
 
-将 Phase 拆分为多个独立可交付的 Change，确定依赖图和执行策略。每个 Change 是一个可独立设计、实现、审查、验证的工作单元，有明确的 proposal.md 描述其范围、接口和验收标准。
+将 Phase 拆分为多个独立可交付的 Change，每个 Change 有明确的 proposal.md 描述范围、接口和验收标准。
 
-**子代理**: 无（由主工作流直接分析拆分）
+---
 
-## 上下文
+## 步骤
 
-查看当前 Phase 信息和已就位的研究产出：
+### 步骤 1：检查当前状态
 
 ```bash
-specwf context split
 specwf state
 ```
 
-## 产出
+输出当前所在的 Phase 名称及其状态。确认当前在要拆分的 Phase 上，且状态允许拆分操作（通常为 `research_done` 或 `ready`）。
 
-在 `changes/` 下为每个 Change 创建目录和 proposal.md：
+### 步骤 2：获取上下文
 
-| 产出文件 | 模板参考 | 说明 |
-|---------|---------|------|
-| `changes/<name>/proposal.md` | `specwf template artifacts/proposal.md` | Change 意图、范围、方案方向、must-haves |
-| `changes/<name>/specs/` | 无模板（初始空目录） | Delta-specs 目录，plan 阶段填充 |
-| 依赖图 | 无模板 | 在 conversation 中记录，不生成独立文件 |
+```bash
+specwf context split
+```
 
-## 执行步骤
+读取 **context.md**（Phase 的决策记录和设计约束）和 **research.md**（技术调研产出），理解 Phase 的全貌、技术选型、已知约束和风险点。
 
-1. **识别 Change** — 将 Phase scope 拆分为若干独立可验证的功能单元，每个 Change 对应一个完整切面，不跨 Change 共享未完成代码
-2. **建立依赖图** — 标注 Change 间的数据依赖、接口依赖、顺序依赖；确认无环
-3. **创建目录和 proposal** — 为每个 Change 执行：
+### 步骤 3：执行拆分
 
-   ```bash
-   mkdir -p changes/<change-name>/specs
-   specwf template artifacts/proposal.md > changes/<change-name>/proposal.md
-   ```
+将 Phase scope 拆分为若干独立可验证的 Change，每个 Change 对应一个完整的功能切面。不跨 Change 共享未完成代码。
 
-4. **配置并行策略** — 根据依赖图选择策略：
-   - `serial` — 全序串行
-   - `dependency-graph` — 无依赖并行、有依赖串行（默认推荐）
-   - `pipeline` — 按依赖深度分层，同层并行、异层流水
+为每个 Change 执行：
 
-## 检查清单
+```bash
+mkdir -p changes/<change-name>/specs
+specwf template artifacts/proposal.md > changes/<change-name>/proposal.md
+```
 
-- [ ] 每个 Change 有明确的可验证结果
-- [ ] 依赖图无循环
-- [ ] Change 范围不重叠
-- [ ] 所有 Phase scope 被覆盖
-- [ ] 依赖关系合理（无缺少的依赖）
-- [ ] 单个 Change diff 预估 ≤ 400 行
+在创建 proposal.md 时填写以下内容：
+- **Change 意图** — 该 Change 要交付什么
+- **方案方向** — 技术实现思路
+- **范围** — 包含和不包含的内容
+- **must-haves** — 必须完成的验收条件
+- **依赖** — 对其它 Change 的前置依赖
 
-## 参考
+同时标注 Change 间的依赖图（数据依赖、接口依赖、顺序依赖），确保无循环依赖。
+
+### 步骤 4：推进
+
+```bash
+specwf continue
+```
+
+`specwf continue` 确认拆分完成，将工作流推进到首个 Change 的 plan 阶段，进入第一个 Change 的详细设计。
+
+---
 
 ## 参数
 
@@ -58,18 +60,23 @@ specwf state
 
 不传时运行 `specwf continue` 查看当前 milestone 的待处理 phase。
 
-完整流程指引见：
+---
 
-```bash
-cat skills/split.md
-```
+## 产出
 
-## 下一步
+| 文件 | 说明 | 模板 |
+|------|------|------|
+| `changes/<name>/proposal.md` | Change 意图、范围、方案方向、must-haves | `specwf template artifacts/proposal.md` |
+| `changes/<name>/specs/` | Delta-specs 目录，plan 阶段填充 | 无模板（初始空目录） |
+| 依赖图 | Change 间的数据、接口、顺序依赖关系 | 无模板（在 conversation 中记录，不生成独立文件） |
 
-完成后进入首个 Change 的 plan 阶段：
+---
 
-```bash
-specwf continue
-```
+## 检查清单
 
-然后根据输出的"推荐下一步"执行对应操作。
+- [ ] 每个 Change 有明确的可验证结果
+- [ ] 依赖图无循环
+- [ ] Change 范围不重叠
+- [ ] 所有 Phase scope 被覆盖
+- [ ] 依赖关系合理（无缺少的依赖）
+- [ ] 单个 Change diff 预估 ≤ 400 行

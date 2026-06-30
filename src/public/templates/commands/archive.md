@@ -2,6 +2,25 @@
 
 Change 循环的收尾阶段。负责三件事：(1) 将 delta-specs 确定性合并到全局 specs/；(2) 从代码 diff 中提取新的行为和约束，回灌到 specs/ 中；(3) 将原始产物目录移动到 `archive/<date>-<name>/` 下持久保存。归档完成后，Change 的工作永久记录在 specs/ 和 archive/ 中，供后续 Change 参考和追溯。
 
+## 步骤
+
+### 步骤 1：检查状态
+
+```bash
+specwf state
+```
+
+确认当前处于 archive 阶段。运行 `specwf continue` 校验前置条件。
+
+### 步骤 2：获取上下文
+
+```bash
+specwf context archive
+```
+
+读取输出的文件清单。
+
+
 ## 子代理
 
 ### 子代理类型

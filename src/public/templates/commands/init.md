@@ -2,6 +2,25 @@
 
 运行 `specwf init` 创建 specwf/ 目录结构、项目配置和状态机文件。这是整个工作流的起点。
 
+## 步骤
+
+### 步骤 1：检查状态
+
+```bash
+specwf state
+```
+
+确认当前处于 init 阶段。运行 `specwf continue` 校验前置条件。
+
+### 步骤 2：获取上下文
+
+```bash
+specwf context init
+```
+
+读取输出的文件清单。
+
+
 ## 子代理
 
 ### 新项目

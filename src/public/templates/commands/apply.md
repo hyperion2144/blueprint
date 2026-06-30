@@ -2,6 +2,25 @@
 
 按 tasks.md 执行代码实现。TDD 强制执行：type:behavior 任务走 RED→GREEN→REFACTOR 协议，其他类型直接实现。由 specwf-executor agent 负责执行。
 
+## 步骤
+
+### 步骤 1：检查状态
+
+```bash
+specwf state
+```
+
+确认当前处于 apply 阶段。运行 `specwf continue` 校验前置条件。
+
+### 步骤 2：获取上下文
+
+```bash
+specwf context apply
+```
+
+读取输出的文件清单。
+
+
 ## 子代理
 
 ### 子代理类型
