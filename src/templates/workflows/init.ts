@@ -24,31 +24,18 @@ Run \`specwf init --yes\` to create the project skeleton:
 ### Step 3: Brownfield mode (existing projects)
 For projects with existing code, use \`specwf init --yes --brownfield\`:
 
-The CLI creates the skeleton and outputs: "请派发 specwf-codebase-mapper 和 specwf-spec-bootstrapper 子代理完成完整分析。"
+The CLI creates the skeleton and outputs a reminder to run brownfield analysis.
 
-**You are the orchestrator — dispatch, do not analyze yourself.** Use the \`task\` tool to spawn two sub-agents in parallel:
+**You are the orchestrator — dispatch, do not analyze yourself.** Dispatch two sub-agents in parallel using platform-specific dispatch:
 
-\`\`\`text
-Task 1:
-  agent: specwf-codebase-mapper
-  cwd: <project-root>
-  prompt: |
-    Analyze the codebase at <project-root>/src/.
-    Read package.json, tsconfig.json for tech stack.
-    Map directory structure for architecture patterns.
-    Identify coding conventions and potential pitfalls.
-    Output to specwf/codebase/stack.md, codebase/architecture.md,
-    codebase/pitfalls.md, and conventions/codebase-conventions.md.
-
-Task 2:
-  agent: specwf-spec-bootstrapper
-  cwd: <project-root>
-  prompt: |
-    Scan <project-root>/src/ for core modules and public APIs.
-    Extract behavioral contracts from signatures, JSDoc, and tests.
-    Write SHALL/MUST specs to specwf/specs/<domain>/spec.md.
-    Annotate all entries as BOOTSTRAPPED with confidence levels.
+\`\`\`bash
+specwf dispatch codebase-mapper       # analyzes tech stack, architecture, conventions, pitfalls
+specwf dispatch spec-bootstrapper     # extracts behavioral contracts from code
 \`\`\`
+
+Construct each sub-agent prompt:
+- **codebase-mapper**: analyze src/, read package.json and tsconfig.json, map architecture, identify conventions and pitfalls. Output to specwf/codebase/stack.md, codebase/architecture.md, codebase/pitfalls.md, conventions/codebase-conventions.md.
+- **spec-bootstrapper**: scan src/ for core modules and public APIs, extract SHALL/MUST from signatures/JSDoc/tests, annotate confidence levels. Output to specwf/specs/<domain>/spec.md with BOOTSTRAPPED marker.
 
 After both complete, verify the output files exist.
 

@@ -8,15 +8,10 @@
 import { join } from 'node:path';
 import { loadConfig } from '../core/config.js';
 
-/** Platform-specific dispatch format */
 interface DispatchFormat {
-  /** Tool name to use */
   tool: string;
-  /** Agent type parameter name */
   agentParam: string;
-  /** How to pass the change name */
   changeRef: string;
-  /** How to set working directory */
   cwdDirective: string;
 }
 
@@ -25,15 +20,8 @@ const FORMATS: Record<string, DispatchFormat> = {
     tool: 'task',
     agentParam: 'agent: specwf-<role>',
     changeRef: 'cwd: <project-root>',
-    cwdDirective: 'Run from project root. Pass change name as <change-name>.',
+    cwdDirective: 'Run from project root.',
   },
-  // Future platforms:
-  // 'claude-code': {
-  //   tool: 'Task',
-  //   agentParam: 'subagent_type: "specwf-<role>"',
-  //   changeRef: 'cwd: "<project-root>"',
-  //   cwdDirective: 'Run from project root. Use Task tool.',
-  // },
 };
 
 export function register(program: any): void {
@@ -54,31 +42,34 @@ function dispatchHandler(role: string, options: { change?: string; dir: string }
     const fmt = FORMATS[platform];
     if (!fmt) continue;
 
-    const changeName = options.change || '<change-name>';
+    const changeName = options.change || null;
+    const lines: string[] = [];
 
-    const instructions = [
-      `## Dispatch: specwf-${role} (${platform})`,
-      '',
-      `Use the \`${fmt.tool}\` tool:`,
-      '',
-      '```text',
-      `${fmt.agentParam.replace('<role>', role)}`,
-      `Change: ${changeName} (from specwf/changes/${changeName}/)`,
-      `${fmt.changeRef.replace('<project-root>', process.cwd())}`,
-      '```',
-      '',
-      fmt.cwdDirective,
-      '',
-      'The sub-agent prompt should include:',
-      `- Read context from specwf context <step> or the change directory`,
-      `- Output deliverables as specified in the workflow template`,
-      `- Write completion report when done`,
-    ].join('\n');
+    lines.push(`## Dispatch: specwf-${role} (${platform})`);
+    lines.push('');
+    lines.push(`Use the \`${fmt.tool}\` tool:`);
+    lines.push('');
+    lines.push('```text');
+    lines.push(`${fmt.agentParam.replace('<role>', role)}`);
+
+    if (changeName) {
+      lines.push(`Change: ${changeName} (from specwf/changes/${changeName}/)`);
+    }
+
+    lines.push(`${fmt.changeRef.replace('<project-root>', process.cwd())}`);
+    lines.push('```');
+    lines.push('');
+    lines.push(fmt.cwdDirective);
+    lines.push('');
+    lines.push('The sub-agent prompt should include:');
+    lines.push('- Read context from specwf context <step> or the change directory');
+    lines.push('- Output deliverables as specified in the workflow template');
+    lines.push('- Write completion report when done');
 
     if (platforms.length > 1) {
       console.log(`=== ${platform} ===`);
     }
-    console.log(instructions);
+    console.log(lines.join('\n'));
     if (platforms.length > 1) console.log('');
   }
 }
