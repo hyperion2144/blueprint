@@ -1,12 +1,25 @@
 # 里程碑管理
 
-切换或创建 Milestone。
+切换或创建 Milestone，设置当前阶段。
+
+| | |
+|---|---|
+| **描述** | 里程碑管理 — 切换/创建 Milestone，设置当前阶段 |
+| **子代理** | 无 |
+| **产出** | state.md — current_milestone 更新 |
+| **上下文** | `specwf state` |
+| **推进** | `specwf continue` |
+| **引用技能** | `skills/specwf-milestone/SKILL.md` |
 
 ## 上下文
 
 ```bash
 specwf state
 ```
+
+`specwf state` 显示当前 milestone 和 phase 信息。
+
+可参考 `@specwf/roadmap.md` 查看 milestone 列表。
 
 ## 操作
 
@@ -18,10 +31,12 @@ specwf state set-milestone <id>
 specwf state set-phase <id>
 ```
 
-可参考 @specwf/roadmap.md 查看 milestone 列表。
-
 ## 下一步
 
 ```bash
 specwf continue
 ```
+
+## 参考
+
+技能文件：`.omp/skills/specwf-milestone/SKILL.md`
