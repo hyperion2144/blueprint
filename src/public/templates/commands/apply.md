@@ -171,17 +171,3 @@ specwf template change-summary --name <change-name> --dir specwf/changes/<change
 
 生成 summary.md 包含：intent、产出文件清单、关键决策、验证结果。
 
-## 上下文
-
-```bash
-specwf context apply
-specwf state
-```
-
-## 下一步
-
-```bash
-specwf continue
-```
-
-然后根据输出的"推荐下一步"执行对应操作。

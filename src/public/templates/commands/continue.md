@@ -72,8 +72,3 @@ specwf continue change <change-name>
 
 输出后同样根据"推荐下一步"执行对应操作。
 
-## 上下文
-
-```bash
-specwf state
-```

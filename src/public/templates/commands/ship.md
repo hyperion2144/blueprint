@@ -97,26 +97,3 @@ Release notes 应包含：
 
 - `skills/specwf-ship/SKILL.md` — 交付工作流完整指引、验证检查项、陷阱列表
 
-## 上下文
-
-```bash
-specwf context ship
-specwf state
-```
-
-## 下一步
-
-完成 Phase ship 后：
-
-```bash
-specwf continue
-```
-
-然后根据输出的"推荐下一步"执行对应操作。
-
-```bash
-# 例: 输出 → 下一步: grill
-# 则执行 .omp/commands/specwf-grill.md
-```
-
-状态机自动推进到下一 Phase 的 discuss 阶段（多 Phase Milestone）或进入 Milestone ship 决策。

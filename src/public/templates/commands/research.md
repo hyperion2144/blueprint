@@ -58,14 +58,6 @@ specwf context research
 | `@specwf/research/pitfalls.md` | `specwf template pitfalls` | 已知陷阱与风险记录 |
 | `@specwf/research/summary.md` | 无模板（自由格式） | 调研总结与下一步建议 |
 
-## 上下文检查
-
-```bash
-specwf context research
-specwf state
-```
-
-确认当前上下文包含：项目技术栈输入、待调研的技术方向清单、约束条件（性能要求、兼容性需求、团队熟悉度等）。
 
 ## 推进
 

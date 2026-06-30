@@ -61,20 +61,6 @@ specwf context research-phase
 - research.md（模板: specwf template phase-research）
 ```
 
-## 上下文
-
-```bash
-specwf context research-phase
-specwf state
-```
-
-`specwf context research-phase` 输出当前 Phase 上下文：
-- `context.md` — Phase 的实现决策（locked decisions 必须遵守，discretion 可自由探索）
-- `research/` — 项目级已有调研结果
-- 相关 `specs/` — 规格约束
-
-`specwf state` 显示状态机当前位置，确保调研方向与当前 Phase 一致。
-
 ## 调研流程
 
 ### 1. 获取模板

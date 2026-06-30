@@ -79,14 +79,6 @@ fan-out: 3（batch tasks[3] 并行）
 | `@specwf/reviews/quality-review.md` | `specwf template quality-review` | 代码质量审查报告 |
 | `@specwf/reviews/goal-review.md` | `specwf template goal-review` | 目标达成审查报告 |
 
-## 上下文检查
-
-```bash
-specwf context review
-specwf state
-```
-
-确认当前阶段上下文包含：proposal.md、delta-specs、design.md、tasks.md、实现代码、测试代码。
 
 ## 参数
 

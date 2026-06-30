@@ -71,13 +71,6 @@ specwf context archive
 - [ ] verify 阶段已通过（state 中 status 为 passed）
 - [ ] 当前 Change 的产物完整（proposal、tasks、specs、review、verification）
 
-## 上下文检查
-
-```bash
-specwf state
-```
-
-确认当前状态处于 verify passed 阶段，Change 信息完整无误。
 
 ## 执行
 

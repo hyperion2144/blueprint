@@ -30,11 +30,6 @@ specwf context milestone
 读取输出的文件清单。
 
 
-## 上下文
-
-```bash
-specwf state
-```
 
 `specwf state` 显示当前 milestone 和 phase 信息。
 

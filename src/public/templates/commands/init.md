@@ -107,15 +107,6 @@ brownfield 模式额外产出（由两个 subagent 并行生成）：
 | `specwf/conventions/codebase-conventions.md` | `specwf template codebase-conventions` | 存量项目代码规范 |
 | `specwf/specs/<domain>/spec.md` | `specwf template spec-bootstrap` | 领域行为契约（标记 BOOTSTRAPPED） |
 
-## 上下文
-
-```bash
-specwf context init
-specwf state
-```
-
-可参考 `@specwf/conventions/coding.md`。
-
 ## 推进
 
 完成后运行 `specwf continue`，根据输出的"推荐下一步"执行对应操作。
