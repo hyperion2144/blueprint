@@ -1,4 +1,4 @@
-# Tasks: fix-milestone-transitions
+# Tasks: fix-ship-command
 
 > **填表指引**：本文档将 design 拆解为按 wave 分组的可执行 task。每个 task 需包含 description、files、acceptance、可选的 depends_on 和 spec_ref。type:behavior 的 task 必须编写 RED 测试描述（GIVEN/WHEN/THEN 格式）。
 

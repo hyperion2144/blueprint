@@ -1,4 +1,4 @@
-# Design: fix-milestone-archive
+# Design: fix-ship-command
 
 > **填表指引**：本文档是 Change Design，在 proposal 批准后编写，描述如何实现。每节均附填写指引，请按指引填写。写完此文档后进入 tasks 拆分解段。
 
