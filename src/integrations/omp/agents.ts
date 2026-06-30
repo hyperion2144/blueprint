@@ -77,10 +77,17 @@ export const AGENT_DEFS: AgentDef[] = [
     tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'],
     spawns: '*',
   },
-  // specwf-codebase-mapper + specwf-spec-bootstrapper (combined as aux agents)
+  // specwf-codebase-mapper — brownfield codebase analysis
   {
     role: 'codebase-mapper',
     description: 'Codebase mapping — analyze existing code, produce technical reports',
+    tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'],
+    spawns: '*',
+  },
+  // specwf-spec-bootstrapper — extract behavioral contracts from code
+  {
+    role: 'spec-bootstrapper',
+    description: 'Spec bootstrapping — extract behavioral contracts from existing code',
     tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'],
     spawns: '*',
   },
