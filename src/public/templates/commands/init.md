@@ -20,20 +20,31 @@ specwf context init
 
 读取输出的文件清单。
 
+### 步骤 3：执行初始化
 
-## 子代理
+```bash
+specwf init --yes
+```
 
-### 新项目
+CLI 自动创建：
+- `specwf/` 目录结构
+- `specwf/project.yml` — 项目工作流配置
+- `specwf/state.md` — 状态机文件
+- `.omp/commands/specwf-*.md` — 14 个 Slash Command
+- `.omp/agents/specwf-*.md` — 9 个 Agent 定义
+- `.omp/skills/specwf-*/SKILL.md` — 14 个 Skill 指引
 
-无需子代理，CLI 直接创建目录结构和配置文件。
+### 步骤 4：存量项目（brownfield）
 
-### 存量项目（brownfield）
+已有代码的项目使用 `--brownfield` 模式：
 
-使用 `--brownfield` 模式。CLI 创建目录结构后，派发两个子代理并行执行。
+```bash
+specwf init --yes --brownfield
+```
 
-#### Agent 1: specwf-codebase-mapper
+CLI 创建目录结构后，派发两个子代理并行执行。
 
-派发 `specwf-codebase-mapper` 子代理（完整 system prompt 见 `.omp/agents/specwf-codebase-mapper.md`）。
+**Agent 1: specwf-codebase-mapper**（完整 system prompt 见 `.omp/agents/specwf-codebase-mapper.md`）
 
 提示词内容：
 
@@ -41,26 +52,12 @@ specwf context init
 子代理类型: specwf-codebase-mapper
 描述: 代码库映射 — 分析存量项目技术栈、架构、代码规范、风险
 
-【项目上下文】
-- 从 project.yml 获取项目名称和 profile
-- 从 project.md 获取项目描述
-- 扫描代码库目录结构
-
-【本次职责】
-- 分析技术栈 → research/stack.md（模板: specwf template codebase-stack）
-- 分析架构 → research/architecture.md（模板: specwf template codebase-architecture）
-- 分析代码规范 → conventions/codebase-conventions.md（模板: specwf template codebase-conventions）
-- 识别风险 → research/pitfalls.md（模板: specwf template codebase-pitfalls）
-
-【约束条件】
-- 所有产物写入 specwf/ 目录
-- 只读分析，不修改代码
-- 文件路径使用小写
+【项目上下文】从 project.yml 获取项目名称和 profile，扫描代码库目录结构
+【本次职责】分析技术栈 → research/stack.md、架构 → research/architecture.md、代码规范 → conventions/codebase-conventions.md、风险 → research/pitfalls.md
+【约束条件】只读分析，不修改代码，文件路径小写
 ```
 
-#### Agent 2: specwf-spec-bootstrapper
-
-派发 `specwf-spec-bootstrapper` 子代理（完整 system prompt 见 `.omp/agents/specwf-spec-bootstrapper.md`）。
+**Agent 2: specwf-spec-bootstrapper**（完整 system prompt 见 `.omp/agents/specwf-spec-bootstrapper.md`）
 
 提示词内容：
 
@@ -68,55 +65,32 @@ specwf context init
 子代理类型: specwf-spec-bootstrapper
 描述: 规格启动 — 从存量项目代码签名、注释和测试中提取行为契约
 
-【项目上下文】
-- 从 project.yml 获取项目名称和 profile
-- 扫描 src/ 识别核心模块和领域
-
-【本次职责】
-- 从核心模块提取行为契约 → specs/<domain>/spec.md（模板: specwf template spec-bootstrap）
-- 标记每个条目的置信度（high/medium/low）
-- 标注来源文件路径和行号
-
-【约束条件】
-- 提取的内容标注 BOOTSTRAPPED 标记
-- 置信度 low 的条目需标注需人工确认
-- 只读分析，不修改代码
-- 文件路径使用小写
+【项目上下文】从 project.yml 获取项目名称，扫描 src/ 识别核心模块
+【本次职责】提取行为契约 → specs/<domain>/spec.md，标记置信度，标注来源
+【约束条件】标注 BOOTSTRAPPED，低置信度条目需人工确认，只读分析
 ```
 
-## 产出
-
-CLI 生成的基础结构：
-
-| 产出 | 模板参考 | 说明 |
-|------|----------|------|
-| `specwf/` 目录结构 | 无模板（CLI 生成） | 项目骨架：project.yml、changes/、research/、milestones/ |
-| `specwf/project.yml` | `specwf template project.yml` | 项目工作流配置（profile、workflow 开关、review gate） |
-| `specwf/state.md` | `specwf template state` | 多层级状态机文件（project → milestone → phase → change） |
-| `.omp/commands/specwf-*.md` | 无模板（CLI 生成） | 14 个 Slash Command 平台注册文件 |
-| `skills/specwf-*/SKILL.md` | 无模板（CLI 生成） | 各步骤 agent skill 指引 |
-| `.omp/agents/specwf-*.md` | 无模板（CLI 生成） | Agent 角色定义文件 |
-
-brownfield 模式额外产出（由两个 subagent 并行生成）：
-
-| 产出 | 模板参考 | 说明 |
-|------|----------|------|
-| `specwf/research/stack.md` | `specwf template codebase-stack` | 技术栈分析与选型推荐 |
-| `specwf/research/architecture.md` | `specwf template codebase-architecture` | 存量项目架构分析 |
-| `specwf/research/pitfalls.md` | `specwf template codebase-pitfalls` | 已知陷阱与风险记录 |
-| `specwf/conventions/codebase-conventions.md` | `specwf template codebase-conventions` | 存量项目代码规范 |
-| `specwf/specs/<domain>/spec.md` | `specwf template spec-bootstrap` | 领域行为契约（标记 BOOTSTRAPPED） |
-
-## 推进
-
-完成后运行 `specwf continue`，根据输出的"推荐下一步"执行对应操作。
+### 步骤 5：推进
 
 ```bash
 specwf continue
-# → 输出: 推荐下一步: grill
-# → 执行 .omp/commands/specwf-grill.md
 ```
 
-## 参考技能
+进入需求探讨阶段（grill）。
 
-- `skills/specwf-init/SKILL.md` — 项目初始化完整流程指引、目录结构规范、配置项说明
+---
+
+## 产出
+
+| 产出 | 说明 |
+|------|------|
+| specwf/ 目录结构 | 项目骨架 |
+| specwf/project.yml | 工作流配置 |
+| specwf/state.md | 状态机文件 |
+| platform 文件 | commands + agents + skills |
+
+brownfield 额外：research/stack.md、architecture.md、pitfalls.md、conventions/codebase-conventions.md、specs/<domain>/spec.md
+
+## 参考
+
+技能文件：`.omp/skills/specwf-init/SKILL.md`

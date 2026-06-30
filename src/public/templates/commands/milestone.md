@@ -2,15 +2,6 @@
 
 切换或创建 Milestone，设置当前阶段。
 
-| | |
-|---|---|
-| **描述** | 里程碑管理 — 切换/创建 Milestone，设置当前阶段 |
-| **子代理** | 无 |
-| **产出** | state.md — current_milestone 更新 |
-| **上下文** | `specwf state` |
-| **推进** | `specwf continue` |
-| **引用技能** | `skills/specwf-milestone/SKILL.md` |
-
 ## 步骤
 
 ### 步骤 1：检查状态
@@ -19,7 +10,7 @@
 specwf state
 ```
 
-确认当前状态是否可执行本步骤。
+查看当前 milestone 和 phase 信息。
 
 ### 步骤 2：获取上下文
 
@@ -27,37 +18,26 @@ specwf state
 specwf context milestone
 ```
 
-读取输出的文件清单。
+读取输出的文件清单。可参考 `@specwf/roadmap.md` 查看 milestone 列表。
 
-
-
-`specwf state` 显示当前 milestone 和 phase 信息。
-
-可参考 `@specwf/roadmap.md` 查看 milestone 列表。
-
-## 操作
+### 步骤 3：切换里程碑
 
 ```bash
-# 切换到指定 milestone
 specwf state set-milestone <id>
+```
 
-# 切换到指定 phase
+切换到指定 milestone。CLI 自动归档上一里程碑（未 shipped 时）。
+
+### 步骤 4：设置阶段
+
+```bash
 specwf state set-phase <id>
 ```
 
-## 下一步
+切换到指定 phase。
+
+### 步骤 5：推进
 
 ```bash
 specwf continue
 ```
-
-然后根据输出的"推荐下一步"执行对应操作。
-
-```bash
-# 例: 输出 → 下一步: grill
-# 则执行 .omp/commands/specwf-grill.md
-```
-
-## 参考
-
-技能文件：`.omp/skills/specwf-milestone/SKILL.md`

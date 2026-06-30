@@ -20,18 +20,13 @@ specwf context verify
 
 读取输出的文件清单。
 
+### 步骤 3：派发子代理验证
 
-## 子代理
+派发 `specwf-verifier` 子代理（完整 system prompt 见 `.omp/agents/specwf-verifier.md`）。
 
-### 子代理类型
+提示词内容：
 
-`specwf-verifier`（完整 system prompt 见 `.omp/agents/specwf-verifier.md`）
-
-### 子代理提示词结构
-
-派发时，提示词应包括：
-
-```
+```text
 子代理类型: specwf-verifier
 描述: 测试验证 — 运行测试、诊断根因、路由回环
 
@@ -49,40 +44,36 @@ specwf context verify
 - verification.md（模板: specwf template verification）
 ```
 
-### 产出物
+**回环路由**：根据根因分类决定：
+- 计划缺陷 → replan
+- 实现缺陷 → reapply
+- 规格缺陷 → 标记 spec 待修
+- 环境问题 → 记录不路由
 
-| 文件 | 模板 | 用途 |
-|------|------|------|
-| `VERIFICATION.md` | `specwf template artifacts/verification.md` | 测试结果、根因诊断、路由决策 |
-
-派发 specwf-verifier 子代理，负责：
-- 运行测试并收集结果
-- 诊断失败根因
-- 路由回环（replan/reapply）
-
-## 产出
-
-| 文件 | 模板 | 用途 |
-|------|------|------|
-| `changes/<change-name>/VERIFICATION.md` | `specwf template artifacts/verification.md` | 测试结果、根因诊断、路由决策 |
-
-VERIFICATION.md 包含：测试结果汇总（单元测试 + 类型检查 + 集成测试）、delta-spec 需求覆盖检查、决策覆盖检查、目标达成检查、根因诊断（计划缺陷/实现缺陷/规格缺陷/环境问题）、路由建议与回环记录。
-
-## 参考
-
-```bash
-cat skills/verify.md
-```
-
-## 下一步
+### 步骤 4：推进
 
 ```bash
 specwf continue
 ```
 
-然后根据输出的"推荐下一步"执行对应操作。
+passed 则推进到 archive，replan/reapply 则回环到对应阶段。
 
-```bash
-# 例: 输出 → 下一步: grill
-# 则执行 .omp/commands/specwf-grill.md
+---
+
+## 参数
+
 ```
+change <name>
+```
+
+不传时查看 `specwf state` 待处理列表。
+
+## 产出
+
+| 文件 | 模板 |
+|------|------|
+| changes/<change-name>/VERIFICATION.md | specwf template verification |
+
+## 参考
+
+技能文件：`.omp/skills/specwf-verify/SKILL.md`

@@ -1,6 +1,6 @@
 # 项目技术调研
 
-对关键技术方向进行前期调研，降低后续实现阶段的技术不确定性。并行派出多个 specwf-researcher subagent，每个 agent 独立调研一个技术方向（如框架选型、库对比、架构决策点）。调研结果合并输出到 `@specwf/research/` 目录，供 planner 在设计阶段使用。
+对关键技术方向进行前期调研。并行派出多个 specwf-researcher 子代理，每个独立调研一个技术方向。调研结果合并输出到 `@specwf/research/` 目录，供 planner 使用。
 
 ## 步骤
 
@@ -20,17 +20,13 @@ specwf context research
 
 读取输出的文件清单。
 
+### 步骤 3：派发子代理调研
 
-## 子代理
+每个技术方向派发一个 `specwf-researcher` 子代理（完整 system prompt 见 `.omp/agents/specwf-researcher.md`）。
 
-### 子代理类型
-`specwf-researcher`（完整 system prompt 见 `.omp/agents/specwf-researcher.md`）
+提示词内容：
 
-### 子代理提示词结构
-
-每个技术方向派发一个 researcher 子代理。提示词应包括：
-
-```
+```text
 子代理类型: specwf-researcher
 描述: 技术调研 — 对比方案、评估可行性、产出推荐
 
@@ -49,31 +45,25 @@ specwf context research
 - 或 pitfalls.md（模板: specwf template codebase-pitfalls）
 ```
 
-## 产出
-
-| 文件 | 模板参考 | 用途 |
-|------|----------|------|
-| `@specwf/research/stack.md` | `specwf template stack` | 技术栈推荐与对比结果 |
-| `@specwf/research/architecture.md` | `specwf template architecture` | 架构方案调研与选型 |
-| `@specwf/research/pitfalls.md` | `specwf template pitfalls` | 已知陷阱与风险记录 |
-| `@specwf/research/summary.md` | 无模板（自由格式） | 调研总结与下一步建议 |
-
-
-## 推进
+### 步骤 4：推进
 
 ```bash
 specwf continue
 ```
 
-然后根据输出的"推荐下一步"执行对应操作。
+调研完成后自动进入 plan 阶段。
 
-```bash
-# 例: 输出 → 下一步: grill
-# 则执行 .omp/commands/specwf-grill.md
-```
+---
 
-调研完成后自动进入 plan 阶段开始方案设计。如需跳过调研直接使用已知结论，执行 `specwf state set-step plan`。
+## 产出
 
-## 参考技能
+| 文件 | 模板 | 用途 |
+|------|------|------|
+| research/stack.md | specwf template codebase-stack | 技术栈推荐与对比结果 |
+| research/architecture.md | specwf template codebase-architecture | 架构方案调研与选型 |
+| research/pitfalls.md | specwf template codebase-pitfalls | 已知陷阱与风险记录 |
+| research/summary.md | 无模板（自由格式） | 调研总结 |
 
-- `skills/specwf-research/SKILL.md` — specwf-researcher agent 的详细操作指南、输出格式规范
+## 参考
+
+技能文件：`.omp/skills/specwf-research/SKILL.md`

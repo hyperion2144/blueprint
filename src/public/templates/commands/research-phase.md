@@ -1,17 +1,6 @@
 # Phase 调研
 
-对当前 Phase 的实现路径进行调研，回答"要规划好这个阶段需要知道什么"。由 specwf-phase-researcher agent 负责调研，产出 RESEARCH.md 供 planner 使用。
-
-| | |
-|---|---|
-| **描述** | Phase 调研 — 技术选择 + 架构模式 + 实现路径 + 陷阱识别 |
-|**子代理**|派发 specwf-phase-researcher 子代理，调研当前 Phase 的实现路径，产出 research.md|
-| **产出** | `research.md`（阶段调研报告） |
-| **产出模板** | `specwf template phase-research` |
-| **上下文** | `specwf context research-phase` + `specwf state` |
-| **参数** | `[phase <name>]` — 指定 Phase。不传时查看当前 milestone 待处理 phase。 |
-| **推进** | `specwf continue` |
-| **引用技能** | `skills/specwf-research-phase/SKILL.md` |
+对当前 Phase 的实现路径进行调研，回答"要规划好这个阶段需要知道什么"。由 specwf-phase-researcher agent 负责调研。
 
 ## 步骤
 
@@ -29,20 +18,21 @@ specwf state
 specwf context research-phase
 ```
 
-读取输出的文件清单。
+读取输出的文件清单，包括 `context.md`（locked decisions）、`research/`（已有技术选型）、`specs/`（规格约束）。
 
+### 步骤 3：获取模板
 
-## 子代理
-
-### 子代理类型
-
-`specwf-phase-researcher`（完整 system prompt 见 `.omp/agents/specwf-phase-researcher.md`）
-
-### 子代理提示词结构
-
-派发时，提示词应包括：
-
+```bash
+specwf template phase-research > milestones/<ms>/phases/<ph>/research.md
 ```
+
+### 步骤 4：派发子代理调研
+
+派发 `specwf-phase-researcher` 子代理（完整 system prompt 见 `.omp/agents/specwf-phase-researcher.md`）。
+
+提示词内容：
+
+```text
 子代理类型: specwf-phase-researcher
 描述: 阶段调研 — 调研当前 Phase 实现路径，产出 research.md
 
@@ -56,71 +46,36 @@ specwf context research-phase
 - 对 discretion area：调研并推荐最优路径
 - 识别常见陷阱和风险（至少 3 条）
 - 包含代码示例（至少 2 段）
-
-【产出】
-- research.md（模板: specwf template phase-research）
 ```
 
-## 调研流程
+research.md 应包含：摘要、标准技术栈（含备选方案对比）、架构模式（含 ASCII 架构图）、常见陷阱（至少 3 条）、代码示例（至少 2 段）、包审核。
 
-### 1. 获取模板
+每项推荐标注置信度（high / medium / low）。
 
-```bash
-specwf template phase-research > milestones/<ms>/phases/<ph>/research.md
-```
-
-### 2. 阅读输入
-
-- 读取 `context.md`，提取 locked decisions 和 discretion area
-- 阅读项目级 `research/` 了解已有技术选型
-- 读取相关 `specs/` 了解规格约束
-
-### 3. 执行调研
-
-- 按 context.md 决策范围确定调研方向
-- **locked decisions**：只写实现指引，不质疑
-- **discretion area**：调研并推荐最优路径
-- 识别常见陷阱和风险
-
-### 4. 产出 research.md
-
-填写模板 `phase-research`，包含：
-
-| 章节 | 内容 | 要求 |
-|------|------|------|
-| 摘要 | 执行摘要 + 一行主要推荐 | 2-3 段 |
-| 标准技术栈 | 核心库/工具 + 辅助工具 + 备选方案对比 | 每项含版本、用途、推荐理由 |
-| 架构模式 | 推荐架构、模块划分、关键接口 | 含 ASCII 架构图 |
-| 常见陷阱 | 已知问题和缓解方案 | 至少 3 条 |
-| 代码示例 | 关键模式代码片段 | 至少 2 段 |
-| 包审核 | 依赖包审核结果 | 标注 ✅ / ⚠ |
-
-- 每项推荐标注置信度（high / medium / low）
-- 所有产出使用中文
-
-## 验证标准
-
-执行完成后确认：
-
-- [ ] 所有 locked decisions 在调研中遵守（不探索替代方案）
-- [ ] 每个推荐标注置信度（high/medium/low）
-- [ ] 包含代码示例（不少于 2 段）
-- [ ] 常见陷阱列表包含至少 3 条
-- [ ] 产出已写入 `research.md`
-
-## 下一步
+### 步骤 5：推进
 
 ```bash
 specwf continue
 ```
 
-然后根据输出的"推荐下一步"执行对应操作。
+planner 使用 research.md 作为设计输入。
 
-```bash
-# 例: 输出 → 下一步: grill
-# 则执行 .omp/commands/specwf-grill.md
+---
+
+## 参数
+
+```
+[phase <name>]
 ```
 
-`specwf continue` 读取 state.md，状态机推进到 split/plan 阶段，planner 使用 research.md 作为设计输入。
+不传时查看当前 milestone 的待处理 phase。
+
+## 产出
+
+| 文件 | 模板 |
+|------|------|
+| milestones/<ms>/phases/<ph>/research.md | specwf template phase-research |
 
 ## 参考
+
+技能文件：`.omp/skills/specwf-research-phase/SKILL.md`
