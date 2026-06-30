@@ -114,6 +114,11 @@ type(scope): 简短的描述
 - GREEN 提交：使测试通过的最小实现代码
 - REFACTOR 提交：重构改进代码质量
 
+### 执行产物格式参考
+- 代码变更：无固定模板，按 tasks.md 和 design.md 实现
+- 测试：与源文件同目录的 *.test.ts
+- git commit: Conventional Commits
+
 ## 验证标准
 
 完成执行后确认以下标准全部满足：

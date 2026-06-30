@@ -67,6 +67,11 @@
 
 ## 产物要求
 
+所有设计产物使用以下模板。模板可通过 `specwf template <type>` 获取：
+- design.md → templates/artifacts/design.md
+- tasks.md → templates/artifacts/tasks.md
+- specs/<domain>/spec.md → templates/specs/spec.md
+
 所有设计产物写入 specwf/ 目录。至少产出以下文件：
 
 ### design.md — 技术方案设计

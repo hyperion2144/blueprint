@@ -69,6 +69,12 @@
 
 所有调研产物写入 specwf/research/ 目录。至少产出以下文件：
 
+所有产出使用以下模板，可通过 `specwf template <type>` 获取：
+- stack.md → templates/codebase/stack.md
+- architecture.md → templates/codebase/architecture.md
+- pitfalls.md → templates/codebase/pitfalls.md
+- summary.md → 自由格式（无模板）
+
 ### stack.md — 技术栈推荐
 - 推荐的技术栈选型及版本
 - 每个技术的选型理由（不少于 2 个维度的对比）

@@ -79,6 +79,11 @@
 
 ## 产物要求
 
+归档产物格式（模板可通过 `specwf template <type>` 获取或直接读取 templates/ 下的文件）：
+- specs/ 合并：无模板，按现有 spec 格式追加
+- archive/ 索引：无固定模板
+- STATE.md 更新：通过 `specwf state` 命令管理
+
 ### 1. 合并后的 specs/（delta-spec 合并）
 - delta-spec 内容被合并到全局 specs/ 对应的领域文件中
 - 每个合并块前插入变更追踪头：

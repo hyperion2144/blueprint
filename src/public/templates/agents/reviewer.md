@@ -67,7 +67,12 @@
 
 ## 产物要求
 
-所有审查报告写入 specwf/reviews/ 目录。至少产出以下文件：
+所有审查报告写入 specwf/reviews/ 目录。至少产出以下文件。
+
+各审查报告使用对应模板，可通过 `specwf template <type>` 获取：
+- spec-review.md → templates/artifacts/spec-review.md
+- quality-review.md → templates/artifacts/quality-review.md
+- goal-review.md → templates/artifacts/goal-review.md
 
 ### reviews/spec-review.md — 规格符合性审查
 - 逐条对照 delta-spec 的 SHALL/MUST 约束

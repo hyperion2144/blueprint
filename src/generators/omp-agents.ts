@@ -36,7 +36,7 @@ function renderTemplate(template: string, vars: Record<string, string>): string 
  * Agent 定义（6 个）
  * ================================================================ */
 
-/** 6 个 agent 定义（不含 model/thinkingLevel——这些由 profile 映射） */
+/** 8 个 agent 定义（不含 model/thinkingLevel——这些由 profile 映射） */
 export const AGENT_DEFS: AgentDef[] = [
   // ====================================================================
   // specwf-researcher
@@ -97,6 +97,26 @@ export const AGENT_DEFS: AgentDef[] = [
     tools: ['read', 'grep', 'glob', 'write', 'bash', 'edit'],
     spawns: '*',
   },
+
+  // ====================================================================
+  // specwf-codebase-mapper
+  // ====================================================================
+  {
+    role: 'codebase-mapper',
+    description: '代码库映射：分析存量代码产出技术现状报告',
+    tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'],
+    spawns: '*',
+  },
+
+  // ====================================================================
+  // specwf-spec-bootstrapper
+  // ====================================================================
+  {
+    role: 'spec-bootstrapper',
+    description: '规格启动：从代码提取行为契约到 specs/',
+    tools: ['read', 'grep', 'glob', 'lsp', 'write'],
+    spawns: '*',
+  },
 ];
 
 /* ================================================================
@@ -119,6 +139,8 @@ export function resolveThinkingLevel(role: string): string {
     reviewer: 'high',
     verifier: 'medium',
     archiver: 'medium',
+    'codebase-mapper': 'low',
+    'spec-bootstrapper': 'medium',
   };
   return levelMap[role] ?? 'medium';
 }

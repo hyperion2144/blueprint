@@ -89,6 +89,9 @@
 
 验证报告写入 specwf/VERIFICATION.md。
 
+验证报告使用模板，可通过 `specwf template verification` 获取：
+- VERIFICATION.md → templates/artifacts/verification.md
+
 ### VERIFICATION.md 格式
 ```markdown
 # Verification Report — Change <change-id>

@@ -7,15 +7,31 @@ import { mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const TEMPLATES_DIR = join(__dirname, 'templates', 'artifacts');
+const TEMPLATES_DIR = join(__dirname, 'templates');
 
-/** 支持的模板类型 */
-const TEMPLATE_TYPES = [
-  'proposal', 'design', 'tasks',
-  'context', 'research', 'summary',
-  'verification', 'spec-review', 'quality-review', 'goal-review',
-  'project.yml', 'state.md',
-];
+/** 支持的模板类型 => 模板文件相对路径 */
+const TEMPLATE_TYPES: Record<string, string> = {
+  // artifacts（现有）
+  proposal: 'artifacts/proposal.md',
+  design: 'artifacts/design.md',
+  tasks: 'artifacts/tasks.md',
+  context: 'artifacts/context.md',
+  research: 'artifacts/research.md',
+  summary: 'artifacts/summary.md',
+  verification: 'artifacts/verification.md',
+  'spec-review': 'artifacts/spec-review.md',
+  'quality-review': 'artifacts/quality-review.md',
+  'goal-review': 'artifacts/goal-review.md',
+  'project.yml': 'artifacts/project.yml',
+  'state.md': 'artifacts/state.md',
+  // codebase（新增）
+  'codebase-stack': 'codebase/stack.md',
+  'codebase-architecture': 'codebase/architecture.md',
+  'codebase-conventions': 'codebase/conventions.md',
+  'codebase-pitfalls': 'codebase/pitfalls.md',
+  // specs（新增）
+  'spec-bootstrap': 'specs/spec.md',
+};
 
 export function register(program: any): void {
   program
@@ -27,12 +43,13 @@ export function register(program: any): void {
 }
 
 function templateHandler(type: string, options: { name: string; dir?: string }) {
-  if (!TEMPLATE_TYPES.includes(type)) {
-    console.error(`未知模板类型: ${type}。可选: ${TEMPLATE_TYPES.join(', ')}`);
+  const templateFile = TEMPLATE_TYPES[type];
+  if (!templateFile) {
+    console.error(`未知模板类型: ${type}。可选: ${Object.keys(TEMPLATE_TYPES).join(', ')}`);
     process.exit(1);
   }
 
-  const templatePath = join(TEMPLATES_DIR, type.endsWith('.yml') || type.endsWith('.md') ? type : `${type}.md`);
+  const templatePath = join(TEMPLATES_DIR, templateFile);
   if (!existsSync(templatePath)) {
     console.error(`模板文件不存在: ${templatePath}`);
     process.exit(1);
