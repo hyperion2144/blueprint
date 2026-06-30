@@ -12,11 +12,24 @@ const instructions = `## Input
 
 ## Steps
 
-### Step 1: Resolve change name and get context
-Run \\\`specwf context verify\\\` — outputs JSON with state and file manifest. If a change name was provided, use it directly. If not, read the \\\`pending\\\` array, filter by status \\\`reviewing\\\`, ask the user.
+### Step 0: Classify change
+Read \`tasks.md\` and check task types:
+- **Lightweight**: ALL tasks are type: config | docs | refactor | scaffolding — no type:behavior
+- **Full**: any type:behavior tasks
 
-### Step 2: Dispatch verifier sub-agent
-**You are the orchestrator — dispatch, do not verify yourself.** Run \\\`specwf dispatch verifier --change <change-name>\\\` for platform-specific dispatch instructions.
+### Step 1: Resolve change name and get context
+Run \`specwf context verify\` — outputs JSON with state and file manifest. If a change name was provided, use it directly. If not, read the \`pending\` array, filter by status \`reviewing\`, ask the user.
+
+### Step 2: Execute verification
+
+**If LIGHTWEIGHT — verify directly (skip sub-agent):**
+- Run \`npx vitest run\` — must pass
+- Run \`npx tsc --noEmit\` — must pass
+- Get template: \`specwf template verification\`, fill with results
+- Status: passed if both pass, otherwise gaps_found
+
+**If FULL — dispatch verifier sub-agent:**
+Run \`specwf dispatch verifier --change <change-name>\` for platform-specific dispatch instructions.
 
 Construct the sub-agent prompt:
 - Task: verify the change delivers what it promised — goal-backward analysis + UAT
@@ -33,9 +46,9 @@ Construct the sub-agent prompt:
 Run \\\`specwf continue\\\` to proceed to archive (if passed).
 
 ## Guardrails
-- **You are the orchestrator** — dispatch verifier, do not verify yourself
+- **You are the orchestrator** — dispatch for full changes, verify directly for lightweight
 - Verification uses goal-backward analysis
-- TDD commit integrity is a BLOCKER
+- TDD commit integrity is a BLOCKER (full changes only)
 - Test suite must pass completely`;
 
 export function getVerifySkillTemplate(): SkillTemplate {

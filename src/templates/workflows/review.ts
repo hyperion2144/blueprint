@@ -11,11 +11,27 @@ const instructions = `## Input
 
 ## Steps
 
+### Step 0: Classify change
+Read \`tasks.md\` and check task types:
+- **Lightweight**: ALL tasks are type: config | docs | refactor | scaffolding — no type:behavior
+- **Full**: any type:behavior tasks
+
 ### Step 1: Resolve change name and get context
 If a change name was provided: use it directly. If not: run \`specwf state\`, list pending changes with status \`applying\`, ask the user to pick. Then run \`specwf context review\` to get the file manifest. Read all listed files.
 
-### Step 2: Dispatch parallel review sub-agents
-**You are the orchestrator — dispatch, do not review yourself.** Run \`specwf dispatch reviewer --change <change-name>\` for platform-specific dispatch instructions. Dispatch three in parallel, each with a different role: spec-review, quality-review, goal-review.
+### Step 2: Execute review
+
+**If LIGHTWEIGHT — quick checklist (skip sub-agents):**
+- Check: \`npx tsc --noEmit\` passes
+- Check: \`npx vitest run\` passes (if tests exist)
+- Check: change-summary.md is filled (not template)
+- If all pass → write all three review files with PASS verdict and \"Lightweight — no behavioral changes\" note
+  - \`spec-review.md\`: \"No delta-specs — lightweight change\"
+  - \`quality-review.md\`: quick scan for obvious issues, PASS if clean
+  - \`goal-review.md\`: verify proposal must_haves are met
+
+**If FULL — dispatch parallel review sub-agents:**
+Run \`specwf dispatch reviewer --change <change-name>\` for platform-specific dispatch instructions. Dispatch three in parallel, each with a different role: spec-review, quality-review, goal-review.
 
 Construct each sub-agent prompt:
 - Task: review the change according to assigned role
@@ -38,8 +54,8 @@ After all three complete, check each report:
 Run \`specwf continue\` to proceed to verify.
 
 ## Guardrails
-- **You are the orchestrator** — dispatch reviewers, do not review yourself
-- All three reviews run in parallel — no inter-dependencies
+- **You are the orchestrator** — dispatch for full changes, quick-checklist for lightweight
+- Full: All three reviews run in parallel — no inter-dependencies
 - Gate behavior depends on project.yml \`review.gate\` setting
 - Findings classified: BLOCKER (must fix), FLAG (should fix), NOTE (informational)`;
 

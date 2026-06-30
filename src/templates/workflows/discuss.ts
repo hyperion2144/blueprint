@@ -15,7 +15,7 @@ const instructions = `## Input
 Run \`specwf context discuss\` — outputs JSON with state and roadmap path. Read roadmap.md.
 
 ### Step 2: Discuss and record decisions
-Walk through each topic with the user. Record every decision using this format in context.md:
+Get the context template: \`specwf template context\`. Walk through each topic with the user, filling the template. Record every decision using D1/D2 format:
 
 \`\`\`markdown
 ## D1: <decision title>

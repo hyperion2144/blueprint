@@ -69,19 +69,20 @@ function archiveHandler(changePath: string) {
     updateState(specwfDir, (state) => {
       const change = state.changes.find((c) => c.name === changeName);
       if (change) {
-        change.status = 'archived';
+        // Remove from active changes — move to archive/ dir, not lingering in changes list
+        state.changes = state.changes.filter((c) => c.name !== changeName);
       }
       const adhoc = state.adhoc.find((c) => c.name === changeName);
       if (adhoc) {
-        adhoc.status = 'archived';
+        state.adhoc = state.adhoc.filter((c) => c.name !== changeName);
       }
 
       // Reset active_context if it pointed to the archived change
       const currentRef = state.active_context.ref;
       if (currentRef && currentRef.includes(changeName)) {
         // Find next pending change
-        const nextChange = state.changes.find((c) => c.status !== 'archived');
-        const nextAdhoc = state.adhoc.find((c) => c.status !== 'archived');
+        const nextChange = state.changes[0];
+        const nextAdhoc = state.adhoc[0];
         if (nextAdhoc) {
           state.active_context = { type: 'adhoc', ref: `changes/${nextAdhoc.name}`, step: nextAdhoc.status };
         } else if (nextChange) {

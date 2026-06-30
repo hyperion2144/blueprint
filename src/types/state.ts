@@ -10,6 +10,8 @@ export interface ChangeState {
   name: string;
   status: ChangeStatus | 'blocked';
   depends_on: string[];
+  /** 执行模式: lightweight (编排者自实现) | full (派发子代理) */
+  mode?: 'lightweight' | 'full';
 }
 
 /** state.md 的 frontmatter 结构 */

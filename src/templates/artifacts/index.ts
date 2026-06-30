@@ -555,6 +555,155 @@ export const CHANGE_SUMMARY_TEMPLATE = `# Change Summary: {{name}}
 - Lint: {{lint}}
 `;
 
+export const REQUIREMENTS_TEMPLATE = `# Requirements: {{name}}
+
+> Project requirements — populated during the grill phase through structured user interview. Captures functional requirements, non-functional constraints, and success criteria.
+
+---
+
+## Functional Requirements
+
+### FR-1: {{requirement-title}}
+- **Description**: {{what the system should do}}
+- **Priority**: {{critical | high | medium | low}}
+- **Acceptance criteria**: {{how to verify}}
+
+### FR-2: {{requirement-title}}
+- **Description**: {{what the system should do}}
+- **Priority**: {{critical | high | medium | low}}
+- **Acceptance criteria**: {{how to verify}}
+
+---
+
+## Non-Functional Requirements
+
+### NFR-1: {{category (performance, security, usability, etc.)}}
+- **Description**: {{constraint or quality attribute}}
+
+---
+
+## Constraints
+- {{constraint-1}}
+- {{constraint-2}}
+
+---
+
+## Success Criteria
+- [ ] {{criterion-1}}
+- [ ] {{criterion-2}}
+`;
+
+export const ROADMAP_TEMPLATE = `# Roadmap: {{name}}
+
+> Structured roadmap with milestones and phases. Generated during the roadmap planning phase.
+
+---
+
+## Milestones
+
+### {{milestone-id}}: {{milestone-name}}
+- **Goal**: {{what this milestone delivers}}
+- **Dependencies**: {{other milestones or external deps}}
+
+#### Phases
+
+#### Phase 1: {{phase-name}}
+- **Purpose**: {{why this phase exists}}
+- **Scope**: {{what's in / what's out}}
+- **Inputs**: {{specs, conventions, docs needed}}
+- **Outputs**: {{code, specs, docs produced}}
+- **Estimated effort**: {{t-shirt size: S/M/L/XL}}
+
+#### Phase 2: {{phase-name}}
+- **Purpose**: {{why this phase exists}}
+- **Scope**: {{what's in / what's out}}
+- **Inputs**: {{specs, conventions, docs needed}}
+- **Outputs**: {{code, specs, docs produced}}
+- **Estimated effort**: {{t-shirt size: S/M/L/XL}}
+
+---
+
+## Dependency Graph
+\`\`\`text
+{{milestone-dependencies}}
+\`\`\`
+`;
+
+export const RESEARCH_STACK_TEMPLATE = `# Tech Stack Research: {{name}}
+
+> Research output — recommended technology stack with alternatives compared.
+
+---
+
+## Recommendation
+**{{recommended-stack}}** — {{one-line rationale}}
+
+## Comparison
+| Criterion | Option A: {{option-a}} | Option B: {{option-b}} | Recommendation |
+|-----------|----------------------|----------------------|----------------|
+| {{criterion-1}} | {{score}} | {{score}} | {{winner}} |
+| {{criterion-2}} | {{score}} | {{score}} | {{winner}} |
+
+## Final Selection
+| Component | Choice | Version | Rationale |
+|-----------|--------|---------|----------|
+| {{component-1}} | {{choice}} | {{version}} | {{why}} |
+
+## Risks
+- {{risk-1}}: {{mitigation}}
+`;
+
+export const RESEARCH_ARCHITECTURE_TEMPLATE = `# Architecture Research: {{name}}
+
+> Research output — recommended architecture with rationale and alternatives.
+
+---
+
+## Recommendation
+**{{approach-name}}** — {{one-line rationale}}
+
+## Architecture Overview
+\`\`\`text
+{{architecture-diagram}}
+\`\`\`
+
+## Alternatives Evaluated
+| Approach | Strengths | Weaknesses | Verdict |
+|----------|-----------|-----------|---------|
+| {{approach-1}} | {{strengths}} | {{weaknesses}} | {{verdict}} |
+| {{approach-2}} | {{strengths}} | {{weaknesses}} | {{verdict}} |
+
+## Key Decisions
+- {{decision-1}}
+- {{decision-2}}
+
+## Risks & Mitigations
+- {{risk-1}}: {{mitigation}}
+`;
+
+export const RESEARCH_PITFALLS_TEMPLATE = `# Research Pitfalls: {{name}}
+
+> Research output — known risks, anti-patterns to avoid, and mitigation strategies.
+
+---
+
+## Known Risks
+| Risk | Likelihood | Impact | Mitigation |
+|------|-----------|--------|-----------|
+| {{risk-1}} | {{high/medium/low}} | {{high/medium/low}} | {{mitigation}} |
+
+## Anti-Patterns to Avoid
+- **{{anti-pattern-1}}**: {{why it fails and what to do instead}}
+
+## Edge Cases
+- {{edge-case-1}}: {{handling strategy}}
+
+## Dependencies at Risk
+| Dependency | Version | Status | Concern |
+|-----------|---------|--------|---------|
+| {{dep-1}} | {{version}} | {{active/deprecated/unstable}} | {{concern}} |
+`;
+
 export const CODEBASE_STACK_TEMPLATE = `# Tech Stack: {{name}}
 
 > Codebase analysis — technology stack identified from brownfield scan.
@@ -635,6 +784,27 @@ export const CODEBASE_CONVENTIONS_TEMPLATE = `# Conventions: {{name}}
 - **Test framework patterns**: {{test-patterns}}
 `;
 
+export const SPEC_TEMPLATE = `<!-- BOOTSTRAPPED — extracted from {{source-files}} -->
+
+# {{domain-name}}
+
+> Behavioral contract — {{description}}
+
+---
+
+## Requirements
+
+### Requirement: {{req-name-1}}
+The system SHALL {{behavior-1}}.
+
+#### Scenario: {{scenario-name}}
+- **GIVEN** {{given}}
+- **WHEN** {{when}}
+- **THEN** {{then}}
+
+> Confidence: {{confidence}} | Source: {{file}}:{{line}}
+`;
+
 export const CODEBASE_PITFALLS_TEMPLATE = `# Pitfalls: {{name}}
 
 > Codebase analysis — known pitfalls, anti-patterns, and technical debt identified from brownfield scan.
@@ -702,11 +872,21 @@ export const ARTIFACT_TEMPLATES: Record<string, string> = {
   'quality-review': QUALITY_REVIEW_TEMPLATE,
   'goal-review': GOAL_REVIEW_TEMPLATE,
   'change-summary': CHANGE_SUMMARY_TEMPLATE,
+  // Project-level planning
+  'requirements': REQUIREMENTS_TEMPLATE,
+  'roadmap': ROADMAP_TEMPLATE,
+  // Project research (produced by specwf-researcher)
+  'research-stack': RESEARCH_STACK_TEMPLATE,
+  'research-architecture': RESEARCH_ARCHITECTURE_TEMPLATE,
+  'research-pitfalls': RESEARCH_PITFALLS_TEMPLATE,
   // Codebase analysis (brownfield — produced by specwf-codebase-mapper)
   'codebase-stack': CODEBASE_STACK_TEMPLATE,
   'codebase-architecture': CODEBASE_ARCHITECTURE_TEMPLATE,
   'codebase-conventions': CODEBASE_CONVENTIONS_TEMPLATE,
   'codebase-pitfalls': CODEBASE_PITFALLS_TEMPLATE,
+  // Change lifecycle
+  'spec': SPEC_TEMPLATE,
+  'completion': SUMMARY_TEMPLATE,  // archiver completion.md
   // Phase research (produced by specwf-phase-researcher)
   'phase-research': PHASE_RESEARCH_TEMPLATE,
 };

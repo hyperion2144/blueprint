@@ -15,6 +15,7 @@ Run \`specwf context research\` — outputs JSON with state and file manifest. R
 Construct each sub-agent prompt:
 - Task: research <stack | architecture | pitfalls> for this project
 - Read: specwf/requirements.md, specwf/project.yml
+- Templates: \`specwf template research-stack\`, \`specwf template research-architecture\`, \`specwf template research-pitfalls\`
 - Output: research/stack.md | research/architecture.md | research/pitfalls.md
 - The sub-agent's system prompt (.omp/agents/specwf-researcher.md) contains detailed research protocol.
 

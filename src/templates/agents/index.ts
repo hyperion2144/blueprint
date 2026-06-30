@@ -39,6 +39,7 @@ Your core responsibility is to analyze proposals, design technical solutions, cr
 - Document the complete design in design.md using \`specwf template design\`
 
 ### Step 3: Break down into executable tasks
+- Get template: \`specwf template tasks\`
 - Use tracer-bullet vertical slice principle
 - First wave is typically an end-to-end skeleton
 - Annotate each task's type and dependencies
@@ -173,6 +174,10 @@ Verify the change achieves what it promised:
 - Output to specwf/changes/<change-name>/goal-review.md
 
 ## Output Format
+- **spec-review**: Get template \`specwf template spec-review\`, fill with constraint cross-reference results
+- **quality-review**: Get template \`specwf template quality-review\`, fill with bug/convention/AI mistake findings
+- **goal-review**: Get template \`specwf template goal-review\`, fill with goal achievement assessment
+
 Every review report must include:
 - Overall verdict: PASS / FAIL / NEEDS_REVISION
 - Numbered findings with file:line references
@@ -202,6 +207,8 @@ Your core responsibility is to verify that implemented changes meet their goals.
 - TDD commit integrity: RED→GREEN→REFACTOR sequence for type:behavior
 
 ### Step 4: Output verification.md
+- Get template: \`specwf template verification\`
+- Fill with test results, coverage gaps, TDD integrity check
 Status: passed | gaps_found | human_needed
 
 ## Routing
@@ -232,7 +239,8 @@ Your core responsibility is to merge delta-specs into global specs, run code cog
 ### Step 3: Code cognition backfill
 - Update context.md with learned patterns from this change
 
-### Step 4: Move to archive
+### Step 4: Write completion.md and move to archive
+- Get template: \`specwf template completion\`, fill with change summary
 - Move change to specwf/archive/<date>-<name>/
 - Update state.md: mark change as archived
 
@@ -264,6 +272,7 @@ Your core responsibility is to investigate technical directions, compare alterna
 - Produce a recommended approach with rationale
 
 ### Step 3: Output
+- Get templates: \`specwf template research-stack\`, \`specwf template research-architecture\`, \`specwf template research-pitfalls\`
 - stack.md — tech stack recommendations
 - architecture.md — architecture approach
 - pitfalls.md — known risks and mitigations
@@ -295,8 +304,8 @@ Your core responsibility is to investigate implementation paths for a specific p
 - Flag known pitfalls and edge cases
 
 ### Step 3: Output research.md
-- Recommended paths with rationale
-- Known pitfalls and TDD implications`;
+- Get template: \`specwf template phase-research\`
+- Fill with recommended paths, rationale, pitfalls, TDD implications`;
 
 export const CODEBASE_MAPPER_PROMPT = `## Role
 
@@ -325,7 +334,8 @@ Your core responsibility is to analyze existing (brownfield) codebases and produ
 ### Step 4: Identify pitfalls
 - Anti-patterns, technical debt, risky areas
 
-### Step 5: Output
+### Step 5: Output (use artifact templates)
+- Get templates: \`specwf template codebase-stack\`, \`specwf template codebase-architecture\`, \`specwf template codebase-conventions\`, \`specwf template codebase-pitfalls\`
 - codebase/stack.md, codebase/architecture.md
 - conventions/codebase-conventions.md
 - codebase/pitfalls.md`;
@@ -352,7 +362,9 @@ Your core responsibility is to extract behavioral contracts from existing code �
 - Annotate with confidence levels (HIGH/MEDIUM/LOW)
 
 ### Step 3: Output specs/<domain>/spec.md
-- Mark all entries as BOOTSTRAPPED
+- Get template: \`specwf template spec\` (one per domain)
+- Mark all entries as BOOTSTRAPPED with source file:line references
+- Annotate each requirement with confidence: HIGH/MEDIUM/LOW
 - Low-confidence entries flagged for human review`;
 
 /** Registry mapping role → prompt string */

@@ -15,7 +15,7 @@ const instructions = `## Input
 Run \`specwf context roadmap\` — outputs JSON with state, requirements.md, and research/ paths. Read all listed files.
 
 ### Step 2: Define Milestones
-Define milestones by functional area or release cadence. Write to \`specwf/roadmap.md\`:
+Get the roadmap template: \`specwf template roadmap\`. Define milestones by functional area or release cadence. Fill the template and write to \`specwf/roadmap.md\`:
 
 \`\`\`markdown
 # Roadmap

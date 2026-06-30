@@ -15,7 +15,7 @@ const instructions = `## Input
 Run \`specwf context grill\` — outputs JSON with state and requirements.md path. Read requirements.md.
 
 ### Step 2: Explore requirements — one question at a time
-Interview the user relentlessly until shared understanding is reached. Follow these rules:
+Get the requirements template: \`specwf template requirements\`. Interview the user relentlessly until shared understanding is reached. Follow these rules:
 
 1. **One question at a time.** Never batch multiple questions.
 2. **Provide your recommended answer** for each question, then ask if they agree.

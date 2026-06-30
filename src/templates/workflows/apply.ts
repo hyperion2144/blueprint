@@ -11,11 +11,24 @@ const instructions = `## Input
 
 ## Steps
 
+### Step 0: Classify change
+Read \`tasks.md\` and check the task types:
+- **Lightweight**: ALL tasks are type: config | docs | refactor | scaffolding — no type:behavior
+- **Full**: any type:behavior tasks
+
 ### Step 1: Resolve change name and get context
 Run \`specwf context apply\` — outputs JSON with state (including pending changes) and file manifest. If a change name was provided, use it directly. If not, read the \`pending\` array from the JSON, filter by status \`planning\`, and ask the user to pick. Then read all files listed in \`specs\`, \`conventions\`, and \`artifacts\`.
 
-### Step 2: Dispatch executor sub-agent
-**You are the orchestrator — dispatch, do not implement yourself.** Run \`specwf dispatch executor --change <change-name>\` for platform-specific dispatch instructions.
+### Step 2: Execute implementation
+
+**If LIGHTWEIGHT — implement directly (skip sub-agent):**
+- No TDD protocol required — implement changes directly
+- Commit format: \`config|docs|refactor|chore(<scope>): <description>\`
+- Write \`completion.md\` confirming all tasks done
+- Run \`npx vitest run\` and \`npx tsc --noEmit\` to verify
+
+**If FULL — dispatch executor sub-agent:**
+Run \`specwf dispatch executor --change <change-name>\` for platform-specific dispatch instructions.
 
 Construct the sub-agent prompt:
 - Change: <change-name> in specwf/changes/<change-name>/
@@ -46,9 +59,10 @@ Run \`specwf template change-summary --name <change-name> --dir specwf/changes/<
 Run \`specwf continue\` to proceed to review.
 
 ## Guardrails
-- **You are the orchestrator** — dispatch specwf-executor, never implement yourself
-- GREEN phase writes ONLY enough code to pass — save refactoring for REFACTOR
-- Never skip RED — always write the failing test first
+- **You are the orchestrator** — dispatch for full changes, implement directly for lightweight
+- Full: GREEN phase writes ONLY enough code to pass — save refactoring for REFACTOR
+- Full: Never skip RED — always write the failing test first
+- Lightweight: single commit per file type, no TDD ceremony
 - **Summary is mandatory**: advancing without a filled change-summary.md is a process violation`;
 
 export function getApplySkillTemplate(): SkillTemplate {
