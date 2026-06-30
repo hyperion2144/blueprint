@@ -103,6 +103,12 @@ adhoc:
   - name: fix-agent-templates
     status: archived
     depends_on: []
+  - name: fix-change-summary
+    status: archived
+    depends_on: []
+  - name: fix-phase-researcher
+    status: archived
+    depends_on: []
 ---
 
 # specwf — 状态机
