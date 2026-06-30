@@ -75,7 +75,7 @@
 #### Step 4：wave 完成检查
 - 确认 wave 内所有 task 已完成
 - 运行完整测试套件
-- 更新 STATE.md 中的 wave 状态
+- 更新 state.md 中的 wave 状态
 
 ## 偏差规则
 

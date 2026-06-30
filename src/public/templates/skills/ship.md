@@ -2,7 +2,7 @@
 
 ## 概述
 
-将完成的 phase（或其变更集）交付。Ship 分为两级：(1) Ship Phase — 创建 PR + 更新 STATE.md；(2) Ship Milestone — 创建 release tag + 更新 PROJECT.md 版本。
+将完成的 phase（或其变更集）交付。Ship 分为两级：(1) Ship Phase — 创建 PR + 更新 state.md；(2) Ship Milestone — 创建 release tag + 更新 project.md 版本。
 
 Ship Phase 在每个 phase 的 change 循环全部完成后触发。Ship Milestone 在 milestone 的所有 phase 完成后触发。
 
@@ -41,7 +41,7 @@ git push origin ship/ph-<phase-name>
 
 PR 通过后合并到主分支。
 
-**更新 STATE.md**：
+**更新 state.md**：
 \`\`\`markdown
 # 状态
 
@@ -60,7 +60,7 @@ git tag v<major>.<minor>.<patch>
 git push origin v<major>.<minor>.<patch>
 \`\`\`
 
-更新 PROJECT.md（或 README.md）的版本号和 changelog。
+更新 project.md（或 readme.md）的版本号和 changelog。
 
 ### 4. 通知
 
@@ -69,13 +69,13 @@ git push origin v<major>.<minor>.<patch>
 ## 产物
 
 - GitHub PR（ship phase）
-- \`specwf/STATE.md\`（更新，标记 phase 为 shipped）
+- \`specwf/state.md\`（更新，标记 phase 为 shipped）
 - （milestone）git tag + release notes
 
 ## 验证
 
 - [ ] PR 已创建且包含完整信息
-- [ ] STATE.md 已更新
+- [ ] state.md 已更新
 - [ ] CI 通过
 - [ ] （milestone）tag 已创建和推送
 - [ ] 主分支代码与 PR 一致
@@ -85,7 +85,7 @@ git push origin v<major>.<minor>.<patch>
 - 不要跳过 PR 直接合并到主分支 — PR 是审计轨迹的一部分
 - squash merge 要注意 squash 后的 message 包含所有 change 信息
 - 如果发现 CI 失败，不要强行合并 — 修复后重试
-- STATE.md 更新使用 \`shipped\` 枚举值，不是自由文本
+- state.md 更新使用 \`shipped\` 枚举值，不是自由文本
 - Milestone ship 前确认所有 phase 都已 shipped
 
 ## 参考

@@ -58,7 +58,7 @@ M1 — Core Infrastructure
 - 依赖关系合理
 - Phase 之间的依赖不形成循环
 
-### 4. 产出 ROADMAP.md
+### 4. 产出 roadmap.md
 
 \`\`\`markdown
 # <项目> 路线图
@@ -82,7 +82,7 @@ M1 — Core Infrastructure
 
 ## 产物
 
-- \`specwf/ROADMAP.md\` — 完整的路线图文档
+- \`specwf/roadmap.md\` — 完整的路线图文档
 
 ## 验证
 

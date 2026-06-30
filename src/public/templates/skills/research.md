@@ -34,7 +34,7 @@ task agent: specwf-researcher × N
 - **方向**：要调研的技术决策
 - **候选方案**：要对比的选项
 - **评估维度**：功能满足度、性能、社区活跃度、学习曲线、生态集成、许可证
-- **交付要求**：写入 specwf/research/<direction>/STACK.md
+- **交付要求**：写入 specwf/research/<direction>/stack.md
 
 ### 3. 汇总调研结果
 
@@ -50,8 +50,8 @@ task agent: specwf-researcher × N
 
 ## 产物
 
-- \`specwf/research/<direction>/STACK.md\` — 每个方向的方案对比和推荐
-- \`specwf/research/<direction>/PITFALLS.md\` — 已知陷阱和注意事项
+- \`specwf/research/<direction>/stack.md\` — 每个方向的方案对比和推荐
+- \`specwf/research/<direction>/pitfalls.md\` — 已知陷阱和注意事项
 - \`specwf/research/summary.md\` — 汇总决策表
 
 ## 验证
@@ -73,4 +73,4 @@ task agent: specwf-researcher × N
 ## 参考
 
 - GSD Core 的 research phase 路线
-- OpenSpec 的 STACK.md 模板
+- OpenSpec 的 stack.md 模板

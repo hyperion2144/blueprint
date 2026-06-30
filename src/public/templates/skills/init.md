@@ -82,7 +82,7 @@ models: {}
 **任务 A — Codebase Mapping**
 - 分析技术栈和架构
 - 梳理模块结构和依赖关系
-- 产出 specwf/research/STACK.md + ARCHITECTURE.md
+- 产出 specwf/research/stack.md + architecture.md
 
 **任务 B — Spec Bootstrap**
 - 从核心模块的函数签名和注释提取行为契约
@@ -94,14 +94,14 @@ models: {}
 - \`specwf/\` 目录结构完整
 - \`specwf/project.yml\` 配置文件
 - 平台文件已生成（.omp/ + skills/）
-- 存量项目额外产出：STACK.md + ARCHITECTURE.md + 初始 specs/
+- 存量项目额外产出：stack.md + architecture.md + 初始 specs/
 
 ## 验证
 
 - [ ] specwf/ 目录存在且结构完整
 - [ ] project.yml 可被 loadConfig 读取
 - [ ] 平台文件各目录非空
-- [ ] （存量）STACK.md + ARCHITECTURE.md 已生成
+- [ ] （存量）stack.md + architecture.md 已生成
 
 ## 常见陷阱
 

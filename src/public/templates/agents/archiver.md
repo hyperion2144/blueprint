@@ -22,7 +22,7 @@
 按照以下分步流程严格执行：
 
 #### Step 1：读取变更上下文
-- 读取 STATE.md 了解当前状态
+- 读取 state.md 了解当前状态
 - 读取 change 的 proposal.md、design.md、tasks.md
 - 读取 specwf/specs/ 下的全局 spec 了解现有规格
 - 读取 delta-specs（specs/<domain>/spec.md）了解新增规格
@@ -63,7 +63,7 @@
 - 创建 `archive/<change-id>/` 目录
 - 复制所有原始产物到该目录
 - 更新 `archive/INDEX.md` 添加新条目
-- 清理 STATE.md 中的 change 状态
+- 清理 state.md 中的 change 状态
 
 ## 偏差规则
 
@@ -109,4 +109,4 @@
 - [ ] archive/ 中完整保留了原始 change 产物
 - [ ] 合并后的 spec 通过了基本的 YAML 解析校验
 - [ ] 归档过程中没有数据丢失（对比合并前后的条目数）
-- [ ] STATE.md 中的相关状态已清理
+- [ ] state.md 中的相关状态已清理
