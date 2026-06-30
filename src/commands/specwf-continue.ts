@@ -77,7 +77,7 @@ function continueHandler(): void {
 
   // 1. 校验当前步骤退出条件
   const state = loadState(specwfDir);
-  const validation = validateStepAdvance(state.active_context.type, state.active_context.step, cwd);
+  const validation = validateStepAdvance(state.active_context.type, state.active_context.step, state.active_context.ref, cwd);
   if (!validation.valid) {
     console.log('─'.repeat(50));
     console.log('❌ 当前步骤未完成，无法推进：');

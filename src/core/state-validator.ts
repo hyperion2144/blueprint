@@ -50,18 +50,18 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
       { path: 'research/summary.md', description: 'research/summary.md 不存在，请先完成调研' },
     ],
   },
-  // phase/discuss → 必须有 context.md
+  // phase/discuss → 必须先产出 context.md
   {
     type: 'phase', step: 'discuss',
     checks: [
-      { path: 'roadmap.md', description: 'roadmap.md 不存在，请先拆分路线图' },
+      { type: 'file-not-template', path: 'context.md', description: 'context.md 不存在或为模板空壳。请先完成 discuss 步骤。' },
     ],
   },
-  // phase/research → 必须有 research.md
+  // phase/research → 必须有 phase 调研报告
   {
     type: 'phase', step: 'research',
     checks: [
-      { path: 'roadmap.md', description: 'roadmap.md 不存在' },
+      { type: 'file-not-template', path: 'research.md', description: 'research.md 不存在或为模板空壳。请先完成 research-phase 步骤。' },
     ],
   },
   // adhoc/proposal → proposal.md 不能是模板
@@ -103,8 +103,8 @@ function findChangeDir(specwfDir: string): string[] {
   }
 }
 
-function checkExitCondition(specwfDir: string, check: ExitCheck): string | null {
-  const fullPath = join(specwfDir, check.path);
+function checkExitCondition(specwfDir: string, check: ExitCheck, resolvedPath?: string): string | null {
+  const fullPath = resolvedPath ?? join(specwfDir, check.path);
 
   // 目录检查：在目录下找对应文件
   if (check.path.endsWith('/') || check.description.includes('的 ')) {
@@ -138,11 +138,13 @@ function checkExitCondition(specwfDir: string, check: ExitCheck): string | null 
  * 校验当前步骤的退出条件是否满足
  * @param contextType active_context.type
  * @param contextStep active_context.step
+ * @param ref active_context.ref（用于解析 phase/change 路径）
  * @param cwd 项目根目录
  */
 export function validateStepAdvance(
   contextType: string,
   contextStep: string,
+  ref: string | null,
   cwd: string,
 ): ValidationResult {
   const specwfDir = join(cwd, 'specwf');
@@ -157,7 +159,11 @@ export function validateStepAdvance(
 
   const errors: string[] = [];
   for (const check of criteria.checks) {
-    const error = checkExitCondition(specwfDir, check);
+    // 对于含有 ref 的路径（如 milestones/xxx/phases/xxx/），拼接 ref 前缀
+    const resolvedPath = ref && !check.path.startsWith('changes/') && existsSync(join(specwfDir, ref, check.path))
+      ? join(specwfDir, ref, check.path)
+      : join(specwfDir, check.path);
+    const error = checkExitCondition(specwfDir, check, resolvedPath);
     if (error) {
       errors.push(error);
     }

@@ -133,7 +133,7 @@ function setStep(step: string) {
   }
 
   // 校验当前步骤的退出条件
-  const result = validateStepAdvance(ctx.type, ctx.step, process.cwd());
+  const result = validateStepAdvance(ctx.type, ctx.step, ctx.ref, process.cwd());
   if (!result.valid) {
     console.log('─'.repeat(50));
     console.log('❌ 前置条件未满足，无法推进:');
