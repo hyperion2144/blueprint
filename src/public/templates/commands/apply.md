@@ -46,7 +46,8 @@
 | **执行 agent** | 派发 specwf-executor 子代理：<br>- 按 tasks.md wave 顺序实现代码<br>- type:behavior 任务走 RED→GREEN→REFACTOR<br>- 所有 wave 完成后写 change-summary |
 | **产出** | 代码变更 + 测试 + summary.md |
 | **产出模板** | `specwf template change-summary` |
-| **上下文** | `specwf context apply` + `specwf state` |
+| **上下文** |
+| **参数** | `change <name>` — 指定要实现的 Change。不传时查看 `specwf state` 待处理列表。 | `specwf context apply` + `specwf state` |
 | **推进** | `specwf continue` |
 | **引用技能** | `skills/specwf-apply/SKILL.md` |
 
@@ -165,8 +166,3 @@ specwf continue
 ```
 
 然后根据输出的"推荐下一步"执行对应操作。
-
-```bash
-# 例: 输出 → 下一步: grill
-# 则执行 .omp/commands/specwf-grill.md
-```

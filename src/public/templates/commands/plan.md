@@ -47,6 +47,7 @@
 | **产出** | design.md（技术方案）、tasks.md（任务清单）、specs/&lt;domain&gt;/spec.md（delta-specs） |
 | **产出模板** | `specwf template artifacts/design.md` · `specwf template artifacts/tasks.md` · `specwf template specs/spec.md` |
 | **上下文** | `specwf context plan` + `specwf state` |
+| **参数** | `change <name>` — 指定要设计的 Change。不传时查看 `specwf state` 待处理列表。 |
 | **推进** | `specwf continue` |
 | **引用技能** | `skills/specwf-plan/SKILL.md` |
 

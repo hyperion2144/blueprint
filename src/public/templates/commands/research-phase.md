@@ -8,7 +8,8 @@
 |**子代理**|派发 specwf-phase-researcher 子代理，调研当前 Phase 的实现路径，产出 research.md|
 | **产出** | `research.md`（阶段调研报告） |
 | **产出模板** | `specwf template phase-research` |
-| **上下文** | `specwf context research-phase` + `specwf state` |
+| **上下文** |
+| **参数** | `[phase <name>]` — 指定 Phase。不传时查看当前 milestone 待处理 phase。 | `specwf context research-phase` + `specwf state` |
 | **推进** | `specwf continue` |
 || **引用技能** | `skills/specwf-research-phase/SKILL.md` |
 
@@ -118,5 +119,3 @@ specwf continue
 `specwf continue` 读取 state.md，状态机推进到 split/plan 阶段，planner 使用 research.md 作为设计输入。
 
 ## 参考
-
-技能文件：`.omp/skills/specwf-research-phase/SKILL.md`

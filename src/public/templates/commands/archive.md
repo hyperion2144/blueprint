@@ -96,3 +96,7 @@ specwf continue
 ## 参考技能
 
 - `skills/specwf-archive/SKILL.md` — specwf-archiver agent 的详细操作指南、合并规则、验证标准和常见陷阱
+
+## 参数
+
+`specwf archive <change-path>` — `<change-path>` 指向 `changes/<change-name>/` 目录。

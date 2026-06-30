@@ -95,5 +95,3 @@ specwf continue
 审查通过后自动进入 verify 阶段执行测试验证。
 
 ## 参考技能
-
-- `skills/specwf-review/SKILL.md` — specwf-reviewer agent 的详细操作指引、审查清单、输出格式规范

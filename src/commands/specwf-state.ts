@@ -55,6 +55,28 @@ function showState() {
   if (active_context.ref) {
     console.log(`引用: ${active_context.ref}`);
   }
+
+  // 待处理列表
+  const pendingChanges = state.changes.filter((c) => c.status !== 'archived');
+  const pendingAdhoc = state.adhoc.filter((c) => c.status !== 'archived');
+  const hasPending = pendingChanges.length > 0 || pendingAdhoc.length > 0;
+  if (hasPending) {
+    console.log('');
+    console.log('待处理:');
+    if (pendingChanges.length > 0) {
+      console.log(`  Change (${pendingChanges.length}):`);
+      for (const c of pendingChanges) {
+        console.log(`    - ${c.name} [${c.status}]`);
+      }
+    }
+    if (pendingAdhoc.length > 0) {
+      console.log(`  临时 Change (${pendingAdhoc.length}):`);
+      for (const c of pendingAdhoc) {
+        console.log(`    - ${c.name} [${c.status}]`);
+      }
+    }
+  }
+
   console.log('─'.repeat(50));
 }
 
