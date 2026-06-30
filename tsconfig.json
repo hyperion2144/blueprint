@@ -17,5 +17,5 @@
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "tests", "specwf"]
+  "exclude": ["node_modules", "dist", "tests", "specwf", "src/integrations/**/hook.ts"]
 }

@@ -5,9 +5,9 @@ project:
   current_milestone: m2-claude-code
   current_phase: null
 active_context:
-  type: milestone
-  ref: milestones/m2-claude-code
-  step: requirements-defined
+  type: adhoc
+  ref: changes/refactor-templates-i18n
+  step: verifying
 changes:
   - name: scaffold-project
     status: archived
@@ -123,6 +123,24 @@ adhoc:
     depends_on: []
   - name: fix-command-params
     status: archived
+    depends_on: []
+  - name: refactor-templates-i18n
+    status: archived
+    depends_on: []
+  - name: polish-cli-integration
+    status: proposal
+    depends_on: []
+  - name: add-fast-path
+    status: proposal
+    depends_on: []
+  - name: test-fast-path
+    status: planning
+    depends_on: []
+  - name: demo-fast
+    status: planning
+    depends_on: []
+  - name: demo-full
+    status: proposal
     depends_on: []
 ---
 

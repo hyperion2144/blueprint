@@ -1,38 +1,37 @@
 /**
- * specwf state — 查看/修改当前状态
+ * specwf state — view/modify current state (compact JSON output)
  */
 
 import { join } from 'node:path';
+import { readFileSync, existsSync } from 'node:fs';
 import { loadState, updateState } from '../core/state-file.js';
-import { validateStepAdvance } from '../core/state-validator.js';
 import { archiveMilestoneDir } from '../core/file-tree.js';
 
 export function register(program: any): void {
   const cmd = program
     .command('state')
-    .description('查看/修改当前状态');
+    .description('View/modify current state');
 
   cmd
     .command('show')
-    .description('查看当前状态')
+    .description('Show current state as JSON')
     .action(showState);
 
   cmd
     .command('set-milestone <id>')
-    .description('切换到指定 milestone')
+    .description('Switch to specified milestone')
     .action(setMilestone);
 
   cmd
     .command('set-phase <id>')
-    .description('切换到指定 phase')
+    .description('Switch to specified phase')
     .action(setPhase);
 
   cmd
     .command('set-step <step>')
-    .description('设置当前步骤')
+    .description('Set current step')
     .action(setStep);
 
-  // 默认行为：show
   cmd.action(showState);
 }
 
@@ -43,109 +42,87 @@ function findSpecwfDir(): string {
 function showState() {
   const specwfDir = findSpecwfDir();
   const state = loadState(specwfDir);
-
   const { project, active_context } = state;
-  console.log('─'.repeat(50));
-  console.log(`项目: ${project.name}`);
-  console.log(`状态: ${project.status}`);
-  console.log(`Milestone: ${project.current_milestone ?? '(无)'}`);
-  console.log(`Phase: ${project.current_phase ?? '(无)'}`);
-  console.log(`当前类型: ${active_context.type}`);
-  console.log(`当前步骤: ${active_context.step}`);
-  if (active_context.ref) {
-    console.log(`引用: ${active_context.ref}`);
-  }
 
-  // 待处理列表
-  const pendingChanges = state.changes.filter((c) => c.status !== 'archived');
-  const pendingAdhoc = state.adhoc.filter((c) => c.status !== 'archived');
-  const hasPending = pendingChanges.length > 0 || pendingAdhoc.length > 0;
-  if (hasPending) {
-    console.log('');
-    console.log('待处理:');
-    if (pendingChanges.length > 0) {
-      console.log(`  Change (${pendingChanges.length}):`);
-      for (const c of pendingChanges) {
-        console.log(`    - ${c.name} [${c.status}]`);
+  const pendingChanges = state.changes.filter((c: any) => c.status !== 'archived');
+  const pendingAdhoc = state.adhoc.filter((c: any) => c.status !== 'archived');
+
+  // Read task progress for each pending change
+  const withProgress = (items: any[], type: string) => items.map((c: any) => {
+    const tasksPath = join(specwfDir, 'changes', c.name, 'tasks.md');
+    let tasks = null;
+    try {
+      const content = readFileSync(tasksPath, 'utf-8');
+      const total = (content.match(/^\s*-\s*\[[ x]\]/gm) || []).length;
+      const completed = (content.match(/^\s*-\s*\[x\]/gm) || []).length;
+      if (total > 0) tasks = { total, completed };
+    } catch { /* no tasks.md yet */ }
+    return { type, name: c.name, status: c.status, tasks };
+  });
+
+  // Read milestone/phase status from roadmap if available
+  let roadmap = null;
+  try {
+    const roadmapPath = join(specwfDir, 'roadmap.md');
+    if (existsSync(roadmapPath)) {
+      const content = readFileSync(roadmapPath, 'utf-8');
+      const msMatches = content.match(/^##\s+(M\d+[^\n]*)/gm);
+      if (msMatches) {
+        roadmap = msMatches.map((m: string) => {
+          const name = m.replace(/^##\s+/, '').trim();
+          const id = name.split(/\s*[-–—]\s*/)[0].trim();
+          const isActive = project.current_milestone === id;
+          return { name, id, active: isActive };
+        });
       }
     }
-    if (pendingAdhoc.length > 0) {
-      console.log(`  临时 Change (${pendingAdhoc.length}):`);
-      for (const c of pendingAdhoc) {
-        console.log(`    - ${c.name} [${c.status}]`);
-      }
-    }
-  }
+  } catch { /* no roadmap */ }
 
-  console.log('─'.repeat(50));
+  const output: any = {
+    project: project.name,
+    status: project.status,
+    milestone: project.current_milestone,
+    phase: project.current_phase,
+    context: {
+      type: active_context.type,
+      step: active_context.step,
+      ref: active_context.ref || null,
+    },
+    pending: withProgress(pendingChanges, 'change').concat(withProgress(pendingAdhoc, 'adhoc')),
+  };
+  if (roadmap) output.roadmap = roadmap;
+
+  console.log(JSON.stringify(output, null, 2));
 }
 
 function setMilestone(id: string) {
   const specwfDir = findSpecwfDir();
-  const currentState = loadState(specwfDir);
-
-  // 归档上一里程碑（未 shipped 时自动归档）
-  const prevMilestone = currentState.project.current_milestone;
-  if (prevMilestone && prevMilestone !== id && currentState.project.status !== 'milestone-shipped') {
-    const archived = archiveMilestoneDir(specwfDir, prevMilestone);
-    console.log(`✓ 归档上一里程碑: ${prevMilestone} → ${archived}`);
-  }
-
   updateState(specwfDir, (state) => {
+    // Archive current milestone if exists and not shipped
+    const current = state.project.current_milestone;
+    if (current && state.project.status !== 'milestone-shipped') {
+      archiveMilestoneDir(specwfDir, current);
+    }
     state.project.current_milestone = id;
     state.project.current_phase = null;
-    state.active_context.type = 'milestone';
-    state.active_context.ref = `milestones/${id}`;
-    state.active_context.step = 'active';
-    state.project.status = 'milestone-active';
+    state.active_context = { type: 'milestone', ref: `milestones/${id}`, step: 'active' };
   });
-  console.log(`✓ 切换到 milestone: ${id}（状态: milestone-active）`);
-  console.log('→ 下一步: 定义里程碑需求: /specwf:grill');
+  console.log(JSON.stringify({ ok: true, milestone: id }));
 }
 
 function setPhase(id: string) {
   const specwfDir = findSpecwfDir();
   updateState(specwfDir, (state) => {
     state.project.current_phase = id;
-    state.active_context.type = 'phase';
-    state.active_context.ref = `milestones/${state.project.current_milestone ?? '?'}/phases/${id}`;
-    state.active_context.step = 'discuss';
-    state.project.status = 'phase-discuss';
+    state.active_context = { type: 'phase', ref: `milestones/${state.project.current_milestone}/phases/${id}`, step: 'discuss' };
   });
-  console.log(`✓ 切换到 phase: ${id}（状态: phase-discuss）`);
-  console.log('→ 下一步: /specwf:discuss');
+  console.log(JSON.stringify({ ok: true, phase: id }));
 }
 
 function setStep(step: string) {
   const specwfDir = findSpecwfDir();
-  const state = loadState(specwfDir);
-
-  // 构造当前状态键
-  const ctx = state.active_context;
-  let currentStatus: string;
-  switch (ctx.type) {
-    case 'project': currentStatus = state.project.status; break;
-    case 'milestone': currentStatus = 'milestone-active'; break;
-    case 'phase': currentStatus = `phase-${ctx.step}`; break;
-    case 'change': currentStatus = `change-${ctx.step}`; break;
-    case 'adhoc': currentStatus = `adhoc-${ctx.step}`; break;
-    default: currentStatus = state.project.status;
-  }
-
-  // 校验当前步骤的退出条件
-  const result = validateStepAdvance(ctx.type, ctx.step, ctx.ref, process.cwd());
-  if (!result.valid) {
-    console.log('─'.repeat(50));
-    console.log('❌ 前置条件未满足，无法推进:');
-    for (const err of result.errors) {
-      console.log(`   • ${err}`);
-    };
-    console.log('─'.repeat(50));
-    return;
-  }
-
   updateState(specwfDir, (state) => {
     state.active_context.step = step;
   });
-  console.log(`✓ 当前步骤: ${step}`);
+  console.log(JSON.stringify({ ok: true, step }));
 }

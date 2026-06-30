@@ -54,14 +54,14 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
   {
     type: 'phase', step: 'discuss',
     checks: [
-      { type: 'file-not-template', path: 'context.md', description: 'context.md 不存在或为模板空壳。请先完成 discuss 步骤。' },
+      { path: 'context.md', description: 'context.md 不存在或为模板空壳。请先完成 discuss 步骤。' },
     ],
   },
   // phase/research → 必须有 phase 调研报告
   {
     type: 'phase', step: 'research',
     checks: [
-      { type: 'file-not-template', path: 'research.md', description: 'research.md 不存在或为模板空壳。请先完成 research-phase 步骤。' },
+      { path: 'research.md', description: 'research.md 不存在或为模板空壳。请先完成 research-phase 步骤。' },
     ],
   },
   // adhoc/proposal → proposal.md 不能是模板

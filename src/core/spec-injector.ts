@@ -11,6 +11,8 @@ import type { StateFile } from '../types/index.js';
 export interface FileRef {
   path: string;
   description?: string;
+  /** File content — included for specs and conventions to save agent read calls */
+  content?: string;
   ranges?: { start: number; end: number; description?: string }[];
 }
 
@@ -55,23 +57,46 @@ export function generateContext(specwfDir: string, step: string): ContextResult 
   };
 
   // conventions 总是注入
-  result.conventions = getAllConventions(specwfDir);
+  result.conventions = getAllConventions(specwfDir).map(withContent(specwfDir));
 
   // requirements.md 总是注入
   if (existsSync(join(specwfDir, 'requirements.md'))) {
-    result.requirements.push({ path: 'requirements.md', description: '需求规格' });
+    const reqPath = join(specwfDir, 'requirements.md');
+    result.requirements.push({
+      path: 'requirements.md',
+      description: 'Requirements specification',
+      content: readContent(reqPath),
+    });
   }
 
   if (isProjectStep(step)) {
-    result.specs = getAllSpecs(specwfDir);
+    result.specs = getAllSpecs(specwfDir).map(withContent(specwfDir));
   } else if (isPhaseStep(step)) {
-    result.specs = getRelatedSpecs(specwfDir, state);
+    result.specs = getRelatedSpecs(specwfDir, state).map(withContent(specwfDir));
   } else if (isChangeStep(step)) {
-    result.specs = getRelatedSpecs(specwfDir, state);
-    result.changeArtifacts = getChangeArtifacts(specwfDir, state);
+    result.specs = getRelatedSpecs(specwfDir, state).map(withContent(specwfDir));
+    result.changeArtifacts = getChangeArtifacts(specwfDir, state).map(withContent(specwfDir));
   }
 
   return result;
+}
+
+/** Read file content, capped at 8KB to avoid context bloat */
+function readContent(absPath: string): string | undefined {
+  try {
+    const content = readFileSync(absPath, 'utf-8');
+    return content.length > 8192 ? content.slice(0, 8192) + '\n... [truncated]' : content;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Create a withContent mapper bound to specwfDir */
+function withContent(specwfDir: string): (ref: FileRef) => FileRef {
+  return (ref: FileRef) => ({
+    ...ref,
+    content: readContent(join(specwfDir, ref.path)),
+  });
 }
 
 /** 获取所有 specs */

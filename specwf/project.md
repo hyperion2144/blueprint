@@ -1,53 +1,106 @@
-# specwf — 规格驱动开发工作流
+# specwf — Spec-Driven Development Workflow
 
-## 是什么
+## What
 
-specwf 是一个独立 TypeScript CLI 包，为 AI 编码 agent 提供规格驱动的开发工作流。它融合三个项目的核心能力：
+specwf is an independent TypeScript CLI package that provides a spec-driven development workflow for AI coding agents. It combines core capabilities from three projects:
 
-- **OpenSpec**（MIT）— CLI 架构、change 结构、delta-spec 合并机制
-- **GSD Core**（MIT）— milestone/phase 层级、fresh-context 子代理并行执行
-- **Trellis**（AGPL-3.0，仅参考概念）— spec 自动注入、代码认知回灌
+- **OpenSpec** (MIT) — CLI architecture, change structure, delta-spec merge mechanism
+- **GSD Core** (MIT) — milestone/phase hierarchy, fresh-context sub-agent parallel execution
+- **Trellis** (AGPL-3.0, concept reference only) — spec auto-injection, code cognition backfill
 
-## 为什么
+## Why
 
-AI 编码 agent 强大但不可预测——需求只存在于聊天历史中。specwf 在写代码前对齐规格，在 fresh-context 子代理中执行重活，通过结构化产物让状态跨会话持久化。
+AI coding agents are powerful but unpredictable — requirements exist only in chat history. specwf aligns on specs before writing code, executes heavy work in fresh-context sub-agents, and persists state across sessions through structured artifacts.
 
-## 核心理念
+## Core Principles
 
-1. **双循环嵌套** — Phase 循环（discuss→research→split→change循环→ship）⊃ Change 循环（plan→apply→review→verify→archive）
-2. **CLI 为唯一事实源** — 所有交互通过 CLI，agent 只做编排
-3. **fresh-context 子代理** — 重活（research/apply/review）在 fresh context 中执行，防止 context rot
-4. **spec 双重回灌** — delta-spec 前瞻合并 + 代码认知回顾提取
-5. **TDD 强制** — type:behavior 走 RED→GREEN→REFACTOR
+1. **Dual nested loops** — Phase loop (discuss→research→split→change loop→ship) ⊃ Change loop (plan→apply→review→verify→archive)
+2. **CLI as single source of truth** — all interaction through CLI; agents orchestrate sub-agents, never implement directly
+3. **Fresh-context sub-agents** — heavy work (research/plan/apply/review/verify/archive) runs in fresh context via sub-agents
+4. **Dual spec backfill** — delta-spec forward merge + code cognition backward extraction
+5. **TDD enforced** — type:behavior tasks follow RED→GREEN→REFACTOR
+6. **Single source templates** — commands and skills generated from the same TypeScript modules; all content in English
 
-## 实体层级
+## Entity Hierarchy
 
 ```
-Project → Milestone（恒存，默认 v1）→ Phase → Change
+Project → Milestone (persistent, defaults to v1) → Phase → Change
+                                                      └── Adhoc Change (independent)
 ```
 
-- **Milestone** = 版本周期（可发布增量）
-- **Phase** = 工作单元（走 discuss/research/split/ship）
-- **Change** = 变更单元（走 plan/apply/review/verify/archive）
+- **Milestone** = release cycle (shippable increment, e.g. v0.1.0)
+- **Phase** = work unit (3-8 phases per milestone, goes through discuss/research/split/ship)
+- **Change** = change unit (goes through plan/apply/review/verify/archive)
+- **Adhoc Change** = independent change outside milestone/phase (same change cycle, created via `specwf change new`)
 
-## 技术栈
+## State Machine
 
-- 语言: TypeScript
-- 运行时: Node.js ≥ 20
-- 测试: Vitest
-- 目标平台: OMP（优先）、Claude Code（后续）
+### Project-level
+```
+initialized → requirements-defined → researched → roadmap-defined
+    → milestone-active → milestone-shipped
+```
 
-## 版本
+### Phase-level
+```
+discuss → research-phase → split → [change cycle] → ship
+```
 
-- **当前版本**: v0.2.1（状态校验与输出增强）
-- **下一个**: m2-claude-code — Claude Code 平台支持
+### Change-level
+```
+proposal → planning → applying → reviewing → verifying → archived
+                ↑← replan  ←  ←  ←  ←
+                ↑← reapply ←  ←  ←
+```
 
-## 状态
+### Advancement
 
-- [x] grill — 需求探讨完成（21 项决策确认）
-- [x] research — 技术调研完成
-- [x] roadmap — 路线图拆分完成
-- [x] Phase 1 — 实现核心 CLI（m1-core v0.1.0 已发布）
-- [x] v1 修复 — 审计发现的全部问题已修复（v0.2.0 已发布）
+| Scope | Command |
+|-------|---------|
+| Project/Phase | `specwf continue` |
+| Change | `specwf continue change <name>` |
 
-详见 [state.md](state.md)。
+The continue command validates exit conditions, advances state, and outputs the next step's full instructions inline — agents execute without reading separate files.
+
+## Template Architecture
+
+Commands and skills share a single TypeScript source per workflow step:
+
+```
+src/templates/
+├── types.ts                    — SkillTemplate, CommandTemplate, ArtifactTemplate, AgentPromptTemplate
+├── workflows/
+│   ├── registry.ts             — 16-step WORKFLOW_REGISTRY with direct imports
+│   ├── init.ts … continue.ts   — one module per step, exports getXxxSkillTemplate() and getXxxCommandTemplate()
+├── artifacts/index.ts          — 11 output document templates (proposal, design, tasks, etc.)
+└── agents/index.ts             — 9 agent system prompts (planner, executor, reviewer, etc.)
+```
+
+Each workflow module's `instructions` string follows `## Input → ## Steps → ## Output → ## Guardrails` format. Templates with sub-agents include the full sub-agent prompt template and an orchestrator guardrail.
+
+Run `specwf update` to regenerate all `.omp/` output files from the TypeScript source. `specwf template <type>` reads from the in-memory `ARTIFACT_TEMPLATES` registry — no disk reads.
+
+## Tech Stack
+
+- Language: TypeScript
+- Runtime: Node.js ≥ 20
+- Test: Vitest
+- Build: tsup (ESM output)
+- Target platforms: OMP (primary), Claude Code (planned)
+
+## Version
+
+- **Current**: v0.2.2 (English templates, inline continue, sub-agent dispatch, parameter declarations)
+- **Next**: m2-claude-code — Claude Code platform support
+
+## Status
+
+- [x] grill — requirements exploration complete (21 design decisions confirmed)
+- [x] research — technical research complete
+- [x] roadmap — roadmap defined (m1-core × 6 phases)
+- [x] m1-core shipped — v0.1.0 released (CLI core: init, update, state, continue, template, archive, list)
+- [x] v0.2.x fixes — 17 adhoc changes resolved (state tracking, templates, generators, sub-agents)
+- [x] v0.2.2 — template architecture refactored: English content, TS source, inline continue, sub-agent clarity
+- [ ] m2-claude-code — Claude Code platform support
+
+See [state.md](state.md) for detailed history and [roadmap.md](roadmap.md) for future plans.

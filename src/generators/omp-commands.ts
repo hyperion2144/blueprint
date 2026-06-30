@@ -1,15 +1,13 @@
 /**
- * OMP 命令生成器
- * 生成 .omp/commands/specwf-<step>.md 文件（14 个 slash command）
+ * OMP command generator
+ * Generates .omp/commands/specwf-<step>.md files (16 slash commands).
  *
- * 模板文件存储在 src/templates/commands/<step>.md，支持 {{step}}/{{description}} 占位符。
- * 对于未覆盖的步骤（fallback），使用模板变量渲染通用 body。
+ * Templates are imported from TypeScript modules in src/templates/workflows/
+ * instead of reading markdown files — following OpenSpec's pattern.
  */
 
-import { readFileSync } from 'node:fs';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import type { ProjectConfig } from '../types/index.js';
+import { WORKFLOW_REGISTRY, type WorkflowStep } from '../templates/workflows/registry.js';
 
 export interface CommandDef {
   step: string;
@@ -17,43 +15,32 @@ export interface CommandDef {
   description: string;
   usesAgent: boolean;
   agents: string[];
-  bodyOverride?: string;
 }
 
-/** 14 个步骤定义 */
+/** 16 step definitions */
 export const STEP_DEFS: CommandDef[] = [
-  { step: 'init', name: 'specwf:init', description: '初始化 specwf 项目结构', usesAgent: true, agents: ['researcher'] },
-  { step: 'grill', name: 'specwf:grill', description: '需求探讨 — 无限制细节提问直到达成共识', usesAgent: false, agents: [] },
-  { step: 'research', name: 'specwf:research', description: '项目技术调研 — 并行多方向调研', usesAgent: true, agents: ['researcher'] },
-  { step: 'roadmap', name: 'specwf:roadmap', description: '路线图 — 拆分 Milestone × Phase', usesAgent: false, agents: [] },
-  { step: 'milestone', name: 'specwf:milestone', description: '里程碑管理 — 切换/创建 Milestone', usesAgent: false, agents: [] },
-  { step: 'discuss', name: 'specwf:discuss', description: 'Phase 讨论 — 捕获实现决策', usesAgent: false, agents: [] },
-  { step: 'research-phase', name: 'specwf:research-phase', description: 'Phase 调研 — 实现路径研究', usesAgent: true, agents: ['researcher'] },
-  { step: 'split', name: 'specwf:split', description: 'Change 拆分 — 依赖图 + N 个 Change', usesAgent: false, agents: [] },
-  { step: 'adhoc', name: 'specwf:adhoc', description: '临时 Change — 与 milestone/phase 无关的独立变更', usesAgent: false, agents: [] },
-  { step: 'plan', name: 'specwf:plan', description: 'Change 设计 — design+tasks+delta-specs', usesAgent: true, agents: ['planner'] },
-  { step: 'apply', name: 'specwf:apply', description: '代码实现 — TDD RED→GREEN→REFACTOR', usesAgent: true, agents: ['executor'] },
-  { step: 'review', name: 'specwf:review', description: '三重审查 — 规格/质量/目标并行', usesAgent: true, agents: ['reviewer'] },
-  { step: 'verify', name: 'specwf:verify', description: '测试验证 — 诊断+路由回环', usesAgent: true, agents: ['verifier'] },
-  { step: 'archive', name: 'specwf:archive', description: '归档 — delta 合并 + 代码认知回灌', usesAgent: false, agents: [] },
-  { step: 'ship', name: 'specwf:ship', description: '交付 — PR + STATE 更新 / release tag', usesAgent: false, agents: [] },
-  { step: 'continue', name: 'specwf:continue', description: '自动推进 — 读 STATE 确定下一步', usesAgent: false, agents: [] },
+  { step: 'init', name: 'specwf:init', description: 'Initialize specwf project structure and generate platform files', usesAgent: true, agents: ['researcher'] },
+  { step: 'grill', name: 'specwf:grill', description: 'Requirements exploration — detailed questioning until shared understanding', usesAgent: false, agents: [] },
+  { step: 'research', name: 'specwf:research', description: 'Project-level technical research — parallel multi-direction investigation', usesAgent: true, agents: ['researcher'] },
+  { step: 'roadmap', name: 'specwf:roadmap', description: 'Roadmap definition — split project into Milestones × Phases', usesAgent: false, agents: [] },
+  { step: 'milestone', name: 'specwf:milestone', description: 'Milestone management — switch/create milestones, set current phase', usesAgent: false, agents: [] },
+  { step: 'discuss', name: 'specwf:discuss', description: 'Phase discussion — capture implementation decisions into context.md', usesAgent: false, agents: [] },
+  { step: 'research-phase', name: 'specwf:research-phase', description: 'Phase research — implementation path investigation', usesAgent: true, agents: ['researcher'] },
+  { step: 'split', name: 'specwf:split', description: 'Change splitting — dependency graph + N changes', usesAgent: false, agents: [] },
+  { step: 'adhoc', name: 'specwf:adhoc', description: 'Create adhoc change — independent change unrelated to milestone/phase', usesAgent: false, agents: [] },
+  { step: 'plan', name: 'specwf:plan', description: 'Change design — technical design + task breakdown + delta-specs', usesAgent: true, agents: ['planner'] },
+  { step: 'apply', name: 'specwf:apply', description: 'Code implementation — TDD RED→GREEN→REFACTOR', usesAgent: true, agents: ['executor'] },
+  { step: 'review', name: 'specwf:review', description: 'Triple review — spec/quality/goal reviews in parallel', usesAgent: true, agents: ['reviewer'] },
+  { step: 'verify', name: 'specwf:verify', description: 'Test verification — diagnose root cause + route loopback', usesAgent: true, agents: ['verifier'] },
+  { step: 'archive', name: 'specwf:archive', description: 'Archive — delta-spec merge + code cognition backfill', usesAgent: false, agents: [] },
+  { step: 'ship', name: 'specwf:ship', description: 'Ship — create PR + update state / release tag', usesAgent: false, agents: [] },
+  { step: 'continue', name: 'specwf:continue', description: 'Auto-advance — read STATE and route to next step', usesAgent: false, agents: [] },
 ];
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const TEMPLATES_DIR = join(__dirname, 'templates', 'commands');
-
-function loadTemplate(step: string): string {
-  return readFileSync(join(TEMPLATES_DIR, `${step}.md`), 'utf-8');
-}
-
-function renderTemplate(template: string, vars: Record<string, string>): string {
-  return template.replace(/\{\{(\w+)\}\}/g, (_, key: string) => vars[key] ?? '');
-}
-
-/** 生成单个 slash command 文件内容 */
-export function generateSlashCommand(def: CommandDef, config: ProjectConfig): string {
-  const body = def.bodyOverride ?? loadAndRenderTemplate(def);
+/** Generate a single slash command file content from the TypeScript template */
+export function generateSlashCommand(def: CommandDef, _config: ProjectConfig): string {
+  const entry = WORKFLOW_REGISTRY[def.step as WorkflowStep];
+  const body = entry ? entry.command().content : fallbackBody(def);
   return `---
 name: ${def.name}
 description: ${def.description}
@@ -63,71 +50,43 @@ ${body}
 `;
 }
 
-function loadAndRenderTemplate(def: CommandDef): string {
-  try {
-    return renderTemplate(loadTemplate(def.step), {
-      step: def.step,
-      description: def.description,
-      usesAgent: String(def.usesAgent),
-      agents: def.agents.join(', '),
-    });
-  } catch {
-    return fallbackBody(def);
-  }
-}
-
 function fallbackBody(def: CommandDef): string {
   const agentsSection = def.usesAgent && def.agents.length > 0
-    ? `调用 task 工具 fan-out \`specwf-${def.agents[0]}\` agent。`
-    : '本步骤不使用子代理。';
-  return `# 工作流: ${def.description}
+    ? `Dispatch \`specwf-${def.agents[0]}\` sub-agent via task tool.`
+    : 'This step does not use sub-agents.';
+  return `# ${def.description}
 
-## 1. 角色定义
+## Input
 
-本步骤负责执行标准的 specwf 工作流操作。
-- **产出**：按照 specwf 标准流程执行
+- state.md status is correct
+- All prerequisite steps are complete
 
-## 2. 前置条件
+## Steps
 
-- state.md 状态正确
-- 前置步骤已全部完成
+### Step 1: Check state
+Run \`specwf state\` to verify current position.
 
-## 3. 执行步骤
+### Step 2: Get context
+Run \`specwf context ${def.step}\` to read the file manifest.
 
-\`\`\`bash
-# 获取上下文
-specwf context ${def.step} $@
+### Step 3: Execute
+Run \`specwf ${def.step}\` to perform the step.
 
-# 执行步骤命令
-specwf ${def.step}
-\`\`\`
-
-## 4. 子代理使用
+## Sub-agents
 
 ${agentsSection}
 
-## 5. 产物管理
+## Output
 
-\`\`\`bash
-specwf state
-specwf config
-\`\`\`
+Check \`specwf state\` for updated status.
 
-## 6. 验证
+## Advance
 
-\`\`\`bash
-specwf state
-\`\`\`
-
-## 7. 下一步
-
-\`\`\`bash
-specwf continue
-\`\`\`
+Run \`specwf continue\` to proceed to the next step.
 `;
 }
 
-/** 生成所有命令文件 */
+/** Generate all command files */
 export function generateAllCommands(config: ProjectConfig): { path: string; content: string }[] {
   return STEP_DEFS.map((def) => ({
     path: `.omp/commands/specwf-${def.step}.md`,

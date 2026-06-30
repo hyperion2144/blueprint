@@ -1,0 +1,555 @@
+# Templates — Delta Spec
+
+## SHALL
+
+### SHALL generate commands and skills from single source
+
+- SHALL each workflow step: a single TypeScript module exports both `getXxxSkillTemplate()` and `getXxxCommandTemplate()` sharing the same `instructions` string.
+  - GIVEN the `apply` workflow step
+  - WHEN `getApplySkillTemplate()` is called
+  - THEN it returns a `SkillTemplate` with `instructions` equal to the English workflow body
+  - AND `getApplyCommandTemplate()` returns a `CommandTemplate` with `content` equal to the same `instructions` string
+
+### SHALL follow Input/Steps/Output format
+
+- SHALL every `instructions` string: structured with `## Input`, `## Steps` (numbered), `## Output`, and `## Guardrails` sections.
+  - GIVEN any workflow template's `instructions`
+  - WHEN parsed for section headers
+  - THEN headers `## Input`, `## Steps`, `## Output`, `## Guardrails` are all present in order
+
+### SHALL use English for all template content
+
+- SHALL every generated command file (`.omp/commands/specwf-*.md`): contain only English prose (no Chinese characters).
+  - GIVEN a regenerated command file
+  - WHEN scanned for CJK Unicode range (U+4E00–U+9FFF)
+  - THEN zero matches found
+- SHALL every generated skill file (`.omp/skills/specwf-*/SKILL.md`): contain only English prose.
+- SHALL every generated agent file (`.omp/agents/specwf-*.md`): contain only English prose.
+- SHALL every output artifact template (proposal, design, tasks, etc.): contain only English prose.
+
+### SHALL `specwf continue` output inline instructions
+
+- SHALL `specwf continue`: the output includes the full `instructions` text of the next workflow step, not just a file path reference.
+  - GIVEN current state routes to `plan` step
+  - WHEN `specwf continue` is executed
+  - THEN stdout contains the complete plan workflow instructions (Input, Steps, Output sections)
+  - AND no file path reference like `.omp/commands/specwf-plan.md` appears as the primary action
+
+### SHALL templates be TypeScript modules, not markdown files
+
+- SHALL all workflow templates: defined as TypeScript functions in `src/templates/workflows/`, not as `.md` files under `src/public/templates/`.
+- SHALL all artifact templates: defined as TypeScript constants in `src/templates/artifacts/index.ts`.
+- SHALL all agent prompts: defined as TypeScript constants in `src/templates/agents/index.ts`.
+- SHALL `src/public/templates/` directory: not exist after this change.
+
+### SHALL `specwf template` read from TS registry
+
+- SHALL `specwf template <type>`: resolve template content from the in-memory TypeScript template registry, not from disk files.
+  - GIVEN `specwf template proposal --name test`
+  - WHEN executed
+  - THEN a `proposal.md` is created with English content matching the artifact template definition
+  - AND no `readFileSync` call accesses `src/public/templates/`
+
+### SHALL `specwf update` regenerate correctly
+
+- SHALL `specwf update`: produce output files identical to the current format (frontmatter + body) but with English content and Input/Steps/Output structure.
+  - GIVEN a clean specwf project
+  - WHEN `specwf update` is executed
+  - THEN all `.omp/commands/specwf-*.md` files exist with English content
+  - AND all `.omp/skills/specwf-*/SKILL.md` files exist with English content
+  - AND all `.omp/agents/specwf-*.md` files exist with English content
+
+## MUST
+
+### MUST preserve existing file paths
+
+- MUST all generated files: written to the same paths as before (`.omp/commands/specwf-<step>.md`, `.omp/skills/specwf-<step>/SKILL.md`, `.omp/agents/specwf-<role>.md`).
+  - GIVEN the refactored generator
+  - WHEN `specwf update` runs
+  - THEN output files land at the same paths as before the refactor
+
+### MUST preserve frontmatter format
+
+- MUST command files: retain YAML frontmatter with `name` and `description` fields.
+- MUST skill files: retain YAML frontmatter with `name`, `description`, `hide` fields.
+- MUST agent files: retain YAML frontmatter with `name`, `description`, `model`, `thinkingLevel` fields.
+
+### MUST pass existing integration tests
+
+- MUST all existing tests in `tests/`: pass after `specwf update` regeneration.
+  - GIVEN the refactored codebase
+  - WHEN `npm test` is executed
+  - THEN all test suites pass
+
+<!-- AUTO-EXTRACTED: 以下内容由 code-extract 从代码 diff 提取，请人工审核 -->
+
+## Auto-Extracted Behaviors
+
+### Detected Behaviors
+
+- 新增: function readYamlDoc(path) {
+- 新增: function writeYamlDoc(path, doc) {
+- 新增: function configPath(specwfDir) {
+- 新增: function loadConfig(specwfDir) {
+- 新增: function saveConfig(specwfDir, config) {
+- 新增: function updateConfig(specwfDir, updater) {
+- 新增: function resolveModels(config) {
+- 新增: function createSpecwfStructure(specwfDir) {
+- 新增: function isInitialized(specwfDir) {
+- 新增: function createAdhocChangeDir(specwfDir, changeName) {
+- 新增: function archiveChangeDir(specwfDir, changeDir) {
+- 新增: function archiveMilestoneDir(specwfDir, milestoneId) {
+- 新增: function listMilestones(specwfDir) {
+- 新增: function listPhases(specwfDir, milestoneId) {
+- 新增: function listChanges(specwfDir, milestoneId, phaseId) {
+- 新增: function listAdhocChanges(specwfDir) {
+- 新增: function listArchived(specwfDir) {
+- 新增: function parseFrontmatter(content) {
+- 新增: function stringifyFrontmatter(data, body) {
+- 新增: function readFrontmatterFile(path) {
+- 新增: function statePath(specwfDir) {
+- 新增: function loadState(specwfDir) {
+- 新增: function saveState(specwfDir, state) {
+- 新增: function updateState(specwfDir, updater) {
+- 新增: function generateStateBody(state) {
+- 新增: function formatContext(state) {
+- 新增: async function runInitWizard(defaults) {
+- 新增: function detectProjectInfo(rootDir) {
+- 新增: function generateCodebaseReport(rootDir, info) {
+- 新增: function buildStackSection(info) {
+- 新增: function buildStructureSection(rootDir) {
+- 新增: function detectConventions(rootDir) {
+- 新增: function bootstrapSpecs(rootDir, specwfDir) {
+- 新增: async function runBrownfieldInit(rootDir, specwfDir, info) {
+- 新增: function getInitSkillTemplate() {
+- 新增: function getInitCommandTemplate() {
+- 新增: function getGrillSkillTemplate() {
+- 新增: function getGrillCommandTemplate() {
+- 新增: function getResearchSkillTemplate() {
+- 新增: function getResearchCommandTemplate() {
+- 新增: function getRoadmapSkillTemplate() {
+- 新增: function getRoadmapCommandTemplate() {
+- 新增: function getMilestoneSkillTemplate() {
+- 新增: function getMilestoneCommandTemplate() {
+- 新增: function getDiscussSkillTemplate() {
+- 新增: function getDiscussCommandTemplate() {
+- 新增: function getResearchPhaseSkillTemplate() {
+- 新增: function getResearchPhaseCommandTemplate() {
+- 新增: function getSplitSkillTemplate() {
+- 新增: function getSplitCommandTemplate() {
+- 新增: function getAdhocSkillTemplate() {
+- 新增: function getAdhocCommandTemplate() {
+- - \`specs/<domain>/spec.md\` \u2014 SHALL/MUST with scenarios
+- - type:behavior tasks MUST have RED->GREEN->REFACTOR triples
+- 新增: function getPlanSkillTemplate() {
+- 新增: function getPlanCommandTemplate() {
+- - Each delta-spec SHALL/MUST has test coverage
+- 新增: function getApplySkillTemplate() {
+- 新增: function getApplyCommandTemplate() {
+- - \`spec-review.md\`: all SHALL/MUST covered? BLOCKERs?
+- 新增: function getReviewSkillTemplate() {
+- 新增: function getReviewCommandTemplate() {
+- Start from what the change SHOULD deliver, then verify it actually exists and works. Do NOT trust summary.md claims \u2014 they document what was SAID, not what EXISTS.
+- - Each delta-spec SHALL/MUST must have passing test coverage
+- 新增: function getVerifySkillTemplate() {
+- 新增: function getVerifyCommandTemplate() {
+- 新增: function getArchiveSkillTemplate() {
+- 新增: function getArchiveCommandTemplate() {
+- 新增: function getShipSkillTemplate() {
+- 新增: function getShipCommandTemplate() {
+- 新增: function getContinueSkillTemplate() {
+- 新增: function getContinueCommandTemplate() {
+- 新增: function generateSlashCommand(def, _config) {
+- 新增: function fallbackBody(def) {
+- 新增: function generateAllCommands(config) {
+- - Use SHALL/MUST/SHOULD/MAY keywords
+- - Delta-spec SHALL/MUST constraints are testable
+- - Implementation matches delta-spec SHALL/MUST
+- Cross-reference delta-spec SHALL/MUST constraints against implementation:
+- - Each delta-spec SHALL/MUST has a passing test
+- - Infer SHALL/MUST constraints from tests and signatures
+- 新增: function resolveAgentModel(role, config) {
+- 新增: function resolveThinkingLevel(role) {
+- 新增: function generateAgent(def, model) {
+- 新增: function generateAllAgents(config) {
+- 新增: function skillName(step) {
+- 新增: function skillDescription(step) {
+- 新增: function generateSkill(def) {
+- 新增: function generateAllSkills(_config) {
+- 新增: function generateAll(config) {
+- 新增: function writeGeneratedFiles(files) {
+- 新增: function register(program2) {
+- 新增: async function initHandler(options) {
+- 新增: function register2(program2) {
+- 新增: function updateHandler(options) {
+- 新增: function register3(program2) {
+- 新增: function configList(options, cmd) {
+- 新增: function configSet(key, value) {
+- 新增: function parseTypedValue(value) {
+- 新增: function findSpecwfDir() {
+- 新增: function register4(program2) {
+- 新增: function findSpecwfDir2() {
+- 新增: function showState() {
+- 新增: function setMilestone(id) {
+- 新增: function setPhase(id) {
+- 新增: function setStep(step) {
+- 新增: function isProjectStep(step) {
+- 新增: function isPhaseStep(step) {
+- 新增: function isChangeStep(step) {
+- 新增: function generateContext(specwfDir, step) {
+- 新增: function readContent(absPath) {
+- 新增: function withContent(specwfDir) {
+- 新增: function getAllSpecs(specwfDir) {
+- 新增: function getRelatedSpecs(specwfDir, state) {
+- 新增: function getAllConventions(specwfDir) {
+- 新增: function getChangeArtifacts(specwfDir, state) {
+- 新增: function listSpecFiles(dir, prefix) {
+- 新增: function register5(program2) {
+- 新增: function contextHandler(step) {
+- 新增: function getTransition(from, command) {
+- 新增: function getNextSteps(from) {
+- 新增: function determineNextStep(specwfDir) {
+- 新增: function determineChangeNextStep(specwfDir, changeName) {
+- 新增: function getStepInfo(command) {
+- 新增: function determineFromChangeStatus(name, statusKey, type) {
+- 新增: function listAvailableChanges(state) {
+- 新增: function determineFromState(state) {
+- 新增: function resolveStatus(state) {
+- 新增: function formatContext2(state) {
+- 新增: function generateHint(state) {
+- 新增: function isTemplateFile(filePath) {
+- 新增: function findChangeDir(specwfDir) {
+- 新增: function checkExitCondition(specwfDir, check, resolvedPath) {
+- 新增: function validateStepAdvance(contextType, contextStep, ref, cwd) {
+- 新增: function register6(program2) {
+- 新增: function formatContinueResult(result) {
+- 新增: function resolveStatusKey(type, step, projectStatus) {
+- 新增: function continueHandler() {
+- 新增: function continueChangeHandler(name) {
+- 新增: function parseHeadings(markdown) {
+- 新增: function fingerprint(content) {
+- 新增: function mergeDeltaSpec(baseSpec, deltaSpec, baseFingerprint) {
+- 新增: function mergeTrees(base, delta) {
+- 新增: function indexNodes(nodes) {
+- 新增: function tryLineMerge(baseText, deltaText) {
+- 新增: function renderTree(nodes) {
+- 新增: function renderNodes(nodes, lines) {
+- 新增: function mergeAndWrite(liveSpecPath, deltaSpecPath, baseFingerprint) {
+- 新增: function extractFromGitDiff(repoDir, changeDir) {
+- 新增: function getGitDiff(repoDir) {
+- 新增: function detectDomains(changeDir) {
+- 新增: function extractBehaviors(diff, _domain) {
+- if (/\b(SHALL|MUST|SHOULD|MAY)\b/.test(content)) {
+- 新增: function extractConstraints(diff, _domain) {
+- 新增: function writeExtractionToSpec(specsDir, extraction) {
+- 新增: function generateAutoExtractedSection(extraction) {
+- 新增: function register7(program2) {
+- 新增: function archiveHandler(changePath) {
+- 新增: function mergeDeltaSpecs(deltaDir, specwfDir) {
+- 新增: function register8(program2) {
+- 新增: function listHandler(options) {
+- Format: "MUST <condition>" or "SHALL <condition>"
+- > Specification compliance review. Cross-references delta-spec SHALL/MUST constraints against implementation.
+- 新增: function register9(program2) {
+- 新增: function templateHandler(type, options) {
+- 新增: function register10(program2) {
+- 新增: function newChange(name, options) {
+- The system SHALL <behavior>.
+- 新增: function archiveMilestoneDir(specwfDir, milestoneId) {
+- 新增: function getInitSkillTemplate() {
+- 新增: function getInitCommandTemplate() {
+- 新增: function getGrillSkillTemplate() {
+- 新增: function getGrillCommandTemplate() {
+- 新增: function getResearchSkillTemplate() {
+- 新增: function getResearchCommandTemplate() {
+- 新增: function getRoadmapSkillTemplate() {
+- 新增: function getRoadmapCommandTemplate() {
+- 新增: function getMilestoneSkillTemplate() {
+- 新增: function getMilestoneCommandTemplate() {
+- 新增: function getDiscussSkillTemplate() {
+- 新增: function getDiscussCommandTemplate() {
+- 新增: function getResearchPhaseSkillTemplate() {
+- 新增: function getResearchPhaseCommandTemplate() {
+- 新增: function getSplitSkillTemplate() {
+- 新增: function getSplitCommandTemplate() {
+- 新增: function getAdhocSkillTemplate() {
+- 新增: function getAdhocCommandTemplate() {
+- - Use SHALL/MUST with GIVEN/WHEN/THEN scenarios
+- - \`specs/<domain>/spec.md\` exists with SHALL/MUST scenarios
+- - type:behavior tasks MUST have RED->GREEN->REFACTOR triples
+- 新增: function getPlanSkillTemplate() {
+- 新增: function getPlanCommandTemplate() {
+- - \`delta-specs\` \u2014 behavioral contracts (SHALL/MUST)
+- - Each delta-spec SHALL/MUST has corresponding test coverage
+- 新增: function getApplySkillTemplate() {
+- 新增: function getApplyCommandTemplate() {
+- - Check each SHALL/MUST in delta-specs against implementation
+- - \`spec-review.md\`: all SHALL/MUST covered? BLOCKERs?
+- 新增: function getReviewSkillTemplate() {
+- 新增: function getReviewCommandTemplate() {
+- - Verify each delta-spec SHALL/MUST has passing test coverage
+- 新增: function getVerifySkillTemplate() {
+- 新增: function getVerifyCommandTemplate() {
+- 新增: function getArchiveSkillTemplate() {
+- 新增: function getArchiveCommandTemplate() {
+- 新增: function getShipSkillTemplate() {
+- 新增: function getShipCommandTemplate() {
+- 新增: function getContinueSkillTemplate() {
+- 新增: function getContinueCommandTemplate() {
+- 新增: function generateSlashCommand(def, _config) {
+- 新增: function fallbackBody(def) {
+- 新增: function generateAllCommands(config) {
+- - Use SHALL/MUST/SHOULD/MAY keywords
+- - Delta-spec SHALL/MUST constraints are testable
+- - Implementation matches delta-spec SHALL/MUST
+- - Check each SHALL/MUST in delta-specs against implementation
+- - Each delta-spec SHALL/MUST has a passing test
+- - Infer SHALL/MUST constraints from tests and signatures
+- 新增: function resolveAgentModel(role, config) {
+- 新增: function resolveThinkingLevel(role) {
+- 新增: function generateAgent(def, model) {
+- 新增: function generateAllAgents(config) {
+- 新增: function skillName(step) {
+- 新增: function skillDescription(step) {
+- 新增: function generateSkill(def) {
+- 新增: function generateAllSkills(_config) {
+- 新增: function generateAll(config) {
+- 新增: function register(program2) {
+- 新增: async function initHandler(options) {
+- 新增: function isTemplateFile(filePath) {
+- 新增: function findChangeDir(specwfDir) {
+- 新增: function checkExitCondition(specwfDir, check, resolvedPath) {
+- 新增: function validateStepAdvance(contextType, contextStep, ref, cwd) {
+- 新增: function getTransition(from, command) {
+- 新增: function determineChangeNextStep(specwfDir, changeName) {
+- 新增: function getStepInfo(command) {
+- 新增: function determineFromChangeStatus(name, statusKey, type) {
+- 新增: function listAvailableChanges(state) {
+- 新增: function formatContinueResult(result) {
+- 新增: function resolveStatusKey(type, step, projectStatus) {
+- 新增: function continueHandler() {
+- 新增: function continueChangeHandler(name) {
+- Format: "MUST <condition>" or "SHALL <condition>"
+- > Specification compliance review. Cross-references delta-spec SHALL/MUST constraints against implementation.
+- 新增: function newChange(name: string, options: { dir: string; full?: boolean; intent?: string }) {
+- `# ${name} — Delta Spec\n\n## ADDED Requirements\n\n### Requirement: <name>\n\nThe system SHALL <behavior>.\n\n#### Scenario: <name>\n- **GIVEN** <precondition>\n- **WHEN** <trigger>\n- **THEN** <expected outcome>\n`,
+- 新增: function contextHandler(step: string) {
+- 新增: function readContent(absPath: string): string | undefined {
+- 新增: function withContent(specwfDir: string): (ref: FileRef) => FileRef {
+- 新增: export function generateSlashCommand(def: CommandDef, _config: ProjectConfig): string {
+- 新增: export function generateAllSkills(_config: ProjectConfig): { path: string; content: string }[] {
+
+### Detected Constraints
+
+- 约束: if (existsSync(configPath(specwfDir))) {
+- 约束: if (config.workflow) doc.set("workflow", config.workflow);
+- 约束: if (config.review) doc.set("review", config.review);
+- 约束: if (config.change) doc.set("change", config.change);
+- 约束: if (config.git) doc.set("git", config.git);
+- 约束: if (config.conventions) doc.set("conventions", config.conventions);
+- 约束: if (config.models) doc.set("models", config.models);
+- 约束: if (existsSync2(changeDir)) {
+- 约束: if (!existsSync2(sourceDir)) {
+- 约束: if (!existsSync2(dir)) return [];
+- 约束: if (!existsSync2(dir)) return [];
+- 约束: if (!existsSync2(dir)) return [];
+- 约束: if (!existsSync2(dir)) return [];
+- 约束: if (!existsSync2(dir)) return [];
+- 约束: if (state.project) {
+- 约束: if (defaults.yes) {
+- 约束: if (existsSync4(join4(rootDir, "package.json"))) {
+- 约束: if (pkg2.dependencies?.next) info.framework = "next.js";
+- 约束: if (existsSync4(join4(rootDir, "Cargo.toml"))) {
+- 约束: if (existsSync4(join4(rootDir, "go.mod"))) {
+- 约束: if (existsSync4(join4(rootDir, dir)) && readdirSync2(join4(rootDir, dir), { withFileTypes: true }).some((e) => e.isDirectory())) {
+- 约束: if (existsSync4(join4(rootDir, "__tests__")) || existsSync4(join4(rootDir, "tests"))) {
+- 约束: if (existsSync4(join4(rootDir, "vitest.config.ts")) || existsSync4(join4(rootDir, "jest.config.ts"))) {
+- 约束: if (existsSync4(join4(rootDir, "tsconfig.json"))) configs.push("TypeScript");
+- 约束: if (existsSync4(join4(rootDir, ".eslintrc.js")) || existsSync4(join4(rootDir, "eslint.config.js"))) configs.push("ESLint");
+- 约束: if (existsSync4(join4(rootDir, ".prettierrc"))) configs.push("Prettier");
+- 约束: if (existsSync4(join4(rootDir, "src"))) {
+- 约束: if (entry.isDirectory() && !entry.name.startsWith("_")) {
+- 约束: if (specs.length === 0) {
+- 约束: if (dir) mkdirSync3(dir, { recursive: true });
+- 约束: if (isInitialized(specwfDir)) {
+- 约束: if (isBrownfield) {
+- 约束: if (!existsSync(join(cwd, "specwf", "state.md"))) return;
+- 约束: if (data.specs?.length) {
+- 约束: if (spec.content) lines.push(\`\\n### \${spec.path}\\n\${spec.content.slice(0, 4096)}\`);
+- 约束: if (data.conventions?.length) {
+- 约束: if (conv.content) lines.push(\`\\n### \${conv.path}\\n\${conv.content.slice(0, 2048)}\`);
+- 约束: if (event.isError || event.toolName !== "bash") return;
+- 约束: if (!isCheck) return;
+- 约束: if (m && parseInt(m[1]) !== 0) {
+- 约束: if (!existsSync(join(cwd, "specwf", "state.md"))) return;
+- 约束: if (cmd?.parent?.args?.length > 1) return;
+- 约束: if (!target[parts[i]]) target[parts[i]] = {};
+- 约束: if (value === "true") return true;
+- 约束: if (value === "false") return false;
+- 约束: if (/^\d+$/.test(value)) return parseInt(value, 10);
+- 约束: if (value === "null") return null;
+- 约束: if (total > 0) tasks = { total, completed };
+- 约束: if (existsSync6(roadmapPath)) {
+- 约束: if (msMatches) {
+- 约束: if (roadmap) output.roadmap = roadmap;
+- 约束: if (current && state.project.status !== "milestone-shipped") {
+- 约束: if (existsSync7(join10(specwfDir, "requirements.md"))) {
+- 约束: if (isProjectStep(step)) {
+- 约束: if (allSpecs.length === 0) return [];
+- 约束: if (!existsSync7(convDir)) return [];
+- 约束: if (!ref) return [];
+- 约束: if (!existsSync7(changeDir)) return [];
+- 约束: if (existsSync7(fullPath)) {
+- 约束: if (existsSync7(specsDir)) {
+- 约束: if (!existsSync7(dir)) return [];
+- 约束: if (stat.isDirectory()) {
+- 约束: if (change) {
+- 约束: if (adhoc) {
+- 约束: if (!info) return void 0;
+- 约束: if (wfStep && WORKFLOW_REGISTRY[wfStep]) {
+- 约束: if (status === "milestone-shipped") {
+- 约束: if (pendingAdhoc.length > 0) {
+- 约束: if (status === "phase-shipped") {
+- 约束: if (!existsSync8(changesDir)) return [];
+- 约束: if (check.path.endsWith("/") || check.description.includes("\u7684 ")) {
+- 约束: if (existsSync8(docPath) && isTemplateFile(docPath)) {
+- 约束: if (!existsSync8(fullPath)) {
+- 约束: if (isTemplateFile(fullPath)) {
+- 约束: if (!criteria) {
+- 约束: if (error) {
+- 约束: if (result.nextCommand) {
+- 约束: if (result.instructions) {
+- 约束: if (result.hint) output.hint = result.hint;
+- 约束: if (!validation.valid) {
+- 约束: if (result.nextCommand) {
+- 约束: if (transition) {
+- 约束: if (s.active_context.type === "project" || s.active_context.type === "milestone") {
+- 约束: if ("error" in result) {
+- 约束: if (result.nextCommand) {
+- 约束: if (transition) {
+- 约束: if (adhoc) {
+- 约束: if (change) {
+- 约束: if (!match) continue;
+- 约束: if (nextMatch) break;
+- 约束: if (stack.length === 0) {
+- 约束: if (baseFingerprint) {
+- 约束: if (liveFingerprint === baseFingerprint) {
+- 约束: if (merged.conflicts.length > 0) {
+- 约束: if (b && !d) {
+- 约束: if (b.content === d.content) {
+- 约束: if (lineMerge !== null) {
+- 约束: if (removedFromBase.length === 0) {
+- 约束: if (!baseSet.has(line)) {
+- 约束: if (node.content) {
+- 约束: if (children.length > 0) {
+- 约束: if (result.type === "ok") {
+- 约束: if (diff === null) {
+- 约束: if (behaviors.length > 0 || constraints.length > 0) {
+- 约束: if (diff.trim()) return diff;
+- 约束: if (!existsSync10(specsDir)) return ["general"];
+- 约束: if (line.startsWith("+") && !line.startsWith("+++")) {
+- 约束: if (/\b(SHALL|MUST|SHOULD|MAY)\b/.test(content)) {
+- 约束: if (/^(export\s+)?(async\s+)?function\s+/.test(content) || /^(export\s+)?class\s+/.test(content)) {
+- 约束: if (line.startsWith("+") && !line.startsWith("+++")) {
+- 约束: if (/^(throw|assert|if\s*\()/.test(content) && !content.startsWith("//")) {
+- 约束: if (/^(export\s+)?(interface|type)\s+/.test(content)) {
+- 约束: if (existsSync10(specPath)) {
+- 约束: if (extraction.behaviors.length > 0) {
+- 约束: if (extraction.constraints.length > 0) {
+- 约束: if (!existsSync11(fullChangePath)) {
+- 约束: if (existsSync11(specsDir)) {
+- 约束: if (!existsSync11(summaryPath)) {
+- 约束: if (extractResult.available && extractResult.extractions.length > 0) {
+- 约束: if (extractResult.extractions.length > 0) {
+- 约束: if (change) {
+- 约束: if (adhoc) {
+- 约束: if (!entry.isDirectory()) continue;
+- 约束: if (!existsSync11(deltaSpecPath)) continue;
+- 约束: if (!existsSync11(liveSpecPath)) {
+- 约束: if (result.type === "conflict") {
+- 约束: if (milestones.length > 0) {
+- 约束: if (adhoc.length > 0) {
+- 约束: if (hasItems) console.log("");
+- 约束: if (options.all) {
+- 约束: if (archived.length > 0) {
+- 约束: if (hasItems) console.log("");
+- 约束: if (!hasItems) {
+- 约束: if (!template) {
+- 约束: if (options.dir) {
+- 约束: if (fullDir !== targetDir) {
+- 约束: if (options.full) {
+- 约束: if (!existsSync2(sourceDir)) {
+- 约束: if (pkg2.dependencies?.next) info.framework = "next.js";
+- 约束: if (isInitialized(specwfDir)) {
+- 约束: if (isBrownfield) {
+- 约束: if (!existsSync6(changesDir)) return [];
+- 约束: if (check.path.endsWith("/") || check.description.includes("\u7684 ")) {
+- 约束: if (existsSync6(docPath) && isTemplateFile(docPath)) {
+- 约束: if (!existsSync6(fullPath)) {
+- 约束: if (isTemplateFile(fullPath)) {
+- 约束: if (!criteria) {
+- 约束: if (error) {
+- 约束: if (hasPending) {
+- 约束: if (pendingChanges.length > 0) {
+- 约束: if (pendingAdhoc.length > 0) {
+- 约束: if (prevMilestone && prevMilestone !== id && currentState.project.status !== "milestone-shipped") {
+- 约束: if (!result.valid) {
+- 约束: if (existsSync7(join11(specwfDir, "requirements.md"))) {
+- 约束: if (!existsSync7(convDir)) return [];
+- 约束: if (!existsSync7(changeDir)) return [];
+- 约束: if (existsSync7(fullPath)) {
+- 约束: if (existsSync7(specsDir)) {
+- 约束: if (!existsSync7(dir)) return [];
+- 约束: if (change) {
+- 约束: if (adhoc) {
+- 约束: if (!info) return void 0;
+- 约束: if (wfStep && WORKFLOW_REGISTRY[wfStep]) {
+- 约束: if (pendingAdhoc.length > 0) {
+- 约束: if (info) {
+- 约束: if (info.artifacts.length > 0) {
+- 约束: if (result.instructions) {
+- 约束: if (!validation.valid) {
+- 约束: if (result.nextCommand) {
+- 约束: if (transition) {
+- 约束: if (s.active_context.type === "project" || s.active_context.type === "milestone") {
+- 约束: if ("error" in result) {
+- 约束: if (result.nextCommand) {
+- 约束: if (transition) {
+- 约束: if (adhoc) {
+- 约束: if (change) {
+- 约束: if (!existsSync9(specsDir)) return ["general"];
+- 约束: if (existsSync9(specPath)) {
+- 约束: if (!existsSync10(fullChangePath)) {
+- 约束: if (existsSync10(specsDir)) {
+- 约束: if (!existsSync10(summaryPath)) {
+- 约束: if (adhoc) {
+- 约束: if (!existsSync10(deltaSpecPath)) continue;
+- 约束: if (!existsSync10(liveSpecPath)) {
+- 约束: if (!template) {
+- 约束: if (options.full) {
+- 约束: if (result.instructions) {
+- 约束: if (result.hint) output.hint = result.hint;
+- 约束: if (result.nextCommand) {
+- 约束: if (transition) {
+- 约束: if (adhoc) {
+- 约束: if (change) {
+- 约束: if (total > 0) tasks = { total, completed };
+- 约束: if (existsSync(roadmapPath)) {
+- 约束: if (msMatches) {
+- 约束: if (roadmap) output.roadmap = roadmap;
+- 约束: if (current && state.project.status !== 'milestone-shipped') {
+- 约束: if (!template) {
+- 约束: if (fullDir !== targetDir) {
+- 约束: if (!existsSync(join(cwd, "specwf", "state.md"))) return;
+- 约束: if (data.specs?.length) {
+- 约束: if (spec.content) lines.push(\`\\n### \${spec.path}\\n\${spec.content.slice(0, 4096)}\`);
+- 约束: if (data.conventions?.length) {
+- 约束: if (conv.content) lines.push(\`\\n### \${conv.path}\\n\${conv.content.slice(0, 2048)}\`);
+- 约束: if (event.isError || event.toolName !== "bash") return;
+- 约束: if (!isCheck) return;
+- 约束: if (m && parseInt(m[1]) !== 0) {
+- 约束: if (!existsSync(join(cwd, "specwf", "state.md"))) return;
+- 约束: if (!info) return undefined;
+- 约束: if (wfStep && WORKFLOW_REGISTRY[wfStep]) {
+
+<!-- END AUTO-EXTRACTED -->

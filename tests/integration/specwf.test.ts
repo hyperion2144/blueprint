@@ -46,9 +46,10 @@ describe('specwf integration', () => {
 
   it('specwf state 读取自身状态', () => {
     const output = execSync(`node ${cliPath} state`, { encoding: 'utf-8', cwd: process.cwd() });
-    expect(output).toContain('项目: specwf');
-    expect(output).toContain('状态:');
-    expect(output).toContain('Phase:');
+    const state = JSON.parse(output);
+    expect(state.project).toBe('specwf');
+    expect(state.status).toBeTruthy();
+    expect(state.phase).toBeDefined();
   });
 
   it('specwf list', () => {
@@ -59,8 +60,10 @@ describe('specwf integration', () => {
 
   it('specwf continue 显示下一步', () => {
     const output = execSync(`node ${cliPath} continue`, { encoding: 'utf-8', cwd: process.cwd() });
-    expect(output).toContain('当前位置');
-    expect(output).toContain('当前步骤');
+    const result = JSON.parse(output);
+    expect(result.current).toBeDefined();
+    expect(result.current.context).toBeTruthy();
+    expect(result.current.step).toBeTruthy();
   });
 
   it('specwf config list', () => {

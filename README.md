@@ -1,78 +1,115 @@
-# specwf — 规格驱动开发工作流
+# specwf — Spec-Driven Development Workflow
 
-spec-driven development workflow for AI coding agents.
+specwf is an independent TypeScript CLI package that provides a spec-driven development workflow for AI coding agents. It combines core capabilities from three projects:
 
-specwf 融合 OpenSpec、GSD Core、Trellis 的核心能力，提供从需求探讨到交付的完整规格驱动开发工作流。
+- **OpenSpec** (MIT) — CLI architecture, change structure, delta-spec merge mechanism
+- **GSD Core** (MIT) — milestone/phase hierarchy, fresh-context sub-agent parallel execution
+- **Trellis** (AGPL-3.0, concept reference only) — spec auto-injection, code cognition backfill
 
-## 安装
+## Why
 
-```bash
-npm install -g specwf
-```
+AI coding agents are powerful but unpredictable — requirements exist only in chat history. specwf aligns on specs before writing code, executes heavy work in fresh-context sub-agents, and persists state across sessions through structured artifacts.
 
-## 快速开始
+## Core Principles
 
-```bash
-# 1. 初始化项目
-specwf init
+1. **Dual nested loops** — Phase loop (discuss→research→split→change loop→ship) ⊃ Change loop (plan→apply→review→verify→archive)
+2. **CLI as single source of truth** — all interaction through CLI; agents orchestrate, don't implement
+3. **Fresh-context sub-agents** — heavy work (research/apply/review/verify/archive) runs in fresh context to prevent context rot
+4. **Dual spec backfill** — delta-spec forward merge + code cognition backward extraction
+5. **TDD enforced** — type:behavior tasks follow RED→GREEN→REFACTOR
+6. **Single source templates** — commands and skills generated from the same TypeScript modules; all content in English
 
-# 2. 生成平台文件
-specwf update
-
-# 3. 查看当前状态
-specwf state
-
-# 4. 查看下一步
-specwf continue
-
-# 5. 生成模板文件
-specwf template proposal --name my-feature
-```
-
-## 工作流
+## Entity Hierarchy
 
 ```
-init → grill → research → roadmap → discuss → plan → apply → review → verify → archive → ship
+Project → Milestone (persistent, defaults to v1) → Phase → Change
 ```
 
-- **init**: 初始化 specwf 项目结构
-- **grill**: 需求探讨（无限制细节提问）
-- **research**: 技术调研（并行多方向）
-- **roadmap**: 拆分里程碑和阶段
-- **discuss**: Phase 讨论，捕获实现决策
-- **plan**: Change 设计（TDD 强制）
-- **apply**: 代码实现（分组子代理并发）
-- **review**: 三重审查（规格/质量/目标并行）
-- **verify**: 测试验证（诊断回环）
-- **archive**: 归档（delta-spec 合并 + 代码认知回灌）
-- **ship**: 交付（PR + 状态更新）
+- **Milestone** = release cycle (shippable increment)
+- **Phase** = work unit (goes through discuss/research/split/ship)
+- **Change** = change unit (goes through plan/apply/review/verify/archive)
+- **Adhoc Change** = independent change outside milestone/phase (same change cycle)
 
-## 命令
+## CLI Commands
 
-| 命令 | 说明 |
-|---|---|
-| `specwf init` | 初始化项目 |
-| `specwf update` | 更新平台文件 |
-| `specwf config` | 查看/修改配置 |
-| `specwf state` | 查看状态 |
-| `specwf context <step>` | 输出上下文清单 |
-| `specwf continue` | 自动推进 |
-| `specwf archive <change>` | 归档 change |
-| `specwf list` | 列出 milestones/phases/changes |
-| `specwf template <type>` | 生成模板文件 |
+| Command | Scope | Description |
+|---------|-------|-------------|
+| `specwf init` | Project | Initialize specwf project structure |
+| `specwf update` | Project | Regenerate platform files (commands, agents, skills) |
+| `specwf continue` | Project/Phase | Advance project or phase to next step |
+| `specwf continue change <name>` | Change | Advance a specific change to next step |
+| `specwf change new <name>` | Change | Create an adhoc change |
+| `specwf state` | All | View current state and pending work |
+| `specwf config` | Project | View/modify configuration |
+| `specwf context <step>` | All | Output file manifest for a step |
+| `specwf template <type>` | All | Generate artifact template |
+| `specwf list` | All | List milestones/phases/changes/archive |
+| `specwf archive <change>` | Change | Archive a completed change |
 
-## 配置
+## Workflow
 
-`specwf/project.yml` 中的关键配置：
+### Project-level flow
+```
+init → grill → research → roadmap → discuss → research-phase → split → [change cycle] → ship
+```
 
-- `profile`: 工作流严格度 (`lite` / `standard` / `strict`)
-- `platform`: 目标平台 (`omp` / `claude-code`)
-- `workflow.tdd`: TDD 强制
-- `review.gate`: review 门控 (`all-pass` / `severity` / `report-only`)
+Advance with: `specwf continue`
 
-## 自举
+### Change-level flow
+```
+plan → apply → review → verify → archive
+```
 
-specwf 用自身的工作流构建了自己。详见 `specwf/state.md` 了解完整构建历史和 21 项设计决策。
+Advance with: `specwf continue change <name>`
+
+### Adhoc change flow
+```
+specwf change new <name> → plan → apply → review → verify → archive
+```
+
+Advance with: `specwf continue change <name>`
+
+## Template Architecture
+
+Commands (`.omp/commands/`) and skills (`.omp/skills/`) are generated from a single TypeScript source per workflow step. Templates live in `src/templates/`:
+
+```
+src/templates/
+├── types.ts              — SkillTemplate, CommandTemplate, ArtifactTemplate, AgentPromptTemplate
+├── workflows/
+│   ├── registry.ts       — 16-step registry with direct imports
+│   ├── init.ts … continue.ts
+├── artifacts/index.ts    — 11 output document templates
+└── agents/index.ts       — 9 agent system prompts
+```
+
+Run `specwf update` to regenerate all 40 platform files from the TypeScript source.
+
+## Configuration
+
+Key settings in `specwf/project.yml`:
+
+- `profile`: workflow strictness (`lite` / `standard` / `strict`)
+- `platform`: target platform (`omp` / `claude-code`)
+- `workflow.tdd`: enforce TDD for type:behavior tasks
+- `workflow.triple_review`: parallel spec/quality/goal reviews
+- `review.gate`: review gate mode (`all-pass` / `severity` / `report-only`)
+
+## Tech Stack
+
+- Language: TypeScript
+- Runtime: Node.js ≥ 20
+- Test: Vitest
+- Target platforms: OMP (primary), Claude Code (planned)
+
+## Version
+
+- **Current**: v0.2.2 — English templates, inline continue instructions, sub-agent dispatch clarity
+- **Next**: m2-claude-code — Claude Code platform support
+
+## Bootstrapping
+
+specwf was built using its own workflow. See `specwf/state.md` for the complete build history and all design decisions.
 
 ## License
 

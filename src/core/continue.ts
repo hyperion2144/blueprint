@@ -1,12 +1,15 @@
 import { loadState } from './state-file.js';
 import { getNextSteps } from './state-machine.js';
 import type { StateFile } from '../types/index.js';
+import { WORKFLOW_REGISTRY, type WorkflowStep } from '../templates/workflows/registry.js';
 
 export interface StepInfo {
   command: string;
   description: string;
   artifacts: string[];
   fileRef: string;
+  /** Full workflow instructions from the TypeScript template */
+  instructions?: string;
 }
 
 export interface ContinueResult {
@@ -17,8 +20,10 @@ export interface ContinueResult {
   needsSubagent: boolean;
   availableSteps: { command: string; slashCommand: string; subagent: boolean }[];
   hint: string | null;
-  /** 下一步的详细信息 */
+  /** Detailed info for the next step */
   nextStepInfo?: StepInfo;
+  /** Full inline instructions for the next step (from TS template) */
+  instructions?: string;
 }
 
 export function determineNextStep(specwfDir: string): ContinueResult {
@@ -63,92 +68,124 @@ export function determineChangeNextStep(
 const STEP_INFO: Record<string, StepInfo> = {
   grill: {
     command: 'grill',
-    description: '通过逐条提问收集需求，产出 requirements.md',
+    description: 'Requirements exploration — 5W1H questioning, output requirements.md',
     artifacts: ['specwf/requirements.md'],
-    fileRef: '.omp/commands/specwf-grill.md',
+    fileRef: '',
   },
   research: {
     command: 'research',
-    description: '并行调研技术方向和架构方案',
+    description: 'Parallel technical research — dispatch researcher sub-agents',
     artifacts: ['specwf/research/stack.md', 'specwf/research/architecture.md', 'specwf/research/pitfalls.md', 'specwf/research/summary.md'],
-    fileRef: '.omp/commands/specwf-research.md',
+    fileRef: '',
   },
   'research-done': {
     command: 'research-done',
-    description: '标记调研完成，进入路线图拆分',
+    description: 'Mark research complete, proceed to roadmap',
     artifacts: [],
     fileRef: '',
   },
   roadmap: {
     command: 'roadmap',
-    description: '将项目拆分为 Milestone × Phase',
+    description: 'Split project into Milestones x Phases',
     artifacts: ['specwf/roadmap.md'],
-    fileRef: '.omp/commands/specwf-roadmap.md',
+    fileRef: '',
   },
   discuss: {
     command: 'discuss',
-    description: 'Phase 讨论，捕获实现决策',
-    artifacts: ['milestones/<ms>/phases/<ph>/context.md'],
-    fileRef: '.omp/commands/specwf-discuss.md',
+    description: 'Phase discussion — capture implementation decisions into context.md',
+    artifacts: ['context.md'],
+    fileRef: '',
   },
   'research-phase': {
     command: 'research-phase',
-    description: '对当前 phase 进行技术调研',
-    artifacts: ['milestones/<ms>/phases/<ph>/research.md'],
-    fileRef: '.omp/commands/specwf-research-phase.md',
+    description: 'Phase-level technical research — dispatch phase-researcher sub-agent',
+    artifacts: ['research.md'],
+    fileRef: '',
   },
   split: {
     command: 'split',
-    description: '将 phase 拆分为多个 change，确定依赖图',
-    artifacts: ['specwf/roadmap.md（更新）'],
-    fileRef: '.omp/commands/specwf-split.md',
+    description: 'Split phase into changes with dependency graph',
+    artifacts: ['specwf/changes/<name>/'],
+    fileRef: '',
   },
   plan: {
     command: 'plan',
-    description: 'Change 设计：设计技术方案、拆分任务、预写 delta-specs',
+    description: 'Change design — dispatch planner sub-agent for design + tasks + delta-specs',
     artifacts: ['design.md', 'tasks.md', 'specs/<domain>/spec.md'],
-    fileRef: '.omp/commands/specwf-plan.md',
+    fileRef: '',
   },
   apply: {
     command: 'apply',
-    description: '按 tasks.md 实现代码，type:behavior 走 RED→GREEN→REFACTOR',
-    artifacts: ['代码变更', '测试'],
-    fileRef: '.omp/commands/specwf-apply.md',
+    description: 'Code implementation — dispatch executor sub-agent for TDD',
+    artifacts: ['code changes', 'tests', 'change-summary.md'],
+    fileRef: '',
   },
   review: {
     command: 'review',
-    description: '三重审查：规格审查 + 质量审查 + 目标审查',
-    artifacts: ['REVIEW.md'],
-    fileRef: '.omp/commands/specwf-review.md',
+    description: 'Triple review — dispatch three reviewer sub-agents in parallel',
+    artifacts: ['spec-review.md', 'quality-review.md', 'goal-review.md'],
+    fileRef: '',
   },
   verify: {
     command: 'verify',
-    description: '运行测试，诊断根因，路由回环',
-    artifacts: ['VERIFICATION.md'],
-    fileRef: '.omp/commands/specwf-verify.md',
+    description: 'Test verification — dispatch verifier sub-agent',
+    artifacts: ['verification.md'],
+    fileRef: '',
   },
   archive: {
     command: 'archive',
-    description: 'Delta-spec 合并 + 代码认知回灌 + 目录归档',
+    description: 'Archive — dispatch archiver sub-agent for delta-spec merge + backfill',
     artifacts: ['archive/<change-id>/'],
-    fileRef: '.omp/commands/specwf-archive.md',
+    fileRef: '',
   },
   'ship-phase': {
     command: 'ship-phase',
-    description: '创建 PR + 更新 state.md',
-    artifacts: ['GitHub PR', 'state.md 更新'],
-    fileRef: '.omp/commands/specwf-ship.md',
+    description: 'Phase ship — create PR, update state.md',
+    artifacts: ['GitHub PR'],
+    fileRef: '',
   },
   'ship-milestone': {
     command: 'ship-milestone',
-    description: '发布 release tag + 更新版本号',
-    artifacts: ['git tag', 'RELEASE.md', 'npm publish'],
-    fileRef: '.omp/commands/specwf-ship.md',
+    description: 'Milestone ship — release tag, update version',
+    artifacts: ['git tag', 'RELEASE.md'],
+    fileRef: '',
   },
 };
 
+/** Step name → WorkflowStep mapping for template lookup */
+const STEP_TO_WORKFLOW: Record<string, WorkflowStep> = {
+  grill: 'grill',
+  research: 'research',
+  roadmap: 'roadmap',
+  discuss: 'discuss',
+  'research-phase': 'research-phase',
+  split: 'split',
+  plan: 'plan',
+  apply: 'apply',
+  review: 'review',
+  verify: 'verify',
+  archive: 'archive',
+  'ship-phase': 'ship',
+  'ship-milestone': 'ship',
+  init: 'init',
+  adhoc: 'adhoc',
+  continue: 'continue',
+  milestone: 'milestone',
+};
+
 function getStepInfo(command: string): StepInfo | undefined {
-  return STEP_INFO[command];
+  const info = STEP_INFO[command];
+  if (!info) return undefined;
+
+  // Populate instructions from the TypeScript template
+  const wfStep = STEP_TO_WORKFLOW[command];
+  if (wfStep && WORKFLOW_REGISTRY[wfStep]) {
+    return {
+      ...info,
+      instructions: WORKFLOW_REGISTRY[wfStep].command().content,
+    };
+  }
+  return info;
 }
 
 function determineFromChangeStatus(
@@ -163,18 +200,20 @@ function determineFromChangeStatus(
     subagent: t.subagent ?? false,
   }));
   const first = available[0];
+  const stepInfo = first ? getStepInfo(first.command) : undefined;
 
   return {
     currentStep: statusKey,
-    context: `${type === 'adhoc' ? '临时 Change' : 'Change'} (${name})`,
+    context: `${type === 'adhoc' ? 'Adhoc Change' : 'Change'} (${name})`,
     nextCommand: first?.command ?? null,
     slashCommand: first?.slashCommand || null,
     needsSubagent: first?.subagent ?? false,
     availableSteps,
     hint: available.length === 0
-      ? '该 change 已没有可用下一步。创建新 change 继续。'
+      ? 'This change has no available next steps. Create a new change to continue.'
       : null,
-    nextStepInfo: first ? getStepInfo(first.command) : undefined,
+    nextStepInfo: stepInfo,
+    instructions: stepInfo?.instructions,
   };
 }
 
@@ -199,6 +238,7 @@ export function determineFromState(state: StateFile): ContinueResult {
 
   const first = available[0];
   const hint = available.length === 0 ? generateHint(state) : null;
+  const stepInfo = first ? getStepInfo(first.command) : undefined;
 
   return {
     currentStep: ctx.step,
@@ -208,7 +248,8 @@ export function determineFromState(state: StateFile): ContinueResult {
     needsSubagent: first?.subagent ?? false,
     availableSteps,
     hint,
-    nextStepInfo: first ? getStepInfo(first.command) : undefined,
+    nextStepInfo: stepInfo,
+    instructions: stepInfo?.instructions,
   };
 }
 

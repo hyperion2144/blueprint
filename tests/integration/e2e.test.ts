@@ -38,7 +38,7 @@ describe('E2E: init → template → archive', () => {
     expect(parseInt(cmdCount)).toBe(16);
 
     const agentCount = execSync(`ls -1 ${join(testDir, '.omp', 'agents')} | wc -l`, { encoding: 'utf-8' }).trim();
-    expect(parseInt(agentCount)).toBe(9);
+    expect(parseInt(agentCount)).toBe(8);
   });
 
   it('step 3: specwf template proposal 生成 proposal.md', () => {
@@ -59,7 +59,7 @@ describe('E2E: init → template → archive', () => {
     expect(existsSync(designPath)).toBe(true);
     const content = readFileSync(designPath, 'utf-8');
     expect(content).toContain('add-auth');
-    expect(content).toContain('技术方案');
+    expect(content).toContain('Technical Approach');
   });
 
   it('step 5: specwf template tasks 生成 tasks.md', () => {
@@ -110,8 +110,9 @@ describe('E2E: init → template → archive', () => {
     // 创建 requirements.md 使 continue 能通过校验
     writeFileSync(join(testDir, 'specwf', 'requirements.md'), '# Requirements\n', 'utf-8');
     const output = execSync(`node ${cliPath} continue`, { encoding: 'utf-8', cwd: testDir });
-    expect(output).toContain('当前位置');
-    expect(output).toContain('当前步骤');
+    const result = JSON.parse(output);
+    expect(result.current).toBeDefined();
+    expect(result.next).toBeDefined();
   });
 
   it('step 8: specwf list 输出归档', () => {
