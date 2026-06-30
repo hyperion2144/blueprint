@@ -16,9 +16,13 @@ afterAll(() => {
 });
 
 describe('specwf integration', () => {
+  const pkg = JSON.parse(
+    readFileSync(join(__dirname, '..', '..', 'package.json'), 'utf-8'),
+  );
+
   it('specwf --version', () => {
     const output = execSync(`node ${cliPath} --version`, { encoding: 'utf-8' });
-    expect(output.trim()).toBe('0.1.0');
+    expect(output.trim()).toBe(pkg.version);
   });
 
   it('specwf init 创建项目结构', () => {
