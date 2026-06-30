@@ -15,20 +15,15 @@ const instructions = `## Input
 Run \`specwf context apply\` — outputs JSON with state (including pending changes) and file manifest. If a change name was provided, use it directly. If not, read the \`pending\` array from the JSON, filter by status \`planning\`, and ask the user to pick. Then read all files listed in \`specs\`, \`conventions\`, and \`artifacts\`.
 
 ### Step 2: Dispatch executor sub-agent
-**You are the orchestrator — dispatch, do not implement yourself.** Spawn \`specwf-executor\` sub-agent with:
+**You are the orchestrator — dispatch, do not implement yourself.** Run \`specwf dispatch executor --change <change-name>\` for platform-specific dispatch instructions.
 
-\`\`\`text
-Sub-agent: specwf-executor
-Change: <change-name> (from specwf/changes/<change-name>/)
+Construct the sub-agent prompt:
+- Change: <change-name> in specwf/changes/<change-name>/
+- Task: implement all tasks in tasks.md following TDD protocol
+- Read: design.md, delta-specs
+- Output: code changes, tests, completion.md
 
-Task: Implement all tasks in tasks.md following TDD protocol.
-Read design.md for approach, delta-specs for constraints.
-type:behavior tasks: RED->GREEN->REFACTOR (mandatory).
-All commits atomic, Conventional Commits format.
-Run type check and tests after each wave.
-
-Completion: write completion.md listing tasks done, tests passed, commits made.
-\`\`\`
+The sub-agent's system prompt (.omp/agents/specwf-executor.md) contains detailed TDD protocol.
 
 ### Step 3: Verify output and completion report
 After the executor finishes, check \`completion.md\` exists and confirm:

@@ -10,29 +10,13 @@ const instructions = `## Input
 Run \`specwf context research\` — outputs JSON with state and file manifest. Read all listed files before proceeding.
 
 ### Step 2: Dispatch research sub-agents
-**You are the orchestrator — dispatch, do not research yourself.** Spawn \`specwf-researcher\` sub-agents in parallel, one per technical direction (stack, architecture, pitfalls).
+**You are the orchestrator — dispatch, do not research yourself.** Run \`specwf dispatch researcher\` for platform-specific dispatch instructions. Dispatch one per technical direction (stack, architecture, pitfalls) in parallel.
 
 Construct each sub-agent prompt:
-
-\`\`\`text
-Sub-agent: specwf-researcher
-Task: Research <direction> for project <project-name>
-
-[Context]
-- Read requirements.md from specwf/requirements.md
-- Extract constraints from specwf/project.yml
-- Research scope: <stack | architecture | pitfalls>
-
-[Responsibilities]
-- Compare at least 2 candidate solutions
-- Assess feasibility, risk, and trade-offs
-- Produce a recommended approach with rationale
-- Output to specwf/research/<stack.md | architecture.md | pitfalls.md>
-
-[Constraints]
-- Read-only — do not modify code or config
-- Mark speculative findings with confidence levels
-\`\`\`
+- Task: research <stack | architecture | pitfalls> for this project
+- Read: specwf/requirements.md, specwf/project.yml
+- Output: research/stack.md | research/architecture.md | research/pitfalls.md
+- The sub-agent's system prompt (.omp/agents/specwf-researcher.md) contains detailed research protocol.
 
 ### Step 3: Verify sub-agent output
 After all sub-agents complete, verify:

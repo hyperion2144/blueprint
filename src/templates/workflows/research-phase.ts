@@ -10,31 +10,13 @@ const instructions = `## Input
 Run \`specwf context research-phase\` — outputs JSON with state and file manifest. Read all listed files before proceeding.
 
 ### Step 2: Dispatch phase researcher
-**You are the orchestrator — dispatch, do not research yourself.** Spawn \`specwf-phase-researcher\` sub-agent.
+**You are the orchestrator — dispatch, do not research yourself.** Run \`specwf dispatch phase-researcher\` for platform-specific dispatch instructions.
 
 Construct the sub-agent prompt:
-
-\`\`\`text
-Sub-agent: specwf-phase-researcher
-Task: Research implementation paths for phase <phase-id>
-
-[Context]
-- Read context.md for locked decisions and discretion areas
-- Read related specs/ for existing behavioral contracts
-- Read conventions/ for coding standards
-
-[Responsibilities]
-- Investigate concrete implementation approaches
-- Identify reusable patterns from existing codebase
-- Flag known pitfalls and edge cases
-- Produce research.md with recommended paths and TDD implications
-- Output to milestones/<ms>/phases/<ph>/research.md
-
-[Constraints]
-- Respect context.md locked decisions — they are non-negotiable
-- Surface trade-offs explicitly — do not present one option as the only path
-- Note confidence levels for speculative findings
-\`\`\`
+- Task: research implementation paths for this phase
+- Read: context.md, related specs/, conventions/
+- Output: research.md with recommended paths and TDD implications
+- The sub-agent's system prompt (.omp/agents/specwf-phase-researcher.md) contains detailed research protocol.
 
 ### Step 3: Verify output
 Confirm \`research.md\` was written by the sub-agent with:

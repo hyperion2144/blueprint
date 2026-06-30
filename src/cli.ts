@@ -12,6 +12,7 @@ import { register as registerArchive } from './commands/specwf-archive.js';
 import { register as registerList } from './commands/specwf-list.js';
 import { register as registerTemplate } from './commands/specwf-template.js';
 import { register as registerChange } from './commands/specwf-change.js';
+import { register as registerDispatch } from './commands/specwf-dispatch.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
@@ -33,5 +34,6 @@ registerArchive(program);
 registerList(program);
 registerTemplate(program);
 registerChange(program);
+registerDispatch(program);
 
 program.parse(process.argv);

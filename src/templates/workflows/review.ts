@@ -15,19 +15,13 @@ const instructions = `## Input
 If a change name was provided: use it directly. If not: run \`specwf state\`, list pending changes with status \`applying\`, ask the user to pick. Then run \`specwf context review\` to get the file manifest. Read all listed files.
 
 ### Step 2: Dispatch parallel review sub-agents
-**You are the orchestrator — dispatch, do not review yourself.** Spawn three \`specwf-reviewer\` sub-agents in parallel, each with a different role:
+**You are the orchestrator — dispatch, do not review yourself.** Run \`specwf dispatch reviewer --change <change-name>\` for platform-specific dispatch instructions. Dispatch three in parallel, each with a different role: spec-review, quality-review, goal-review.
 
-\`\`\`text
-Sub-agent: specwf-reviewer
-Change: <change-name>
-Role: spec-review | quality-review | goal-review (pick one per agent)
-
-Task: Review the change according to your assigned role.
-Read proposal.md, delta-specs, design.md, and the implementation.
-Cite specific file:line references for every finding.
-
-Output: write spec-review.md | quality-review.md | goal-review.md to specwf/changes/<change-name>/
-\`\`\`
+Construct each sub-agent prompt:
+- Task: review the change according to assigned role
+- Read: proposal.md, delta-specs, design.md, implementation
+- Output: spec-review.md | quality-review.md | goal-review.md to specwf/changes/<change-name>/
+- The sub-agent's system prompt (.omp/agents/specwf-reviewer.md) contains per-role review checklists.
 
 ### Step 3: Aggregate results
 After all three complete, check each report:
