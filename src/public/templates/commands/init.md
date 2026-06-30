@@ -10,11 +10,11 @@
 specwf init --brownfield
 ```
 
-CLI 创建目录结构后，**agent 需使用 specwf 子代理并行执行以下任务**：
+CLI 创建目录结构后，**agent 需使用 task 子代理并行执行以下任务**：
 
-1. **Codebase Mapping**（`specwf-researcher`）— 分析技术栈、模块结构、依赖关系
+1. **Codebase Mapping**— 分析技术栈、模块结构、依赖关系
    - 产出: `specwf/research/stack.md`、`architecture.md`、`pitfalls.md`、`summary.md`
-2. **Spec Bootstrap**（`specwf-researcher`）— 从核心模块提取行为契约
+2. **Spec Bootstrap**— 从核心模块提取行为契约
    - 产出: `specwf/specs/<domain>/spec.md`（标记 `BOOTSTRAPPED`）
 
 使用 task 工具 fan-out 两个 specwf-researcher 并行执行。
