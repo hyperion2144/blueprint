@@ -97,9 +97,23 @@ export const AGENT_DEFS: AgentDef[] = [
  * Agent file generation
  * ================================================================ */
 
+/** Map agent role name → ModelRole key in profile defaults */
+const AGENT_TO_MODEL_ROLE: Record<string, ModelRole> = {
+  researcher: 'research',
+  'phase-researcher': 'research',
+  planner: 'plan',
+  executor: 'execute',
+  reviewer: 'review',
+  verifier: 'verify',
+  archiver: 'archive',
+  // Brownfield/analysis agents not in profile map → fall back to 'default'
+};
+
 /** Resolve agent model from profile defaults + user overrides */
 export function resolveAgentModel(role: string, config: ProjectConfig): string {
-  return resolveModels(config)[role as ModelRole] ?? 'default';
+  const modelRole = AGENT_TO_MODEL_ROLE[role];
+  if (!modelRole) return 'pi/default';
+  return resolveModels(config)[modelRole] ?? 'pi/default';
 }
 
 /** Resolve agent thinking level */

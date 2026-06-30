@@ -74,9 +74,9 @@ describe('resolveModels', () => {
   it('standard profile 返回默认模型映射', () => {
     const config = loadConfig(tmpDir);
     const models = resolveModels(config);
-    expect(models.research).toBe('slow');
-    expect(models.execute).toBe('default');
-    expect(models.archive).toBe('default');
+    expect(models.research).toBe('pi/slow');
+    expect(models.execute).toBe('pi/default');
+    expect(models.archive).toBe('pi/default');
   });
 
   it('用户 models 覆盖 profile 默认', () => {
@@ -87,15 +87,18 @@ describe('resolveModels', () => {
     const models = resolveModels(config2);
     expect(models.execute).toBe('custom-model');
     // 其他角色保持 profile 默认
-    expect(models.research).toBe('slow');
+    expect(models.research).toBe('pi/slow');
   });
 
-  it('strict profile 返回 high thinking', () => {
+  it('strict profile 全部使用 slow 模型', () => {
     updateConfig(tmpDir, (config) => {
       config.profile = 'strict';
     });
     const config = loadConfig(tmpDir);
     const models = resolveModels(config);
-    expect(models.research).toBe('slow:high');
+    expect(models.research).toBe('pi/slow');
+    expect(models.plan).toBe('pi/slow');
+    expect(models.execute).toBe('pi/slow');
+    expect(models.review).toBe('pi/slow');
   });
 });
