@@ -33,7 +33,13 @@ function archiveHandler(changePath: string) {
     console.log('✓ delta-specs 合并完成');
   }
 
-  // 2. 代码认知提取
+  // 2. 检查 summary.md 是否存在
+  const summaryPath = join(fullChangePath, 'summary.md');
+  if (!existsSync(summaryPath)) {
+    console.warn('⚠ summary.md 不存在。建议先使用 `specwf template change-summary` 生成变更总结。');
+  }
+
+  // 3. 代码认知提取
   const repoDir = process.cwd();
   const extractResult = extractFromGitDiff(repoDir, fullChangePath);
   if (extractResult.available && extractResult.extractions.length > 0) {

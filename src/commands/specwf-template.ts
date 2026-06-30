@@ -24,6 +24,8 @@ const TEMPLATE_TYPES: Record<string, string> = {
   'goal-review': 'artifacts/goal-review.md',
   'project.yml': 'artifacts/project.yml',
   'state.md': 'artifacts/state.md',
+  // change summary（新增）
+  'change-summary': 'artifacts/change-summary.md',
   // codebase（新增）
   'codebase-stack': 'codebase/stack.md',
   'codebase-architecture': 'codebase/architecture.md',
@@ -66,18 +68,20 @@ function templateHandler(type: string, options: { name: string; dir?: string }) 
   content = content.replace(/\{\{change-name\}\}/g, name);
 
   // 确定目标目录和文件名
+  // 从模板路径提取文件名（如 artifacts/change-summary.md → change-summary.md）
+  const baseName = templateFile.split('/').pop() ?? `${type}.md`;
   let targetDir: string;
   let filename: string;
 
   if (options.dir) {
     targetDir = options.dir.startsWith('/') ? options.dir : join(process.cwd(), options.dir);
-    filename = type;
+    filename = baseName;
   } else if (type === 'project.yml' || type === 'state.md') {
     targetDir = join(process.cwd(), 'specwf');
-    filename = type;
+    filename = baseName;
   } else {
     targetDir = join(process.cwd(), 'specwf', 'changes', name);
-    filename = type.endsWith('.yml') ? type : `${type}.md`;
+    filename = baseName;
   }
 
   mkdirSync(targetDir, { recursive: true });

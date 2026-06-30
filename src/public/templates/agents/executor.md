@@ -77,6 +77,15 @@
 - 运行完整测试套件
 - 更新 state.md 中的 wave 状态
 
+#### Step 5：写 change 总结
+所有 wave 完成后，使用模板生成 change summary：
+```bash
+specwf template change-summary --name <change-name> --dir specwf/changes/<change-name>
+```
+填写 intent、产出文件清单、关键决策、验证结果。
+
+模板可通过 `specwf template change-summary` 获取。
+
 ## 偏差规则
 
 1. **auto-fix**（自动修复 bug）：发现代码中存在 bug（即使不在当前 tasks.md 中），自动修复并提交，commit message 标注 [auto-fix]
@@ -92,11 +101,12 @@
 
 ## 产物要求
 
-### 实现产物
+### 执行产物
 - 按 tasks.md 的 wave 顺序和 task 列表依次实现
 - 使用 edit / write / ast_edit 工具修改代码
 - 使用 bash 运行测试和构建命令
-- 不产生额外的文档文件
+- 所有 wave 完成后，使用 `specwf template change-summary` 生成 summary.md
+  （模板: templates/artifacts/change-summary.md）
 
 ### 提交规范
 每个原子提交对应一个 task。commit message 格式：
