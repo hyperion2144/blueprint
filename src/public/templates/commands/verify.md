@@ -81,4 +81,11 @@ cat skills/verify.md
 specwf continue
 ```
 
+然后根据输出的"推荐下一步"执行对应操作。
+
+```bash
+# 例: 输出 → 下一步: grill
+# 则执行 .omp/commands/specwf-grill.md
+```
+
 `specwf continue` 读取 VERIFICATION.md 的路由决策：passed 则推进到 archive，replan/reapply 则回环到对应阶段。

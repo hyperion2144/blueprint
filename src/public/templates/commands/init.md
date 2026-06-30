@@ -99,10 +99,12 @@ specwf state
 
 ## 推进
 
-完成后：
+完成后运行 `specwf continue`，根据输出的"推荐下一步"执行对应操作。
 
 ```bash
 specwf continue
+# → 输出: 推荐下一步: grill
+# → 执行 .omp/commands/specwf-grill.md
 ```
 
 ## 参考技能

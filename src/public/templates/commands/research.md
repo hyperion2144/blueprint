@@ -54,6 +54,13 @@ specwf state
 specwf continue
 ```
 
+然后根据输出的"推荐下一步"执行对应操作。
+
+```bash
+# 例: 输出 → 下一步: grill
+# 则执行 .omp/commands/specwf-grill.md
+```
+
 调研完成后自动进入 plan 阶段开始方案设计。如需跳过调研直接使用已知结论，执行 `specwf state set-step plan`。
 
 ## 参考技能

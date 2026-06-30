@@ -37,6 +37,13 @@ specwf state set-phase <id>
 specwf continue
 ```
 
+然后根据输出的"推荐下一步"执行对应操作。
+
+```bash
+# 例: 输出 → 下一步: grill
+# 则执行 .omp/commands/specwf-grill.md
+```
+
 ## 参考
 
 技能文件：`.omp/skills/specwf-milestone/SKILL.md`

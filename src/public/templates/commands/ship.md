@@ -93,4 +93,11 @@ specwf state
 specwf continue
 ```
 
+然后根据输出的"推荐下一步"执行对应操作。
+
+```bash
+# 例: 输出 → 下一步: grill
+# 则执行 .omp/commands/specwf-grill.md
+```
+
 状态机自动推进到下一 Phase 的 discuss 阶段（多 Phase Milestone）或进入 Milestone ship 决策。
