@@ -2,14 +2,29 @@
 
 对关键技术方向进行前期调研，降低后续实现阶段的技术不确定性。并行派出多个 specwf-researcher subagent，每个 agent 独立调研一个技术方向（如框架选型、库对比、架构决策点）。调研结果合并输出到 `@specwf/research/` 目录，供 planner 在设计阶段使用。
 
-## Subagent
+## 子代理
 
-每个独立技术方向派出一个 `specwf-researcher` agent，通过 `task` 工具 fan-out 并行执行。
+### 子代理类型
+`specwf-researcher`（完整 system prompt 见 `.omp/agents/specwf-researcher.md`）
 
-```yaml
-agent: specwf-researcher
-fan-out: 每个技术方向一个
-产出物: 写入对应文件（stack.md / architecture.md / pitfalls.md / summary.md）
+### 子代理提示词结构
+
+每个技术方向派发一个 researcher 子代理。提示词应包括：
+
+```
+【项目上下文】
+- 从 requirements.md 提取调研范围
+- 从 project.yml 提取技术约束
+
+【本次职责】
+- 对比至少 2 个候选方案
+- 评估可行性和风险
+- 产出推荐方案及理由
+
+【产出】
+- stack.md（模板: specwf template codebase-stack）
+- 或 architecture.md（模板: specwf template codebase-architecture）
+- 或 pitfalls.md（模板: specwf template codebase-pitfalls）
 ```
 
 ## 产出

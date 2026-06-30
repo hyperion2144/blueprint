@@ -4,10 +4,39 @@
 
 ## 子代理
 
-```yaml
-agent: specwf-verifier
-产出: change 目录下的 VERIFICATION.md
+### 子代理类型
+
+`specwf-verifier`（完整 system prompt 见 `.omp/agents/specwf-verifier.md`）
+
+### 子代理提示词结构
+
+派发时，提示词应包括：
+
 ```
+【项目上下文】
+- 读取 change 的 tasks.md 了解完成标准
+- 读取 design.md 了解技术方案
+- 读取 delta-specs 了解规格约束
+
+【本次职责】
+- 运行完整测试套件
+- 诊断失败根因
+- 路由回环：计划缺陷→replan、实现缺陷→reapply、规格缺陷→修 spec
+
+【产出】
+- verification.md（模板: specwf template verification）
+```
+
+### 产出物
+
+| 文件 | 模板 | 用途 |
+|------|------|------|
+| `VERIFICATION.md` | `specwf template artifacts/verification.md` | 测试结果、根因诊断、路由决策 |
+
+派发 specwf-verifier 子代理，负责：
+- 运行测试并收集结果
+- 诊断失败根因
+- 路由回环（replan/reapply）
 
 ## 产出
 

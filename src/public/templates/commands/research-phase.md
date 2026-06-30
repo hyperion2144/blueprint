@@ -5,12 +5,38 @@
 | | |
 |---|---|
 | **描述** | Phase 调研 — 技术选择 + 架构模式 + 实现路径 + 陷阱识别 |
-| **子代理** | specwf-phase-researcher |
+|**子代理**|派发 specwf-phase-researcher 子代理，调研当前 Phase 的实现路径，产出 research.md|
 | **产出** | `research.md`（阶段调研报告） |
 | **产出模板** | `specwf template phase-research` |
 | **上下文** | `specwf context research-phase` + `specwf state` |
 | **推进** | `specwf continue` |
-| **引用技能** | `skills/specwf-research-phase/SKILL.md` |
+|| **引用技能** | `skills/specwf-research-phase/SKILL.md` |
+
+## 子代理
+
+### 子代理类型
+
+`specwf-phase-researcher`（完整 system prompt 见 `.omp/agents/specwf-phase-researcher.md`）
+
+### 子代理提示词结构
+
+派发时，提示词应包括：
+
+```
+【项目上下文】
+- 从 context.md 提取 locked decisions 和 discretion area
+- 从项目级 research/ 了解已有技术选型
+- 从 specs/ 了解规格约束
+
+【本次职责】
+- 对 locked decisions：只写实现指引，不探索替代方案
+- 对 discretion area：调研并推荐最优路径
+- 识别常见陷阱和风险（至少 3 条）
+- 包含代码示例（至少 2 段）
+
+【产出】
+- research.md（模板: specwf template phase-research）
+```
 
 ## 上下文
 

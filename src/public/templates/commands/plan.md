@@ -2,10 +2,45 @@
 
 为当前 Change 设计技术方案、拆分为可执行任务、并预先编写 delta-specs 行为契约。使用 specwf-planner agent 完成 design → specs → tasks 的串行设计过程。
 
+## 子代理
+
+### 子代理类型
+`specwf-planner`（完整 system prompt 见 `.omp/agents/specwf-planner.md`）
+
+### 子代理提示词结构
+
+派发时，提示词应包括：
+
+```
+【项目上下文】
+- 从 context.md 提取 locked decisions 和 discretion area
+- 从 proposal.md 提取 must-haves
+- 从 specs/ 提取现有规格约束
+
+【本次职责】
+- 设计技术方案 → design.md（模板: specwf template design）
+- 拆分可执行任务 → tasks.md（模板: specwf template tasks）
+- 预写 delta-specs → specs/<domain>/spec.md（模板: specwf template spec-bootstrap）
+
+【约束条件】
+- 遵守 proposal.md 的 must-haves，不缩小范围
+- 遵守 context.md 的 locked decisions
+- 所有产物写入 specwf/ 目录
+- type:behavior task 走 RED→GREEN→REFACTOR
+```
+
+### 产出物
+
+|文件|模板|
+|---|---|
+|design.md|specwf template design|
+|tasks.md|specwf template tasks|
+|specs/<domain>/spec.md|specwf template spec-bootstrap|
+
 | | |
 |---|---|
 | **描述** | Change 设计 — 技术方案 + 任务拆分 + 预写 delta-specs |
-| **子代理** | specwf-planner |
+| **子代理** | 派发 specwf-planner 子代理，负责：<br>- 设计技术方案 → design.md<br>- 拆分可执行任务 → tasks.md<br>- 预写 delta-specs → specs/&lt;domain&gt;/spec.md |
 | **产出** | design.md（技术方案）、tasks.md（任务清单）、specs/&lt;domain&gt;/spec.md（delta-specs） |
 | **产出模板** | `specwf template artifacts/design.md` · `specwf template artifacts/tasks.md` · `specwf template specs/spec.md` |
 | **上下文** | `specwf context plan` + `specwf state` |

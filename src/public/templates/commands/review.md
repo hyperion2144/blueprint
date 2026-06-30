@@ -2,9 +2,45 @@
 
 对 Apply 产出的代码并行执行规格审查、质量审查、目标审查。三个独立视角互不干扰，全部通过后才能进入 verify 阶段。
 
+## 子代理
+
+### 子代理类型
+`specwf-reviewer`（完整 system prompt 见 `.omp/agents/specwf-reviewer.md`）
+
+### 提示词结构
+
+派发三个 reviewer 子代理并行执行，每个提示词不同：
+
+**审查 1: 规格符合性**
+
+```
+对照 proposal.md 的 must-haves 和 delta-specs，逐项检查实现是否符合规格。
+产出: reviews/spec-review.md（模板: specwf template spec-review）
+```
+
+**审查 2: 代码质量**
+
+```
+检查代码质量、安全、性能、可维护性。
+产出: reviews/quality-review.md（模板: specwf template quality-review）
+```
+
+**审查 3: 目标达成**
+
+```
+对照 proposal.md 目标和 tasks.md 完成标准，检查是否全部达成。
+产出: reviews/goal-review.md（模板: specwf template goal-review）
+```
+
+### 门控
+全部审查通过才进 verify。
+
 ## Subagent
 
-一次派出三个 `specwf-reviewer` agent 并行执行：
+派发 specwf-reviewer 子代理，三重审查并行执行：
+- 规格审查（spec-review.md）
+- 质量审查（quality-review.md）
+- 目标审查（goal-review.md）
 
 ```yaml
 agent: specwf-reviewer

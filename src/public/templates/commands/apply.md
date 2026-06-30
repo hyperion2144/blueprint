@@ -2,10 +2,45 @@
 
 按 tasks.md 执行代码实现。TDD 强制执行：type:behavior 任务走 RED→GREEN→REFACTOR 协议，其他类型直接实现。由 specwf-executor agent 负责执行。
 
+## 子代理
+
+### 子代理类型
+`specwf-executor`（完整 system prompt 见 `.omp/agents/specwf-executor.md`）
+
+### 子代理提示词结构
+
+派发时，提示词应包括：
+
+```
+【项目上下文】
+- 从 state.md 获取当前 change 标识
+- 从 design.md 获取技术方案
+- 从 tasks.md 获取任务清单
+- 从 delta-specs 获取规格约束
+
+【本次职责】
+- 按 tasks.md 的 wave 顺序依次实现
+- type:behavior 走 RED→GREEN→REFACTOR
+- 每个 task 原子提交
+- 所有 wave 完成后写 change-summary
+
+【约束条件】
+- 不跳过任何 task
+- 遇到架构级变更时暂停并提问
+```
+
+### 产出物
+
+|产出|说明|
+|---|---|
+|代码变更|按 tasks.md 实现|
+|测试|与源文件同目录 *.test.ts|
+|summary.md|specwf template change-summary|
+
 | | |
 |---|---|
 | **描述** | 代码实现 — 按 tasks.md 执行，TDD RED→GREEN→REFACTOR |
-| **执行 agent** | specwf-executor |
+| **执行 agent** | 派发 specwf-executor 子代理：<br>- 按 tasks.md wave 顺序实现代码<br>- type:behavior 任务走 RED→GREEN→REFACTOR<br>- 所有 wave 完成后写 change-summary |
 | **产出** | 代码变更 + 测试 + summary.md |
 | **产出模板** | `specwf template change-summary` |
 | **上下文** | `specwf context apply` + `specwf state` |

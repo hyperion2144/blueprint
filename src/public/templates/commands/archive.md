@@ -2,15 +2,39 @@
 
 Change 循环的收尾阶段。负责三件事：(1) 将 delta-specs 确定性合并到全局 specs/；(2) 从代码 diff 中提取新的行为和约束，回灌到 specs/ 中；(3) 将原始产物目录移动到 `archive/<date>-<name>/` 下持久保存。归档完成后，Change 的工作永久记录在 specs/ 和 archive/ 中，供后续 Change 参考和追溯。
 
-## Subagent
+## 子代理
 
-通过 `task` 工具派出 `specwf-archiver` subagent 执行归档：
+### 子代理类型
+`specwf-archiver`（完整 system prompt 见 `.omp/agents/specwf-archiver.md`）
 
-```yaml
-agent: specwf-archiver
-change-path: <change-name>
-产出物: specs/（合并后）、archive/<date>-<name>/（原始产物归档）
+### 子代理提示词结构
+
+派发时，提示词应包括：
+
 ```
+【项目上下文】
+- 读取 change 的 proposal.md、design.md、tasks.md
+- 读取 delta-specs（specs/<domain>/spec.md）
+- 使用 git diff 获取变更集
+
+【本次职责】
+- delta-spec 合并到全局 specs/
+- 从代码变更提取行为/约束回灌
+- 移动 change 目录到 archive/
+
+【产出】
+- 合并后的 specs/
+- 回灌后的 specs/
+- archive/<date>-<name>/ 目录
+```
+
+### 产出物
+
+| 产出物 | 说明 | 模板参考 |
+|--------|------|----------|
+| `specs/<domain>/spec.md`（更新） | delta-specs 确定合并 + 代码认知回灌 | `.omp/templates/spec.md` |
+| `archive/<date>-<name>/` | Change 原始产物完整归档 | 目录结构见 `.omp/agents/specwf-archiver.md` |
+| `archive/INDEX.md`（追加） | 归档索引条目，含 change-id、日期、范围摘要 | — |
 
 ## 产出
 
