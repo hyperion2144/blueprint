@@ -118,6 +118,9 @@ adhoc:
   - name: fix-archive-structure
     status: archived
     depends_on: []
+  - name: fix-subagent-instructions
+    status: archived
+    depends_on: []
 ---
 
 # specwf — 状态机
