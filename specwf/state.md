@@ -1,13 +1,13 @@
 ---
 project:
   name: specwf
-  status: milestone-active
+  status: requirements-defined
   current_milestone: m2-claude-code
   current_phase: null
 active_context:
   type: milestone
   ref: milestones/m2-claude-code
-  step: active
+  step: requirements-defined
 changes:
   - name: scaffold-project
     status: archived
@@ -119,6 +119,9 @@ adhoc:
     status: archived
     depends_on: []
   - name: fix-subagent-instructions
+    status: archived
+    depends_on: []
+  - name: fix-command-params
     status: archived
     depends_on: []
 ---
