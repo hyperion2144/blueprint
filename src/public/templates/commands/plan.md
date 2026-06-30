@@ -10,7 +10,6 @@
 
 ```bash
 specwf state
-specwf continue
 ```
 
 确认当前处于 plan 阶段。continue 校验前置条件（proposal.md 存在且非模板）后自动推进。

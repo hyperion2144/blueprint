@@ -8,10 +8,9 @@
 
 ```bash
 specwf state
-specwf continue
 ```
 
-确认当前状态可进行 grill 步骤。continue 会校验前置条件并自动推进状态。
+确认当前状态是否可执行本步骤。
 
 ### 2. 获取上下文
 
