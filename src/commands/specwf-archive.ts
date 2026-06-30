@@ -70,11 +70,26 @@ function archiveHandler(changePath: string) {
       const change = state.changes.find((c) => c.name === changeName);
       if (change) {
         change.status = 'archived';
-        return;
       }
       const adhoc = state.adhoc.find((c) => c.name === changeName);
       if (adhoc) {
         adhoc.status = 'archived';
+      }
+
+      // Reset active_context if it pointed to the archived change
+      const currentRef = state.active_context.ref;
+      if (currentRef && currentRef.includes(changeName)) {
+        // Find next pending change
+        const nextChange = state.changes.find((c) => c.status !== 'archived');
+        const nextAdhoc = state.adhoc.find((c) => c.status !== 'archived');
+        if (nextAdhoc) {
+          state.active_context = { type: 'adhoc', ref: `changes/${nextAdhoc.name}`, step: nextAdhoc.status };
+        } else if (nextChange) {
+          state.active_context = { type: 'change', ref: `changes/${nextChange.name}`, step: nextChange.status };
+        } else {
+          // No pending changes — reset to project level
+          state.active_context = { type: 'project', ref: null, step: state.project.status };
+        }
       }
     });
     console.log('✓ state.md 已更新');

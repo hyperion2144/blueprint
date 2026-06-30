@@ -38,7 +38,7 @@ Check \`completion.md\` and confirm:
 - \`state.md\` reflects archived status
 
 ### Step 4: Advance
-Run \`specwf continue\` — if all phase changes are archived, routes to ship-phase.
+Run \`specwf continue\` — if all phase changes are archived, routes to ship-phase. If pending changes remain, active_context is automatically set to the next one.
 
 ## Guardrails
 - **You are the orchestrator** — dispatch archiver, do not archive yourself
