@@ -5,6 +5,7 @@
 import { join } from 'node:path';
 import { loadState, updateState } from '../core/state-file.js';
 import { validateStepAdvance } from '../core/state-validator.js';
+import { archiveMilestoneDir } from '../core/file-tree.js';
 
 export function register(program: any): void {
   const cmd = program
@@ -59,6 +60,15 @@ function showState() {
 
 function setMilestone(id: string) {
   const specwfDir = findSpecwfDir();
+  const currentState = loadState(specwfDir);
+
+  // 归档上一里程碑（未 shipped 时自动归档）
+  const prevMilestone = currentState.project.current_milestone;
+  if (prevMilestone && prevMilestone !== id && currentState.project.status !== 'milestone-shipped') {
+    const archived = archiveMilestoneDir(specwfDir, prevMilestone);
+    console.log(`✓ 归档上一里程碑: ${prevMilestone} → ${archived}`);
+  }
+
   updateState(specwfDir, (state) => {
     state.project.current_milestone = id;
     state.project.current_phase = null;

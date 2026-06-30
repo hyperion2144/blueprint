@@ -95,6 +95,26 @@ export function archiveChangeDir(
   return archiveDir;
 }
 
+/** 归档 milestone 到 archive/milestones/ */
+export function archiveMilestoneDir(
+  specwfDir: string,
+  milestoneId: string,
+): string {
+  const sourceDir = join(specwfDir, 'milestones', milestoneId);
+  const archiveDir = join(specwfDir, 'archive', 'milestones', milestoneId);
+  
+  if (!existsSync(sourceDir)) {
+    return archiveDir;
+  }
+  
+  mkdirSync(join(specwfDir, 'archive', 'milestones'), { recursive: true });
+  
+  // 移动整个 milestone 目录
+  renameSync(sourceDir, archiveDir);
+  
+  return archiveDir;
+}
+
 // Node fs.renameSync 在目录跨设备时可能失败，用 mv 替代
 import { renameSync } from 'node:fs';
 
