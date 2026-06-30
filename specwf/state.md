@@ -109,6 +109,9 @@ adhoc:
   - name: fix-phase-researcher
     status: archived
     depends_on: []
+  - name: fix-milestone-archive
+    status: archived
+    depends_on: []
 ---
 
 # specwf — 状态机
