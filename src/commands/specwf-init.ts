@@ -76,7 +76,7 @@ async function initHandler(options: {
   if (isBrownfield) {
     const info = detectProjectInfo(process.cwd());
     const domains = await runBrownfieldInit(process.cwd(), specwfDir, info);
-    console.log('✓ 存量项目 codebase mapping 完成 (' + domains.length + ' 个 spec 域)');
+    console.log('✓ 已扫描项目结构。请派发 specwf-codebase-mapper 和 specwf-spec-bootstrapper 子代理完成完整分析。');
   }
 
   console.log('specwf 初始化完成。');
