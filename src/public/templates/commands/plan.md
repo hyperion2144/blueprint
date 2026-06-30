@@ -28,7 +28,9 @@ specwf context plan
 
 ### 步骤 3：派发子代理执行设计
 
-派发 `specwf-planner` 子代理（完整 system prompt 见 `.omp/agents/specwf-planner.md`）。
+参数：`change <name>`（不传时查看 `specwf state` 待处理列表）
+
+派发 `specwf-planner` 子代理（完整 system prompt 见 `.omp/agents/specwf-planner.md`，技能详见 `.omp/skills/specwf-plan/SKILL.md`）。
 
 提示词内容：
 
@@ -61,7 +63,15 @@ specwf context plan
 | tasks.md | specwf template tasks |
 | specs/<domain>/spec.md | specwf template spec-bootstrap |
 
-### 步骤 4：验证
+### 步骤 4：查看产出
+
+| 文件 | 说明 | 模板 |
+|------|------|------|
+| changes/<name>/design.md | 技术方案（架构、数据流、接口、备选方案） | specwf template design |
+| changes/<name>/tasks.md | 实现清单（含 TDD type 标注） | specwf template tasks |
+| changes/<name>/specs/<domain>/spec.md | Delta-specs 行为契约 | specwf template spec-bootstrap |
+
+### 步骤 5：验证
 
 运行 plan-checker 自动检查：
 - [ ] 所有 tasks 标注了 type
@@ -78,25 +88,5 @@ specwf continue
 ```
 
 continue 检查 design.md + tasks.md 完整且非模板后，推进到 apply 阶段。
-
----
-
-## 参数
-
-```
-change <name>
-```
-
-不传时查看 `specwf state` 待处理列表。
-
-## 产出
-
-| 文件 | 说明 | 模板 |
-|------|------|------|
-| changes/<name>/design.md | 技术方案（架构、数据流、接口、备选方案） | `specwf template design` |
-| changes/<name>/tasks.md | 实现清单（含 TDD type 标注） | `specwf template tasks` |
-| changes/<name>/specs/<domain>/spec.md | Delta-specs 行为契约 | `specwf template spec-bootstrap` |
-
-## 参考
 
 技能文件：`.omp/skills/specwf-plan/SKILL.md`

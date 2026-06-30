@@ -42,20 +42,10 @@ specwf context research
 【产出】
 - stack.md（模板: specwf template codebase-stack）
 - 或 architecture.md（模板: specwf template codebase-architecture）
-- 或 pitfalls.md（模板: specwf template codebase-pitfalls）
+| 产出 | 推荐方案及理由 |
 ```
 
-### 步骤 4：推进
-
-```bash
-specwf continue
-```
-
-调研完成后自动进入 plan 阶段。
-
----
-
-## 产出
+### 步骤 4：查看产出
 
 | 文件 | 模板 | 用途 |
 |------|------|------|
@@ -64,6 +54,12 @@ specwf continue
 | research/pitfalls.md | specwf template codebase-pitfalls | 已知陷阱与风险记录 |
 | research/summary.md | 无模板（自由格式） | 调研总结 |
 
-## 参考
+### 步骤 5：推进
+
+```bash
+specwf continue
+```
+
+调研完成后自动进入 plan 阶段。
 
 技能文件：`.omp/skills/specwf-research/SKILL.md`

@@ -100,7 +100,13 @@ specwf context roadmap
 详细说明、关键决策、注意事项。
 ```
 
-### 步骤 4：推进
+### 步骤 4：查看产出
+
+| 文件 | 说明 | 模板 |
+|------|------|------|
+| specwf/roadmap.md | 完整路线图文档 | 无模板（手动编写，参考上述推荐格式） |
+
+### 步骤 5：推进
 
 ```bash
 # 切换到第一个 Milestone（多里程碑项目）
@@ -110,13 +116,5 @@ specwf state set-milestone <id>
 specwf continue
 ```
 
-- `specwf state set-milestone <id>` 记录当前正在工作的里程碑，状态机据此筛选后续 Phase
-- `specwf continue` 检查 roadmap.md 已就绪、里程碑已设定，然后推进到下一阶段（plan）
-
----
-
-## 产出
-
-| 文件 | 说明 | 模板 |
-|------|------|------|
-| `specwf/roadmap.md` | 完整路线图文档 | 无模板（手动编写，参考上述推荐格式） |
+- `specwf state set-milestone <id>` 记录当前正在工作的里程碑
+- `specwf continue` 检查 roadmap.md 已就绪、里程碑已设定，然后推进到下一阶段

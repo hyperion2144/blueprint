@@ -51,17 +51,7 @@ git push origin v<major>.<minor>.<patch>
 
 Release notes 应包含：版本号、变更总览（按 Phase 分组）、breaking changes、diff 统计、测试结果。
 
-### 步骤 6：推进
-
-```bash
-specwf continue
-```
-
-进入下一 Phase 的 discuss 或完成 Milestone。
-
----
-
-## 产出
+### 步骤 6：查看产出
 
 | 产出 | 说明 |
 |------|------|
@@ -69,6 +59,12 @@ specwf continue
 | state.md 更新 | 标记 Phase 为 shipped |
 | （可选）Git tag | 语义化版本号 |
 
-## 参考
+### 步骤 7：推进
+
+```bash
+specwf continue
+```
+
+进入下一 Phase 的 discuss 或完成 Milestone。
 
 技能文件：`.omp/skills/specwf-ship/SKILL.md`

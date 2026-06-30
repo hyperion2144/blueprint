@@ -70,17 +70,9 @@ CLI 创建目录结构后，派发两个子代理并行执行。
 【约束条件】标注 BOOTSTRAPPED，低置信度条目需人工确认，只读分析
 ```
 
-### 步骤 5：推进
+### 步骤 5：查看产出
 
-```bash
-specwf continue
-```
-
-进入需求探讨阶段（grill）。
-
----
-
-## 产出
+CLI 生成的基础结构：
 
 | 产出 | 说明 |
 |------|------|
@@ -89,8 +81,14 @@ specwf continue
 | specwf/state.md | 状态机文件 |
 | platform 文件 | commands + agents + skills |
 
-brownfield 额外：research/stack.md、architecture.md、pitfalls.md、conventions/codebase-conventions.md、specs/<domain>/spec.md
+brownfield 额外产出：research/stack.md、architecture.md、pitfalls.md、conventions/codebase-conventions.md、specs/<domain>/spec.md
 
-## 参考
+### 步骤 6：推进
+
+```bash
+specwf continue
+```
+
+进入需求探讨阶段（grill）。
 
 技能文件：`.omp/skills/specwf-init/SKILL.md`

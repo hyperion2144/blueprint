@@ -20,9 +20,15 @@ specwf context archive
 
 读取输出的文件清单。
 
+前置条件：
+- [ ] verify 阶段已通过（state 中 status 为 passed）
+- [ ] 当前 Change 的产物完整（proposal、tasks、specs、review、verification）
+
 ### 步骤 3：派发子代理执行
 
-派发 `specwf-archiver` 子代理（完整 system prompt 见 `.omp/agents/specwf-archiver.md`）。
+参数：`specwf archive <change-path>`（`<change-path>` 指向 `changes/<change-name>/` 目录）
+
+派发 `specwf-archiver` 子代理（完整 system prompt 见 `.omp/agents/specwf-archiver.md`，技能详见 `.omp/skills/specwf-archive/SKILL.md`）。
 
 提示词内容：
 
@@ -55,37 +61,18 @@ specwf archive <change-path>
 5. 目录归档到 `archive/<date>-<name>/`
 6. 更新归档索引
 
-### 步骤 4：推进
+### 步骤 4：查看产出
+
+| 文件/目录 | 说明 |
+|-----------|------|
+| specs/<domain>/spec.md（更新） | delta-specs 合并 + 代码认知回灌后的全局规范 |
+| archive/<date>-<name>/ | Change 原始产物完整归档 |
+| archive/INDEX.md（追加） | 归档索引条目 |
+
+### 步骤 5：推进
 
 ```bash
 specwf continue
 ```
 
 进入 ship 阶段准备合并和发布。
-
----
-
-## 参数
-
-```
-specwf archive <change-path>
-```
-
-`<change-path>` 指向 `changes/<change-name>/` 目录。
-
-## 前置条件
-
-- [ ] verify 阶段已通过（state 中 status 为 passed）
-- [ ] 当前 Change 的产物完整（proposal、tasks、specs、review、verification）
-
-## 产出
-
-| 文件/目录 | 说明 |
-|-----------|------|
-| `specs/<domain>/spec.md`（更新） | delta-specs 合并 + 代码认知回灌后的全局规范 |
-| `archive/<date>-<name>/` | Change 原始产物完整归档 |
-| `archive/INDEX.md`（追加） | 归档索引条目 |
-
-## 参考
-
-技能文件：`.omp/skills/specwf-archive/SKILL.md`

@@ -32,24 +32,20 @@ specwf context grill
 
 每项达成共识后记录到 `@specwf/requirements.md`。
 
-### 步骤 4：确认共识
+### 步骤 4：查看产出
+
+| 文件 | 说明 |
+|------|------|
+| @specwf/requirements.md | 需求共识文档（自由格式） |
+
+### 步骤 5：确认共识
 
 与用户逐项回顾 requirements.md，确保无歧义。
 
-### 步骤 5：推进
+### 步骤 6：推进
 
 ```bash
 specwf continue
 ```
 
-continue 检查 requirements.md 存在且内容完整后，自动推进到下一阶段（research）。
-
-## 参数
-
-无。
-
-## 产出
-
-| 文件 | 说明 |
-|------|------|
-| `@specwf/requirements.md` | 需求共识文档（自由格式） |
+检查 requirements.md 存在且内容完整后，自动推进到下一阶段（research）。

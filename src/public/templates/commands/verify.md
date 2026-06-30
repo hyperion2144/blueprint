@@ -22,7 +22,9 @@ specwf context verify
 
 ### 步骤 3：派发子代理验证
 
-派发 `specwf-verifier` 子代理（完整 system prompt 见 `.omp/agents/specwf-verifier.md`）。
+参数：`change <name>`（不传时查看 `specwf state` 待处理列表）
+
+派发 `specwf-verifier` 子代理（完整 system prompt 见 `.omp/agents/specwf-verifier.md`，技能详见 `.omp/skills/specwf-verify/SKILL.md`）。
 
 提示词内容：
 
@@ -50,30 +52,16 @@ specwf context verify
 - 规格缺陷 → 标记 spec 待修
 - 环境问题 → 记录不路由
 
-### 步骤 4：推进
+### 步骤 4：查看产出
+
+| 文件 | 模板 |
+|------|------|
+| changes/<change-name>/VERIFICATION.md | specwf template verification |
+
+### 步骤 5：推进
 
 ```bash
 specwf continue
 ```
 
 passed 则推进到 archive，replan/reapply 则回环到对应阶段。
-
----
-
-## 参数
-
-```
-change <name>
-```
-
-不传时查看 `specwf state` 待处理列表。
-
-## 产出
-
-| 文件 | 模板 |
-|------|------|
-| changes/<change-name>/VERIFICATION.md | specwf template verification |
-
-## 参考
-
-技能文件：`.omp/skills/specwf-verify/SKILL.md`

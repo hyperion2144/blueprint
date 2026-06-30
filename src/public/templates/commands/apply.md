@@ -26,7 +26,9 @@ specwf context apply
 
 ### 步骤 3：派发子代理执行
 
-派发 `specwf-executor` 子代理（完整 system prompt 见 `.omp/agents/specwf-executor.md`）。
+参数：`change <name>`（不传时查看 `specwf state` 待处理列表）
+
+派发 `specwf-executor` 子代理（完整 system prompt 见 `.omp/agents/specwf-executor.md`，技能详见 `.omp/skills/specwf-apply/SKILL.md`）。
 
 提示词内容：
 
@@ -90,16 +92,10 @@ specwf continue
 
 检查代码已提交且测试通过后，推进到 review。
 
----
+### 步骤 7：查看产出
 
-## 参数
-
-```
-change <name>
-```
-
-不传时查看 `specwf state` 待处理列表。
-
-## 参考
-
-技能文件：`.omp/skills/specwf-apply/SKILL.md`
+| 产出 | 说明 |
+|------|------|
+| 代码变更 | 按 tasks.md 实现 |
+| 测试 | 与源文件同目录 *.test.ts |
+| summary.md | specwf template change-summary |

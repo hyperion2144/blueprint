@@ -26,6 +26,8 @@ specwf context discuss
 
 ### 步骤 3：讨论并记录决策
 
+参数：`[phase <name>]`（不传时查看当前 milestone 的待处理 phase）
+
 与用户逐项讨论以下内容，每项达成共识后写入 `context.md`：
 
 ```bash
@@ -42,30 +44,18 @@ context.md 包含：
 
 灰色地带标记 `[TODO: discuss]`。
 
-### 步骤 4：推进
+### 步骤 4：查看产出
+
+| 文件 | 说明 | 模板 |
+|------|------|------|
+| milestones/<ms>/phases/<ph>/context.md | Phase 实现决策 | specwf template artifacts/context.md |
+
+### 步骤 5：推进
 
 ```bash
 specwf continue
 ```
 
-continue 检查 context.md 存在后，推进到 research-phase。
-
----
-
-## 参数
-
-```
-[phase <name>]
-```
-
-不传时查看当前 milestone 的待处理 phase。
-
-## 产出
-
-| 文件 | 说明 | 模板 |
-|------|------|------|
-| `milestones/<ms>/phases/<ph>/context.md` | Phase 实现决策 | `specwf template artifacts/context.md` |
-
-## 参考
+检查 context.md 存在后，推进到 research-phase。
 
 技能文件：`.omp/skills/specwf-discuss/SKILL.md`
