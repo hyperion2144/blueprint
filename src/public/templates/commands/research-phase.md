@@ -23,6 +23,9 @@
 派发时，提示词应包括：
 
 ```
+子代理类型: specwf-phase-researcher
+描述: 阶段调研 — 调研当前 Phase 实现路径，产出 research.md
+
 【项目上下文】
 - 从 context.md 提取 locked decisions 和 discretion area
 - 从项目级 research/ 了解已有技术选型

@@ -12,6 +12,9 @@
 每个技术方向派发一个 researcher 子代理。提示词应包括：
 
 ```
+子代理类型: specwf-researcher
+描述: 技术调研 — 对比方案、评估可行性、产出推荐
+
 【项目上下文】
 - 从 requirements.md 提取调研范围
 - 从 project.yml 提取技术约束

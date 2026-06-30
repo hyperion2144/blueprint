@@ -10,19 +10,22 @@
 
 ### 存量项目（brownfield）
 
-使用 `--brownfield` 模式，CLI 创建目录结构后，派发两个子代理并行执行：
+使用 `--brownfield` 模式。CLI 创建目录结构后，派发两个子代理并行执行。
 
-| 子代理 | 职责 | 产出 | 定义文件 |
-|-------|------|------|---------|
-| `specwf-codebase-mapper` | 分析技术栈、架构、代码规范、风险 | `research/stack.md`、`architecture.md`、`pitfalls.md`、`codebase-conventions.md` | `.omp/agents/specwf-codebase-mapper.md` |
-| `specwf-spec-bootstrapper` | 从核心模块签名/注释/测试提取行为契约 | `specs/<domain>/spec.md`（标记 `BOOTSTRAPPED`） | `.omp/agents/specwf-spec-bootstrapper.md` |
+#### Agent 1: specwf-codebase-mapper
 
-#### specwf-codebase-mapper 提示词结构
+派发 `specwf-codebase-mapper` 子代理（完整 system prompt 见 `.omp/agents/specwf-codebase-mapper.md`）。
 
-```
+提示词内容：
+
+```text
+子代理类型: specwf-codebase-mapper
+描述: 代码库映射 — 分析存量项目技术栈、架构、代码规范、风险
+
 【项目上下文】
 - 从 project.yml 获取项目名称和 profile
 - 从 project.md 获取项目描述
+- 扫描代码库目录结构
 
 【本次职责】
 - 分析技术栈 → research/stack.md（模板: specwf template codebase-stack）
@@ -33,14 +36,22 @@
 【约束条件】
 - 所有产物写入 specwf/ 目录
 - 只读分析，不修改代码
+- 文件路径使用小写
 ```
 
-#### specwf-spec-bootstrapper 提示词结构
+#### Agent 2: specwf-spec-bootstrapper
 
-```
+派发 `specwf-spec-bootstrapper` 子代理（完整 system prompt 见 `.omp/agents/specwf-spec-bootstrapper.md`）。
+
+提示词内容：
+
+```text
+子代理类型: specwf-spec-bootstrapper
+描述: 规格启动 — 从存量项目代码签名、注释和测试中提取行为契约
+
 【项目上下文】
 - 从 project.yml 获取项目名称和 profile
-- 扫描 src/ 识别核心模块
+- 扫描 src/ 识别核心模块和领域
 
 【本次职责】
 - 从核心模块提取行为契约 → specs/<domain>/spec.md（模板: specwf template spec-bootstrap）
@@ -50,6 +61,8 @@
 【约束条件】
 - 提取的内容标注 BOOTSTRAPPED 标记
 - 置信度 low 的条目需标注需人工确认
+- 只读分析，不修改代码
+- 文件路径使用小写
 ```
 
 ## 产出

@@ -12,6 +12,9 @@
 派发时，提示词应包括：
 
 ```
+子代理类型: specwf-planner
+描述: Change 设计 — 设计技术方案、拆分任务、预写 delta-specs
+
 【项目上下文】
 - 从 context.md 提取 locked decisions 和 discretion area
 - 从 proposal.md 提取 must-haves

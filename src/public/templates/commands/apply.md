@@ -12,6 +12,9 @@
 派发时，提示词应包括：
 
 ```
+子代理类型: specwf-executor
+描述: 代码实现 — 按 tasks.md 执行，TDD RED→GREEN→REFACTOR
+
 【项目上下文】
 - 从 state.md 获取当前 change 标识
 - 从 design.md 获取技术方案
