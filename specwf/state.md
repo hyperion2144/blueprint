@@ -112,6 +112,9 @@ adhoc:
   - name: fix-milestone-archive
     status: archived
     depends_on: []
+  - name: fix-command-templates
+    status: archived
+    depends_on: []
 ---
 
 # specwf — 状态机
