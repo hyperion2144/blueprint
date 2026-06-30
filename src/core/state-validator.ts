@@ -28,6 +28,14 @@ interface StepExitCriteria {
  * 当 CLI 尝试推进某步时，检查这些条件是否满足。
  */
 const EXIT_CRITERIA: StepExitCriteria[] = [
+  // project/init → 必须有 requirements.md（grill 产出）
+  {
+    type: 'project', step: 'init',
+    checks: [
+      { path: 'requirements.md', description: 'requirements.md 不存在。请先执行 grill 步骤收集需求。' },
+    ],
+  },
+
   // milestone/active → 必须有 requirements.md
   {
     type: 'milestone', step: 'active',

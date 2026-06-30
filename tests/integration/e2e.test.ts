@@ -107,6 +107,8 @@ describe('E2E: init → template → archive', () => {
   });
 
   it('step 7: specwf continue 输出下一步', () => {
+    // 创建 requirements.md 使 continue 能通过校验
+    writeFileSync(join(testDir, 'specwf', 'requirements.md'), '# Requirements\n', 'utf-8');
     const output = execSync(`node ${cliPath} continue`, { encoding: 'utf-8', cwd: testDir });
     expect(output).toContain('当前位置');
     expect(output).toContain('当前步骤');
