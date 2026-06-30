@@ -100,6 +100,9 @@ adhoc:
   - name: fix-state-preconditions
     status: archived
     depends_on: []
+  - name: fix-agent-templates
+    status: archived
+    depends_on: []
 ---
 
 # specwf — 状态机
