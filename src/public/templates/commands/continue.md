@@ -10,7 +10,7 @@
 specwf state
 ```
 
-确认当前处于 continue 阶段。运行 `specwf continue` 校验前置条件。
+确认当前状态是否可执行本步骤。
 
 ### 步骤 2：获取上下文
 

@@ -10,7 +10,7 @@
 specwf state
 ```
 
-确认当前处于 review 阶段。运行 `specwf continue` 校验前置条件。
+确认当前状态是否可执行本步骤。
 
 ### 步骤 2：获取上下文
 
@@ -87,6 +87,14 @@ specwf state
 ```
 
 确认当前阶段上下文包含：proposal.md、delta-specs、design.md、tasks.md、实现代码、测试代码。
+
+## 参数
+
+```
+change <name>
+```
+
+不传时查看 `specwf state` 待处理列表。
 
 ## 门控
 

@@ -12,7 +12,7 @@ Phase 级别的交付流水线：将已验证归档的 Change 合入主分支。
 specwf state
 ```
 
-确认当前处于 ship 阶段。运行 `specwf continue` 校验前置条件。
+确认当前状态是否可执行本步骤。
 
 ### 步骤 2：获取上下文
 

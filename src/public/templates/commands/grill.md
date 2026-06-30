@@ -4,7 +4,7 @@
 
 ## 步骤
 
-### 1. 检查状态
+### 步骤 1：检查状态
 
 ```bash
 specwf state
@@ -12,7 +12,7 @@ specwf state
 
 确认当前状态是否可执行本步骤。
 
-### 2. 获取上下文
+### 步骤 2：获取上下文
 
 ```bash
 specwf context grill
@@ -20,7 +20,7 @@ specwf context grill
 
 读取输出的文件清单（project.md、requirements.md 等）。
 
-### 3. 执行需求探讨
+### 步骤 3：执行需求探讨
 
 按 5W1H 框架逐层提问，收集以下信息：
 - **概述** — 项目核心目标
@@ -32,11 +32,11 @@ specwf context grill
 
 每项达成共识后记录到 `@specwf/requirements.md`。
 
-### 4. 确认共识
+### 步骤 4：确认共识
 
 与用户逐项回顾 requirements.md，确保无歧义。
 
-### 5. 推进
+### 步骤 5：推进
 
 ```bash
 specwf continue

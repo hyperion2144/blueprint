@@ -8,10 +8,10 @@
 |**子代理**|派发 specwf-phase-researcher 子代理，调研当前 Phase 的实现路径，产出 research.md|
 | **产出** | `research.md`（阶段调研报告） |
 | **产出模板** | `specwf template phase-research` |
-| **上下文** |
-| **参数** | `[phase <name>]` — 指定 Phase。不传时查看当前 milestone 待处理 phase。 | `specwf context research-phase` + `specwf state` |
+| **上下文** | `specwf context research-phase` + `specwf state` |
+| **参数** | `[phase <name>]` — 指定 Phase。不传时查看当前 milestone 待处理 phase。 |
 | **推进** | `specwf continue` |
-|| **引用技能** | `skills/specwf-research-phase/SKILL.md` |
+| **引用技能** | `skills/specwf-research-phase/SKILL.md` |
 
 ## 步骤
 
@@ -21,7 +21,7 @@
 specwf state
 ```
 
-确认当前处于 research-phase 阶段。运行 `specwf continue` 校验前置条件。
+确认当前状态是否可执行本步骤。
 
 ### 步骤 2：获取上下文
 

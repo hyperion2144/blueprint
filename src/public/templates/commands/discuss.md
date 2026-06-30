@@ -12,11 +12,7 @@
 specwf state
 ```
 
-确认当前处于 `discuss` 阶段。如果不是，运行 `specwf continue` 推进。
-
-```bash
-specwf continue
-```
+确认当前状态是否可执行本步骤。
 
 ### 步骤 2：获取上下文
 

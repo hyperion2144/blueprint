@@ -10,7 +10,7 @@
 specwf state
 ```
 
-确认当前处于 apply 阶段。运行 `specwf continue` 校验前置条件。
+确认当前状态是否可执行本步骤。
 
 ### 步骤 2：获取上下文
 
@@ -65,8 +65,8 @@ specwf context apply
 | **执行 agent** | 派发 specwf-executor 子代理：<br>- 按 tasks.md wave 顺序实现代码<br>- type:behavior 任务走 RED→GREEN→REFACTOR<br>- 所有 wave 完成后写 change-summary |
 | **产出** | 代码变更 + 测试 + summary.md |
 | **产出模板** | `specwf template change-summary` |
-| **上下文** |
-| **参数** | `change <name>` — 指定要实现的 Change。不传时查看 `specwf state` 待处理列表。 | `specwf context apply` + `specwf state` |
+| **上下文** | `specwf context apply` + `specwf state` |
+| **参数** | `change <name>` — 指定要实现的 Change。不传时查看 `specwf state` 待处理列表。 |
 | **推进** | `specwf continue` |
 | **引用技能** | `skills/specwf-apply/SKILL.md` |
 
