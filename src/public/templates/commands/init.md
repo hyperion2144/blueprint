@@ -2,25 +2,55 @@
 
 运行 `specwf init` 创建 specwf/ 目录结构、项目配置和状态机文件。这是整个工作流的起点。
 
-## Subagent
+## 子代理
 
-**新项目**：无需子代理，CLI 直接创建目录结构和配置文件。
+### 新项目
 
-**存量项目（brownfield）**：使用 `--brownfield` 模式，CLI 创建目录结构后，agent 通过 `task` 工具 fan-out 两个 subagent 并行执行：
+无需子代理，CLI 直接创建目录结构和配置文件。
 
-```bash
-specwf init --brownfield
+### 存量项目（brownfield）
+
+使用 `--brownfield` 模式，CLI 创建目录结构后，派发两个子代理并行执行：
+
+| 子代理 | 职责 | 产出 | 定义文件 |
+|-------|------|------|---------|
+| `specwf-codebase-mapper` | 分析技术栈、架构、代码规范、风险 | `research/stack.md`、`architecture.md`、`pitfalls.md`、`codebase-conventions.md` | `.omp/agents/specwf-codebase-mapper.md` |
+| `specwf-spec-bootstrapper` | 从核心模块签名/注释/测试提取行为契约 | `specs/<domain>/spec.md`（标记 `BOOTSTRAPPED`） | `.omp/agents/specwf-spec-bootstrapper.md` |
+
+#### specwf-codebase-mapper 提示词结构
+
+```
+【项目上下文】
+- 从 project.yml 获取项目名称和 profile
+- 从 project.md 获取项目描述
+
+【本次职责】
+- 分析技术栈 → research/stack.md（模板: specwf template codebase-stack）
+- 分析架构 → research/architecture.md（模板: specwf template codebase-architecture）
+- 分析代码规范 → conventions/codebase-conventions.md（模板: specwf template codebase-conventions）
+- 识别风险 → research/pitfalls.md（模板: specwf template codebase-pitfalls）
+
+【约束条件】
+- 所有产物写入 specwf/ 目录
+- 只读分析，不修改代码
 ```
 
-| Agent | 职责 | 产出 |
-|-------|------|------|
-| `specwf-codebase-mapper` | 分析技术栈、架构、代码规范、风险 | `research/stack.md`、`architecture.md`、`pitfalls.md`、`codebase-conventions.md` |
-| `specwf-spec-bootstrapper` | 从核心模块签名/注释/测试提取行为契约 | `specs/<domain>/spec.md`（标记 `BOOTSTRAPPED`） |
+#### specwf-spec-bootstrapper 提示词结构
 
-并行任务详情：
+```
+【项目上下文】
+- 从 project.yml 获取项目名称和 profile
+- 扫描 src/ 识别核心模块
 
-1. **Codebase Mapping**（`specwf-codebase-mapper`）— 分析技术栈、模块结构、依赖关系
-2. **Spec Bootstrap**（`specwf-spec-bootstrapper`）— 从核心模块提取行为契约
+【本次职责】
+- 从核心模块提取行为契约 → specs/<domain>/spec.md（模板: specwf template spec-bootstrap）
+- 标记每个条目的置信度（high/medium/low）
+- 标注来源文件路径和行号
+
+【约束条件】
+- 提取的内容标注 BOOTSTRAPPED 标记
+- 置信度 low 的条目需标注需人工确认
+```
 
 ## 产出
 
