@@ -265,7 +265,7 @@ function resolveStatus(state: StateFile): string {
     case 'change':
       return `change-${ctx.step}`;
     case 'adhoc':
-      return `adhoc-${ctx.step}`;
+      return ctx.step === 'proposal' ? `adhoc-${ctx.step}` : `change-${ctx.step}`;
     default:
       return state.project.status;
   }

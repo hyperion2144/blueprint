@@ -6,8 +6,8 @@ project:
   current_phase: null
 active_context:
   type: adhoc
-  ref: changes/refactor-templates-i18n
-  step: verifying
+  ref: changes/update-conventions
+  step: change-applying
 changes:
   - name: scaffold-project
     status: archived

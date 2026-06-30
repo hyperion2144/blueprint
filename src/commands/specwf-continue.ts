@@ -56,7 +56,8 @@ function resolveStatusKey(type: string, step: string, projectStatus: string): st
     case 'milestone': return projectStatus === 'milestone-shipped' ? 'milestone-shipped' : 'milestone-active';
     case 'phase': return `phase-${step}`;
     case 'change': return `change-${step}`;
-    case 'adhoc': return `adhoc-${step}`;
+    // Adhoc changes: 'proposal' uses adhoc- prefix, all others follow change- cycle
+    case 'adhoc': return step === 'proposal' ? `adhoc-${step}` : `change-${step}`;
     default: return projectStatus;
   }
 }
