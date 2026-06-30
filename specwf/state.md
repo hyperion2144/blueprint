@@ -115,6 +115,9 @@ adhoc:
   - name: fix-command-templates
     status: archived
     depends_on: []
+  - name: fix-archive-structure
+    status: archived
+    depends_on: []
 ---
 
 # specwf — 状态机
