@@ -1,6 +1,11 @@
 # Phase 调研
 
-对当前 phase 的实现路径进行调研。使用 specwf-researcher agent。
+对当前 phase 的实现路径进行调研。使用 specwf-phase-researcher agent。
+
+模板使用：
+```bash
+specwf template phase-research > milestones/<ms>/phases/<ph>/research.md
+```
 
 ## 上下文
 

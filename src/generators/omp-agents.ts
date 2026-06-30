@@ -117,6 +117,16 @@ export const AGENT_DEFS: AgentDef[] = [
     tools: ['read', 'grep', 'glob', 'lsp', 'write'],
     spawns: '*',
   },
+
+  // ====================================================================
+  // specwf-phase-researcher
+  // ====================================================================
+  {
+    role: 'phase-researcher',
+    description: '阶段调研：产出 RESEARCH.md 供 planner 使用',
+    tools: ['read', 'grep', 'glob', 'lsp', 'web_search', 'write', 'bash'],
+    spawns: '*',
+  },
 ];
 
 /* ================================================================
@@ -141,6 +151,7 @@ export function resolveThinkingLevel(role: string): string {
     archiver: 'medium',
     'codebase-mapper': 'low',
     'spec-bootstrapper': 'medium',
+    'phase-researcher': 'high',
   };
   return levelMap[role] ?? 'medium';
 }

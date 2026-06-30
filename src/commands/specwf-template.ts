@@ -33,6 +33,8 @@ const TEMPLATE_TYPES: Record<string, string> = {
   'codebase-pitfalls': 'codebase/pitfalls.md',
   // specs（新增）
   'spec-bootstrap': 'specs/spec.md',
+  // research（新增）
+  'phase-research': 'research/phase-research.md',
 };
 
 export function register(program: any): void {
