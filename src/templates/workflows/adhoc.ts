@@ -24,10 +24,10 @@ Run \`specwf change new <name>\` to create:
 
 The change is registered in \`state.md\` under the adhoc list with status \`proposal\`.
 
-### Step 1: Fill the proposal
+### Step 3: Fill the proposal
 Edit \`proposal.md\` — describe the intent, scope, approach, and must-haves.
 
-### Step 2: Advance
+### Step 4: Advance
 Run \`specwf continue change <name>\` to proceed through the standard change cycle.
 
 ## Output

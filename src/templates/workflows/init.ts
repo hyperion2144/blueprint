@@ -9,7 +9,7 @@ const instructions = `## Input
 ### Step 1: Check state and get context
 Run \`specwf context init\` — outputs JSON with state and file manifest. Read all listed files before proceeding.
 
-### Step 1: Execute initialization
+### Step 2: Execute initialization
 Run \`specwf init --yes\` to create the project skeleton:
 
 - \`specwf/\` directory structure
@@ -21,7 +21,7 @@ Run \`specwf init --yes\` to create the project skeleton:
 - \`.omp/agents/specwf-*.md\` — 8 agent definitions
 - \`.omp/skills/specwf-*/SKILL.md\` — 16 skill guides
 
-### Step 2: Brownfield mode (existing projects)
+### Step 3: Brownfield mode (existing projects)
 For projects with existing code, use \`specwf init --yes --brownfield\`:
 
 Dispatches two sub-agents in parallel:
@@ -30,7 +30,7 @@ Dispatches two sub-agents in parallel:
 
 **Agent 2: specwf-spec-bootstrapper** — extracts behavioral contracts from existing code signatures, comments, and tests.
 
-### Step 3: Advance
+### Step 4: Advance
 Run \`specwf continue\` to proceed to the requirements exploration phase (grill).
 
 ## Output

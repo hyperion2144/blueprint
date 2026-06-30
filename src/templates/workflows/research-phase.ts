@@ -9,7 +9,7 @@ const instructions = `## Input
 ### Step 1: Check state and get context
 Run \`specwf context research-phase\` — outputs JSON with state and file manifest. Read all listed files before proceeding.
 
-### Step 1: Dispatch phase researcher
+### Step 2: Dispatch phase researcher
 **You are the orchestrator — dispatch, do not research yourself.** Spawn \`specwf-phase-researcher\` sub-agent.
 
 Construct the sub-agent prompt:
@@ -36,13 +36,13 @@ Task: Research implementation paths for phase <phase-id>
 - Note confidence levels for speculative findings
 \`\`\`
 
-### Step 2: Verify output
+### Step 3: Verify output
 Confirm \`research.md\` was written by the sub-agent with:
 - Recommended implementation paths with rationale
 - Known pitfalls and edge cases
 - TDD implications annotated
 
-### Step 3: Advance
+### Step 4: Advance
 Run \`specwf continue\` to proceed to the split phase.
 
 ## Output

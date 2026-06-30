@@ -9,7 +9,7 @@ const instructions = `## Input
 ### Step 1: Check state and get context
 Run \`specwf context research\` — outputs JSON with state and file manifest. Read all listed files before proceeding.
 
-### Step 1: Dispatch research sub-agents
+### Step 2: Dispatch research sub-agents
 **You are the orchestrator — dispatch, do not research yourself.** Spawn \`specwf-researcher\` sub-agents in parallel, one per technical direction (stack, architecture, pitfalls).
 
 Construct each sub-agent prompt:
@@ -34,14 +34,14 @@ Task: Research <direction> for project <project-name>
 - Mark speculative findings with confidence levels
 \`\`\`
 
-### Step 2: Verify sub-agent output
+### Step 3: Verify sub-agent output
 After all sub-agents complete, verify:
 - \`research/stack.md\` exists with tech stack comparison and recommendation
 - \`research/architecture.md\` exists with architecture evaluation
 - \`research/pitfalls.md\` exists with risk assessment
 - Write \`research/summary.md\` synthesizing all findings into one recommendation
 
-### Step 3: Advance
+### Step 4: Advance
 Run \`specwf continue\` to proceed to roadmap definition.
 
 ## Output
