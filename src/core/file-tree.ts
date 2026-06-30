@@ -78,14 +78,16 @@ export function createAdhocChangeDir(specwfDir: string, changeName: string): str
   return dir;
 }
 
-/** 归档 change 到 archive/ */
+/** 归档 change 到 archive/changes/ */
 export function archiveChangeDir(
   specwfDir: string,
   changeDir: string,
 ): string {
   const changeName = changeDir.split('/').pop() ?? 'unknown';
   const date = new Date().toISOString().slice(0, 10);
-  const archiveDir = join(specwfDir, 'archive', `${date}-${changeName}`);
+  const archiveRoot = join(specwfDir, 'archive', 'changes');
+  mkdirSync(archiveRoot, { recursive: true });
+  const archiveDir = join(archiveRoot, `${date}-${changeName}`);
   
   // 移动目录
   if (existsSync(changeDir)) {
@@ -162,9 +164,9 @@ export function listAdhocChanges(specwfDir: string): string[] {
   });
 }
 
-/** 列出归档的 changes */
+/** 列出归档的 changes（在 archive/changes/ 下） */
 export function listArchived(specwfDir: string): string[] {
-  const dir = join(specwfDir, 'archive');
+  const dir = join(specwfDir, 'archive', 'changes');
   if (!existsSync(dir)) return [];
   return readdirSync(dir).filter((e) => {
     const stat = statSync(join(dir, e));

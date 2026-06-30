@@ -4,6 +4,7 @@
 
 import { join } from 'node:path';
 import { existsSync, readdirSync, readFileSync, mkdirSync, copyFileSync } from 'node:fs';
+import { execSync } from 'node:child_process';
 import { loadState, updateState } from '../core/state-file.js';
 import { mergeAndWrite } from '../core/delta-merge.js';
 import { extractFromGitDiff, writeExtractionToSpec } from '../core/code-extract.js';
@@ -54,6 +55,13 @@ function archiveHandler(changePath: string) {
   // 3. 移动到 archive/
   const archiveDir = archiveChangeDir(specwfDir, fullChangePath);
   console.log(`✓ 归档到: ${archiveDir}`);
+
+  // 从 git 跟踪中移除旧路径
+  try {
+    execSync(`git rm -r "${changePath}" 2>/dev/null || true`, { cwd: process.cwd() });
+  } catch {
+    // git rm 非关键失败
+  }
 
   // 4. 更新 state.md
   const changeName = changePath.split('/').pop() ?? 'unknown';

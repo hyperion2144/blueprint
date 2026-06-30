@@ -96,7 +96,7 @@ describe('E2E: init → template → archive', () => {
     execSync(`node ${cliPath} archive specwf/changes/add-auth`, { encoding: 'utf-8', cwd: testDir });
 
     // 验证归档
-    const archiveEntries = execSync(`ls -1 ${join(specwfDir, 'archive')}`, { encoding: 'utf-8' }).trim().split('\n');
+    const archiveEntries = execSync(`ls -1 ${join(specwfDir, 'archive', 'changes')}`, { encoding: 'utf-8' }).trim().split('\n');
     expect(archiveEntries.some((e) => e.includes('add-auth'))).toBe(true);
 
     // 验证 delta-spec 合并
