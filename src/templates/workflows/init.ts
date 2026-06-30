@@ -24,11 +24,33 @@ Run \`specwf init --yes\` to create the project skeleton:
 ### Step 3: Brownfield mode (existing projects)
 For projects with existing code, use \`specwf init --yes --brownfield\`:
 
-Dispatches two sub-agents in parallel:
+The CLI creates the skeleton and outputs: "请派发 specwf-codebase-mapper 和 specwf-spec-bootstrapper 子代理完成完整分析。"
 
-**Agent 1: specwf-codebase-mapper** — analyzes existing codebase for tech stack, architecture, conventions, and pitfalls.
+**You are the orchestrator — dispatch, do not analyze yourself.** Use the \`task\` tool to spawn two sub-agents in parallel:
 
-**Agent 2: specwf-spec-bootstrapper** — extracts behavioral contracts from existing code signatures, comments, and tests.
+\`\`\`text
+Task 1:
+  agent: specwf-codebase-mapper
+  cwd: <project-root>
+  prompt: |
+    Analyze the codebase at <project-root>/src/.
+    Read package.json, tsconfig.json for tech stack.
+    Map directory structure for architecture patterns.
+    Identify coding conventions and potential pitfalls.
+    Output to specwf/codebase/stack.md, codebase/architecture.md,
+    codebase/pitfalls.md, and conventions/codebase-conventions.md.
+
+Task 2:
+  agent: specwf-spec-bootstrapper
+  cwd: <project-root>
+  prompt: |
+    Scan <project-root>/src/ for core modules and public APIs.
+    Extract behavioral contracts from signatures, JSDoc, and tests.
+    Write SHALL/MUST specs to specwf/specs/<domain>/spec.md.
+    Annotate all entries as BOOTSTRAPPED with confidence levels.
+\`\`\`
+
+After both complete, verify the output files exist.
 
 ### Step 4: Advance
 Run \`specwf continue\` to proceed to the requirements exploration phase (grill).
