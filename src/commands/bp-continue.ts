@@ -15,19 +15,22 @@ import { WORKFLOW_REGISTRY, type WorkflowStep } from '../templates/workflows/reg
 export function register(program: any): void {
   const cmd = program
     .command('continue')
-    .description('Auto-advance to next step');
+    .description('Auto-advance to next step')
+    .option('--auto', 'Autonomous mode — agent fills decisions without asking user');
 
   cmd
     .command('change <name>')
     .description('Advance a specific change')
+    .option('--auto', 'Autonomous mode')
     .action(continueChangeHandler);
 
   cmd.action(continueHandler);
 }
 
-function formatContinueResult(result: ContinueResult): void {
+function formatContinueResult(result: ContinueResult, isAuto = false): void {
   const output: any = {
-    _note: 'Read the full instructions below before acting. Do not skip truncated content.',
+    _note: `Read the full instructions below before acting. Do not skip truncated content.${isAuto ? ' AUTO mode — fill with your own judgment, do not ask the user.' : ''}`,
+    auto: isAuto || undefined,
     current: {
       context: result.context,
       step: result.currentStep,
@@ -65,7 +68,8 @@ function resolveStatusKey(type: string, step: string, projectStatus: string): st
   }
 }
 
-function continueHandler(): void {
+function continueHandler(options?: { auto?: boolean }): void {
+  const isAuto = options?.auto ?? false;
   const bpDir = join(process.cwd(), 'bp');
   const cwd = process.cwd();
 
@@ -158,6 +162,7 @@ function continueHandler(): void {
       } : null,
       details: validation.errors,
       instructions: currentInstructions || null,
+      auto: isAuto ? 'Fill with your own judgment. Do not ask the user.' : undefined,
     }));
     return;
   }
@@ -190,15 +195,16 @@ function continueHandler(): void {
 
       // Recompute result after state advance to show the NEW step's instructions
       const newResult = determineNextStep(bpDir);
-      formatContinueResult(newResult);
+      formatContinueResult(newResult, isAuto);
       return;
     }
   }
 
-  formatContinueResult(result);
+  formatContinueResult(result, isAuto);
 }
 
-function continueChangeHandler(name: string): void {
+function continueChangeHandler(name: string, options?: { auto?: boolean }): void {
+  const isAuto = options?.auto ?? false;
   const bpDir = join(process.cwd(), 'bp');
   const cwd = process.cwd();
   const state = loadState(bpDir);
@@ -253,11 +259,11 @@ function continueChangeHandler(name: string): void {
       // Recompute result after state advance
       const newResult = determineChangeNextStep(bpDir, name);
       if (!('error' in newResult)) {
-        formatContinueResult(newResult);
+        formatContinueResult(newResult, isAuto);
         return;
       }
     }
   }
 
-  formatContinueResult(result);
+  formatContinueResult(result, isAuto);
 }
