@@ -114,7 +114,7 @@ function setPhase(id: string) {
   const bpDir = findBlueprintDir();
   updateState(bpDir, (state) => {
     state.project.current_phase = id;
-    // active_context unchanged — state machine advances via bp continue
+    state.active_context = { type: 'phase', ref: `milestones/${state.project.current_milestone}/phases/${id}`, step: 'discuss' };
   });
   console.log(JSON.stringify({ ok: true, phase: id }));
 }

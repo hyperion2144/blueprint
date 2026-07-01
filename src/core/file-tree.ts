@@ -78,22 +78,34 @@ export function createAdhocChangeDir(bpDir: string, changeName: string): string 
   return dir;
 }
 
-/** 归档 change 到 archive/changes/ */
+/** 归档 change — organized by milestone/phase/change */
 export function archiveChangeDir(
   bpDir: string,
   changeDir: string,
 ): string {
   const changeName = basename(changeDir);
   const date = new Date().toISOString().slice(0, 10);
+
+  // Extract milestone/phase from path: .../milestones/<mid>/phases/<pid>/changes/<name>
+  const parts = changeDir.split(/[/\\]/);
+  const msIdx = parts.indexOf('milestones');
+  const chIdx = parts.indexOf('changes');
+  if (msIdx >= 0 && chIdx > msIdx) {
+    // Phase-scoped change: archive/<milestone>/<phase>/<change>/
+    const ms = parts[msIdx + 1];
+    const ph = parts[chIdx - 1]; // phase ID is before 'changes'
+    const archiveRoot = join(bpDir, 'archive', ms, ph);
+    mkdirSync(archiveRoot, { recursive: true });
+    const archiveDir = join(archiveRoot, `${date}-${changeName}`);
+    if (existsSync(changeDir)) renameSync(changeDir, archiveDir);
+    return archiveDir;
+  }
+
+  // Adhoc change: archive/changes/<date>-<name>/
   const archiveRoot = join(bpDir, 'archive', 'changes');
   mkdirSync(archiveRoot, { recursive: true });
   const archiveDir = join(archiveRoot, `${date}-${changeName}`);
-  
-  // 移动目录
-  if (existsSync(changeDir)) {
-    renameSync(changeDir, archiveDir);
-  }
-  
+  if (existsSync(changeDir)) renameSync(changeDir, archiveDir);
   return archiveDir;
 }
 
