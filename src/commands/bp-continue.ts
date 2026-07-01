@@ -129,6 +129,17 @@ function continueHandler(): void {
 
   const result = determineNextStep(bpDir);
 
+  // Unknown state — no transitions available for this type/step combo
+  if (!result.nextCommand && result.availableSteps.length === 0) {
+    console.log(JSON.stringify({
+      error: 'unknown_state',
+      message: `State "${state.active_context.type}/${state.active_context.step}" has no defined transitions.`,
+      hint: 'Run `bp state set-phase <id>` or `bp state set-milestone <id>` to reset to a valid state.',
+      current: { type: state.active_context.type, step: state.active_context.step, milestone: state.project.current_milestone, phase: state.project.current_phase },
+    }));
+    return;
+  }
+
   const validation = validateStepAdvance(state.active_context.type, state.active_context.step, state.active_context.ref, cwd);
   if (!validation.valid) {
     // Get current step instructions so the agent knows what to do

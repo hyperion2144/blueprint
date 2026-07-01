@@ -122,6 +122,13 @@ function setPhase(id: string) {
 function setStep(step: string) {
   const bpDir = findBlueprintDir();
   updateState(bpDir, (state) => {
+    // Reject invalid steps — must match state machine step names (no type-prefix)
+    const validSteps = ['init', 'grill', 'requirements-defined', 'research', 'roadmap-defined',
+      'discuss', 'research-phase', 'split', 'planning', 'applying', 'reviewing', 'verifying', 'archiving', 'archived'];
+    if (!validSteps.includes(step)) {
+      console.log(JSON.stringify({ error: `Invalid step "${step}". Valid: ${validSteps.join(', ')}. Use \`bp state set-phase <id>\` to reset.` }));
+      return;
+    }
     state.active_context.step = step;
   });
   console.log(JSON.stringify({ ok: true, step }));

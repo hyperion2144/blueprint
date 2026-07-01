@@ -285,18 +285,10 @@ function formatContext(state: StateFile): string {
 function generateHint(state: StateFile): string | null {
   const status = state.project.status;
   if (status === 'milestone-shipped') {
-    const pendingAdhoc = state.adhoc.filter((c) => c.status !== 'archived');
-    const hints: string[] = ['Milestone shipped. Run `bp state set-milestone <next-id>` to activate the next milestone.'];
-    if (pendingAdhoc.length > 0) {
-      hints.push(
-        `Pending adhoc changes: ${pendingAdhoc.map(c => c.name).join(', ')}. ` +
-        `Use: bp continue change <name>`,
-      );
-    }
-    return hints.join('\n  ');
+    return 'Milestone shipped. Run `bp state set-milestone <next-id>` to activate the next milestone.';
   }
   if (status === 'phase-shipped') {
-    return 'Phase shipped. Run `bp state set-phase <next-phase-id>` to activate the next phase, or `bp state set-milestone <next-id>` to ship the milestone.';
+    return 'Phase shipped. Run `bp state set-phase <next-phase-id>` to activate the next phase.';
   }
   return null;
 }
