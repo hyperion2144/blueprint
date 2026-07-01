@@ -24,23 +24,16 @@ bp ship --dry-run
 
 Review the output — what will be created, what state will change.
 
-### Step 3: Phase ship
-Creates a PR summarizing all changes in the phase:
-\`\`\`bash
-bp ship phase
-\`\`\`
-- Generates phase summary from archived changes
-- Creates PR via \`gh pr create\`
-- Updates state.md: marks phase as shipped
+### Step 3: Ship phase
+Run \`bp ship\` — the CLI:
+1. Reads all archived changes in the current phase from \`bp/archive/<milestone>/<phase>/\`
+2. Extracts each change's \`change-summary.md\` and \`tasks.md\`
+3. Generates \`bp/milestones/<mid>/phases/<pid>/summary.md\` with all change summaries
+4. Updates state.md: marks phase as shipped (\`phase-shipped\`)
+5. Outputs a summary of what was shipped
 
-### Step 4: Milestone ship
-Publishes a release tag:
-\`\`\`bash
-bp ship milestone
-\`\`\`
-- Creates release tag (e.g. v0.1.0)
-- Updates project.md version
-- Updates state.md: marks milestone as shipped
+### Step 4: Milestone ship (when all phases are shipped)
+Run \`bp ship\` — creates release tag and updates version.
 
 ### Step 5: Advance to next phase or milestone
 After shipping, read roadmap.md to determine what's next:
