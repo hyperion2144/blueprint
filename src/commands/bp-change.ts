@@ -76,11 +76,15 @@ function newChange(name: string, options: { dir: string; full?: boolean; intent?
       'utf-8'
     );
 
-    console.log(`✓ Created change: ${changeDir} (fast path)`);
-    console.log(`  proposal.md — fill in intent, scope, must-haves`);
-    console.log(`  design.md — fill in technical approach`);
-    console.log(`  tasks.md — fill in implementation tasks`);
-    console.log(`  specs/${name}/spec.md — fill in behavioral contracts`);
+    console.log(`✓ Created change: ${changeDir}`);
+    console.log(`  Status: proposal`);
+    console.log('');
+    console.log('  Step 1: Run `bp template proposal` to get the template.');
+    console.log('  Step 2: Fill intent, scope, approach, and must-haves.');
+    console.log('  Step 3: Write filled content to proposal.md.');
+    console.log('  Step 4: Run `bp continue change ${name}` to advance to planning.');
+    console.log('');
+    console.log('  (design.md and tasks.md will be handled in the planning step — focus on proposal first.)');
 
     const changeEntry = { name, status: 'proposal' as const, depends_on: [] as string[] };
     updateState(bpDir, (state) => {

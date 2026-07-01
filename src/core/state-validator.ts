@@ -111,9 +111,9 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
 function isTemplateFile(filePath: string): boolean {
   try {
     const content = readFileSync(filePath, 'utf-8');
-    // 检测模板占位符: {{xxx}} 模式，超过 3 个即判定为模板空壳
+    // Count remaining {{placeholder}} patterns. More than 4 = still empty template.
     const placeholders = content.match(/\{\{[a-zA-Z_-]+\}\}/g);
-    return (placeholders?.length ?? 0) > 3;
+    return (placeholders?.length ?? 0) > 4;
   } catch {
     return false;
   }
