@@ -12,28 +12,11 @@ const instructions = `## Input
 
 ## Steps
 
-### Step 0: Classify change
-Read \`tasks.md\` and check task types:
-- **Lightweight**: ALL tasks are type: config | docs | refactor | scaffolding — no type:behavior
-- **Full**: any type:behavior tasks
-
 ### Step 1: Resolve change name and get context
 Run \`bp context archive\` — outputs JSON with state (pending list) and file manifest. If a change name was provided, use it directly. If not, read the \`pending\` array, filter by status \`verifying\`, ask the user to pick.
 
 ### Step 2: Execute archival
-
-**If LIGHTWEIGHT — archive directly (skip sub-agent):**
-- Run \`bp archive bp/changes/<change-name>\` — handles delta-spec merge (none for lightweight) and directory move
-- No sub-agent needed — lightweight changes have no delta-specs to merge
-
-**If FULL — dispatch archiver sub-agent:**
-Run \`bp dispatch archiver --change <change-name>\` for platform-specific dispatch instructions.
-
-Construct the sub-agent prompt:
-- Task: archive the completed change — merge delta-specs, backfill context, move to archive/
-- Read: bp/changes/<change-name>/, bp/specs/
-- Output: updated specs/, archived change in archive/<date>-<name>/, tasks.md completion status
-- The sub-agent's system prompt (.omp/agents/bp-archiver.md) contains archival protocol.
+Run \`bp archive bp/changes/<change-name>\` — handles delta-spec merge, code cognition backfill, directory move, and state.md update in one command. No sub-agent needed.
 
 ### Step 3: Verify archival
 Check \\\`tasks.md completion status\\\` and confirm:
@@ -46,8 +29,7 @@ Check \\\`tasks.md completion status\\\` and confirm:
 Run \\\`bp continue\\\` — if all phase changes are archived, routes to ship-phase.
 
 ## Guardrails
-- **You are the orchestrator** — dispatch for full changes, archive directly for lightweight
-- Lightweight changes: use \`bp archive bp/changes/<name>\` directly — no sub-agent needed
+- Run \`bp archive bp/changes/<name>\` — no sub-agent needed
 - Delta-spec merge must resolve conflicts, not overwrite
 - Archived changes are never deleted
 - If archival fails, the change stays in place`;
