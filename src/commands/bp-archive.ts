@@ -2,7 +2,7 @@
  * bp archive <change> — 归档 change（delta 合并 + 代码认知回灌 + 目录移动）
  */
 
-import { join } from 'node:path';
+import { join, basename } from 'node:path';
 import { existsSync, readdirSync, readFileSync, mkdirSync, copyFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { loadState, updateState } from '../core/state-file.js';
@@ -64,7 +64,7 @@ function archiveHandler(changePath: string) {
   }
 
   // 5. Update state.md
-  const changeName = changePath.split('/').pop() ?? 'unknown';
+  const changeName = basename(changePath);
   try {
     updateState(bpDir, (state) => {
       const change = state.changes.find((c) => c.name === changeName);

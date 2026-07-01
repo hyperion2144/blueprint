@@ -4,7 +4,7 @@
  */
 
 import { mkdirSync, existsSync, writeFileSync, readFileSync, readdirSync, statSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, basename } from 'node:path';
 
 /** bp/ 目录骨架的子目录 */
 const SPECWF_DIRS = [
@@ -83,7 +83,7 @@ export function archiveChangeDir(
   bpDir: string,
   changeDir: string,
 ): string {
-  const changeName = changeDir.split('/').pop() ?? 'unknown';
+  const changeName = basename(changeDir);
   const date = new Date().toISOString().slice(0, 10);
   const archiveRoot = join(bpDir, 'archive', 'changes');
   mkdirSync(archiveRoot, { recursive: true });
