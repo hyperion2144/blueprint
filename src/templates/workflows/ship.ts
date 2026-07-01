@@ -42,8 +42,11 @@ specwf ship milestone
 - Updates project.md version
 - Updates state.md: marks milestone as shipped
 
-### Step 5: Advance
-Run \`specwf continue\` to start the next phase or milestone.
+### Step 5: Advance to next phase or milestone
+After shipping, read roadmap.md to determine what's next:
+- **Phase shipped but more phases in milestone**: run \`specwf state set-phase <next-phase-id>\` then \`specwf continue\`
+- **Milestone shipped**: run \`specwf state set-milestone <next-milestone-id>\` then \`specwf state set-phase <first-phase-id>\` then \`specwf continue\`
+- **Last milestone shipped**: project complete — update project.md status
 
 ## Output
 - PR on GitHub (phase ship)

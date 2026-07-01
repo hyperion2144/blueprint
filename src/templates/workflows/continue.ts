@@ -72,7 +72,8 @@ Current state:
 - Pending changes: <list or "none">
 - Adhoc changes: <list or "none">
 
-Run \`specwf state\` to inspect. To start new work, use:
+Run \`specwf state\` to inspect. To start new work:
+- \`specwf state set-milestone <id>\` then \`specwf state set-phase <phase-id>\` to activate the next milestone/phase
 - \`specwf change new <name>\` for an adhoc change
 - \`specwf continue\` after completing blocking prerequisites
 \`\`\`
