@@ -14,58 +14,100 @@ const instructions = `## Input
 ### Step 1: Get context
 Run \`specwf context roadmap\` — outputs JSON with state, requirements.md, and research/ paths. Read all listed files.
 
-### Step 2: Define Milestones
-Get the roadmap template: \`specwf template roadmap\`. Define milestones by functional area or release cadence. Fill the template and write to \`specwf/roadmap.md\`:
+### Step 2: Choose planning mode
+Ask the user which planning mode they prefer — this determines how milestones and phases are structured:
 
+**MVP mode** (recommended for product-facing projects):
+- Each milestone = a shippable product increment (v1.0, v2.0, …)
+- Phases within a milestone build toward that release
+- First milestone = minimum viable product
+- Each milestone delivers end-to-end user value independently
+
+**Technical-layer mode** (for infrastructure/platform/CLI projects):
+- Each milestone = a major technical capability layer
+- Phases decompose the layer into vertically executable slices
+- Each phase produces a demonstrable, testable increment (running binary, deployed service, etc.)
+- Layers build on each other — later layers depend on earlier ones
+
+Record the choice at the top of roadmap.md:
+\`\`\`markdown
+> Planning mode: {{mvp | technical-layer}}
+\`\`\`
+
+### Step 3: Define Milestones (2-5 lifecycle-scale milestones)
+Get the roadmap template: \`specwf template roadmap\`. Milestones are **major lifecycle stages**, not feature buckets:
+- A project typically has 2-5 milestones total
+- Each milestone represents a strategic delivery checkpoint (v1, v2, platform layer, etc.)
+- Do NOT create one milestone per feature or module
+
+Fill the template:
 \`\`\`markdown
 # Roadmap
 
+> Planning mode: {{mode}}
+
 ## Milestones
 
-| ID | Goal | Phases | Duration |
-|----|------|--------|----------|
-| M1-<name> | <one-sentence goal> | <count> | <duration> |
+| ID | Goal | Phases | Mode |
+|----|------|--------|------|
+| M1-<name> | <one-sentence goal> | <count> | {{mode}} |
 
 ## M1-<name>: <goal>
 
 ### Success Criteria
-- <measurable condition>
+- <measurable, verifiable condition>
+- <at least 2, max 5 criteria>
 
 ### Phases
 
-| ID | Goal | Depends On | Changes |
-|----|------|-----------|---------|
-| ph.1-<name> | <goal> | - | <count> |
-| ph.2-<name> | <goal> | ph.1 | <count> |
+#### Phase: {{MVP mode or Technical-layer mode}}
+
+**MVP mode**: each phase is a user-facing feature slice
+- Phase 1: core flow skeleton → Phase 2: features → Phase 3: polish
+
+**Technical-layer mode**: each phase is a vertical slice through one layer
+- Phase 1: foundation (data model, CLI skeleton, tests)
+- Phase 2: core engine (primary logic, API surface)
+- Phase 3: integration (wiring, error handling, edge cases)
+- Phase 4: hardening (perf, security, docs)
+
+| ID | Goal | Depends On | Changes | Deliverable |
+|----|------|-----------|---------|------------|
+| ph.1-<name> | <goal> | - | <count> | <executable artifact> |
+| ph.2-<name> | <goal> | ph.1 | <count> | <executable artifact> |
 
 ### ph.1-<name>
 - **Goal**: <what this phase delivers>
+- **Deliverable**: <runnable binary, deployed endpoint, test suite passing, etc.>
 - **Inputs**: <specs, conventions, docs>
 - **Outputs**: <code, specs, docs>
 \`\`\`
 
-### Step 3: Create milestone directories
+### Step 4: Create milestone directories
 For each milestone, create: \`specwf/milestones/<id>/\`
 
-### Step 4: Validate coverage
-- All functional scope covered by milestones and phases
+### Step 5: Validate coverage
+- All requirements.md scope covered by milestones and phases
 - Phase dependencies form a DAG (no cycles)
-- Each phase has verifiable success criteria
-- Total phase count: 3-15
-- First phase is the minimum viable path
+- Each phase has a concrete, verifiable deliverable (not "design complete" — must be executable)
+- Phase count per milestone: 3-5 (MVP) or 3-6 (technical-layer)
+- First phase is always the thinnest possible end-to-end path
 
-### Step 5: Advance
+### Step 6: Advance
 Run \`specwf state set-milestone <id>\` to activate the first milestone, then \`specwf continue\`.
 
 ## Output
-- \`specwf/roadmap.md\` — structured roadmap with milestone and phase tables
+- \`specwf/roadmap.md\` — structured roadmap with milestone and phase tables, planning mode declared
 - \`specwf/milestones/<id>/\` — per-milestone directories
 
 ## Guardrails
-- Start with the smallest viable milestone first
-- Phase count per milestone: 3-8
-- Each phase must produce a demonstrable increment
-- Use the table format above — it's structured and parseable`;
+- **2-5 milestones maximum** — milestones are lifecycle stages, not feature buckets
+- Ask the user about MVP vs technical-layer **before** defining anything
+- MVP mode: each milestone independently shippable; first = minimum viable product
+- Technical-layer mode: each phase produces an executable/testable artifact
+- Phase count per milestone: 3-6 (do not create 10+ micro-phases)
+- Each phase deliverable must be verifiable — not \"design\" or \"planning\" as standalone phases
+- Start with the smallest viable milestone first`;
 
 export function getRoadmapSkillTemplate(): SkillTemplate {
   return {

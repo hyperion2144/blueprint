@@ -595,31 +595,38 @@ export const REQUIREMENTS_TEMPLATE = `# Requirements: {{name}}
 
 export const ROADMAP_TEMPLATE = `# Roadmap: {{name}}
 
+> Planning mode: {{mode}}
 > Structured roadmap with milestones and phases. Generated during the roadmap planning phase.
 
 ---
 
-## Milestones
+## Milestones (2-5 lifecycle stages)
 
 ### {{milestone-id}}: {{milestone-name}}
 - **Goal**: {{what this milestone delivers}}
-- **Dependencies**: {{other milestones or external deps}}
+- **Mode**: {{mvp | technical-layer}}
+- **Success Criteria**:
+  - {{verifiable criterion}}
+  - {{verifiable criterion}}
 
-#### Phases
+#### Phases (3-6 per milestone)
 
-#### Phase 1: {{phase-name}}
-- **Purpose**: {{why this phase exists}}
-- **Scope**: {{what's in / what's out}}
-- **Inputs**: {{specs, conventions, docs needed}}
-- **Outputs**: {{code, specs, docs produced}}
-- **Estimated effort**: {{t-shirt size: S/M/L/XL}}
+| ID | Goal | Depends On | Changes | Deliverable |
+|----|------|-----------|---------|------------|
+| ph.1-{{name}} | {{goal}} | - | {{count}} | {{executable artifact}} |
+| ph.2-{{name}} | {{goal}} | ph.1 | {{count}} | {{executable artifact}} |
 
-#### Phase 2: {{phase-name}}
-- **Purpose**: {{why this phase exists}}
-- **Scope**: {{what's in / what's out}}
-- **Inputs**: {{specs, conventions, docs needed}}
-- **Outputs**: {{code, specs, docs produced}}
-- **Estimated effort**: {{t-shirt size: S/M/L/XL}}
+#### ph.1-{{name}}
+- **Goal**: {{what this phase delivers}}
+- **Deliverable**: {{runnable binary, deployed endpoint, test suite passing, etc.}}
+- **Inputs**: {{specs, conventions, docs}}
+- **Outputs**: {{code, specs, docs}}
+
+#### ph.2-{{name}}
+- **Goal**: {{what this phase delivers}}
+- **Deliverable**: {{runnable binary, deployed endpoint, test suite passing, etc.}}
+- **Inputs**: {{specs, conventions, docs}}
+- **Outputs**: {{code, specs, docs}}
 
 ---
 
