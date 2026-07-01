@@ -39,9 +39,14 @@ export function statePath(specwfDir: string): string {
   return join(specwfDir, STATE_FILE);
 }
 
-/** 读取并验证 state.md */
+/** 读取并验证 state.md。若未初始化则输出错误并退出。 */
 export function loadState(specwfDir: string): StateFile {
-  const result = readFrontmatterFile(statePath(specwfDir));
+  const path = statePath(specwfDir);
+  if (!existsSync(path)) {
+    console.error('specwf project not initialized. Run `specwf init` first.');
+    process.exit(1);
+  }
+  const result = readFrontmatterFile(path);
   return StateFileSchema.parse(result.data) as unknown as StateFile;
 }
 
