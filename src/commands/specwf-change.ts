@@ -15,6 +15,8 @@ export function register(program: any): void {
     .option('--dir <path>', 'specwf directory', 'specwf')
     .option('--full', 'Full cycle: proposal only, goes through plan phase')
     .option('--intent <text>', 'one-line intent for the proposal')
+    .option('--milestone <id>', 'milestone ID for phase-scoped change')
+    .option('--phase <id>', 'phase ID for phase-scoped change')
     .action(newChange);
 
   cmd.action(() => {
@@ -22,10 +24,18 @@ export function register(program: any): void {
   });
 }
 
-function newChange(name: string, options: { dir: string; full?: boolean; intent?: string }) {
+function newChange(name: string, options: { dir: string; full?: boolean; intent?: string; milestone?: string; phase?: string }) {
   const specwfDir = join(process.cwd(), options.dir);
-  const changeDir = createAdhocChangeDir(specwfDir, name);
   const date = new Date().toISOString().slice(0, 10);
+
+  // Phase-scoped: creates under milestones/<mid>/phases/<pid>/changes/<name>/
+  // Adhoc: creates under specwf/changes/<name>/
+  const isPhaseChange = options.milestone && options.phase;
+  const changeDir = isPhaseChange
+    ? join(specwfDir, 'milestones', options.milestone!, 'phases', options.phase!, 'changes', name)
+    : createAdhocChangeDir(specwfDir, name);
+  mkdirSync(changeDir, { recursive: true });
+  const changeType = isPhaseChange ? 'change' : 'adhoc';
 
   if (options.full) {
     // Full cycle: proposal only, goes through plan → apply → review → verify → archive
@@ -34,11 +44,13 @@ function newChange(name: string, options: { dir: string; full?: boolean; intent?
       .replace(/\{\{date\}\}/g, date);
     writeFileSync(join(changeDir, 'proposal.md'), content, 'utf-8');
 
-    console.log(`✓ Created change: changes/${name}/ (full cycle)`);
+    console.log(`✓ Created change: ${changeDir} (full cycle)`);
     console.log(`  proposal.md — fill in, then plan → apply → review → verify → archive`);
 
+    const changeEntry = { name, status: 'proposal' as const, depends_on: [] as string[] };
     updateState(specwfDir, (state) => {
-      state.adhoc.push({ name, status: 'proposal', depends_on: [] });
+      if (changeType === 'change') state.changes.push(changeEntry);
+      else state.adhoc.push(changeEntry);
     });
   } else {
     // Fast path (default): all artifacts, skip plan, go directly to apply
@@ -64,14 +76,16 @@ function newChange(name: string, options: { dir: string; full?: boolean; intent?
       'utf-8'
     );
 
-    console.log(`✓ Created change: changes/${name}/ (fast path)`);
+    console.log(`✓ Created change: ${changeDir} (fast path)`);
     console.log(`  proposal.md — fill in intent, scope, must-haves`);
     console.log(`  design.md — fill in technical approach`);
     console.log(`  tasks.md — fill in implementation tasks`);
     console.log(`  specs/${name}/spec.md — fill in behavioral contracts`);
 
+    const changeEntry = { name, status: 'planning' as const, depends_on: [] as string[] };
     updateState(specwfDir, (state) => {
-      state.adhoc.push({ name, status: 'planning', depends_on: [] });
+      if (changeType === 'change') state.changes.push(changeEntry);
+      else state.adhoc.push(changeEntry);
     });
   }
 

@@ -22,15 +22,9 @@ Decompose the phase scope into independently implementable Change units:
 
 Create each change under the phase directory:
 \`\`\`bash
-mkdir -p specwf/milestones/<milestone-id>/phases/<phase-id>/changes/<change-name>/specs
+specwf change new <change-name> --milestone <milestone-id> --phase <phase-id>
 \`\`\`
-
-Then populate each change directory from templates:
-\`\`\`bash
-specwf template proposal --dir specwf/milestones/<mid>/phases/<pid>/changes/<name>
-specwf template design --dir specwf/milestones/<mid>/phases/<pid>/changes/<name>
-specwf template tasks --dir specwf/milestones/<mid>/phases/<pid>/changes/<name>
-\`\`\`
+This creates \`specwf/milestones/<mid>/phases/<pid>/changes/<name>/\` with all artifact templates.
 
 ### Step 3: Document dependency graph
 Record in state.md:
