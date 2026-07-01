@@ -277,7 +277,7 @@ function formatContext(state: StateFile): string {
     case 'milestone': return `Milestone ${state.project.current_milestone ?? '?'} — ${step}`;
     case 'phase': return `Phase ${state.project.current_phase ?? '?'} — ${step}`;
     case 'change': return `Change (${ref ?? '?'}) — ${step}`;
-    case 'adhoc': return `临时 Change (${ref ?? '?'}) — ${step}`;
+    case 'adhoc': return `Adhoc Change (${ref ?? '?'}) — ${step}`;
     default: return step;
   }
 }

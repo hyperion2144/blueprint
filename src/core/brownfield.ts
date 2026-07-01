@@ -1,6 +1,6 @@
 /**
  * 存量项目扫描 — brownfield init 模式
- * 检测项目类型 + codebase mapping + spec bootstrap
+ * 检测Project Type + codebase mapping + spec bootstrap
  */
 
 import { readFileSync, readdirSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
@@ -88,16 +88,16 @@ export function generateCodebaseReport(rootDir: string, info: ProjectInfo): Code
 }
 
 function buildStackSection(info: ProjectInfo): string {
-  return `# 技术栈\n\n` +
-    `- 项目类型: ${info.type}\n` +
-    `- 语言: ${info.language}\n` +
-    `- 框架: ${info.framework}\n` +
+  return `# Tech Stack\n\n` +
+    `- Project Type: ${info.type}\n` +
+    `- Language: ${info.language}\n` +
+    `- Framework: ${info.framework}\n` +
     `- src 目录: ${info.srcDirs.join(', ')}\n` +
-    `- 测试: ${info.hasTests ? '有' : '无'}\n`;
+    `- 测试: ${info.hasTests ? 'yes' : 'no'}\n`;
 }
 
 function buildStructureSection(rootDir: string): string {
-  const lines: string[] = ['# 项目结构', ''];
+  const lines: string[] = ['# Project Structure', ''];
   try {
     const entries = readdirSync(rootDir, { withFileTypes: true })
       .filter((e) => !e.name.startsWith('.') && !e.name.startsWith('node_modules') && e.name !== 'dist')
@@ -113,7 +113,7 @@ function detectConventions(rootDir: string): string {
   if (existsSync(join(rootDir, 'tsconfig.json'))) configs.push('TypeScript');
   if (existsSync(join(rootDir, '.eslintrc.js')) || existsSync(join(rootDir, 'eslint.config.js'))) configs.push('ESLint');
   if (existsSync(join(rootDir, '.prettierrc'))) configs.push('Prettier');
-  return `# 项目约定\n\n检测到: ${configs.length > 0 ? configs.join(', ') : '无'}`;
+  return `# Project Conventions\n\nDetected: ${configs.length > 0 ? configs.join(', ') : 'no'}`;
 }
 
 /** spec bootstrap — 从代码提取初始行为契约 */

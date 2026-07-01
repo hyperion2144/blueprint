@@ -20,7 +20,7 @@ const version: string = pkg.version;
 
 program
   .name('bp')
-  .description('规格驱动开发工作流 — spec-driven development workflow')
+  .description('Blueprint — spec-driven development workflow for AI agents')
   .version(version);
 
 // 注册所有子命令

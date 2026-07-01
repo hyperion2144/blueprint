@@ -8,16 +8,16 @@ import { loadConfig, updateConfig } from '../core/config.js';
 export function register(program: any): void {
   const cmd = program
     .command('config')
-    .description('查看/修改配置项目');
+    .description('View/modify configuration');
 
   cmd
     .command('list')
-    .description('查看当前配置')
+    .description('View current configuration')
     .action(configList);
 
   cmd
     .command('set <key> <value>')
-    .description('修改配置项')
+    .description('Modify configuration key')
     .action(configSet);
 
   // 默认行为：list

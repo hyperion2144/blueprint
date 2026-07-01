@@ -12,11 +12,11 @@ import { writeGeneratedFiles } from './_utils.js';
 export function register(program: any): void {
   program
     .command('init')
-    .description('初始化 bp 项目结构')
-    .option('--dir <path>', '目标目录', '.')
-    .option('--profile <profile>', '工作流严格度 (lite|standard|strict)', 'standard')
-    .option('--brownfield', '存量项目模式（codebase mapping + spec bootstrap）')
-    .option('--yes', '跳过确认使用默认值')
+    .description('Initialize blueprint project structure')
+    .option('--dir <path>', 'target directory', '.')
+    .option('--profile <profile>', 'workflow strictness (lite|standard|strict)', 'standard')
+    .option('--brownfield', 'brownfield mode (codebase mapping + spec bootstrap)')
+    .option('--yes', 'skip confirmation, use defaults')
     .action(initHandler);
 }
 
@@ -32,7 +32,7 @@ async function initHandler(options: {
   const bpDir = join(baseDir, 'bp');
 
   if (isInitialized(bpDir)) {
-    console.error('bp 已初始化。运行 `bp update` 更新平台文件。');
+    console.error('bp already initialized. Run `bp update` to regenerate platform files.');
     process.exit(1);
   }
 
@@ -42,7 +42,7 @@ async function initHandler(options: {
   const isBrownfield = options.brownfield || wizard.brownfield;
 
   createSpecwfStructure(bpDir);
-  console.log('✓ 创建 bp/ 目录结构');
+  console.log('✓ bp/ directory structure created');
 
   saveConfig(bpDir, {
     version: 1,
@@ -56,7 +56,7 @@ async function initHandler(options: {
     conventions: { inject: true },
     models: {},
   });
-  console.log('✓ 创建 project.yml (profile: ' + profile + ')');
+  console.log('✓ project.yml created (profile: ' + profile + ')');
 
   saveState(bpDir, {
     project: {
@@ -73,27 +73,27 @@ async function initHandler(options: {
     changes: [],
     adhoc: [],
   });
-  console.log('✓ 创建 state.md');
+  console.log('✓ state.md created');
 
   // Create requirements.md template
   const reqContent = REQUIREMENTS_TEMPLATE.replace(/\{\{name\}\}/g, baseDir.split('/').pop() || 'project');
   writeFileSync(join(bpDir, 'requirements.md'), reqContent, 'utf-8');
-  console.log('✓ 创建 requirements.md (template)');
+  console.log('✓ requirements.md created (template)');
 
   if (isBrownfield) {
     const info = detectProjectInfo(process.cwd());
     const domains = await runBrownfieldInit(process.cwd(), bpDir, info);
-    console.log('✓ 已扫描项目结构。请派发 bp-codebase-mapper 和 bp-spec-bootstrapper 子代理完成完整分析。');
+    console.log("✓ Project structure scanned. Dispatch bp-codebase-mapper and bp-spec-bootstrapper sub-agents to complete analysis.");
   }
 
-  console.log('bp 初始化完成。');
+  console.log('Blueprint initialized.');
 
   // 自动生成平台文件
   try {
     const files = generateAll({ version: 1, platform, profile, context: wizard.context, workflow: {}, review: {}, change: {}, git: { branching: 'none', create_tag: true }, conventions: { inject: true }, models: {} });
     writeGeneratedFiles(files);
-    console.log(`✓ 平台文件已生成 (${files.length} 个)`);
+    console.log(`✓ Platform files generated (${files.length})`);
   } catch {
-    console.log('⚠ 平台文件生成失败，可稍后运行 `bp update` 重试');
+    console.log('⚠ Platform file generation failed. Run `bp update` to retry.');
   }
 }

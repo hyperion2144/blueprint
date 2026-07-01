@@ -13,7 +13,7 @@ import { archiveChangeDir } from '../core/file-tree.js';
 export function register(program: any): void {
   program
     .command('archive <change>')
-    .description('归档 change（delta 合并 + 代码回灌）')
+    .description('Archive change (delta merge + code backfill)')
     .action(archiveHandler);
 }
 

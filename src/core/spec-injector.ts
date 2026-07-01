@@ -129,10 +129,10 @@ function getAllConventions(bpDir: string): FileRef[] {
   if (!existsSync(convDir)) return [];
   return readdirSync(convDir)
     .filter((f) => f.endsWith('.md'))
-    .map((f) => ({ path: `conventions/${f}`, description: '项目约定' }));
+    .map((f) => ({ path: `conventions/${f}`, description: 'Project Conventions' }));
 }
 
-/** 获取 change 产物文件 */
+/** 获取 change artifact文件 */
 function getChangeArtifacts(bpDir: string, state: StateFile): FileRef[] {
   const ref = state.active_context.ref;
   if (!ref) return [];
@@ -144,7 +144,7 @@ function getChangeArtifacts(bpDir: string, state: StateFile): FileRef[] {
   for (const file of ['proposal.md', 'design.md', 'tasks.md', '.bp.yaml']) {
     const fullPath = join(changeDir, file);
     if (existsSync(fullPath)) {
-      artifacts.push({ path: `${ref}/${file}`, description: 'change 产物' });
+      artifacts.push({ path: `${ref}/${file}`, description: 'change artifact' });
     }
   }
 
@@ -169,7 +169,7 @@ function listSpecFiles(dir: string, prefix: string): FileRef[] {
     if (stat.isDirectory()) {
       results.push(...listSpecFiles(fullPath, `${prefix}/${entry}`));
     } else if (entry.endsWith('.md')) {
-      results.push({ path: `${prefix}/${entry}`, description: '行为契约' });
+      results.push({ path: `${prefix}/${entry}`, description: 'Behavioral Contract' });
     }
   }
 

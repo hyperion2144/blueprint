@@ -8,8 +8,8 @@ import { listMilestones, listPhases, listChanges, listAdhocChanges, listArchived
 export function register(program: any): void {
   program
     .command('list')
-    .description('列出 milestones/phases/changes')
-    .option('--all', '包含归档')
+    .description('List milestones/phases/changes')
+    .option('--all', 'include archived')
     .action(listHandler);
 }
 
