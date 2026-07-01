@@ -31,7 +31,7 @@ Run \`bp context apply\` — outputs JSON with state (including pending changes)
 **If LIGHTWEIGHT — implement directly (skip sub-agent):**
 - No TDD protocol required — implement changes directly
 - Commit format: \`config|docs|refactor|chore(<scope>): <description>\`
-- Write \`completion.md\` confirming all tasks done
+- Mark all tasks in \`tasks.md\` as checked; append \`## Completion\` section
 - Run \`npx vitest run\` and \`npx tsc --noEmit\` to verify
 
 **If FULL — dispatch executor sub-agent:**
@@ -41,12 +41,12 @@ Construct the sub-agent prompt:
 - Change: <change-name> in the change directory (from Step 0)
 - Task: implement all tasks in tasks.md following TDD protocol
 - Read: design.md, delta-specs
-- Output: code changes, tests, completion.md
+- Output: code changes, tests, tasks.md (with all boxes checked + ## Completion)
 
 The sub-agent's system prompt (.omp/agents/bp-executor.md) contains detailed TDD protocol.
 
 ### Step 3: Verify output and completion report
-After the executor finishes, check \`completion.md\` exists and confirm:
+After the executor finishes, check \`tasks.md\` has all boxes checked and \`## Completion\` section:
 - All tasks.md checkboxes checked
 - Type check passes (\`tsc --noEmit\`)
 - All tests pass (\`vitest run\`)
@@ -60,7 +60,7 @@ Run \`bp template change-summary --dir <change-dir>\`, then fill it with actual 
 - [ ] Type check passes
 - [ ] All tests pass
 - [ ] Change summary written and filled (not template)
-- [ ] completion.md from executor exists and verified
+- [ ] tasks.md fully checked and verified
 
 ### Step 6: Advance
 Run \`bp continue\` to proceed to review.

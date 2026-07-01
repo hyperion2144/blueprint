@@ -42,11 +42,11 @@ Run \`bp dispatch planner --change <change-name>\` for platform-specific dispatc
 Construct the sub-agent prompt:
 - Task: produce design.md, tasks.md, and delta-specs for this change
 - Read: bp/changes/<change-name>/proposal.md, context.md, related specs/, conventions/
-- Output: design.md, tasks.md, specs/<domain>/spec.md, completion.md
+- Output: design.md, tasks.md, specs/<domain>/spec.md
 - The sub-agent's system prompt (.omp/agents/bp-planner.md) contains detailed instructions.
 
 ### Step 3: Verify output
-After the planner finishes, check that \\\`completion.md\\\` exists and confirm:
+After the planner finishes, check that \`tasks.md\` has all boxes checked and contains a \`## Completion\` section, and confirm:
 - \\\`design.md\\\` — architecture, data flow, alternatives
 - \\\`tasks.md\\\` — type annotations, TDD triples, wave grouping
 - \\\`specs/<domain>/spec.md\\\` — SHALL/MUST with scenarios

@@ -21,11 +21,11 @@ Run \\\`bp context archive\\\` — outputs JSON with state (pending list) and fi
 Construct the sub-agent prompt:
 - Task: archive the completed change — merge delta-specs, backfill context, move to archive/
 - Read: bp/changes/<change-name>/, bp/specs/
-- Output: updated specs/, archived change in archive/<date>-<name>/, completion.md
+- Output: updated specs/, archived change in archive/<date>-<name>/, tasks.md completion status
 - The sub-agent's system prompt (.omp/agents/bp-archiver.md) contains archival protocol.
 
 ### Step 3: Verify archival
-Check \\\`completion.md\\\` and confirm:
+Check \\\`tasks.md completion status\\\` and confirm:
 - Global \\\`bp/specs/\\\` updated with delta-specs
 - Change directory moved to \\\`bp/archive/<date>-<name>/\\\`
 - \\\`state.md\\\` reflects archived status

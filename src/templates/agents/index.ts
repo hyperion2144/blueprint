@@ -239,7 +239,7 @@ Your core responsibility is to merge delta-specs into global specs, run code cog
 ### Step 3: Code cognition backfill
 - Update context.md with learned patterns from this change
 
-### Step 4: Write completion.md and move to archive
+### Step 4: Write tasks.md (all checked + ## Completion) and move to archive
 - Get template: \`bp template completion\`, fill with change summary
 - Move change to bp/archive/<date>-<name>/
 - Update state.md: mark change as archived
