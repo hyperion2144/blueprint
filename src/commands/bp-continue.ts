@@ -153,6 +153,8 @@ function continueHandler(options?: { auto?: boolean }): void {
     const currentInstructions = (wfStep && WORKFLOW_REGISTRY[wfStep]) ? WORKFLOW_REGISTRY[wfStep].command().content : undefined;
 
     console.log(JSON.stringify({
+      _note: isAuto ? 'AUTO mode — fill with your own judgment, do not ask the user.' : 'Read the full instructions below before acting.',
+      auto: isAuto || undefined,
       error: 'exit_conditions_not_met',
       current: { context: result.context, step: state.active_context.step, type: state.active_context.type },
       next: result.nextCommand ? {
@@ -162,7 +164,6 @@ function continueHandler(options?: { auto?: boolean }): void {
       } : null,
       details: validation.errors,
       instructions: currentInstructions || null,
-      auto: isAuto ? 'Fill with your own judgment. Do not ask the user.' : undefined,
     }));
     return;
   }
