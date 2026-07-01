@@ -23,24 +23,24 @@ function archiveHandler(changePath: string) {
   // 解析 change 路径
   const fullChangePath = join(process.cwd(), changePath);
   if (!existsSync(fullChangePath)) {
-    console.error(`错误: change 目录不存在: ${changePath}`);
+    console.error(`Error: change directory not found: ${changePath}`);
     process.exit(1);
   }
 
-  // 1. delta-spec 合并
+  // 1. delta-spec merge
   const specsDir = join(fullChangePath, 'specs');
   if (existsSync(specsDir)) {
     mergeDeltaSpecs(specsDir, bpDir);
-    console.log('✓ delta-specs 合并完成');
+    console.log('✓ delta-specs merged');
   }
 
-  // 2. 检查 change-summary.md 是否存在
+  // 2. Check change-summary.md
   const summaryPath = join(fullChangePath, 'change-summary.md');
   if (!existsSync(summaryPath)) {
-    console.warn('⚠ change-summary.md 不存在。建议先使用 `bp template change-summary` 生成变更总结。');
+    console.warn('⚠ change-summary.md not found. Run `bp template change-summary` to generate it.');
   }
 
-  // 3. 代码认知提取
+  // 3. Code cognition extraction
   const repoDir = process.cwd();
   const extractResult = extractFromGitDiff(repoDir, fullChangePath);
   if (extractResult.available && extractResult.extractions.length > 0) {
@@ -48,22 +48,22 @@ function archiveHandler(changePath: string) {
       writeExtractionToSpec(join(bpDir, 'specs'), extraction);
     }
     if (extractResult.extractions.length > 0) {
-      console.log(`✓ 代码认知提取完成 (${extractResult.extractions.length} 个域)`);
+      console.log(`✓ Code extraction complete (${extractResult.extractions.length} domains)`);
     }
   }
 
-  // 3. 移动到 archive/
+  // 4. Move to archive/
   const archiveDir = archiveChangeDir(bpDir, fullChangePath);
-  console.log(`✓ 归档到: ${archiveDir}`);
+  console.log(`✓ Archived to: ${archiveDir}`);
 
-  // 从 git 跟踪中移除旧路径
+  // Remove old path from git tracking
   try {
     execSync(`git rm -r "${changePath}" 2>/dev/null || true`, { cwd: process.cwd() });
   } catch {
-    // git rm 非关键失败
+    // git rm is non-critical
   }
 
-  // 4. 更新 state.md
+  // 5. Update state.md
   const changeName = changePath.split('/').pop() ?? 'unknown';
   try {
     updateState(bpDir, (state) => {
@@ -93,12 +93,12 @@ function archiveHandler(changePath: string) {
         }
       }
     });
-    console.log('✓ state.md 已更新');
+    console.log('✓ state.md updated');
   } catch {
-    // state 更新非关键，忽略
+    // state update is non-critical
   }
 
-  console.log('归档完成。');
+  console.log('Archive complete.');
 }
 
 /** 合并 delta-specs 到全局 specs/ */
@@ -121,9 +121,9 @@ function mergeDeltaSpecs(deltaDir: string, bpDir: string): void {
     const result = mergeAndWrite(liveSpecPath, deltaSpecPath);
 
     if (result.type === 'conflict') {
-      console.warn(`⚠ 合并冲突: ${entry.name}/spec.md`);
+      console.warn(`⚠ Merge conflict: ${entry.name}/spec.md`);
       for (const c of result.conflicts) {
-        console.warn(`   节: ${c.section}`);
+        console.warn(`   Section: ${c.section}`);
       }
     }
   }
