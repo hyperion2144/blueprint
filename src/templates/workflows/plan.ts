@@ -30,11 +30,19 @@ If a change name was provided: use it directly. If not: run \`bp state\`, list p
 ### Step 2: Execute design
 
 **If LIGHTWEIGHT — design directly (skip sub-agent):**
-- Get templates: \`bp template design\`, \`bp template tasks\`
-- Fill \`design.md\` with minimal architecture notes — no alternatives comparison needed
-- Fill \`tasks.md\` with implementation steps, each annotated with type
-- No delta-specs needed for config/doc/refactor changes
-- Mark all tasks in \`tasks.md\` as checked; append a \`## Completion\` section
+
+The change has no type:behavior tasks — you design and implement yourself without dispatching a planner sub-agent.
+
+**What to produce:**
+1. Get template: \`bp template design\` → write \`design.md\` (1-2 paragraphs of approach, no alternatives needed)
+2. Get template: \`bp template tasks\` → write \`tasks.md\` (list each task with type: config|docs|refactor|scaffolding)
+3. Skip delta-specs — not needed for non-behavioral changes
+4. Skip proposal review — proposal.md is optional for lightweight changes (can be a one-liner)
+
+**After writing files:**
+- Mark all task checkboxes as done in \`tasks.md\`
+- Append \`## Completion\` section to \`tasks.md\` confirming all tasks complete
+- Run \`bp continue\` to proceed to apply
 
 **If FULL — dispatch planner sub-agent:**
 Run \`bp dispatch planner --change <change-name>\` for platform-specific dispatch instructions.
