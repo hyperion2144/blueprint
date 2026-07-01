@@ -1,10 +1,12 @@
 import { join } from 'node:path';
+import { writeFileSync } from 'node:fs';
 import { saveConfig } from '../core/config.js';
 import { createSpecwfStructure, isInitialized } from '../core/file-tree.js';
 import { saveState } from '../core/state-file.js';
 import { runInitWizard } from '../prompts/init-wizard.js';
 import { detectProjectInfo, runBrownfieldInit } from '../core/brownfield.js';
 import { generateAll } from '../generators/index.js';
+import { REQUIREMENTS_TEMPLATE } from '../templates/artifacts/index.js';
 import { writeGeneratedFiles } from './_utils.js';
 
 export function register(program: any): void {
@@ -72,6 +74,11 @@ async function initHandler(options: {
     adhoc: [],
   });
   console.log('✓ 创建 state.md');
+
+  // Create requirements.md template
+  const reqContent = REQUIREMENTS_TEMPLATE.replace(/\{\{name\}\}/g, baseDir.split('/').pop() || 'project');
+  writeFileSync(join(specwfDir, 'requirements.md'), reqContent, 'utf-8');
+  console.log('✓ 创建 requirements.md (template)');
 
   if (isBrownfield) {
     const info = detectProjectInfo(process.cwd());

@@ -81,9 +81,13 @@ function continueHandler(): void {
 
     if (transition) {
       updateState(specwfDir, (s) => {
-        s.active_context.step = transition.to;
+        // transition.to is the full state key (e.g. phase-research).
+        // For non-project types, active_context.step should be the base step name.
         if (s.active_context.type === 'project' || s.active_context.type === 'milestone') {
+          s.active_context.step = transition.to;
           s.project.status = transition.to;
+        } else {
+          s.active_context.step = transition.to.includes('-') ? transition.to.split('-').slice(1).join('-') : transition.to;
         }
       });
     }

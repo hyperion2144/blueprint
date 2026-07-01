@@ -64,16 +64,16 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
       { path: 'context.md', description: 'context.md not found or still a template. Complete the discuss step for this phase.' },
     ],
   },
-  // phase/research → must have research.md in phase dir
+  // phase/phase-research → must have research.md in phase dir
   {
-    type: 'phase', step: 'research',
+    type: 'phase', step: 'phase-research',
     checks: [
       { path: 'research.md', description: 'research.md not found or still a template. Complete research-phase for this phase.' },
     ],
   },
-  // phase/split → must have changes directories under the phase
+  // phase/phase-split → must have changes directories under the phase
   {
-    type: 'phase', step: 'split',
+    type: 'phase', step: 'phase-split',
     checks: [
       { path: 'changes/', description: 'No change directories found under this phase. Run split to create change directories.' },
     ],
@@ -85,9 +85,9 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
       { path: 'changes/', description: 'proposal.md is still a template. Fill in intent, scope, and must-haves.' },
     ],
   },
-  // change/planning → design.md + tasks.md must be filled
+  // change/change-planning → design.md + tasks.md must be filled
   {
-    type: 'change', step: 'planning',
+    type: 'change', step: 'change-planning',
     checks: [
       { path: 'changes/', description: 'design.md or tasks.md is still a template. Complete the plan step.' },
     ],
@@ -178,8 +178,12 @@ export function validateStepAdvance(
   cwd: string,
 ): ValidationResult {
   const specwfDir = join(cwd, 'specwf');
+
+  // Normalize step: strip type-prefix for lookup (phase-discuss → discuss, change-planning → planning)
+  const normalizedStep = contextStep.startsWith(`${contextType}-`) ? contextStep.slice(contextType.length + 1) : contextStep;
+
   const criteria = EXIT_CRITERIA.find(
-    (c) => c.type === contextType && c.step === contextStep,
+    (c) => c.type === contextType && c.step === normalizedStep,
   );
 
   if (!criteria) {
