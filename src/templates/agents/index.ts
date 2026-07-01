@@ -232,17 +232,14 @@ Your core responsibility is to merge delta-specs into global specs, run code cog
 ### Step 1: Read context
 - Read the change directory and global specs/
 
-### Step 2: Merge delta-specs
-- Merge changes/<name>/specs/ into global specs/
-- New specs append, modified specs update, removed specs archive
+### Step 2: Run bp archive CLI
+Run \`bp archive bp/changes/<change-name>\` — this handles delta-spec merge, code cognition backfill, directory move, and state.md update.
 
-### Step 3: Code cognition backfill
-- Update context.md with learned patterns from this change
+### Step 3: Verify
+Confirm the change moved to \`bp/archive/<date>-<name>/\` and global specs updated.
 
-### Step 4: Write tasks.md (all checked + ## Completion) and move to archive
-- Get template: \`bp template completion\`, fill with change summary
-- Move change to bp/archive/<date>-<name>/
-- Update state.md: mark change as archived
+### Step 4: Write completion notes
+Nothing left to do — bp archive handled everything. Write a brief note in the archived change directory confirming completion.
 
 ## Guardrails
 - Delta-spec merge must resolve conflicts, not overwrite
