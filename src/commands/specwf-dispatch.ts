@@ -15,6 +15,19 @@ interface DispatchFormat {
   cwdDirective: string;
 }
 
+/** Agent role → artifact template IDs for output files */
+const ROLE_TEMPLATES: Record<string, string[]> = {
+  planner: ['design', 'tasks'],
+  executor: [],  // produces code, no artifact templates
+  reviewer: ['spec-review', 'quality-review', 'goal-review'],
+  verifier: ['verification'],
+  archiver: ['completion'],
+  researcher: ['research-stack', 'research-architecture', 'research-pitfalls'],
+  'phase-researcher': ['phase-research'],
+  'codebase-mapper': ['codebase-stack', 'codebase-architecture', 'codebase-conventions', 'codebase-pitfalls'],
+  'spec-bootstrapper': ['spec'],
+};
+
 const FORMATS: Record<string, DispatchFormat> = {
   omp: {
     tool: 'task',
@@ -65,6 +78,16 @@ function dispatchHandler(role: string, options: { change?: string; dir: string }
     lines.push('- Read context from specwf context <step> or the change directory');
     lines.push('- Output deliverables as specified in the workflow template');
     lines.push('- Write completion report when done');
+
+    // Template instructions
+    const templates = ROLE_TEMPLATES[role];
+    if (templates && templates.length > 0) {
+      lines.push('');
+      lines.push('Output file templates (the sub-agent should use these):');
+      for (const t of templates) {
+        lines.push(`  \`specwf template ${t}\``);
+      }
+    }
 
     if (platforms.length > 1) {
       console.log(`=== ${platform} ===`);
