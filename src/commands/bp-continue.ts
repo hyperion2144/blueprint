@@ -201,7 +201,8 @@ function continueChangeHandler(name: string): void {
   const change = state.changes.find((c: any) => c.name === name) || state.adhoc.find((c: any) => c.name === name);
   if (change) {
     const ctxType = state.changes.includes(change) ? 'change' : 'adhoc';
-    const validation = validateStepAdvance(ctxType, change.status, cwd.includes(name) ? `changes/${name}` : null, cwd);
+    const ref = `changes/${name}`;
+    const validation = validateStepAdvance(ctxType, change.status, ref, cwd);
     if (!validation.valid) {
       console.log(JSON.stringify({
         error: 'exit_conditions_not_met',

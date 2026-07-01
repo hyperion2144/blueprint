@@ -82,20 +82,28 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
   {
     type: 'adhoc', step: 'proposal',
     checks: [
-      { path: 'changes/', description: 'proposal.md is still a template. Fill in intent, scope, and must-haves.' },
+      { path: 'proposal.md', description: 'proposal.md is still a template. Fill in intent, scope, and must-haves.' },
     ],
   },
-  // Change at planning (both change- and adhoc- types) — design.md + tasks.md must be filled
+  {
+    type: 'change', step: 'proposal',
+    checks: [
+      { path: 'proposal.md', description: 'proposal.md is still a template. Fill in intent, scope, and must-haves.' },
+    ],
+  },
+  // Change at planning — design.md + tasks.md must be filled
   {
     type: 'change', step: 'planning',
     checks: [
-      { path: 'changes/', description: 'design.md or tasks.md is still a template. Complete the plan step.' },
+      { path: 'design.md', description: 'design.md is still a template. Complete the plan step.' },
+      { path: 'tasks.md', description: 'tasks.md is still a template. Complete the plan step.' },
     ],
   },
   {
     type: 'adhoc', step: 'planning',
     checks: [
-      { path: 'changes/', description: 'design.md or tasks.md is still a template. Complete the plan step.' },
+      { path: 'design.md', description: 'design.md is still a template. Complete the plan step.' },
+      { path: 'tasks.md', description: 'tasks.md is still a template. Complete the plan step.' },
     ],
   },
 ];
@@ -131,13 +139,17 @@ function checkExitCondition(bpDir: string, check: ExitCheck, resolvedPath?: stri
     if (!existsSync(fullPath)) return `${check.path} directory not found. ${check.description}`;
 
     if (check.path === 'changes/') {
-      // For changes/ directories: scan subdirs for template files
-      const changeNames = findChangeDir(bpDir, resolvedPath);
+      // fullPath is already the changes/ directory — read it directly
+      let changeNames: string[] = [];
+      try {
+        changeNames = readdirSync(fullPath, { withFileTypes: true })
+          .filter((d) => d.isDirectory())
+          .map((d) => d.name);
+      } catch { /* not found */ }
       if (changeNames.length === 0) return `No change directories found under ${check.path}. ${check.description}`;
-      const baseDir = resolvedPath ? join(bpDir, resolvedPath, 'changes') : join(bpDir, 'changes');
       for (const change of changeNames) {
         for (const doc of ['proposal.md', 'design.md', 'tasks.md']) {
-          const docPath = join(baseDir, change, doc);
+          const docPath = join(fullPath, change, doc);
           if (existsSync(docPath) && isTemplateFile(docPath)) {
             return `changes/${change}/${doc} is still a template. Fill in before advancing.`;
           }
