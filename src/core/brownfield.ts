@@ -157,12 +157,16 @@ export function bootstrapSpecs(rootDir: string, specwfDir: string): string[] {
 export async function runBrownfieldInit(rootDir: string, specwfDir: string, info: ProjectInfo): Promise<string[]> {
   const report = generateCodebaseReport(rootDir, info);
 
-  // 写入 research/codebase
-  const researchDir = join(specwfDir, 'research', 'codebase');
-  mkdirSync(researchDir, { recursive: true });
-  writeFileSync(join(researchDir, 'stack.md'), report.stack, 'utf-8');
-  writeFileSync(join(researchDir, 'structure.md'), report.structure, 'utf-8');
-  writeFileSync(join(researchDir, 'conventions.md'), report.conventions, 'utf-8');
+  // 写入 codebase/
+  const codebaseDir = join(specwfDir, 'codebase');
+  mkdirSync(codebaseDir, { recursive: true });
+  writeFileSync(join(codebaseDir, 'stack.md'), report.stack, 'utf-8');
+  writeFileSync(join(codebaseDir, 'architecture.md'), report.structure, 'utf-8');
+
+  // 写入 conventions/
+  const convDir = join(specwfDir, 'conventions');
+  mkdirSync(convDir, { recursive: true });
+  writeFileSync(join(convDir, 'codebase-conventions.md'), report.conventions, 'utf-8');
 
   // bootstrap specs
   const domains = bootstrapSpecs(rootDir, specwfDir);
