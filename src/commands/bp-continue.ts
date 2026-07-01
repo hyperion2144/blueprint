@@ -68,6 +68,20 @@ function continueHandler(): void {
   const cwd = process.cwd();
 
   const state = loadState(bpDir);
+
+  // Change/adhoc context: bp continue (no args) does NOT advance — use bp continue change <name>
+  if (state.active_context.type === 'change' || state.active_context.type === 'adhoc') {
+    console.log(JSON.stringify({
+      hint: `Active context is at change level. Use \`bp continue change <name>\` to advance a specific change.`,
+      pending: state.changes.concat(state.adhoc).filter((c: any) => c.status !== 'archived').map((c: any) => ({
+        type: state.changes.includes(c) ? 'change' : 'adhoc',
+        name: c.name,
+        status: c.status,
+      })),
+    }));
+    return;
+  }
+
   const result = determineNextStep(bpDir);
 
   const validation = validateStepAdvance(state.active_context.type, state.active_context.step, state.active_context.ref, cwd);
