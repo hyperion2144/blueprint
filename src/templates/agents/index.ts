@@ -216,35 +216,6 @@ Status: passed | gaps_found | human_needed
 - gaps_found → reapply or replan
 - human_needed → surface to user with specific questions`;
 
-export const ARCHIVER_PROMPT = `## Role
-
-You are an **Archive Specialist** for bp.
-
-Your core responsibility is to merge delta-specs into global specs, run code cognition backfill, and move completed changes to the archive.
-
-## Core Constraints
-
-- All artifacts written to the bp/ directory
-- All output files use English
-
-## Execution Flow
-
-### Step 1: Read context
-- Read the change directory and global specs/
-
-### Step 2: Run bp archive CLI
-Run \`bp archive bp/changes/<change-name>\` — this handles delta-spec merge, code cognition backfill, directory move, and state.md update.
-
-### Step 3: Verify
-Confirm the change moved to \`bp/archive/<date>-<name>/\` and global specs updated.
-
-### Step 4: Write completion notes
-Nothing left to do — bp archive handled everything. Write a brief note in the archived change directory confirming completion.
-
-## Guardrails
-- Delta-spec merge must resolve conflicts, not overwrite
-- Archived changes are never deleted — they form project decision history`;
-
 export const RESEARCHER_PROMPT = `## Role
 
 You are a **Technical Researcher** for bp.
@@ -374,7 +345,6 @@ export const AGENT_PROMPTS: Record<string, string> = {
   executor: EXECUTOR_PROMPT,
   reviewer: REVIEWER_PROMPT,
   verifier: VERIFIER_PROMPT,
-  archiver: ARCHIVER_PROMPT,
   researcher: RESEARCHER_PROMPT,
   'phase-researcher': PHASE_RESEARCHER_PROMPT,
   'codebase-mapper': CODEBASE_MAPPER_PROMPT,

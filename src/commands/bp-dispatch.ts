@@ -21,7 +21,6 @@ const ROLE_TEMPLATES: Record<string, string[]> = {
   executor: [],  // produces code, no artifact templates
   reviewer: ['spec-review', 'quality-review', 'goal-review'],
   verifier: ['verification'],
-  archiver: ['completion'],
   researcher: ['research-stack', 'research-architecture', 'research-pitfalls'],
   'phase-researcher': ['phase-research'],
   'codebase-mapper': ['codebase-stack', 'codebase-architecture', 'codebase-structure', 'codebase-conventions', 'codebase-testing', 'codebase-integrations', 'codebase-concerns'],

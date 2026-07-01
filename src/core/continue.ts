@@ -133,7 +133,7 @@ const STEP_INFO: Record<string, StepInfo> = {
   },
   archive: {
     command: 'archive',
-    description: 'Archive — dispatch archiver sub-agent for delta-spec merge + backfill',
+    description: 'Archive — run bp archive CLI, merge specs + move to archive/',
     artifacts: ['archive/<change-id>/'],
     fileRef: '',
   },

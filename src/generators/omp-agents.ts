@@ -63,13 +63,6 @@ export const AGENT_DEFS: AgentDef[] = [
     tools: ['read', 'bash', 'grep', 'glob', 'lsp', 'edit', 'write'],
     spawns: '*',
   },
-  // bp-archiver
-  {
-    role: 'archiver',
-    description: 'Archive — delta-spec merge + code cognition backfill',
-    tools: ['read', 'write', 'bash', 'grep', 'glob', 'lsp'],
-    spawns: '*',
-  },
   // bp-phase-researcher
   {
     role: 'phase-researcher',

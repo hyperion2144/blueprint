@@ -63,13 +63,6 @@ export const AGENT_DEFS: AgentDef[] = [
     tools: ['read', 'bash', 'grep', 'glob', 'lsp', 'edit', 'write'],
     spawns: '*',
   },
-  // bp-archiver
-  {
-    role: 'archiver',
-    description: 'Archive — delta-spec merge + code cognition backfill',
-    tools: ['read', 'write', 'bash', 'grep', 'glob', 'lsp'],
-    spawns: '*',
-  },
   // bp-phase-researcher
   {
     role: 'phase-researcher',
@@ -105,7 +98,6 @@ const AGENT_TO_MODEL_ROLE: Record<string, ModelRole> = {
   executor: 'execute',
   reviewer: 'review',
   verifier: 'verify',
-  archiver: 'archive',
   // Brownfield/analysis agents not in profile map → fall back to 'default'
 };
 
