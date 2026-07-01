@@ -1,5 +1,5 @@
 {
-  "name": "blueprint",
+  "name": "@hyperion2144/blueprint",
   "version": "0.4.0",
   "description": "Blueprint — spec-driven development workflow for AI coding agents",
   "type": "module",
