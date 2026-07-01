@@ -27,6 +27,7 @@ export function register(program: any): void {
 
 function formatContinueResult(result: ContinueResult): void {
   const output: any = {
+    _note: 'Read the full instructions below before acting. Do not skip truncated content.',
     current: {
       context: result.context,
       step: result.currentStep,
