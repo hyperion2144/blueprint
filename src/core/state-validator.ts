@@ -64,16 +64,16 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
       { path: 'context.md', description: 'context.md not found or still a template. Complete the discuss step for this phase.' },
     ],
   },
-  // phase/phase-research → must have research.md in phase dir
+  // phase/research → must have research.md in phase dir
   {
-    type: 'phase', step: 'phase-research',
+    type: 'phase', step: 'research',
     checks: [
       { path: 'research.md', description: 'research.md not found or still a template. Complete research-phase for this phase.' },
     ],
   },
-  // phase/phase-split → must have changes directories under the phase
+  // phase/split → must have changes directories under the phase
   {
-    type: 'phase', step: 'phase-split',
+    type: 'phase', step: 'split',
     checks: [
       { path: 'changes/', description: 'No change directories found under this phase. Run split to create change directories.' },
     ],
@@ -85,9 +85,15 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
       { path: 'changes/', description: 'proposal.md is still a template. Fill in intent, scope, and must-haves.' },
     ],
   },
-  // change/change-planning → design.md + tasks.md must be filled
+  // Change at planning (both change- and adhoc- types) — design.md + tasks.md must be filled
   {
-    type: 'change', step: 'change-planning',
+    type: 'change', step: 'planning',
+    checks: [
+      { path: 'changes/', description: 'design.md or tasks.md is still a template. Complete the plan step.' },
+    ],
+  },
+  {
+    type: 'adhoc', step: 'planning',
     checks: [
       { path: 'changes/', description: 'design.md or tasks.md is still a template. Complete the plan step.' },
     ],

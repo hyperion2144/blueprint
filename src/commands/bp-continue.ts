@@ -194,6 +194,24 @@ function continueHandler(): void {
 
 function continueChangeHandler(name: string): void {
   const bpDir = join(process.cwd(), 'bp');
+  const cwd = process.cwd();
+  const state = loadState(bpDir);
+
+  // Validate exit conditions before advancing
+  const change = state.changes.find((c: any) => c.name === name) || state.adhoc.find((c: any) => c.name === name);
+  if (change) {
+    const ctxType = state.changes.includes(change) ? 'change' : 'adhoc';
+    const validation = validateStepAdvance(ctxType, change.status, cwd.includes(name) ? `changes/${name}` : null, cwd);
+    if (!validation.valid) {
+      console.log(JSON.stringify({
+        error: 'exit_conditions_not_met',
+        change: { name, status: change.status, type: ctxType },
+        details: validation.errors,
+      }));
+      return;
+    }
+  }
+
   const result = determineChangeNextStep(bpDir, name);
   if ('error' in result) {
     console.log(JSON.stringify({ error: 'not_found', message: result.error }));

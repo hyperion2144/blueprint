@@ -82,7 +82,7 @@ function newChange(name: string, options: { dir: string; full?: boolean; intent?
     console.log(`  tasks.md — fill in implementation tasks`);
     console.log(`  specs/${name}/spec.md — fill in behavioral contracts`);
 
-    const changeEntry = { name, status: 'planning' as const, depends_on: [] as string[] };
+    const changeEntry = { name, status: 'proposal' as const, depends_on: [] as string[] };
     updateState(bpDir, (state) => {
       if (changeType === 'change') state.changes.push(changeEntry);
       else state.adhoc.push(changeEntry);
@@ -91,5 +91,5 @@ function newChange(name: string, options: { dir: string; full?: boolean; intent?
 
   console.log(`✓ state.md updated`);
   console.log('');
-  console.log(`→ Next: fill in artifacts, then \`bp continue change ${name}\``);
+  console.log(`→ Fill proposal.md first, then \`bp continue change ${name}\` to proceed.`);
 }
