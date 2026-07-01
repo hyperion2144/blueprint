@@ -82,20 +82,20 @@ function generateStateBody(state: StateFile): string {
   const lines: string[] = [
     '# State',
     '',
-    '## 当前位置',
+    '## Current Position',
     '',
     formatContext(state),
     '',
-    '## 状态机',
+    '## State Machine',
     '',
-    '项目层路径: `initialized → requirements-defined → researched → roadmap-defined`',
+    'Project path: `initialized → requirements-defined → researched → roadmap-defined`',
     '',
   ];
 
-  // 历史
+  // History
   if (state.project) {
-    lines.push('## 历史', '');
-    // 历史从原文中保留——读取现有 body 的历史部分
+    lines.push('## History', '');
+    // Preserve existing history from original body
   }
 
   return lines.join('\n');
@@ -105,15 +105,15 @@ function formatContext(state: StateFile): string {
   const { type, ref, step } = state.active_context;
   switch (type) {
     case 'project':
-      return `项目层 — ${step}。`;
+      return `Project (${step})`;
     case 'milestone':
-      return `Milestone ${state.project.current_milestone ?? '?'} — ${step}。`;
+      return `Milestone ${state.project.current_milestone ?? '?'} (${step})`;
     case 'phase':
-      return `Phase ${state.project.current_phase ?? '?'} — ${step}。`;
+      return `Phase ${state.project.current_phase ?? '?'} (${step})`;
     case 'change':
-      return `Change (${ref ?? '?'}) — ${step}。`;
+      return `Change (${ref ?? '?'}) (${step})`;
     case 'adhoc':
-      return `临时 Change (${ref ?? '?'}) — ${step}。`;
+      return `Adhoc Change (${ref ?? '?'}) (${step})`;
     default:
       return step;
   }
