@@ -25,7 +25,7 @@ Read \`proposal.md\` to determine change type. Check \`tasks.md\` if it already 
 - **Full**: any type:behavior tasks, OR new feature with architectural decisions
 
 ### Step 1: Resolve change name and get context
-If a change name was provided: use it directly. If not: run \`bp state\`, list pending changes with status \`planned\` or \`proposal\`, ask the user to pick. Then run \`bp context plan\` to get the file manifest. Read all listed files.
+If a change name was provided: use it directly. If not: run \`bp state\`, list pending changes with status \`planning\`, ask the user to pick. Then run \`bp context plan\` to get the file manifest. Read all listed files.
 
 ### Step 2: Execute design
 
@@ -37,7 +37,6 @@ The change has no type:behavior tasks — you design and implement yourself with
 1. Run \`bp template design\` to get the template. Fill it with 1-2 paragraphs of approach, then write to \`design.md\` (no alternatives needed)
 2. Run \`bp template tasks\` to get the template. List each task with type annotation, then write to \`tasks.md\`
 3. Skip delta-specs — not needed for non-behavioral changes
-4. \`proposal.md\` already exists (created by \`bp change new\`) — fill in one-line intent, scope can stay as-is
 
 **After writing files:**
 - Mark all task checkboxes as done in \`tasks.md\`
