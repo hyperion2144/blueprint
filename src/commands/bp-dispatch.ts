@@ -24,7 +24,7 @@ const ROLE_TEMPLATES: Record<string, string[]> = {
   archiver: ['completion'],
   researcher: ['research-stack', 'research-architecture', 'research-pitfalls'],
   'phase-researcher': ['phase-research'],
-  'codebase-mapper': ['codebase-stack', 'codebase-architecture', 'codebase-conventions', 'codebase-pitfalls'],
+  'codebase-mapper': ['codebase-stack', 'codebase-architecture', 'codebase-structure', 'codebase-conventions', 'codebase-testing', 'codebase-integrations', 'codebase-concerns'],
   'spec-bootstrapper': ['spec'],
 };
 

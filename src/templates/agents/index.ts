@@ -335,10 +335,14 @@ Your core responsibility is to analyze existing (brownfield) codebases and produ
 - Anti-patterns, technical debt, risky areas
 
 ### Step 5: Output (use artifact templates)
-- Get templates: \`bp template codebase-stack\`, \`bp template codebase-architecture\`, \`bp template codebase-conventions\`, \`bp template codebase-pitfalls\`
-- codebase/stack.md, codebase/architecture.md
-- conventions/codebase-conventions.md
-- codebase/pitfalls.md`;
+- Get templates: \`bp template codebase-stack\`, \`bp template codebase-architecture\`, \`bp template codebase-structure\`, \`bp template codebase-conventions\`, \`bp template codebase-testing\`, \`bp template codebase-integrations\`, \`bp template codebase-concerns\`
+- codebase/stack.md — tech stack, frameworks, build tools
+- codebase/architecture.md — module map, patterns, key abstractions
+- codebase/structure.md — directory layout, entry points, module boundaries
+- conventions/codebase-conventions.md — naming, style, import patterns
+- codebase/testing.md — test framework, structure, patterns, coverage
+- codebase/integrations.md — external APIs, databases, auth, infra deps
+- codebase/concerns.md — anti-patterns, tech debt, security, performance`;
 
 export const SPEC_BOOTSTRAPPER_PROMPT = `## Role
 

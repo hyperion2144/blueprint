@@ -35,7 +35,7 @@ bp dispatch spec-bootstrapper
 \`\`\`
 
 Then dispatch BOTH sub-agents simultaneously — **two separate sub-agent calls in the same response**, one for each agent type. Each sub-agent should use artifact templates (\`bp template codebase-stack\`, \`bp template codebase-architecture\`, etc.) to format outputs:
-- **Agent 1: codebase-mapper** — analyze src/, read package.json and tsconfig.json, map architecture, identify conventions and pitfalls. Output: bp/codebase/stack.md, codebase/architecture.md, codebase/pitfalls.md, conventions/codebase-conventions.md.
+- **Agent 1: codebase-mapper** — analyze src/, read package.json and tsconfig.json, map architecture, identify conventions and pitfalls. Output: bp/codebase/stack.md, codebase/architecture.md, codebase/structure.md, conventions/codebase-conventions.md, codebase/testing.md, codebase/integrations.md, codebase/concerns.md.
 - **Agent 2: spec-bootstrapper** — scan src/ for core modules and public APIs, extract SHALL/MUST from signatures/JSDoc/tests, annotate confidence levels. Output: bp/specs/<domain>/spec.md with BOOTSTRAPPED marker.
 
 After both complete, verify the output files exist.
@@ -55,7 +55,7 @@ Run \`bp continue\` to proceed to the requirements exploration phase (grill).
 | \`.omp/agents/*.md\` | Generated agent definitions |
 | \`.omp/skills/*/SKILL.md\` | Generated skill guides |
 
-Brownfield extras: \`codebase/stack.md\`, \`codebase/architecture.md\`, \`codebase/pitfalls.md\`, \`conventions/codebase-conventions.md\`, \`specs/<domain>/spec.md\`.
+Brownfield extras: \`codebase/stack.md\`, \`codebase/architecture.md\`, \`codebase/structure.md\`, \`codebase/conventions.md\`, \`codebase/testing.md\`, \`codebase/integrations.md\`, \`codebase/concerns.md\`, \`conventions/codebase-conventions.md\`, \`specs/<domain>/spec.md\`.
 
 ## Guardrails
 

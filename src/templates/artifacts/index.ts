@@ -812,6 +812,113 @@ The system SHALL {{behavior-1}}.
 > Confidence: {{confidence}} | Source: {{file}}:{{line}}
 `;
 
+export const CODEBASE_CONCERNS_TEMPLATE = `# Concerns: {{name}}
+
+> Codebase analysis — technical debt, security issues, performance risks, fragile areas identified from brownfield scan.
+
+---
+
+## Anti-Patterns
+| Pattern | Location | Risk |
+|---------|----------|------|
+| {{anti-1}} | {{location}} | {{risk}} |
+
+## Technical Debt
+| Item | Impact | Effort to Fix |
+|------|--------|--------------|
+| {{debt-1}} | {{impact}} | {{effort}} |
+
+## Security Concerns
+| Issue | Severity | Location |
+|-------|---------|----------|
+| {{sec-1}} | {{severity}} | {{location}} |
+
+## Performance Risks
+| Area | Why Risky | Mitigation |
+|------|----------|-----------|
+| {{area-1}} | {{reason}} | {{mitigation}} |
+
+## Dependencies at Risk
+| Dependency | Version | Latest | Risk |
+|-----------|---------|--------|------|
+| {{dep-1}} | {{version}} | {{latest}} | {{risk}} |
+`;
+
+export const CODEBASE_STRUCTURE_TEMPLATE = `# Structure: {{name}}
+
+> Codebase analysis — directory layout, module organization, and key file locations identified from brownfield scan.
+
+---
+
+## Directory Layout
+\`\`\`text
+{{directory-tree}}
+\`\`\`
+
+## Key Directories
+| Directory | Purpose | Key Files |
+|-----------|---------|----------|
+| {{dir-1}} | {{purpose}} | {{files}} |
+
+## Entry Points
+- **{{entry-1}}**: {{description}} (e.g. CLI entry, server start, build config)
+
+## Module Boundaries
+- **{{boundary-1}}**: {{what it owns vs what it imports}}
+`;
+
+export const CODEBASE_TESTING_TEMPLATE = `# Testing: {{name}}
+
+> Codebase analysis — testing framework, structure, mocking patterns, and coverage identified from brownfield scan.
+
+---
+
+## Framework
+- **Runner**: {{test-runner}}
+- **Assertion library**: {{assertion-lib}}
+- **Mocking**: {{mock-lib}}
+
+## Test Structure
+- **Location**: {{test-location}} (e.g. co-located, \__tests__/, test/)
+- **Naming**: {{test-naming}} (e.g. *.test.ts, *.spec.ts)
+- **Organization**: {{test-organization}}
+
+## Test Patterns
+| Pattern | Example File | Notes |
+|---------|-------------|-------|
+| {{pattern-1}} | {{file}} | {{notes}} |
+
+## Coverage
+- **Current coverage**: {{coverage}} (if available)
+- **Gaps**: {{coverage-gaps}}
+`;
+
+export const CODEBASE_INTEGRATIONS_TEMPLATE = `# Integrations: {{name}}
+
+> Codebase analysis — external APIs, databases, services, and auth providers identified from brownfield scan.
+
+---
+
+## External APIs
+| Service | Purpose | SDK/Library | Auth Method |
+|---------|---------|------------|------------|
+| {{api-1}} | {{purpose}} | {{sdk}} | {{auth}} |
+
+## Databases & Storage
+| Type | Engine | Connection | ORM/Driver |
+|------|--------|-----------|-----------|
+| {{db-1}} | {{engine}} | {{connection}} | {{orm}} |
+
+## Auth & Identity
+- **Provider**: {{auth-provider}}
+- **Method**: {{auth-method}} (e.g. JWT, OAuth2, session)
+
+## Infrastructure Dependencies
+| Service | Type | Critical? | Notes |
+|---------|------|----------|-------|
+| {{infra-1}} | {{type}} | {{yes/no}} | {{notes}} |
+`;
+
 export const CODEBASE_PITFALLS_TEMPLATE = `# Pitfalls: {{name}}
 
 > Codebase analysis — known pitfalls, anti-patterns, and technical debt identified from brownfield scan.
@@ -889,8 +996,12 @@ export const ARTIFACT_TEMPLATES: Record<string, string> = {
   // Codebase analysis (brownfield — produced by bp-codebase-mapper)
   'codebase-stack': CODEBASE_STACK_TEMPLATE,
   'codebase-architecture': CODEBASE_ARCHITECTURE_TEMPLATE,
+  'codebase-structure': CODEBASE_STRUCTURE_TEMPLATE,
   'codebase-conventions': CODEBASE_CONVENTIONS_TEMPLATE,
-  'codebase-pitfalls': CODEBASE_PITFALLS_TEMPLATE,
+  'codebase-testing': CODEBASE_TESTING_TEMPLATE,
+  'codebase-integrations': CODEBASE_INTEGRATIONS_TEMPLATE,
+  'codebase-concerns': CODEBASE_CONCERNS_TEMPLATE,
+  'codebase-pitfalls': CODEBASE_CONCERNS_TEMPLATE,  // alias, deprecated
   // Change lifecycle
   'spec': SPEC_TEMPLATE,
   'completion': SUMMARY_TEMPLATE,  // archiver completion.md
