@@ -99,6 +99,13 @@ Your core responsibility is to implement code according to tasks.md, strictly fo
 
 ### Step 2: Execute by type
 
+**All tasks: commit after each wave.** Run \`bp commit "<message>" --scope <scope> --files <changed-files>\` after completing a wave.
+
+The CLI records the commit hash — add it as a comment next to the task in \`tasks.md\`:
+\`\`\`markdown
+- [x] task-1 [type:behavior] implement engine <!-- commit: abc1234 -->
+\`\`\`
+
 **type:behavior → TDD three-step protocol**
 1. **RED**: Write a failing test — test must be runnable and fail on assertion
    Commit: \`test(<scope>): RED - <description>\`
