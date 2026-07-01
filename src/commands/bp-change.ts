@@ -12,7 +12,7 @@ export function register(program: any): void {
   cmd
     .command('new <name>')
     .description('Create a change. Default: fast path (all artifacts). Use --full for full plan cycle.')
-    .option('--dir <path>', 'specwf directory', 'specwf')
+    .option('--dir <path>', 'bp directory', 'bp')
     .option('--full', 'Full cycle: proposal only, goes through plan phase')
     .option('--intent <text>', 'one-line intent for the proposal')
     .option('--milestone <id>', 'milestone ID for phase-scoped change')
@@ -20,20 +20,20 @@ export function register(program: any): void {
     .action(newChange);
 
   cmd.action(() => {
-    console.log('Usage: specwf change new <name> [--full] [--intent <text>]');
+    console.log('Usage: bp change new <name> [--full] [--intent <text>]');
   });
 }
 
 function newChange(name: string, options: { dir: string; full?: boolean; intent?: string; milestone?: string; phase?: string }) {
-  const specwfDir = join(process.cwd(), options.dir);
+  const bpDir = join(process.cwd(), options.dir);
   const date = new Date().toISOString().slice(0, 10);
 
   // Phase-scoped: creates under milestones/<mid>/phases/<pid>/changes/<name>/
-  // Adhoc: creates under specwf/changes/<name>/
+  // Adhoc: creates under bp/changes/<name>/
   const isPhaseChange = options.milestone && options.phase;
   const changeDir = isPhaseChange
-    ? join(specwfDir, 'milestones', options.milestone!, 'phases', options.phase!, 'changes', name)
-    : createAdhocChangeDir(specwfDir, name);
+    ? join(bpDir, 'milestones', options.milestone!, 'phases', options.phase!, 'changes', name)
+    : createAdhocChangeDir(bpDir, name);
   mkdirSync(changeDir, { recursive: true });
   const changeType = isPhaseChange ? 'change' : 'adhoc';
 
@@ -48,7 +48,7 @@ function newChange(name: string, options: { dir: string; full?: boolean; intent?
     console.log(`  proposal.md — fill in, then plan → apply → review → verify → archive`);
 
     const changeEntry = { name, status: 'proposal' as const, depends_on: [] as string[] };
-    updateState(specwfDir, (state) => {
+    updateState(bpDir, (state) => {
       if (changeType === 'change') state.changes.push(changeEntry);
       else state.adhoc.push(changeEntry);
     });
@@ -83,7 +83,7 @@ function newChange(name: string, options: { dir: string; full?: boolean; intent?
     console.log(`  specs/${name}/spec.md — fill in behavioral contracts`);
 
     const changeEntry = { name, status: 'planning' as const, depends_on: [] as string[] };
-    updateState(specwfDir, (state) => {
+    updateState(bpDir, (state) => {
       if (changeType === 'change') state.changes.push(changeEntry);
       else state.adhoc.push(changeEntry);
     });
@@ -91,5 +91,5 @@ function newChange(name: string, options: { dir: string; full?: boolean; intent?
 
   console.log(`✓ state.md updated`);
   console.log('');
-  console.log(`→ Next: fill in artifacts, then \`specwf continue change ${name}\``);
+  console.log(`→ Next: fill in artifacts, then \`bp continue change ${name}\``);
 }

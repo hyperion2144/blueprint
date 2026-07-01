@@ -1,6 +1,6 @@
 /**
- * specwf 配置类型
- * 对应 specwf/project.yml 的结构
+ * bp 配置类型
+ * 对应 bp/project.yml 的结构
  */
 
 /** 工作流严格度 */

@@ -1,5 +1,5 @@
 /**
- * specwf archive <change> — 归档 change（delta 合并 + 代码认知回灌 + 目录移动）
+ * bp archive <change> — 归档 change（delta 合并 + 代码认知回灌 + 目录移动）
  */
 
 import { join } from 'node:path';
@@ -18,7 +18,7 @@ export function register(program: any): void {
 }
 
 function archiveHandler(changePath: string) {
-  const specwfDir = join(process.cwd(), 'specwf');
+  const bpDir = join(process.cwd(), 'bp');
 
   // 解析 change 路径
   const fullChangePath = join(process.cwd(), changePath);
@@ -30,14 +30,14 @@ function archiveHandler(changePath: string) {
   // 1. delta-spec 合并
   const specsDir = join(fullChangePath, 'specs');
   if (existsSync(specsDir)) {
-    mergeDeltaSpecs(specsDir, specwfDir);
+    mergeDeltaSpecs(specsDir, bpDir);
     console.log('✓ delta-specs 合并完成');
   }
 
   // 2. 检查 change-summary.md 是否存在
   const summaryPath = join(fullChangePath, 'change-summary.md');
   if (!existsSync(summaryPath)) {
-    console.warn('⚠ change-summary.md 不存在。建议先使用 `specwf template change-summary` 生成变更总结。');
+    console.warn('⚠ change-summary.md 不存在。建议先使用 `bp template change-summary` 生成变更总结。');
   }
 
   // 3. 代码认知提取
@@ -45,7 +45,7 @@ function archiveHandler(changePath: string) {
   const extractResult = extractFromGitDiff(repoDir, fullChangePath);
   if (extractResult.available && extractResult.extractions.length > 0) {
     for (const extraction of extractResult.extractions) {
-      writeExtractionToSpec(join(specwfDir, 'specs'), extraction);
+      writeExtractionToSpec(join(bpDir, 'specs'), extraction);
     }
     if (extractResult.extractions.length > 0) {
       console.log(`✓ 代码认知提取完成 (${extractResult.extractions.length} 个域)`);
@@ -53,7 +53,7 @@ function archiveHandler(changePath: string) {
   }
 
   // 3. 移动到 archive/
-  const archiveDir = archiveChangeDir(specwfDir, fullChangePath);
+  const archiveDir = archiveChangeDir(bpDir, fullChangePath);
   console.log(`✓ 归档到: ${archiveDir}`);
 
   // 从 git 跟踪中移除旧路径
@@ -66,7 +66,7 @@ function archiveHandler(changePath: string) {
   // 4. 更新 state.md
   const changeName = changePath.split('/').pop() ?? 'unknown';
   try {
-    updateState(specwfDir, (state) => {
+    updateState(bpDir, (state) => {
       const change = state.changes.find((c) => c.name === changeName);
       if (change) {
         // Remove from active changes — move to archive/ dir, not lingering in changes list
@@ -102,18 +102,18 @@ function archiveHandler(changePath: string) {
 }
 
 /** 合并 delta-specs 到全局 specs/ */
-function mergeDeltaSpecs(deltaDir: string, specwfDir: string): void {
+function mergeDeltaSpecs(deltaDir: string, bpDir: string): void {
   const entries = readdirSync(deltaDir, { withFileTypes: true });
   for (const entry of entries) {
     if (!entry.isDirectory()) continue;
 
     const deltaSpecPath = join(deltaDir, entry.name, 'spec.md');
-    const liveSpecPath = join(specwfDir, 'specs', entry.name, 'spec.md');
+    const liveSpecPath = join(bpDir, 'specs', entry.name, 'spec.md');
 
     if (!existsSync(deltaSpecPath)) continue;
 
     if (!existsSync(liveSpecPath)) {
-      mkdirSync(join(specwfDir, 'specs', entry.name), { recursive: true });
+      mkdirSync(join(bpDir, 'specs', entry.name), { recursive: true });
       copyFileSync(deltaSpecPath, liveSpecPath);
       continue;
     }

@@ -1,11 +1,11 @@
 /**
- * specwf OMP Hook — automated spec injection and workflow guidance.
+ * bp OMP Hook — automated spec injection and workflow guidance.
  *
- * Install: copy to .omp/hooks/pre/specwf-hook.ts
- * Or generate via: specwf update (writes to .omp/hooks/pre/specwf.ts)
+ * Install: copy to .omp/hooks/pre/bp-hook.ts
+ * Or generate via: bp update (writes to .omp/hooks/pre/bp.ts)
  *
  * Pattern: Trellis-style context injection.
- * - SessionStart: detect specwf project, inject specs + conventions + workflow state
+ * - SessionStart: detect bp project, inject specs + conventions + workflow state
  * - BeforeAgentStart: remind agent of current step's constraints
  * - PreToolUse (task): inject sub-agent context from change directory
  *
@@ -21,15 +21,15 @@ interface HookAPI {
   sendMessage(msg: any, opts?: any): void;
 }
 
-export default function specwfHook(api: HookAPI): void {
+export default function bpHook(api: HookAPI): void {
   // ── SessionStart: inject project specs + workflow state ──
   api.on("session_start", async (_event: any, ctx: any) => {
     const cwd = ctx.cwd ?? process.cwd();
-    if (!existsSync(join(cwd, "specwf", "state.md"))) return;
+    if (!existsSync(join(cwd, "bp", "state.md"))) return;
 
     try {
-      // Run specwf context to get full state + specs + conventions
-      const output = execSync("specwf context current", {
+      // Run bp context to get full state + specs + conventions
+      const output = execSync("bp context current", {
         cwd,
         encoding: "utf-8",
         timeout: 5000,
@@ -37,7 +37,7 @@ export default function specwfHook(api: HookAPI): void {
       const data = JSON.parse(output);
 
       const lines: string[] = [];
-      lines.push(`[specwf] Project: ${data.project} | Status: ${data.status}`);
+      lines.push(`[bp] Project: ${data.project} | Status: ${data.status}`);
       if (data.milestone) lines.push(`Milestone: ${data.milestone}`);
       if (data.phase) lines.push(`Phase: ${data.phase}`);
 
@@ -63,30 +63,30 @@ export default function specwfHook(api: HookAPI): void {
 
       api.sendMessage({
         role: "custom",
-        customType: "specwf-session",
+        customType: "bp-session",
         content: [{ type: "text", text: lines.join("\n") }],
         timestamp: Date.now(),
       });
     } catch {
-      // specwf CLI not available — skip injection
+      // bp CLI not available — skip injection
     }
   });
 
   // ── BeforeAgentStart: workflow-state hint ──
   api.on("before_agent_start", async (_event: any, ctx: any) => {
     const cwd = ctx.cwd ?? process.cwd();
-    if (!existsSync(join(cwd, "specwf", "state.md"))) return;
+    if (!existsSync(join(cwd, "bp", "state.md"))) return;
 
     try {
-      const output = execSync("specwf state", { cwd, encoding: "utf-8", timeout: 3000 });
+      const output = execSync("bp state", { cwd, encoding: "utf-8", timeout: 3000 });
       const state = JSON.parse(output);
 
       const pending = state.pending || [];
       const hint = pending.length > 0
-        ? `[specwf] Pending: ${pending.map((p: any) => `${p.name}[${p.status}]`).join(", ")}. Run \`specwf continue\` to advance.`
-        : `[specwf] Status: ${state.status}. Run \`specwf continue\` to check next step.`;
+        ? `[bp] Pending: ${pending.map((p: any) => `${p.name}[${p.status}]`).join(", ")}. Run \`bp continue\` to advance.`
+        : `[bp] Status: ${state.status}. Run \`bp continue\` to check next step.`;
 
-      ctx.ui?.setStatus?.("specwf", hint);
+      ctx.ui?.setStatus?.("bp", hint);
     } catch {
       // skip
     }

@@ -1,6 +1,6 @@
 /**
  * OMP Agent generator
- * Generates .omp/agents/specwf-<role>.md files (8 agent definitions).
+ * Generates .omp/agents/bp-<role>.md files (8 agent definitions).
  *
  * Agent system prompts are imported from TypeScript modules in src/templates/agents/
  * instead of reading markdown files.
@@ -28,56 +28,56 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /** 8 agent definitions */
 export const AGENT_DEFS: AgentDef[] = [
-  // specwf-researcher
+  // bp-researcher
   {
     role: 'researcher',
     description: 'Technical research — produce STACK/ARCH/PITFALLS/RESEARCH docs',
     tools: ['read', 'grep', 'glob', 'lsp', 'web_search', 'write', 'bash'],
     spawns: '*',
   },
-  // specwf-planner
+  // bp-planner
   {
     role: 'planner',
     description: 'Change design — produce proposal/design/tasks/delta-specs',
     tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'],
     spawns: '*',
   },
-  // specwf-executor
+  // bp-executor
   {
     role: 'executor',
     description: 'Code implementation — TDD RED→GREEN→REFACTOR',
     tools: ['read', 'edit', 'write', 'bash', 'grep', 'glob', 'lsp', 'ast_grep', 'ast_edit'],
     spawns: '*',
   },
-  // specwf-reviewer
+  // bp-reviewer
   {
     role: 'reviewer',
     description: 'Triple review — spec review + quality review + goal review',
     tools: ['read', 'grep', 'glob', 'lsp', 'ast_grep', 'bash'],
     spawns: '*',
   },
-  // specwf-verifier
+  // bp-verifier
   {
     role: 'verifier',
     description: 'Test verification — diagnose + route loopback',
     tools: ['read', 'bash', 'grep', 'glob', 'lsp', 'edit', 'write'],
     spawns: '*',
   },
-  // specwf-archiver
+  // bp-archiver
   {
     role: 'archiver',
     description: 'Archive — delta-spec merge + code cognition backfill',
     tools: ['read', 'write', 'bash', 'grep', 'glob', 'lsp'],
     spawns: '*',
   },
-  // specwf-phase-researcher
+  // bp-phase-researcher
   {
     role: 'phase-researcher',
     description: 'Phase research — produce RESEARCH.md for planner',
     tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'],
     spawns: '*',
   },
-  // specwf-codebase-mapper + specwf-spec-bootstrapper (combined as aux agents)
+  // bp-codebase-mapper + bp-spec-bootstrapper (combined as aux agents)
   {
     role: 'codebase-mapper',
     description: 'Codebase mapping — analyze existing code, produce technical reports',
@@ -104,10 +104,10 @@ export function resolveThinkingLevel(role: string): string {
 /** Generate a single agent file */
 export function generateAgent(def: AgentDef, model: string): string {
   const thinkingLevel = resolveThinkingLevel(def.role);
-  const body = AGENT_PROMPTS[def.role] ?? `# ${def.description}\n\nAgent system prompt for specwf-${def.role}.`;
+  const body = AGENT_PROMPTS[def.role] ?? `# ${def.description}\n\nAgent system prompt for bp-${def.role}.`;
 
   return `---
-name: specwf-${def.role}
+name: bp-${def.role}
 description: ${def.description}
 tools:
 ${def.tools.map((t) => `  - ${t}`).join('\n')}
@@ -126,7 +126,7 @@ ${body}
 /** Generate all agent files */
 export function generateAllAgents(config: ProjectConfig): { path: string; content: string }[] {
   return AGENT_DEFS.map((def) => ({
-    path: `.omp/agents/specwf-${def.role}.md`,
+    path: `.omp/agents/bp-${def.role}.md`,
     content: generateAgent(def, resolveAgentModel(def.role, config)),
   }));
 }

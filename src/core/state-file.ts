@@ -35,15 +35,15 @@ const StateFileSchema = z.object({
 });
 
 /** state.md 路径 */
-export function statePath(specwfDir: string): string {
-  return join(specwfDir, STATE_FILE);
+export function statePath(bpDir: string): string {
+  return join(bpDir, STATE_FILE);
 }
 
 /** 读取并验证 state.md。若未初始化则输出错误并退出。 */
-export function loadState(specwfDir: string): StateFile {
-  const path = statePath(specwfDir);
+export function loadState(bpDir: string): StateFile {
+  const path = statePath(bpDir);
   if (!existsSync(path)) {
-    console.error('specwf project not initialized. Run `specwf init` first.');
+    console.error('bp project not initialized. Run `bp init` first.');
     process.exit(1);
   }
   const result = readFrontmatterFile(path);
@@ -51,29 +51,29 @@ export function loadState(specwfDir: string): StateFile {
 }
 
 /** 写入 state.md（frontmatter + body） */
-export function saveState(specwfDir: string, state: StateFile): void {
+export function saveState(bpDir: string, state: StateFile): void {
   // 保留现有 body，只更新 frontmatter
   let body: string;
   try {
-    const existing = readFrontmatterFile(statePath(specwfDir));
+    const existing = readFrontmatterFile(statePath(bpDir));
     body = existing.content;
   } catch {
     body = generateStateBody(state);
   }
   const output = stringifyFrontmatter(state as unknown as Record<string, unknown>, body);
-  writeFileSync(statePath(specwfDir), output, 'utf-8');
+  writeFileSync(statePath(bpDir), output, 'utf-8');
 }
 
 /** 修改 state 并写回 */
-export function updateState(specwfDir: string, updater: (state: StateFile) => void): void {
-  const state = loadState(specwfDir);
+export function updateState(bpDir: string, updater: (state: StateFile) => void): void {
+  const state = loadState(bpDir);
   updater(state);
-  saveState(specwfDir, state);
+  saveState(bpDir, state);
 }
 
 /** 检查 state.md 是否存在 */
-export function hasState(specwfDir: string): boolean {
-  return existsSync(statePath(specwfDir));
+export function hasState(bpDir: string): boolean {
+  return existsSync(statePath(bpDir));
 }
 
 /** 生成 state.md 的 Markdown body */

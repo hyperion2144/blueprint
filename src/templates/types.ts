@@ -10,7 +10,7 @@
  */
 
 export interface SkillTemplate {
-  /** Skill identifier (e.g., 'specwf-plan') */
+  /** Skill identifier (e.g., 'bp-plan') */
   name: string;
   /** One-line description for discovery */
   description: string;
@@ -35,7 +35,7 @@ export interface CommandTemplate {
  * An artifact template for output documents (proposal, design, tasks, etc.).
  */
 export interface ArtifactTemplate {
-  /** Template identifier matching CLI `specwf template <id>` */
+  /** Template identifier matching CLI `bp template <id>` */
   id: string;
   /** Human-readable label */
   label: string;

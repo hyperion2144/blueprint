@@ -26,8 +26,8 @@ export interface ContinueResult {
   instructions?: string;
 }
 
-export function determineNextStep(specwfDir: string): ContinueResult {
-  return determineFromState(loadState(specwfDir));
+export function determineNextStep(bpDir: string): ContinueResult {
+  return determineFromState(loadState(bpDir));
 }
 
 /**
@@ -35,10 +35,10 @@ export function determineNextStep(specwfDir: string): ContinueResult {
  * Looks in both state.changes and state.adhoc.
  */
 export function determineChangeNextStep(
-  specwfDir: string,
+  bpDir: string,
   changeName: string,
 ): ContinueResult | { error: string } {
-  const state = loadState(specwfDir);
+  const state = loadState(bpDir);
 
   // Look in regular changes first
   const change = state.changes.find((c) => c.name === changeName);
@@ -68,13 +68,13 @@ const STEP_INFO: Record<string, StepInfo> = {
   grill: {
     command: 'grill',
     description: 'Requirements exploration — 5W1H questioning, output requirements.md',
-    artifacts: ['specwf/requirements.md'],
+    artifacts: ['bp/requirements.md'],
     fileRef: '',
   },
   research: {
     command: 'research',
     description: 'Parallel technical research — dispatch researcher sub-agents',
-    artifacts: ['specwf/research/stack.md', 'specwf/research/architecture.md', 'specwf/research/pitfalls.md', 'specwf/research/summary.md'],
+    artifacts: ['bp/research/stack.md', 'bp/research/architecture.md', 'bp/research/pitfalls.md', 'bp/research/summary.md'],
     fileRef: '',
   },
   'research-done': {
@@ -86,7 +86,7 @@ const STEP_INFO: Record<string, StepInfo> = {
   roadmap: {
     command: 'roadmap',
     description: 'Split project into Milestones x Phases',
-    artifacts: ['specwf/roadmap.md'],
+    artifacts: ['bp/roadmap.md'],
     fileRef: '',
   },
   discuss: {
@@ -104,7 +104,7 @@ const STEP_INFO: Record<string, StepInfo> = {
   split: {
     command: 'split',
     description: 'Split phase into changes with dependency graph',
-    artifacts: ['specwf/changes/<name>/'],
+    artifacts: ['bp/changes/<name>/'],
     fileRef: '',
   },
   plan: {
@@ -286,17 +286,17 @@ function generateHint(state: StateFile): string | null {
   const status = state.project.status;
   if (status === 'milestone-shipped') {
     const pendingAdhoc = state.adhoc.filter((c) => c.status !== 'archived');
-    const hints: string[] = ['Milestone shipped. Run `specwf state set-milestone <next-id>` to activate the next milestone.'];
+    const hints: string[] = ['Milestone shipped. Run `bp state set-milestone <next-id>` to activate the next milestone.'];
     if (pendingAdhoc.length > 0) {
       hints.push(
         `Pending adhoc changes: ${pendingAdhoc.map(c => c.name).join(', ')}. ` +
-        `Use: specwf continue change <name>`,
+        `Use: bp continue change <name>`,
       );
     }
     return hints.join('\n  ');
   }
   if (status === 'phase-shipped') {
-    return 'Phase shipped. Run `specwf state set-phase <next-phase-id>` to activate the next phase, or `specwf state set-milestone <next-id>` to ship the milestone.';
+    return 'Phase shipped. Run `bp state set-phase <next-phase-id>` to activate the next phase, or `bp state set-milestone <next-id>` to ship the milestone.';
   }
   return null;
 }

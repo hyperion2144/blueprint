@@ -117,7 +117,7 @@ function detectConventions(rootDir: string): string {
 }
 
 /** spec bootstrap — 从代码提取初始行为契约 */
-export function bootstrapSpecs(rootDir: string, specwfDir: string): string[] {
+export function bootstrapSpecs(rootDir: string, bpDir: string): string[] {
   const specs: string[] = [];
 
   // 扫描 src/ 目录提取 spec 域
@@ -125,7 +125,7 @@ export function bootstrapSpecs(rootDir: string, specwfDir: string): string[] {
     try {
       for (const entry of readdirSync(join(rootDir, 'src'), { withFileTypes: true })) {
         if (entry.isDirectory() && !entry.name.startsWith('_')) {
-          const domainDir = join(specwfDir, 'specs', entry.name);
+          const domainDir = join(bpDir, 'specs', entry.name);
           mkdirSync(domainDir, { recursive: true });
           writeFileSync(
             join(domainDir, 'spec.md'),
@@ -140,7 +140,7 @@ export function bootstrapSpecs(rootDir: string, specwfDir: string): string[] {
 
   if (specs.length === 0) {
     // 至少创建一个默认 spec 域
-    const domainDir = join(specwfDir, 'specs', 'general');
+    const domainDir = join(bpDir, 'specs', 'general');
     mkdirSync(domainDir, { recursive: true });
     writeFileSync(
       join(domainDir, 'spec.md'),
@@ -154,22 +154,22 @@ export function bootstrapSpecs(rootDir: string, specwfDir: string): string[] {
 }
 
 /** 完整 brownfield init 流程 */
-export async function runBrownfieldInit(rootDir: string, specwfDir: string, info: ProjectInfo): Promise<string[]> {
+export async function runBrownfieldInit(rootDir: string, bpDir: string, info: ProjectInfo): Promise<string[]> {
   const report = generateCodebaseReport(rootDir, info);
 
   // 写入 codebase/
-  const codebaseDir = join(specwfDir, 'codebase');
+  const codebaseDir = join(bpDir, 'codebase');
   mkdirSync(codebaseDir, { recursive: true });
   writeFileSync(join(codebaseDir, 'stack.md'), report.stack, 'utf-8');
   writeFileSync(join(codebaseDir, 'architecture.md'), report.structure, 'utf-8');
 
   // 写入 conventions/
-  const convDir = join(specwfDir, 'conventions');
+  const convDir = join(bpDir, 'conventions');
   mkdirSync(convDir, { recursive: true });
   writeFileSync(join(convDir, 'codebase-conventions.md'), report.conventions, 'utf-8');
 
   // bootstrap specs
-  const domains = bootstrapSpecs(rootDir, specwfDir);
+  const domains = bootstrapSpecs(rootDir, bpDir);
 
   return domains;
 }

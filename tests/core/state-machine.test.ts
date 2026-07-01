@@ -19,7 +19,7 @@ describe('getTransition', () => {
     const t = getTransition('initialized', 'grill');
     expect(t).not.toBeNull();
     expect(t!.to).toBe('requirements-defined');
-    expect(t!.slashCommand).toBe('/specwf:grill');
+    expect(t!.slashCommand).toBe('/bp:grill');
   });
 
   it('不存在时返回 null', () => {
@@ -46,7 +46,7 @@ describe('getNextSteps', () => {
 
 describe('getSlashCommand', () => {
   it('返回 slash command', () => {
-    expect(getSlashCommand('requirements-defined', 'research')).toBe('/specwf:research');
+    expect(getSlashCommand('requirements-defined', 'research')).toBe('/bp:research');
   });
 
   it('无 slash command 时返回 null', () => {

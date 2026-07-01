@@ -4,35 +4,35 @@ import { existsSync, readFileSync, mkdirSync, writeFileSync, rmSync } from 'node
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
-const cliPath = join(process.cwd(), 'bin/specwf.js');
-const testDir = join(tmpdir(), `specwf-e2e-${Date.now()}`);
+const cliPath = join(process.cwd(), 'bin/bp.js');
+const testDir = join(tmpdir(), `bp-e2e-${Date.now()}`);
 
 afterAll(() => {
   rmSync(testDir, { recursive: true, force: true });
 });
 
 describe('E2E: init → template → archive', () => {
-  it('step 1: specwf init 创建完整项目结构', () => {
+  it('step 1: bp init 创建完整项目结构', () => {
     mkdirSync(testDir, { recursive: true });
     execSync(`node ${cliPath} init --dir ${testDir} --yes`, { encoding: 'utf-8', cwd: testDir });
 
-    const specwfDir = join(testDir, 'specwf');
-    expect(existsSync(join(specwfDir, 'project.yml'))).toBe(true);
-    expect(existsSync(join(specwfDir, 'state.md'))).toBe(true);
-    expect(existsSync(join(specwfDir, 'specs'))).toBe(true);
-    expect(existsSync(join(specwfDir, 'conventions'))).toBe(true);
-    expect(existsSync(join(specwfDir, 'milestones'))).toBe(true);
-    expect(existsSync(join(specwfDir, 'changes'))).toBe(true);
-    expect(existsSync(join(specwfDir, 'archive'))).toBe(true);
-    expect(existsSync(join(specwfDir, 'workspace'))).toBe(true);
+    const bpDir = join(testDir, 'bp');
+    expect(existsSync(join(bpDir, 'project.yml'))).toBe(true);
+    expect(existsSync(join(bpDir, 'state.md'))).toBe(true);
+    expect(existsSync(join(bpDir, 'specs'))).toBe(true);
+    expect(existsSync(join(bpDir, 'conventions'))).toBe(true);
+    expect(existsSync(join(bpDir, 'milestones'))).toBe(true);
+    expect(existsSync(join(bpDir, 'changes'))).toBe(true);
+    expect(existsSync(join(bpDir, 'archive'))).toBe(true);
+    expect(existsSync(join(bpDir, 'workspace'))).toBe(true);
   });
 
-  it('step 2: specwf update 生成平台文件', () => {
+  it('step 2: bp update 生成平台文件', () => {
     execSync(`node ${cliPath} update`, { encoding: 'utf-8', cwd: testDir });
 
-    expect(existsSync(join(testDir, '.omp', 'commands', 'specwf-plan.md'))).toBe(true);
-    expect(existsSync(join(testDir, '.omp', 'agents', 'specwf-planner.md'))).toBe(true);
-    expect(existsSync(join(testDir, '.omp', 'skills', 'specwf-plan', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(testDir, '.omp', 'commands', 'bp-plan.md'))).toBe(true);
+    expect(existsSync(join(testDir, '.omp', 'agents', 'bp-planner.md'))).toBe(true);
+    expect(existsSync(join(testDir, '.omp', 'skills', 'bp-plan', 'SKILL.md'))).toBe(true);
 
     const cmdCount = execSync(`ls -1 ${join(testDir, '.omp', 'commands')} | wc -l`, { encoding: 'utf-8' }).trim();
     expect(parseInt(cmdCount)).toBe(16);
@@ -41,10 +41,10 @@ describe('E2E: init → template → archive', () => {
     expect(parseInt(agentCount)).toBe(9);
   });
 
-  it('step 3: specwf template proposal 生成 proposal.md', () => {
+  it('step 3: bp template proposal 生成 proposal.md', () => {
     execSync(`node ${cliPath} template proposal --name add-auth`, { encoding: 'utf-8', cwd: testDir });
 
-    const proposalPath = join(testDir, 'specwf', 'changes', 'add-auth', 'proposal.md');
+    const proposalPath = join(testDir, 'bp', 'changes', 'add-auth', 'proposal.md');
     expect(existsSync(proposalPath)).toBe(true);
     const content = readFileSync(proposalPath, 'utf-8');
     expect(content).toContain('add-auth');
@@ -52,29 +52,29 @@ describe('E2E: init → template → archive', () => {
     expect(content).toContain('Scope');
   });
 
-  it('step 4: specwf template design 生成 design.md', () => {
+  it('step 4: bp template design 生成 design.md', () => {
     execSync(`node ${cliPath} template design --name add-auth`, { encoding: 'utf-8', cwd: testDir });
 
-    const designPath = join(testDir, 'specwf', 'changes', 'add-auth', 'design.md');
+    const designPath = join(testDir, 'bp', 'changes', 'add-auth', 'design.md');
     expect(existsSync(designPath)).toBe(true);
     const content = readFileSync(designPath, 'utf-8');
     expect(content).toContain('add-auth');
     expect(content).toContain('Technical Approach');
   });
 
-  it('step 5: specwf template tasks 生成 tasks.md', () => {
+  it('step 5: bp template tasks 生成 tasks.md', () => {
     execSync(`node ${cliPath} template tasks --name add-auth`, { encoding: 'utf-8', cwd: testDir });
 
-    const tasksPath = join(testDir, 'specwf', 'changes', 'add-auth', 'tasks.md');
+    const tasksPath = join(testDir, 'bp', 'changes', 'add-auth', 'tasks.md');
     expect(existsSync(tasksPath)).toBe(true);
     const content = readFileSync(tasksPath, 'utf-8');
     expect(content).toContain('TDD');
     expect(content).toContain('type:behavior');
   });
 
-  it('step 6: specwf archive delta-spec 合并', () => {
-    const specwfDir = join(testDir, 'specwf');
-    const changeDir = join(specwfDir, 'changes', 'add-auth');
+  it('step 6: bp archive delta-spec 合并', () => {
+    const bpDir = join(testDir, 'bp');
+    const changeDir = join(bpDir, 'changes', 'add-auth');
 
     // 创建 delta-spec
     mkdirSync(join(changeDir, 'specs', 'auth'), { recursive: true });
@@ -85,39 +85,39 @@ describe('E2E: init → template → archive', () => {
     );
 
     // 创建全局 spec（已有内容）
-    mkdirSync(join(specwfDir, 'specs', 'auth'), { recursive: true });
+    mkdirSync(join(bpDir, 'specs', 'auth'), { recursive: true });
     writeFileSync(
-      join(specwfDir, 'specs', 'auth', 'spec.md'),
+      join(bpDir, 'specs', 'auth', 'spec.md'),
       `# Auth Specification\n\n## Purpose\n\n认证管理。\n\n## Requirements\n\n### Requirement: Logout\n\n系统 SHALL 提供登出功能。\n`,
       'utf-8',
     );
 
     // 执行 archive
-    execSync(`node ${cliPath} archive specwf/changes/add-auth`, { encoding: 'utf-8', cwd: testDir });
+    execSync(`node ${cliPath} archive bp/changes/add-auth`, { encoding: 'utf-8', cwd: testDir });
 
     // 验证归档
-    const archiveEntries = execSync(`ls -1 ${join(specwfDir, 'archive', 'changes')}`, { encoding: 'utf-8' }).trim().split('\n');
+    const archiveEntries = execSync(`ls -1 ${join(bpDir, 'archive', 'changes')}`, { encoding: 'utf-8' }).trim().split('\n');
     expect(archiveEntries.some((e) => e.includes('add-auth'))).toBe(true);
 
     // 验证 delta-spec 合并
-    const mergedSpec = readFileSync(join(specwfDir, 'specs', 'auth', 'spec.md'), 'utf-8');
+    const mergedSpec = readFileSync(join(bpDir, 'specs', 'auth', 'spec.md'), 'utf-8');
     expect(mergedSpec).toContain('Logout');
     expect(mergedSpec).toContain('Login');
     expect(mergedSpec).toContain('Valid login');
   });
 
-  it('step 7: specwf continue 输出下一步', () => {
+  it('step 7: bp continue 输出下一步', () => {
     // 创建 requirements.md 使 continue 能通过校验
-    writeFileSync(join(testDir, 'specwf', 'requirements.md'), '# Requirements\n', 'utf-8');
+    writeFileSync(join(testDir, 'bp', 'requirements.md'), '# Requirements\n', 'utf-8');
     const output = execSync(`node ${cliPath} continue`, { encoding: 'utf-8', cwd: testDir });
     const result = JSON.parse(output);
     expect(result.current).toBeDefined();
     expect(result.next).toBeDefined();
   });
 
-  it('step 8: specwf list 输出归档', () => {
+  it('step 8: bp list 输出归档', () => {
     const output = execSync(`node ${cliPath} list --all`, { encoding: 'utf-8', cwd: testDir });
-    expect(output).toContain('归档');
+    expect(output).toContain('Archived');
     expect(output).toContain('add-auth');
   });
 });

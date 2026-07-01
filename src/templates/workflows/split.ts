@@ -3,7 +3,7 @@ import type { SkillTemplate, CommandTemplate } from '../types';
 const instructions = `## Input
 
 ### Parameters
-- **No parameters**: operate on the current phase from \`specwf state\`
+- **No parameters**: operate on the current phase from \`bp state\`
 
 ### Prerequisites
 - \`context.md\` — phase decisions and constraints
@@ -12,7 +12,7 @@ const instructions = `## Input
 ## Steps
 
 ### Step 1: Get context
-Run \`specwf context split\` — outputs JSON with state, context.md, and research.md paths. Read all listed files.
+Run \`bp context split\` — outputs JSON with state, context.md, and research.md paths. Read all listed files.
 
 ### Step 2: Split into changes
 Decompose the phase scope into independently implementable Change units:
@@ -22,9 +22,9 @@ Decompose the phase scope into independently implementable Change units:
 
 Create each change under the phase directory:
 \`\`\`bash
-specwf change new <change-name> --milestone <milestone-id> --phase <phase-id>
+bp change new <change-name> --milestone <milestone-id> --phase <phase-id>
 \`\`\`
-This creates \`specwf/milestones/<mid>/phases/<pid>/changes/<name>/\` with all artifact templates.
+This creates \`bp/milestones/<mid>/phases/<pid>/changes/<name>/\` with all artifact templates.
 
 ### Step 3: Document dependency graph
 Record in state.md:
@@ -47,10 +47,10 @@ Before advancing, verify:
 - [ ] Every change has a directory with proposal.md template
 
 ### Step 5: Advance
-Run \`specwf continue\` to proceed to change planning.
+Run \`bp continue\` to proceed to change planning.
 
 ## Output
-- \`specwf/milestones/<mid>/phases/<pid>/changes/<name>/\` — one directory per change
+- \`bp/milestones/<mid>/phases/<pid>/changes/<name>/\` — one directory per change
 - Updated \`state.md\` with change dependency graph
 
 ## Guardrails
@@ -61,7 +61,7 @@ Run \`specwf continue\` to proceed to change planning.
 
 export function getSplitSkillTemplate(): SkillTemplate {
   return {
-    name: 'specwf-split',
+    name: 'bp-split',
     description: 'Change splitting — dependency graph + N changes with validation',
     instructions,
   };
@@ -72,7 +72,7 @@ export function getSplitCommandTemplate(): CommandTemplate {
     name: 'SpecWF: Split',
     description: 'Change splitting — dependency graph + N changes with validation',
     category: 'Planning',
-    tags: ['specwf', 'split', 'changes', 'dependency-graph'],
+    tags: ['bp', 'split', 'changes', 'dependency-graph'],
     content: instructions,
   };
 }

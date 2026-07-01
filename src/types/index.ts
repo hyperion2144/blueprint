@@ -1,5 +1,5 @@
 /**
- * specwf 类型统一导出
+ * bp 类型统一导出
  */
 
 export type {

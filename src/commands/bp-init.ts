@@ -12,7 +12,7 @@ import { writeGeneratedFiles } from './_utils.js';
 export function register(program: any): void {
   program
     .command('init')
-    .description('初始化 specwf 项目结构')
+    .description('初始化 bp 项目结构')
     .option('--dir <path>', '目标目录', '.')
     .option('--profile <profile>', '工作流严格度 (lite|standard|strict)', 'standard')
     .option('--brownfield', '存量项目模式（codebase mapping + spec bootstrap）')
@@ -29,10 +29,10 @@ async function initHandler(options: {
   const baseDir = options.dir.startsWith('/')
     ? options.dir
     : join(process.cwd(), options.dir);
-  const specwfDir = join(baseDir, 'specwf');
+  const bpDir = join(baseDir, 'bp');
 
-  if (isInitialized(specwfDir)) {
-    console.error('specwf 已初始化。运行 `specwf update` 更新平台文件。');
+  if (isInitialized(bpDir)) {
+    console.error('bp 已初始化。运行 `bp update` 更新平台文件。');
     process.exit(1);
   }
 
@@ -41,10 +41,10 @@ async function initHandler(options: {
   const platform = wizard.platform;
   const isBrownfield = options.brownfield || wizard.brownfield;
 
-  createSpecwfStructure(specwfDir);
-  console.log('✓ 创建 specwf/ 目录结构');
+  createSpecwfStructure(bpDir);
+  console.log('✓ 创建 bp/ 目录结构');
 
-  saveConfig(specwfDir, {
+  saveConfig(bpDir, {
     version: 1,
     platform,
     profile,
@@ -58,7 +58,7 @@ async function initHandler(options: {
   });
   console.log('✓ 创建 project.yml (profile: ' + profile + ')');
 
-  saveState(specwfDir, {
+  saveState(bpDir, {
     project: {
       name: baseDir.split('/').pop() || 'project',
       status: 'initialized',
@@ -77,16 +77,16 @@ async function initHandler(options: {
 
   // Create requirements.md template
   const reqContent = REQUIREMENTS_TEMPLATE.replace(/\{\{name\}\}/g, baseDir.split('/').pop() || 'project');
-  writeFileSync(join(specwfDir, 'requirements.md'), reqContent, 'utf-8');
+  writeFileSync(join(bpDir, 'requirements.md'), reqContent, 'utf-8');
   console.log('✓ 创建 requirements.md (template)');
 
   if (isBrownfield) {
     const info = detectProjectInfo(process.cwd());
-    const domains = await runBrownfieldInit(process.cwd(), specwfDir, info);
-    console.log('✓ 已扫描项目结构。请派发 specwf-codebase-mapper 和 specwf-spec-bootstrapper 子代理完成完整分析。');
+    const domains = await runBrownfieldInit(process.cwd(), bpDir, info);
+    console.log('✓ 已扫描项目结构。请派发 bp-codebase-mapper 和 bp-spec-bootstrapper 子代理完成完整分析。');
   }
 
-  console.log('specwf 初始化完成。');
+  console.log('bp 初始化完成。');
 
   // 自动生成平台文件
   try {
@@ -94,6 +94,6 @@ async function initHandler(options: {
     writeGeneratedFiles(files);
     console.log(`✓ 平台文件已生成 (${files.length} 个)`);
   } catch {
-    console.log('⚠ 平台文件生成失败，可稍后运行 `specwf update` 重试');
+    console.log('⚠ 平台文件生成失败，可稍后运行 `bp update` 重试');
   }
 }

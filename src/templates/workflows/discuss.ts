@@ -3,11 +3,11 @@ import type { SkillTemplate, CommandTemplate } from '../types';
 const instructions = `## Input
 
 ### Parameters
-- **\`<phase-id>\`** (optional) — the phase to discuss (e.g. \`ph.1-core\`). If not provided, read from \`specwf state\` to determine the active phase.
+- **\`<phase-id>\`** (optional) — the phase to discuss (e.g. \`ph.1-core\`). If not provided, read from \`bp state\` to determine the active phase.
 
 ### Prerequisites
 - Active milestone and phase must be set
-- \`specwf/roadmap.md\` — contains phase definitions with goals and scope
+- \`bp/roadmap.md\` — contains phase definitions with goals and scope
 
 ## Philosophy
 
@@ -20,10 +20,10 @@ You are a **thinking partner**, not an interviewer. The user is the visionary �
 ### Step 0: Resolve the active phase
 If a phase ID was provided, use it directly. If not:
 
-1. Run \`specwf state\` — read \`milestone\` and \`phase\` fields from JSON.
+1. Run \`bp state\` — read \`milestone\` and \`phase\` fields from JSON.
 2. If both are non-null, use them.
-3. If \`phase\` is null: run \`specwf context discuss\` to get the roadmap path. Read roadmap.md, identify the current phase. Run \`specwf state set-phase <phase-id>\` to activate it.
-4. If \`milestone\` is null: run \`specwf state set-milestone <milestone-id>\` first.
+3. If \`phase\` is null: run \`bp context discuss\` to get the roadmap path. Read roadmap.md, identify the current phase. Run \`bp state set-phase <phase-id>\` to activate it.
+4. If \`milestone\` is null: run \`bp state set-milestone <milestone-id>\` first.
 
 Print the resolved phase identity:
 \`\`\`
@@ -33,7 +33,7 @@ Deliverable: <executable artifact>
 \`\`\`
 
 ### Step 1: Get context
-Run \`specwf context discuss\` — outputs JSON with state and roadmap path. Read roadmap.md and extract ONLY the section for this phase. Check if \`context.md\` already exists and load prior phase decisions to avoid re-asking.
+Run \`bp context discuss\` — outputs JSON with state and roadmap path. Read roadmap.md and extract ONLY the section for this phase. Check if \`context.md\` already exists and load prior phase decisions to avoid re-asking.
 
 ### Step 2: Identify gray areas
 Gray areas are **implementation decisions the user cares about** — things that could go multiple ways and would change the result. They are PHASE-SPECIFIC, not generic categories.
@@ -81,11 +81,11 @@ For each selected area:
    \`\`\`
 
 ### Step 5: Write context.md
-Get the context template: \`specwf template context\`. Write to \`specwf/milestones/<milestone-id>/phases/<phase-id>/context.md\`.
+Get the context template: \`bp template context\`. Write to \`bp/milestones/<milestone-id>/phases/<phase-id>/context.md\`.
 
 Ensure the full path exists:
 \`\`\`bash
-mkdir -p specwf/milestones/<milestone-id>/phases/<phase-id>
+mkdir -p bp/milestones/<milestone-id>/phases/<phase-id>
 \`\`\`
 
 \`\`\`markdown
@@ -119,14 +119,14 @@ mkdir -p specwf/milestones/<milestone-id>/phases/<phase-id>
 If no gray areas were discussed (express path): write a minimal context.md with only the phase identity and \"No gray areas — all decisions clear from roadmap and prior phases.\"
 
 ### Step 6: Advance
-Run \`specwf continue\` to proceed to research-phase.
+Run \`bp continue\` to proceed to research-phase.
 
 ## Output
-- \`specwf/milestones/<mid>/phases/<pid>/context.md\` — phase-level implementation decisions with D1/D2 format
+- \`bp/milestones/<mid>/phases/<pid>/context.md\` — phase-level implementation decisions with D1/D2 format
 
 ## Guardrails
-- **Output goes in the phase directory** — NOT in specwf/ root
-- Ensure \`mkdir -p specwf/milestones/<mid>/phases/<pid>\` before writing
+- **Output goes in the phase directory** — NOT in bp/ root
+- Ensure \`mkdir -p bp/milestones/<mid>/phases/<pid>\` before writing
 - **Scope to this phase ONLY** — other phases are discussed separately
 - **Express path**: skip discussion if everything is clear — don't force questions
 - Identify 2-6 phase-specific gray areas before presenting to user
@@ -137,7 +137,7 @@ Run \`specwf continue\` to proceed to research-phase.
 
 export function getDiscussSkillTemplate(): SkillTemplate {
   return {
-    name: 'specwf-discuss',
+    name: 'bp-discuss',
     description: 'Phase discussion — capture implementation decisions with D1/D2 format',
     instructions,
   };
@@ -148,7 +148,7 @@ export function getDiscussCommandTemplate(): CommandTemplate {
     name: 'SpecWF: Discuss',
     description: 'Phase discussion — capture implementation decisions with D1/D2 format',
     category: 'Planning',
-    tags: ['specwf', 'discuss', 'context', 'decisions'],
+    tags: ['bp', 'discuss', 'context', 'decisions'],
     content: instructions,
   };
 }

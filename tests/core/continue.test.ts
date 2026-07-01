@@ -32,7 +32,7 @@ describe('determineNextStep', () => {
     });
     const result = determineNextStep(tmpDir);
     expect(result.nextCommand).toBe('research');
-    expect(result.slashCommand).toBe('/specwf:research');
+    expect(result.slashCommand).toBe('/bp:research');
     expect(result.needsSubagent).toBe(true);
   });
 
@@ -58,7 +58,7 @@ describe('determineFromState', () => {
     };
     const result = determineFromState(state);
     expect(result.nextCommand).toBe('apply');
-    expect(result.slashCommand).toBe('/specwf:apply');
+    expect(result.slashCommand).toBe('/bp:apply');
     expect(result.needsSubagent).toBe(true);
   });
 

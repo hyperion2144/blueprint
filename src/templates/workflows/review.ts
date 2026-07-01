@@ -3,8 +3,8 @@ import type { SkillTemplate, CommandTemplate } from '../types';
 const instructions = `## Input
 
 ### Parameters
-- **\`<change-name>\`** (required) — the change to review. Provided by \`specwf continue\` output or user.
-- If no change name is available, check the \`pending\` array from \`specwf context <step>\` JSON output, then ask the user.
+- **\`<change-name>\`** (required) — the change to review. Provided by \`bp continue\` output or user.
+- If no change name is available, check the \`pending\` array from \`bp context <step>\` JSON output, then ask the user.
 
 ### Prerequisites
 - Apply phase complete: implementation code, tests, summary.md
@@ -17,7 +17,7 @@ Read \`tasks.md\` and check task types:
 - **Full**: any type:behavior tasks
 
 ### Step 1: Resolve change name and get context
-If a change name was provided: use it directly. If not: run \`specwf state\`, list pending changes with status \`applying\`, ask the user to pick. Then run \`specwf context review\` to get the file manifest. Read all listed files.
+If a change name was provided: use it directly. If not: run \`bp state\`, list pending changes with status \`applying\`, ask the user to pick. Then run \`bp context review\` to get the file manifest. Read all listed files.
 
 ### Step 2: Execute review
 
@@ -31,13 +31,13 @@ If a change name was provided: use it directly. If not: run \`specwf state\`, li
   - \`goal-review.md\`: verify proposal must_haves are met
 
 **If FULL — dispatch parallel review sub-agents:**
-Run \`specwf dispatch reviewer --change <change-name>\` for platform-specific dispatch instructions. Dispatch three in parallel, each with a different role: spec-review, quality-review, goal-review.
+Run \`bp dispatch reviewer --change <change-name>\` for platform-specific dispatch instructions. Dispatch three in parallel, each with a different role: spec-review, quality-review, goal-review.
 
 Construct each sub-agent prompt:
 - Task: review the change according to assigned role
 - Read: proposal.md, delta-specs, design.md, implementation
-- Output: spec-review.md | quality-review.md | goal-review.md to specwf/changes/<change-name>/
-- The sub-agent's system prompt (.omp/agents/specwf-reviewer.md) contains per-role review checklists.
+- Output: spec-review.md | quality-review.md | goal-review.md to bp/changes/<change-name>/
+- The sub-agent's system prompt (.omp/agents/bp-reviewer.md) contains per-role review checklists.
 
 ### Step 3: Aggregate results
 After all three complete, check each report:
@@ -51,7 +51,7 @@ After all three complete, check each report:
 - No BLOCKERs → advance
 
 ### Step 5: Advance
-Run \`specwf continue\` to proceed to verify.
+Run \`bp continue\` to proceed to verify.
 
 ## Guardrails
 - **You are the orchestrator** — dispatch for full changes, quick-checklist for lightweight
@@ -61,7 +61,7 @@ Run \`specwf continue\` to proceed to verify.
 
 export function getReviewSkillTemplate(): SkillTemplate {
   return {
-    name: 'specwf-review',
+    name: 'bp-review',
     description: 'Triple review — dispatch reviewer sub-agents in parallel',
     instructions,
   };
@@ -72,7 +72,7 @@ export function getReviewCommandTemplate(): CommandTemplate {
     name: 'SpecWF: Review',
     description: 'Triple review — dispatch reviewer sub-agents in parallel',
     category: 'Workflow',
-    tags: ['specwf', 'review', 'quality', 'specs', 'sub-agent'],
+    tags: ['bp', 'review', 'quality', 'specs', 'sub-agent'],
     content: instructions,
   };
 }

@@ -1,5 +1,5 @@
 /**
- * specwf continue — auto-advance to next step (compact JSON output + inline instructions)
+ * bp continue — auto-advance to next step (compact JSON output + inline instructions)
  */
 
 import { join } from 'node:path';
@@ -63,24 +63,24 @@ function resolveStatusKey(type: string, step: string, projectStatus: string): st
 }
 
 function continueHandler(): void {
-  const specwfDir = join(process.cwd(), 'specwf');
+  const bpDir = join(process.cwd(), 'bp');
   const cwd = process.cwd();
 
-  const state = loadState(specwfDir);
+  const state = loadState(bpDir);
   const validation = validateStepAdvance(state.active_context.type, state.active_context.step, state.active_context.ref, cwd);
   if (!validation.valid) {
     console.log(JSON.stringify({ error: 'exit_conditions_not_met', details: validation.errors }));
     return;
   }
 
-  const result = determineNextStep(specwfDir);
+  const result = determineNextStep(bpDir);
 
   if (result.nextCommand) {
     const currentStatus = resolveStatusKey(state.active_context.type, state.active_context.step, state.project.status);
     const transition = getTransition(currentStatus, result.nextCommand);
 
     if (transition) {
-      updateState(specwfDir, (s) => {
+      updateState(bpDir, (s) => {
         // transition.to is the full state key (e.g. phase-research).
         // For non-project types, active_context.step should be the base step name.
         if (s.active_context.type === 'project' || s.active_context.type === 'milestone') {
@@ -97,21 +97,21 @@ function continueHandler(): void {
 }
 
 function continueChangeHandler(name: string): void {
-  const specwfDir = join(process.cwd(), 'specwf');
-  const result = determineChangeNextStep(specwfDir, name);
+  const bpDir = join(process.cwd(), 'bp');
+  const result = determineChangeNextStep(bpDir, name);
   if ('error' in result) {
     console.log(JSON.stringify({ error: 'not_found', message: result.error }));
     return;
   }
 
   if (result.nextCommand) {
-    const state = loadState(specwfDir);
+    const state = loadState(bpDir);
     const transition = getTransition(result.currentStep, result.nextCommand);
 
     if (transition) {
       const shortStatus = transition.to.replace(/^(change|adhoc)-/, '') as ChangeStatus;
 
-      updateState(specwfDir, (s) => {
+      updateState(bpDir, (s) => {
         const adhoc = s.adhoc.find((c) => c.name === name);
         if (adhoc) {
           adhoc.status = shortStatus;

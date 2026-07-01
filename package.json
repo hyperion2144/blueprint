@@ -1,17 +1,17 @@
 {
-  "name": "specwf",
+  "name": "blueprint",
   "version": "0.3.0",
-  "description": "规格驱动开发工作流 — spec-driven development workflow for AI coding agents",
+  "description": "Blueprint — spec-driven development workflow for AI coding agents",
   "type": "module",
   "bin": {
-    "specwf": "bin/specwf.js"
+    "bp": "bin/bp.js"
   },
   "scripts": {
-    "build": "tsup && cp bin/cli.js bin/specwf.js",
+    "build": "tsup && cp bin/cli.js bin/bp.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepare": "npm run build || (npx -y tsup && cp bin/cli.js bin/specwf.js)",
+    "prepare": "npm run build || (npx -y tsup && cp bin/cli.js bin/bp.js)",
     "prepublishOnly": "npm run typecheck && npm run test && npm run build"
   },
   "engines": {

@@ -1,5 +1,5 @@
 /**
- * specwf 实体类型
+ * bp 实体类型
  * 4 层实体：Project → Milestone → Phase → Change
  */
 
@@ -44,7 +44,7 @@ export interface Change {
   dependsOn: string[];
 }
 
-/** Change 元数据（.specwf.yaml） */
+/** Change 元数据（.bp.yaml） */
 export interface ChangeMeta {
   name: string;
   type: 'phase' | 'adhoc';

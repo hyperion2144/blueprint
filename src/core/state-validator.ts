@@ -33,7 +33,7 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
     type: 'project', step: 'roadmap-defined',
     checks: [
       { path: 'roadmap.md', description: 'roadmap.md not found. Complete roadmap step first.' },
-      { path: 'milestones/', description: 'No milestone directories found. Create specwf/milestones/<id>/phases/<pid>/ for each milestone.' },
+      { path: 'milestones/', description: 'No milestone directories found. Create bp/milestones/<id>/phases/<pid>/ for each milestone.' },
     ],
   },
   // milestone/active → must have requirements.md
@@ -105,8 +105,8 @@ function isTemplateFile(filePath: string): boolean {
   }
 }
 
-function findChangeDir(specwfDir: string, baseDir?: string): string[] {
-  const changesDir = baseDir ? join(specwfDir, baseDir, 'changes') : join(specwfDir, 'changes');
+function findChangeDir(bpDir: string, baseDir?: string): string[] {
+  const changesDir = baseDir ? join(bpDir, baseDir, 'changes') : join(bpDir, 'changes');
   if (!existsSync(changesDir)) return [];
   try {
     return readdirSync(changesDir, { withFileTypes: true })
@@ -117,8 +117,8 @@ function findChangeDir(specwfDir: string, baseDir?: string): string[] {
   }
 }
 
-function checkExitCondition(specwfDir: string, check: ExitCheck, resolvedPath?: string): string | null {
-  const fullPath = resolvedPath ?? join(specwfDir, check.path);
+function checkExitCondition(bpDir: string, check: ExitCheck, resolvedPath?: string): string | null {
+  const fullPath = resolvedPath ?? join(bpDir, check.path);
 
   // Directory check: path ends with / → verify the directory has content
   if (check.path.endsWith('/')) {
@@ -126,9 +126,9 @@ function checkExitCondition(specwfDir: string, check: ExitCheck, resolvedPath?: 
 
     if (check.path === 'changes/') {
       // For changes/ directories: scan subdirs for template files
-      const changeNames = findChangeDir(specwfDir, resolvedPath);
+      const changeNames = findChangeDir(bpDir, resolvedPath);
       if (changeNames.length === 0) return `No change directories found under ${check.path}. ${check.description}`;
-      const baseDir = resolvedPath ? join(specwfDir, resolvedPath, 'changes') : join(specwfDir, 'changes');
+      const baseDir = resolvedPath ? join(bpDir, resolvedPath, 'changes') : join(bpDir, 'changes');
       for (const change of changeNames) {
         for (const doc of ['proposal.md', 'design.md', 'tasks.md']) {
           const docPath = join(baseDir, change, doc);
@@ -177,7 +177,7 @@ export function validateStepAdvance(
   ref: string | null,
   cwd: string,
 ): ValidationResult {
-  const specwfDir = join(cwd, 'specwf');
+  const bpDir = join(cwd, 'bp');
 
   // Normalize step: strip type-prefix for lookup (phase-discuss → discuss, change-planning → planning)
   const normalizedStep = contextStep.startsWith(`${contextType}-`) ? contextStep.slice(contextType.length + 1) : contextStep;
@@ -194,11 +194,11 @@ export function validateStepAdvance(
   const errors: string[] = [];
   for (const check of criteria.checks) {
     // Phase context: prefix path with the phase ref (milestones/<mid>/phases/<pid>/)
-    // Non-phase context: use bare path relative to specwf/
+    // Non-phase context: use bare path relative to bp/
     const resolvedPath = (ref && contextType !== 'project' && contextType !== 'milestone' && !check.path.startsWith('changes/'))
-      ? join(specwfDir, ref, check.path)
-      : join(specwfDir, check.path);
-    const error = checkExitCondition(specwfDir, check, resolvedPath);
+      ? join(bpDir, ref, check.path)
+      : join(bpDir, check.path);
+    const error = checkExitCondition(bpDir, check, resolvedPath);
     if (error) {
       errors.push(error);
     }

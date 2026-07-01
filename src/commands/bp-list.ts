@@ -1,5 +1,5 @@
 /**
- * specwf list — 列出 milestones/phases/changes
+ * bp list — 列出 milestones/phases/changes
  */
 
 import { join } from 'node:path';
@@ -14,18 +14,18 @@ export function register(program: any): void {
 }
 
 function listHandler(options: { all?: boolean }) {
-  const specwfDir = join(process.cwd(), 'specwf');
+  const bpDir = join(process.cwd(), 'bp');
   let hasItems = false;
 
-  const milestones = listMilestones(specwfDir);
+  const milestones = listMilestones(bpDir);
   if (milestones.length > 0) {
     console.log('Milestones:');
     for (const ms of milestones) {
       console.log(`  ${ms}/`);
-      const phases = listPhases(specwfDir, ms);
+      const phases = listPhases(bpDir, ms);
       for (const ph of phases) {
         console.log(`    ${ph}/`);
-        const changes = listChanges(specwfDir, ms, ph);
+        const changes = listChanges(bpDir, ms, ph);
         for (const ch of changes) {
           console.log(`      ${ch}/`);
         }
@@ -34,10 +34,10 @@ function listHandler(options: { all?: boolean }) {
     hasItems = true;
   }
 
-  const adhoc = listAdhocChanges(specwfDir);
+  const adhoc = listAdhocChanges(bpDir);
   if (adhoc.length > 0) {
     if (hasItems) console.log('');
-    console.log('临时 Changes:');
+    console.log('Adhoc Changes:');
     for (const ch of adhoc) {
       console.log(`  ${ch}/`);
     }
@@ -45,10 +45,10 @@ function listHandler(options: { all?: boolean }) {
   }
 
   if (options.all) {
-    const archived = listArchived(specwfDir);
+    const archived = listArchived(bpDir);
     if (archived.length > 0) {
       if (hasItems) console.log('');
-      console.log('归档:');
+      console.log('Archived:');
       for (const a of archived) {
         console.log(`  ${a}/`);
       }
@@ -57,6 +57,6 @@ function listHandler(options: { all?: boolean }) {
   }
 
   if (!hasItems) {
-    console.log('(无条目)');
+    console.log('(empty)');
   }
 }

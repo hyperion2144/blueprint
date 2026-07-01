@@ -1,5 +1,5 @@
 /**
- * specwf state — view/modify current state (compact JSON output)
+ * bp state — view/modify current state (compact JSON output)
  */
 
 import { join } from 'node:path';
@@ -35,13 +35,13 @@ export function register(program: any): void {
   cmd.action(showState);
 }
 
-function findSpecwfDir(): string {
-  return join(process.cwd(), 'specwf');
+function findBlueprintDir(): string {
+  return join(process.cwd(), 'bp');
 }
 
 function showState() {
-  const specwfDir = findSpecwfDir();
-  const state = loadState(specwfDir);
+  const bpDir = findBlueprintDir();
+  const state = loadState(bpDir);
   const { project, active_context } = state;
 
   const pendingChanges = state.changes.filter((c: any) => c.status !== 'archived');
@@ -49,7 +49,7 @@ function showState() {
 
   // Read task progress for each pending change
   const withProgress = (items: any[], type: string) => items.map((c: any) => {
-    const tasksPath = join(specwfDir, 'changes', c.name, 'tasks.md');
+    const tasksPath = join(bpDir, 'changes', c.name, 'tasks.md');
     let tasks = null;
     try {
       const content = readFileSync(tasksPath, 'utf-8');
@@ -63,7 +63,7 @@ function showState() {
   // Read milestone/phase status from roadmap if available
   let roadmap = null;
   try {
-    const roadmapPath = join(specwfDir, 'roadmap.md');
+    const roadmapPath = join(bpDir, 'roadmap.md');
     if (existsSync(roadmapPath)) {
       const content = readFileSync(roadmapPath, 'utf-8');
       const msMatches = content.match(/^##\s+(M\d+[^\n]*)/gm);
@@ -96,12 +96,12 @@ function showState() {
 }
 
 function setMilestone(id: string) {
-  const specwfDir = findSpecwfDir();
-  updateState(specwfDir, (state) => {
+  const bpDir = findBlueprintDir();
+  updateState(bpDir, (state) => {
     // Archive current milestone if exists and not shipped
     const current = state.project.current_milestone;
     if (current && state.project.status !== 'milestone-shipped') {
-      archiveMilestoneDir(specwfDir, current);
+      archiveMilestoneDir(bpDir, current);
     }
     state.project.current_milestone = id;
     state.project.current_phase = null;
@@ -111,8 +111,8 @@ function setMilestone(id: string) {
 }
 
 function setPhase(id: string) {
-  const specwfDir = findSpecwfDir();
-  updateState(specwfDir, (state) => {
+  const bpDir = findBlueprintDir();
+  updateState(bpDir, (state) => {
     state.project.current_phase = id;
     state.active_context = { type: 'phase', ref: `milestones/${state.project.current_milestone}/phases/${id}`, step: 'discuss' };
   });
@@ -120,8 +120,8 @@ function setPhase(id: string) {
 }
 
 function setStep(step: string) {
-  const specwfDir = findSpecwfDir();
-  updateState(specwfDir, (state) => {
+  const bpDir = findBlueprintDir();
+  updateState(bpDir, (state) => {
     state.active_context.step = step;
   });
   console.log(JSON.stringify({ ok: true, step }));

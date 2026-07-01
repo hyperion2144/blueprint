@@ -1,8 +1,8 @@
 /**
  * Skills generator
- * Generates .omp/skills/specwf-<step>/SKILL.md files (16 skill workflow guides).
+ * Generates .omp/skills/bp-<step>/SKILL.md files (16 skill workflow guides).
  *
- * Each skill is a workflow guide loaded by agents via read skill://specwf-<step>.
+ * Each skill is a workflow guide loaded by agents via read skill://bp-<step>.
  * Templates are imported from TypeScript modules — same content source as commands.
  */
 
@@ -19,12 +19,12 @@ export interface SkillDef {
 }
 
 function skillName(step: string): string {
-  return `specwf-${step}`;
+  return `bp-${step}`;
 }
 
 function skillDescription(step: string): string {
   const map: Record<string, string> = {
-    init: 'Initialize specwf project structure, generate platform files',
+    init: 'Initialize bp project structure, generate platform files',
     grill: 'Requirements exploration — detailed questioning until shared understanding is reached',
     research: 'Project-level technical research — parallel multi-direction investigation',
     roadmap: 'Roadmap definition — split project into Milestones × Phases',
@@ -71,11 +71,11 @@ ${body}
 
 /**
  * Generate all skill files.
- * Returns { path, content }[], path format: .omp/skills/specwf-<step>/SKILL.md
+ * Returns { path, content }[], path format: .omp/skills/bp-<step>/SKILL.md
  */
 export function generateAllSkills(_config: ProjectConfig): { path: string; content: string }[] {
   return SKILL_DEFS.map((def) => ({
-    path: `.omp/skills/specwf-${def.step}/SKILL.md`,
+    path: `.omp/skills/bp-${def.step}/SKILL.md`,
     content: generateSkill(def),
   }));
 }

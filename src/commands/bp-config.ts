@@ -1,5 +1,5 @@
 /**
- * specwf config — 查看/修改配置
+ * bp config — 查看/修改配置
  */
 
 import { join } from 'node:path';
@@ -28,15 +28,15 @@ function configList(options?: any, cmd?: any) {
   // 检查是否被子命令调用
   if (cmd?.parent?.args?.length > 1) return;
 
-  const specwfDir = findSpecwfDir();
-  const config = loadConfig(specwfDir);
+  const bpDir = findBlueprintDir();
+  const config = loadConfig(bpDir);
   console.log(JSON.stringify(config, null, 2));
 }
 
 function configSet(key: string, value: string) {
-  const specwfDir = findSpecwfDir();
+  const bpDir = findBlueprintDir();
 
-  updateConfig(specwfDir, (config) => {
+  updateConfig(bpDir, (config) => {
     // 支持用点分隔路径，如 "profile" 或 "workflow.research"
     const parts = key.split('.');
     let target: any = config;
@@ -64,6 +64,6 @@ function parseTypedValue(value: string): unknown {
   return value;
 }
 
-function findSpecwfDir(): string {
-  return join(process.cwd(), 'specwf');
+function findBlueprintDir(): string {
+  return join(process.cwd(), 'bp');
 }

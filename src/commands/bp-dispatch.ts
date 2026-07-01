@@ -1,5 +1,5 @@
 /**
- * specwf dispatch <role> — output platform-specific sub-agent dispatch instructions.
+ * bp dispatch <role> — output platform-specific sub-agent dispatch instructions.
  *
  * Each platform integration registers its dispatch format.
  * Templates use this instead of hardcoding platform-specific tool calls.
@@ -31,7 +31,7 @@ const ROLE_TEMPLATES: Record<string, string[]> = {
 const FORMATS: Record<string, DispatchFormat> = {
   omp: {
     tool: 'task',
-    agentParam: 'agent: specwf-<role>',
+    agentParam: 'agent: bp-<role>',
     changeRef: 'cwd: <project-root>',
     cwdDirective: 'Run from project root.',
   },
@@ -42,13 +42,13 @@ export function register(program: any): void {
     .command('dispatch <role>')
     .description('Output platform-specific sub-agent dispatch instructions')
     .option('--change <name>', 'change name to pass to the sub-agent')
-    .option('--dir <path>', 'specwf directory', 'specwf')
+    .option('--dir <path>', 'bp directory', 'bp')
     .action(dispatchHandler);
 }
 
 function dispatchHandler(role: string, options: { change?: string; dir: string }) {
-  const specwfDir = join(process.cwd(), options.dir);
-  const config = loadConfig(specwfDir);
+  const bpDir = join(process.cwd(), options.dir);
+  const config = loadConfig(bpDir);
   const platforms: string[] = config.platform || ['omp'];
 
   for (const platform of platforms) {
@@ -58,7 +58,7 @@ function dispatchHandler(role: string, options: { change?: string; dir: string }
     const changeName = options.change || null;
     const lines: string[] = [];
 
-    lines.push(`## Dispatch: specwf-${role} (${platform})`);
+    lines.push(`## Dispatch: bp-${role} (${platform})`);
     lines.push('');
     lines.push(`Use the \`${fmt.tool}\` tool:`);
     lines.push('');
@@ -66,7 +66,7 @@ function dispatchHandler(role: string, options: { change?: string; dir: string }
     lines.push(`${fmt.agentParam.replace('<role>', role)}`);
 
     if (changeName) {
-      lines.push(`Change: ${changeName} (from specwf/changes/${changeName}/)`);
+      lines.push(`Change: ${changeName} (from bp/changes/${changeName}/)`);
     }
 
     lines.push(`${fmt.changeRef.replace('<project-root>', process.cwd())}`);
@@ -75,7 +75,7 @@ function dispatchHandler(role: string, options: { change?: string; dir: string }
     lines.push(fmt.cwdDirective);
     lines.push('');
     lines.push('The sub-agent prompt should include:');
-    lines.push('- Read context from specwf context <step> or the change directory');
+    lines.push('- Read context from bp context <step> or the change directory');
     lines.push('- Output deliverables as specified in the workflow template');
     lines.push('- Write completion report when done');
 
@@ -85,7 +85,7 @@ function dispatchHandler(role: string, options: { change?: string; dir: string }
       lines.push('');
       lines.push('Tell the sub-agent to fetch its own output templates with:');
       for (const t of templates) {
-        lines.push(`  \`specwf template ${t}\``);
+        lines.push(`  \`bp template ${t}\``);
       }
       lines.push('(The sub-agent runs these CLI commands itself, not the orchestrator.)');
     }

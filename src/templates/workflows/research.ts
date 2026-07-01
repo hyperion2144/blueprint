@@ -1,23 +1,23 @@
 import type { SkillTemplate, CommandTemplate } from '../types';
 
 const instructions = `## Input
-- \`specwf/requirements.md\` must be complete (grill phase done)
-- \`specwf/project.yml\` for technical constraints
+- \`bp/requirements.md\` must be complete (grill phase done)
+- \`bp/project.yml\` for technical constraints
 
 ## Steps
 
 ### Step 1: Check state and get context
-Run \`specwf context research\` — outputs JSON with state and file manifest. Read all listed files before proceeding.
+Run \`bp context research\` — outputs JSON with state and file manifest. Read all listed files before proceeding.
 
 ### Step 2: Dispatch research sub-agents
-**You are the orchestrator — dispatch, do not research yourself.** Run \`specwf dispatch researcher\` for platform-specific dispatch instructions. Dispatch one per technical direction (stack, architecture, pitfalls) in parallel.
+**You are the orchestrator — dispatch, do not research yourself.** Run \`bp dispatch researcher\` for platform-specific dispatch instructions. Dispatch one per technical direction (stack, architecture, pitfalls) in parallel.
 
 Construct each sub-agent prompt:
 - Task: research <stack | architecture | pitfalls> for this project
-- Read: specwf/requirements.md, specwf/project.yml
-- Templates: \`specwf template research-stack\`, \`specwf template research-architecture\`, \`specwf template research-pitfalls\`
+- Read: bp/requirements.md, bp/project.yml
+- Templates: \`bp template research-stack\`, \`bp template research-architecture\`, \`bp template research-pitfalls\`
 - Output: research/stack.md | research/architecture.md | research/pitfalls.md
-- The sub-agent's system prompt (.omp/agents/specwf-researcher.md) contains detailed research protocol.
+- The sub-agent's system prompt (.omp/agents/bp-researcher.md) contains detailed research protocol.
 
 ### Step 3: Verify sub-agent output
 After all sub-agents complete, verify:
@@ -27,7 +27,7 @@ After all sub-agents complete, verify:
 - Write \`research/summary.md\` synthesizing all findings into one recommendation
 
 ### Step 4: Advance
-Run \`specwf continue\` to proceed to roadmap definition.
+Run \`bp continue\` to proceed to roadmap definition.
 
 ## Output
 - \`research/stack.md\` — recommended tech stack with alternatives compared
@@ -43,7 +43,7 @@ Run \`specwf continue\` to proceed to roadmap definition.
 
 export function getResearchSkillTemplate(): SkillTemplate {
   return {
-    name: 'specwf-research',
+    name: 'bp-research',
     description: 'Project-level technical research — dispatch researcher sub-agents in parallel',
     instructions,
   };
@@ -54,7 +54,7 @@ export function getResearchCommandTemplate(): CommandTemplate {
     name: 'SpecWF: Research',
     description: 'Project-level technical research — dispatch researcher sub-agents in parallel',
     category: 'Discovery',
-    tags: ['specwf', 'research', 'architecture', 'tech-stack', 'sub-agent'],
+    tags: ['bp', 'research', 'architecture', 'tech-stack', 'sub-agent'],
     content: instructions,
   };
 }

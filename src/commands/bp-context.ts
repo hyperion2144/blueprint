@@ -1,5 +1,5 @@
 /**
- * specwf context <step> — output state summary + file manifest as JSON
+ * bp context <step> — output state summary + file manifest as JSON
  */
 
 import { join } from 'node:path';
@@ -14,13 +14,13 @@ export function register(program: any): void {
 }
 
 function contextHandler(step: string) {
-  const specwfDir = join(process.cwd(), 'specwf');
-  const state = loadState(specwfDir);
+  const bpDir = join(process.cwd(), 'bp');
+  const state = loadState(bpDir);
   const { project, active_context } = state;
 
   const pendingChanges = state.changes.filter((c: any) => c.status !== 'archived');
   const pendingAdhoc = state.adhoc.filter((c: any) => c.status !== 'archived');
-  const result = generateContext(specwfDir, step);
+  const result = generateContext(bpDir, step);
 
   const output: any = {
     project: project.name,

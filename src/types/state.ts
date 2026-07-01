@@ -1,6 +1,6 @@
 /**
- * specwf 状态机类型
- * 对应 specwf/state.md 的 frontmatter 结构
+ * bp 状态机类型
+ * 对应 bp/state.md 的 frontmatter 结构
  */
 
 import type { EntityType, ChangeStatus } from './project.js';
@@ -53,37 +53,37 @@ export interface StateTransition {
  */
 export const STATE_TRANSITIONS: StateTransition[] = [
   // 项目层路径
-  { from: 'initialized', command: 'grill', to: 'requirements-defined', slashCommand: '/specwf:grill' },
-  { from: 'requirements-defined', command: 'research', to: 'researching', slashCommand: '/specwf:research', subagent: true },
+  { from: 'initialized', command: 'grill', to: 'requirements-defined', slashCommand: '/bp:grill' },
+  { from: 'requirements-defined', command: 'research', to: 'researching', slashCommand: '/bp:research', subagent: true },
   { from: 'researching', command: 'research-done', to: 'researched', slashCommand: '' },
-  { from: 'researched', command: 'roadmap', to: 'roadmap-defined', slashCommand: '/specwf:roadmap' },
-  { from: 'roadmap-defined', command: 'discuss', to: 'phase-discuss', slashCommand: '/specwf:discuss' },
+  { from: 'researched', command: 'roadmap', to: 'roadmap-defined', slashCommand: '/bp:roadmap' },
+  { from: 'roadmap-defined', command: 'discuss', to: 'phase-discuss', slashCommand: '/bp:discuss' },
 
   // Phase 路径
-  { from: 'phase-discuss', command: 'research-phase', to: 'phase-research', slashCommand: '/specwf:research-phase', subagent: true },
-  { from: 'phase-research', command: 'split', to: 'phase-split', slashCommand: '/specwf:split' },
-  { from: 'phase-split', command: 'plan', to: 'change-planning', slashCommand: '/specwf:plan', subagent: true },
-  { from: 'change-planning', command: 'apply', to: 'change-applying', slashCommand: '/specwf:apply', subagent: true },
-  { from: 'change-applying', command: 'review', to: 'change-reviewing', slashCommand: '/specwf:review', subagent: true },
-  { from: 'change-reviewing', command: 'verify', to: 'change-verifying', slashCommand: '/specwf:verify', subagent: true },
-  { from: 'change-verifying', command: 'archive', to: 'change-archiving', slashCommand: '/specwf:archive', subagent: true },
+  { from: 'phase-discuss', command: 'research-phase', to: 'phase-research', slashCommand: '/bp:research-phase', subagent: true },
+  { from: 'phase-research', command: 'split', to: 'phase-split', slashCommand: '/bp:split' },
+  { from: 'phase-split', command: 'plan', to: 'change-planning', slashCommand: '/bp:plan', subagent: true },
+  { from: 'change-planning', command: 'apply', to: 'change-applying', slashCommand: '/bp:apply', subagent: true },
+  { from: 'change-applying', command: 'review', to: 'change-reviewing', slashCommand: '/bp:review', subagent: true },
+  { from: 'change-reviewing', command: 'verify', to: 'change-verifying', slashCommand: '/bp:verify', subagent: true },
+  { from: 'change-verifying', command: 'archive', to: 'change-archiving', slashCommand: '/bp:archive', subagent: true },
   { from: 'change-archiving', command: 'archive-done', to: 'change-archived', slashCommand: '' },
 
   // 回环
-  { from: 'change-verifying', command: 'replan', to: 'change-planning', slashCommand: '/specwf:plan', subagent: true },
-  { from: 'change-verifying', command: 'reapply', to: 'change-applying', slashCommand: '/specwf:apply', subagent: true },
-  { from: 'change-reviewing', command: 'fix', to: 'change-applying', slashCommand: '/specwf:apply', subagent: true },
+  { from: 'change-verifying', command: 'replan', to: 'change-planning', slashCommand: '/bp:plan', subagent: true },
+  { from: 'change-verifying', command: 'reapply', to: 'change-applying', slashCommand: '/bp:apply', subagent: true },
+  { from: 'change-reviewing', command: 'fix', to: 'change-applying', slashCommand: '/bp:apply', subagent: true },
 
   // Milestone 层（新里程碑 = 项目流程 - init）
-  { from: 'milestone-active', command: 'grill', to: 'requirements-defined', slashCommand: '/specwf:grill' },
+  { from: 'milestone-active', command: 'grill', to: 'requirements-defined', slashCommand: '/bp:grill' },
 
   // Ship
-  { from: 'change-archived', command: 'ship-phase', to: 'phase-shipped', slashCommand: '/specwf:ship' },
-  { from: 'phase-shipped', command: 'next-phase', to: 'phase-discuss', slashCommand: '/specwf:discuss' },
-  { from: 'phase-shipped', command: 'ship-milestone', to: 'milestone-shipped', slashCommand: '/specwf:ship' },
+  { from: 'change-archived', command: 'ship-phase', to: 'phase-shipped', slashCommand: '/bp:ship' },
+  { from: 'phase-shipped', command: 'next-phase', to: 'phase-discuss', slashCommand: '/bp:discuss' },
+  { from: 'phase-shipped', command: 'ship-milestone', to: 'milestone-shipped', slashCommand: '/bp:ship' },
 
   // 临时 change
-  { from: 'adhoc-proposal', command: 'plan', to: 'change-planning', slashCommand: '/specwf:plan', subagent: true },
+  { from: 'adhoc-proposal', command: 'plan', to: 'change-planning', slashCommand: '/bp:plan', subagent: true },
   { from: 'change-archived', command: 'adhoc-done', to: 'adhoc-archived', slashCommand: '' },
   { from: 'adhoc-archived', command: 'new-change', to: 'adhoc-proposal', slashCommand: '' },
 ];

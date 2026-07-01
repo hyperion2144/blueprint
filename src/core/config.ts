@@ -41,22 +41,22 @@ const ProjectConfigSchema = z.object({
 });
 
 /** project.yml 路径 */
-export function configPath(specwfDir: string): string {
-  return join(specwfDir, CONFIG_FILE);
+export function configPath(bpDir: string): string {
+  return join(bpDir, CONFIG_FILE);
 }
 
 /** 读取并验证 project.yml */
-export function loadConfig(specwfDir: string): ProjectConfig {
-  const doc = readYamlDoc(configPath(specwfDir));
+export function loadConfig(bpDir: string): ProjectConfig {
+  const doc = readYamlDoc(configPath(bpDir));
   const raw = doc.toJS();
   return ProjectConfigSchema.parse(raw) as ProjectConfig;
 }
 
 /** 写回 project.yml（保留注释） */
-export function saveConfig(specwfDir: string, config: ProjectConfig): void {
+export function saveConfig(bpDir: string, config: ProjectConfig): void {
   let doc: Document;
-  if (existsSync(configPath(specwfDir))) {
-    doc = readYamlDoc(configPath(specwfDir));
+  if (existsSync(configPath(bpDir))) {
+    doc = readYamlDoc(configPath(bpDir));
   } else {
     doc = new Document({});
   }
@@ -70,14 +70,14 @@ export function saveConfig(specwfDir: string, config: ProjectConfig): void {
   if (config.git) doc.set('git', config.git);
   if (config.conventions) doc.set('conventions', config.conventions);
   if (config.models) doc.set('models', config.models);
-  writeYamlDoc(configPath(specwfDir), doc);
+  writeYamlDoc(configPath(bpDir), doc);
 }
 
 /** 修改单个字段并写回 */
-export function updateConfig(specwfDir: string, updater: (config: ProjectConfig) => void): void {
-  const config = loadConfig(specwfDir);
+export function updateConfig(bpDir: string, updater: (config: ProjectConfig) => void): void {
+  const config = loadConfig(bpDir);
   updater(config);
-  saveConfig(specwfDir, config);
+  saveConfig(bpDir, config);
 }
 
 /** 解析模型映射：profile 默认 + 用户覆盖 */

@@ -3,8 +3,8 @@ import type { SkillTemplate, CommandTemplate } from '../types';
 const instructions = `## Input
 
 ### Parameters
-- **\\\`<change-name>\\\`** (required) — the change to verify. Provided by \\\`specwf continue\\\` output or user.
-- If no change name, check the \\\`pending\\\` array from \\\`specwf context verify\\\` JSON, filter by status \\\`reviewing\\\`, ask the user.
+- **\\\`<change-name>\\\`** (required) — the change to verify. Provided by \\\`bp continue\\\` output or user.
+- If no change name, check the \\\`pending\\\` array from \\\`bp context verify\\\` JSON, filter by status \\\`reviewing\\\`, ask the user.
 
 ### Prerequisites
 - Review phase complete: spec-review.md, quality-review.md, goal-review.md
@@ -18,24 +18,24 @@ Read \`tasks.md\` and check task types:
 - **Full**: any type:behavior tasks
 
 ### Step 1: Resolve change name and get context
-Run \`specwf context verify\` — outputs JSON with state and file manifest. If a change name was provided, use it directly. If not, read the \`pending\` array, filter by status \`reviewing\`, ask the user.
+Run \`bp context verify\` — outputs JSON with state and file manifest. If a change name was provided, use it directly. If not, read the \`pending\` array, filter by status \`reviewing\`, ask the user.
 
 ### Step 2: Execute verification
 
 **If LIGHTWEIGHT — verify directly (skip sub-agent):**
 - Run \`npx vitest run\` — must pass
 - Run \`npx tsc --noEmit\` — must pass
-- Get template: \`specwf template verification\`, fill with results
+- Get template: \`bp template verification\`, fill with results
 - Status: passed if both pass, otherwise gaps_found
 
 **If FULL — dispatch verifier sub-agent:**
-Run \`specwf dispatch verifier --change <change-name>\` for platform-specific dispatch instructions.
+Run \`bp dispatch verifier --change <change-name>\` for platform-specific dispatch instructions.
 
 Construct the sub-agent prompt:
 - Task: verify the change delivers what it promised — goal-backward analysis + UAT
 - Read: delta-specs, review reports (spec-review.md, quality-review.md, goal-review.md), implementation
 - Output: verification.md with status (passed | gaps_found | human_needed), truth table, UAT results
-- The sub-agent's system prompt (.omp/agents/specwf-verifier.md) contains verification protocol.
+- The sub-agent's system prompt (.omp/agents/bp-verifier.md) contains verification protocol.
 
 ### Step 3: Handle results
 - \\\`passed\\\` → advance to archive
@@ -43,7 +43,7 @@ Construct the sub-agent prompt:
 - \\\`human_needed\\\` → surface to user with specific questions
 
 ### Step 4: Advance
-Run \\\`specwf continue\\\` to proceed to archive (if passed).
+Run \\\`bp continue\\\` to proceed to archive (if passed).
 
 ## Guardrails
 - **You are the orchestrator** — dispatch for full changes, verify directly for lightweight
@@ -53,7 +53,7 @@ Run \\\`specwf continue\\\` to proceed to archive (if passed).
 
 export function getVerifySkillTemplate(): SkillTemplate {
   return {
-    name: 'specwf-verify',
+    name: 'bp-verify',
     description: 'Test verification — goal-backward analysis + UAT, dispatch verifier sub-agent',
     instructions,
   };
@@ -64,7 +64,7 @@ export function getVerifyCommandTemplate(): CommandTemplate {
     name: 'SpecWF: Verify',
     description: 'Test verification — goal-backward analysis + UAT, dispatch verifier sub-agent',
     category: 'Workflow',
-    tags: ['specwf', 'verify', 'testing', 'uat', 'sub-agent'],
+    tags: ['bp', 'verify', 'testing', 'uat', 'sub-agent'],
     content: instructions,
   };
 }

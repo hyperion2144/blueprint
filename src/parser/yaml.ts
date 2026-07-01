@@ -13,7 +13,7 @@ import type { z } from 'zod';
 
 /**
  * 读取 YAML 并用 zod schema 验证（不保留注释）
- * 用于只读场景（.specwf.yaml 等）
+ * 用于只读场景（.bp.yaml 等）
  */
 export function readYaml<T>(path: string, schema: z.ZodSchema<T>): T {
   const raw = parse(readFileSync(path, 'utf-8'));

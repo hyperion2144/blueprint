@@ -3,8 +3,8 @@ import type { SkillTemplate, CommandTemplate } from '../types';
 const instructions = `## Input
 
 ### Parameters
-- **\`<change-name>\`** (required) — the change to implement. Provided by \`specwf continue\` output or user.
-- If no change name is available, check the \`pending\` array from \`specwf context <step>\` JSON output, then ask the user which to work on.
+- **\`<change-name>\`** (required) — the change to implement. Provided by \`bp continue\` output or user.
+- If no change name is available, check the \`pending\` array from \`bp context <step>\` JSON output, then ask the user which to work on.
 
 ### Prerequisites
 - Plan phase complete: \`design.md\`, \`tasks.md\`, delta-specs ready
@@ -12,11 +12,11 @@ const instructions = `## Input
 ## Steps
 
 ### Step 0: Resolve paths
-Run \`specwf state\` to get \`milestone\` and \`phase\`. Construct the change directory:
+Run \`bp state\` to get \`milestone\` and \`phase\`. Construct the change directory:
 \`\`\`text
-specwf/milestones/<milestone>/phases/<phase>/changes/<change-name>/
+bp/milestones/<milestone>/phases/<phase>/changes/<change-name>/
 \`\`\`
-(Adhoc changes go under \`specwf/changes/<name>/\`)
+(Adhoc changes go under \`bp/changes/<name>/\`)
 
 ### Step 1: Classify change
 Read \`tasks.md\` and check the task types:
@@ -24,7 +24,7 @@ Read \`tasks.md\` and check the task types:
 - **Full**: any type:behavior tasks
 
 ### Step 1: Resolve change name and get context
-Run \`specwf context apply\` — outputs JSON with state (including pending changes) and file manifest. If a change name was provided, use it directly. If not, read the \`pending\` array from the JSON, filter by status \`planning\`, and ask the user to pick. Then read all files listed in \`specs\`, \`conventions\`, and \`artifacts\`.
+Run \`bp context apply\` — outputs JSON with state (including pending changes) and file manifest. If a change name was provided, use it directly. If not, read the \`pending\` array from the JSON, filter by status \`planning\`, and ask the user to pick. Then read all files listed in \`specs\`, \`conventions\`, and \`artifacts\`.
 
 ### Step 2: Execute implementation
 
@@ -35,7 +35,7 @@ Run \`specwf context apply\` — outputs JSON with state (including pending chan
 - Run \`npx vitest run\` and \`npx tsc --noEmit\` to verify
 
 **If FULL — dispatch executor sub-agent:**
-Run \`specwf dispatch executor --change <change-name>\` for platform-specific dispatch instructions.
+Run \`bp dispatch executor --change <change-name>\` for platform-specific dispatch instructions.
 
 Construct the sub-agent prompt:
 - Change: <change-name> in the change directory (from Step 0)
@@ -43,7 +43,7 @@ Construct the sub-agent prompt:
 - Read: design.md, delta-specs
 - Output: code changes, tests, completion.md
 
-The sub-agent's system prompt (.omp/agents/specwf-executor.md) contains detailed TDD protocol.
+The sub-agent's system prompt (.omp/agents/bp-executor.md) contains detailed TDD protocol.
 
 ### Step 3: Verify output and completion report
 After the executor finishes, check \`completion.md\` exists and confirm:
@@ -53,7 +53,7 @@ After the executor finishes, check \`completion.md\` exists and confirm:
 - Each delta-spec SHALL/MUST has test coverage
 
 ### Step 4: Generate change summary
-Run \`specwf template change-summary --dir <change-dir>\`, then fill it with actual details. Do NOT skip — the summary is the handoff artifact for review.
+Run \`bp template change-summary --dir <change-dir>\`, then fill it with actual details. Do NOT skip — the summary is the handoff artifact for review.
 
 ### Step 5: Pre-advance checklist
 - [ ] All wave tasks complete
@@ -63,7 +63,7 @@ Run \`specwf template change-summary --dir <change-dir>\`, then fill it with act
 - [ ] completion.md from executor exists and verified
 
 ### Step 6: Advance
-Run \`specwf continue\` to proceed to review.
+Run \`bp continue\` to proceed to review.
 
 ## Guardrails
 - **You are the orchestrator** — dispatch for full changes, implement directly for lightweight
@@ -74,7 +74,7 @@ Run \`specwf continue\` to proceed to review.
 
 export function getApplySkillTemplate(): SkillTemplate {
   return {
-    name: 'specwf-apply',
+    name: 'bp-apply',
     description: 'Code implementation — dispatch executor sub-agent for TDD RED->GREEN->REFACTOR',
     instructions,
   };
@@ -85,7 +85,7 @@ export function getApplyCommandTemplate(): CommandTemplate {
     name: 'SpecWF: Apply',
     description: 'Code implementation — dispatch executor sub-agent for TDD RED->GREEN->REFACTOR',
     category: 'Workflow',
-    tags: ['specwf', 'apply', 'implementation', 'tdd', 'sub-agent'],
+    tags: ['bp', 'apply', 'implementation', 'tdd', 'sub-agent'],
     content: instructions,
   };
 }

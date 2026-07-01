@@ -1,5 +1,5 @@
 /**
- * specwf template <type> — generate artifact from TypeScript template registry
+ * bp template <type> — generate artifact from TypeScript template registry
  *
  * Templates are imported from src/templates/artifacts/index.ts — no disk reads.
  */
@@ -42,7 +42,7 @@ function templateHandler(type: string, options: { name?: string; dir?: string; s
   if (options.dir) {
     targetDir = options.dir.startsWith('/') ? options.dir : join(process.cwd(), options.dir);
   } else if (options.name) {
-    targetDir = join(process.cwd(), 'specwf', 'changes', options.name);
+    targetDir = join(process.cwd(), 'bp', 'changes', options.name);
   } else {
     console.log(content);
     return;

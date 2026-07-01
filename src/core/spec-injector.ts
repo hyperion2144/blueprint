@@ -43,8 +43,8 @@ function isChangeStep(step: string): boolean {
 }
 
 /** 生成 context 输出 */
-export function generateContext(specwfDir: string, step: string): ContextResult {
-  const state = loadState(specwfDir);
+export function generateContext(bpDir: string, step: string): ContextResult {
+  const state = loadState(bpDir);
   const ctx = state.active_context;
 
   const result: ContextResult = {
@@ -57,11 +57,11 @@ export function generateContext(specwfDir: string, step: string): ContextResult 
   };
 
   // conventions 总是注入
-  result.conventions = getAllConventions(specwfDir).map(withContent(specwfDir));
+  result.conventions = getAllConventions(bpDir).map(withContent(bpDir));
 
   // requirements.md 总是注入
-  if (existsSync(join(specwfDir, 'requirements.md'))) {
-    const reqPath = join(specwfDir, 'requirements.md');
+  if (existsSync(join(bpDir, 'requirements.md'))) {
+    const reqPath = join(bpDir, 'requirements.md');
     result.requirements.push({
       path: 'requirements.md',
       description: 'Requirements specification',
@@ -70,12 +70,12 @@ export function generateContext(specwfDir: string, step: string): ContextResult 
   }
 
   if (isProjectStep(step)) {
-    result.specs = getAllSpecs(specwfDir).map(withContent(specwfDir));
+    result.specs = getAllSpecs(bpDir).map(withContent(bpDir));
   } else if (isPhaseStep(step)) {
-    result.specs = getRelatedSpecs(specwfDir, state).map(withContent(specwfDir));
+    result.specs = getRelatedSpecs(bpDir, state).map(withContent(bpDir));
   } else if (isChangeStep(step)) {
-    result.specs = getRelatedSpecs(specwfDir, state).map(withContent(specwfDir));
-    result.changeArtifacts = getChangeArtifacts(specwfDir, state).map(withContent(specwfDir));
+    result.specs = getRelatedSpecs(bpDir, state).map(withContent(bpDir));
+    result.changeArtifacts = getChangeArtifacts(bpDir, state).map(withContent(bpDir));
   }
 
   return result;
@@ -91,23 +91,23 @@ function readContent(absPath: string): string | undefined {
   }
 }
 
-/** Create a withContent mapper bound to specwfDir */
-function withContent(specwfDir: string): (ref: FileRef) => FileRef {
+/** Create a withContent mapper bound to bpDir */
+function withContent(bpDir: string): (ref: FileRef) => FileRef {
   return (ref: FileRef) => ({
     ...ref,
-    content: readContent(join(specwfDir, ref.path)),
+    content: readContent(join(bpDir, ref.path)),
   });
 }
 
 /** 获取所有 specs */
-function getAllSpecs(specwfDir: string): FileRef[] {
-  const specsDir = join(specwfDir, 'specs');
+function getAllSpecs(bpDir: string): FileRef[] {
+  const specsDir = join(bpDir, 'specs');
   return listSpecFiles(specsDir, 'specs');
 }
 
 /** 获取相关 specs（按域匹配） */
-function getRelatedSpecs(specwfDir: string, state: StateFile): FileRef[] {
-  const allSpecs = getAllSpecs(specwfDir);
+function getRelatedSpecs(bpDir: string, state: StateFile): FileRef[] {
+  const allSpecs = getAllSpecs(bpDir);
   if (allSpecs.length === 0) return [];
 
   // 简化：如果 change 名称包含域关键词，匹配 specs 目录
@@ -124,8 +124,8 @@ function getRelatedSpecs(specwfDir: string, state: StateFile): FileRef[] {
 }
 
 /** 获取所有 conventions */
-function getAllConventions(specwfDir: string): FileRef[] {
-  const convDir = join(specwfDir, 'conventions');
+function getAllConventions(bpDir: string): FileRef[] {
+  const convDir = join(bpDir, 'conventions');
   if (!existsSync(convDir)) return [];
   return readdirSync(convDir)
     .filter((f) => f.endsWith('.md'))
@@ -133,15 +133,15 @@ function getAllConventions(specwfDir: string): FileRef[] {
 }
 
 /** 获取 change 产物文件 */
-function getChangeArtifacts(specwfDir: string, state: StateFile): FileRef[] {
+function getChangeArtifacts(bpDir: string, state: StateFile): FileRef[] {
   const ref = state.active_context.ref;
   if (!ref) return [];
 
-  const changeDir = join(specwfDir, ref);
+  const changeDir = join(bpDir, ref);
   if (!existsSync(changeDir)) return [];
 
   const artifacts: FileRef[] = [];
-  for (const file of ['proposal.md', 'design.md', 'tasks.md', '.specwf.yaml']) {
+  for (const file of ['proposal.md', 'design.md', 'tasks.md', '.bp.yaml']) {
     const fullPath = join(changeDir, file);
     if (existsSync(fullPath)) {
       artifacts.push({ path: `${ref}/${file}`, description: 'change 产物' });
@@ -179,7 +179,7 @@ function listSpecFiles(dir: string, prefix: string): FileRef[] {
 /** 格式化为终端输出 */
 export function formatContextTerminal(result: ContextResult): string {
   const lines: string[] = [
-    `=== specwf context for step: ${result.step} ===`,
+    `=== bp context for step: ${result.step} ===`,
     `Scope: ${result.scope.type}${result.scope.ref ? ` (${result.scope.ref})` : ''}`,
     '─'.repeat(60),
   ];

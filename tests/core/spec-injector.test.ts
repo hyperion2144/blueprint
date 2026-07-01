@@ -57,7 +57,7 @@ describe('formatContextTerminal', () => {
   it('格式化为终端输出', () => {
     const result = generateContext(tmpDir, 'research');
     const output = formatContextTerminal(result);
-    expect(output).toContain('specwf context for step: research');
+    expect(output).toContain('bp context for step: research');
     expect(output).toContain('Related specs:');
     expect(output).toContain('Usage:');
   });

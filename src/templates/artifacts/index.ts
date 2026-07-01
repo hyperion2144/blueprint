@@ -3,7 +3,7 @@
  *
  * Templates for output documents (proposal, design, tasks, etc.).
  * Each export is a string with {{placeholder}} variables for CLI rendering.
- * Used by specwf-template command and specwf change new.
+ * Used by bp-template command and bp change new.
  */
 
 export const PROPOSAL_TEMPLATE = `# Proposal: {{name}}
@@ -882,11 +882,11 @@ export const ARTIFACT_TEMPLATES: Record<string, string> = {
   // Project-level planning
   'requirements': REQUIREMENTS_TEMPLATE,
   'roadmap': ROADMAP_TEMPLATE,
-  // Project research (produced by specwf-researcher)
+  // Project research (produced by bp-researcher)
   'research-stack': RESEARCH_STACK_TEMPLATE,
   'research-architecture': RESEARCH_ARCHITECTURE_TEMPLATE,
   'research-pitfalls': RESEARCH_PITFALLS_TEMPLATE,
-  // Codebase analysis (brownfield — produced by specwf-codebase-mapper)
+  // Codebase analysis (brownfield — produced by bp-codebase-mapper)
   'codebase-stack': CODEBASE_STACK_TEMPLATE,
   'codebase-architecture': CODEBASE_ARCHITECTURE_TEMPLATE,
   'codebase-conventions': CODEBASE_CONVENTIONS_TEMPLATE,
@@ -894,7 +894,7 @@ export const ARTIFACT_TEMPLATES: Record<string, string> = {
   // Change lifecycle
   'spec': SPEC_TEMPLATE,
   'completion': SUMMARY_TEMPLATE,  // archiver completion.md
-  // Phase research (produced by specwf-phase-researcher)
+  // Phase research (produced by bp-phase-researcher)
   'phase-research': PHASE_RESEARCH_TEMPLATE,
 };
 

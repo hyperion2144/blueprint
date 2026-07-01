@@ -7,33 +7,33 @@ const instructions = `## Input
 ## Steps
 
 ### Step 1: Check state and get context
-Run \`specwf context research-phase\` — outputs JSON with state and file manifest. Read all listed files before proceeding.
+Run \`bp context research-phase\` — outputs JSON with state and file manifest. Read all listed files before proceeding.
 
 ### Step 2: Dispatch phase researcher
-**You are the orchestrator — dispatch, do not research yourself.** Run \`specwf dispatch phase-researcher\` for platform-specific dispatch instructions.
+**You are the orchestrator — dispatch, do not research yourself.** Run \`bp dispatch phase-researcher\` for platform-specific dispatch instructions.
 
 Construct the sub-agent prompt:
 - Task: research implementation paths for this phase
 - Read: context.md, related specs/, conventions/
 - Output: research.md with recommended paths and TDD implications
-- The sub-agent's system prompt (.omp/agents/specwf-phase-researcher.md) contains detailed research protocol.
+- The sub-agent's system prompt (.omp/agents/bp-phase-researcher.md) contains detailed research protocol.
 
 ### Step 3: Verify output
-Confirm \`research.md\` was written by the sub-agent at \`specwf/milestones/<milestone-id>/phases/<phase-id>/research.md\` with:
+Confirm \`research.md\` was written by the sub-agent at \`bp/milestones/<milestone-id>/phases/<phase-id>/research.md\` with:
 - Recommended implementation paths with rationale
 - Known pitfalls and edge cases
 - TDD implications for the phase's changes
 
 Ensure the directory exists:
 \`\`\`bash
-mkdir -p specwf/milestones/<milestone-id>/phases/<phase-id>
+mkdir -p bp/milestones/<milestone-id>/phases/<phase-id>
 \`\`\`
 
 ### Step 4: Advance
-Run \`specwf continue\` to proceed to the split phase.
+Run \`bp continue\` to proceed to the split phase.
 
 ## Output
-- \`specwf/milestones/<mid>/phases/<pid>/research.md\` — phase-level implementation research
+- \`bp/milestones/<mid>/phases/<pid>/research.md\` — phase-level implementation research
 
 ## Guardrails
 - **You are the orchestrator** — dispatch the sub-agent, do not research yourself
@@ -42,7 +42,7 @@ Run \`specwf continue\` to proceed to the split phase.
 
 export function getResearchPhaseSkillTemplate(): SkillTemplate {
   return {
-    name: 'specwf-research-phase',
+    name: 'bp-research-phase',
     description: 'Phase research — dispatch phase-researcher sub-agent',
     instructions,
   };
@@ -53,7 +53,7 @@ export function getResearchPhaseCommandTemplate(): CommandTemplate {
     name: 'SpecWF: Research Phase',
     description: 'Phase research — dispatch phase-researcher sub-agent',
     category: 'Discovery',
-    tags: ['specwf', 'research-phase', 'implementation', 'sub-agent'],
+    tags: ['bp', 'research-phase', 'implementation', 'sub-agent'],
     content: instructions,
   };
 }

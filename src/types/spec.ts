@@ -1,5 +1,5 @@
 /**
- * specwf spec 结构类型
+ * bp spec 结构类型
  * 对应 specs/<domain>/spec.md 的结构化解析
  */
 

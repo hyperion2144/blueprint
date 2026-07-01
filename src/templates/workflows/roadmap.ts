@@ -6,13 +6,13 @@ const instructions = `## Input
 - **No parameters**: operate on the current project
 
 ### Prerequisites
-- \`specwf/requirements.md\` — complete requirements
-- \`specwf/research/\` — technical research results (if available)
+- \`bp/requirements.md\` — complete requirements
+- \`bp/research/\` — technical research results (if available)
 
 ## Steps
 
 ### Step 1: Get context
-Run \`specwf context roadmap\` — outputs JSON with state, requirements.md, and research/ paths. Read all listed files.
+Run \`bp context roadmap\` — outputs JSON with state, requirements.md, and research/ paths. Read all listed files.
 
 ### Step 2: Choose planning mode
 Ask the user which planning mode they prefer — this determines how milestones and phases are structured:
@@ -35,7 +35,7 @@ Record the choice at the top of roadmap.md:
 \`\`\`
 
 ### Step 3: Define Milestones (2-5 lifecycle-scale milestones)
-Get the roadmap template: \`specwf template roadmap\`. Milestones are **major lifecycle stages**, not feature buckets:
+Get the roadmap template: \`bp template roadmap\`. Milestones are **major lifecycle stages**, not feature buckets:
 - A project typically has 2-5 milestones total
 - Each milestone represents a strategic delivery checkpoint (v1, v2, platform layer, etc.)
 - Do NOT create one milestone per feature or module
@@ -86,7 +86,7 @@ Fill the template:
 ### Step 4: Create milestone directories
 For each milestone in the roadmap, create its directory:
 \`\`\`bash
-mkdir -p specwf/milestones/<milestone-id>/phases/<phase-id>
+mkdir -p bp/milestones/<milestone-id>/phases/<phase-id>
 \`\`\`
 Do this for every milestone-phase pair defined in the roadmap. Without these directories, the state machine cannot advance past roadmap.
 
@@ -100,14 +100,14 @@ Do this for every milestone-phase pair defined in the roadmap. Without these dir
 ### Step 6: Advance
 Activate the first milestone and its first phase, then advance:
 \`\`\`bash
-specwf state set-milestone <first-milestone-id>
-specwf state set-phase <first-phase-id>
-specwf continue
+bp state set-milestone <first-milestone-id>
+bp state set-phase <first-phase-id>
+bp continue
 \`\`\`
 
 ## Output
-- \`specwf/roadmap.md\` — structured roadmap with milestone and phase tables, planning mode declared
-- \`specwf/milestones/<id>/\` — per-milestone directories
+- \`bp/roadmap.md\` — structured roadmap with milestone and phase tables, planning mode declared
+- \`bp/milestones/<id>/\` — per-milestone directories
 
 ## Guardrails
 - **2-5 milestones maximum** — milestones are lifecycle stages, not feature buckets
@@ -120,7 +120,7 @@ specwf continue
 
 export function getRoadmapSkillTemplate(): SkillTemplate {
   return {
-    name: 'specwf-roadmap',
+    name: 'bp-roadmap',
     description: 'Roadmap definition — split project into Milestones x Phases with structured format',
     instructions,
   };
@@ -131,7 +131,7 @@ export function getRoadmapCommandTemplate(): CommandTemplate {
     name: 'SpecWF: Roadmap',
     description: 'Roadmap definition — split project into Milestones x Phases with structured format',
     category: 'Planning',
-    tags: ['specwf', 'roadmap', 'planning', 'milestones'],
+    tags: ['bp', 'roadmap', 'planning', 'milestones'],
     content: instructions,
   };
 }

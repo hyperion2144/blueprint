@@ -1,12 +1,12 @@
 /**
  * file-tree — 产物目录树操作
- * 创建 specwf/ 骨架、遍历目录、查找 change
+ * 创建 bp/ 骨架、遍历目录、查找 change
  */
 
 import { mkdirSync, existsSync, writeFileSync, readFileSync, readdirSync, statSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 
-/** specwf/ 目录骨架的子目录 */
+/** bp/ 目录骨架的子目录 */
 const SPECWF_DIRS = [
   'specs',
   'conventions',
@@ -17,47 +17,47 @@ const SPECWF_DIRS = [
   'workspace',
 ];
 
-/** 创建 specwf/ 目录骨架 */
-export function createSpecwfStructure(specwfDir: string): void {
-  mkdirSync(specwfDir, { recursive: true });
+/** 创建 bp/ 目录骨架 */
+export function createSpecwfStructure(bpDir: string): void {
+  mkdirSync(bpDir, { recursive: true });
   for (const dir of SPECWF_DIRS) {
-    mkdirSync(join(specwfDir, dir), { recursive: true });
+    mkdirSync(join(bpDir, dir), { recursive: true });
   }
 }
 
-/** 检查 specwf/ 是否已初始化 */
-export function isInitialized(specwfDir: string): boolean {
-  return existsSync(join(specwfDir, 'project.yml')) &&
-         existsSync(join(specwfDir, 'state.md'));
+/** 检查 bp/ 是否已初始化 */
+export function isInitialized(bpDir: string): boolean {
+  return existsSync(join(bpDir, 'project.yml')) &&
+         existsSync(join(bpDir, 'state.md'));
 }
 
 /** 创建 milestone 目录 */
-export function createMilestoneDir(specwfDir: string, milestoneId: string): string {
-  const dir = join(specwfDir, 'milestones', milestoneId);
+export function createMilestoneDir(bpDir: string, milestoneId: string): string {
+  const dir = join(bpDir, 'milestones', milestoneId);
   mkdirSync(dir, { recursive: true });
   return dir;
 }
 
 /** 创建 phase 目录 */
 export function createPhaseDir(
-  specwfDir: string,
+  bpDir: string,
   milestoneId: string,
   phaseId: string,
 ): string {
-  const dir = join(specwfDir, 'milestones', milestoneId, 'phases', phaseId);
+  const dir = join(bpDir, 'milestones', milestoneId, 'phases', phaseId);
   mkdirSync(dir, { recursive: true });
   return dir;
 }
 
 /** 创建 change 目录 */
 export function createChangeDir(
-  specwfDir: string,
+  bpDir: string,
   milestoneId: string,
   phaseId: string,
   changeName: string,
 ): string {
   const dir = join(
-    specwfDir,
+    bpDir,
     'milestones',
     milestoneId,
     'phases',
@@ -71,8 +71,8 @@ export function createChangeDir(
 }
 
 /** 创建临时 change 目录 */
-export function createAdhocChangeDir(specwfDir: string, changeName: string): string {
-  const dir = join(specwfDir, 'changes', changeName);
+export function createAdhocChangeDir(bpDir: string, changeName: string): string {
+  const dir = join(bpDir, 'changes', changeName);
   mkdirSync(dir, { recursive: true });
   mkdirSync(join(dir, 'specs'), { recursive: true });
   return dir;
@@ -80,12 +80,12 @@ export function createAdhocChangeDir(specwfDir: string, changeName: string): str
 
 /** 归档 change 到 archive/changes/ */
 export function archiveChangeDir(
-  specwfDir: string,
+  bpDir: string,
   changeDir: string,
 ): string {
   const changeName = changeDir.split('/').pop() ?? 'unknown';
   const date = new Date().toISOString().slice(0, 10);
-  const archiveRoot = join(specwfDir, 'archive', 'changes');
+  const archiveRoot = join(bpDir, 'archive', 'changes');
   mkdirSync(archiveRoot, { recursive: true });
   const archiveDir = join(archiveRoot, `${date}-${changeName}`);
   
@@ -99,17 +99,17 @@ export function archiveChangeDir(
 
 /** 归档 milestone 到 archive/milestones/ */
 export function archiveMilestoneDir(
-  specwfDir: string,
+  bpDir: string,
   milestoneId: string,
 ): string {
-  const sourceDir = join(specwfDir, 'milestones', milestoneId);
-  const archiveDir = join(specwfDir, 'archive', 'milestones', milestoneId);
+  const sourceDir = join(bpDir, 'milestones', milestoneId);
+  const archiveDir = join(bpDir, 'archive', 'milestones', milestoneId);
   
   if (!existsSync(sourceDir)) {
     return archiveDir;
   }
   
-  mkdirSync(join(specwfDir, 'archive', 'milestones'), { recursive: true });
+  mkdirSync(join(bpDir, 'archive', 'milestones'), { recursive: true });
   
   // 移动整个 milestone 目录
   renameSync(sourceDir, archiveDir);
@@ -121,8 +121,8 @@ export function archiveMilestoneDir(
 import { renameSync } from 'node:fs';
 
 /** 列出所有 milestones */
-export function listMilestones(specwfDir: string): string[] {
-  const dir = join(specwfDir, 'milestones');
+export function listMilestones(bpDir: string): string[] {
+  const dir = join(bpDir, 'milestones');
   if (!existsSync(dir)) return [];
   return readdirSync(dir).filter((e) => {
     const stat = statSync(join(dir, e));
@@ -131,8 +131,8 @@ export function listMilestones(specwfDir: string): string[] {
 }
 
 /** 列出 milestone 下的 phases */
-export function listPhases(specwfDir: string, milestoneId: string): string[] {
-  const dir = join(specwfDir, 'milestones', milestoneId, 'phases');
+export function listPhases(bpDir: string, milestoneId: string): string[] {
+  const dir = join(bpDir, 'milestones', milestoneId, 'phases');
   if (!existsSync(dir)) return [];
   return readdirSync(dir).filter((e) => {
     const stat = statSync(join(dir, e));
@@ -142,11 +142,11 @@ export function listPhases(specwfDir: string, milestoneId: string): string[] {
 
 /** 列出 phase 下的 changes */
 export function listChanges(
-  specwfDir: string,
+  bpDir: string,
   milestoneId: string,
   phaseId: string,
 ): string[] {
-  const dir = join(specwfDir, 'milestones', milestoneId, 'phases', phaseId, 'changes');
+  const dir = join(bpDir, 'milestones', milestoneId, 'phases', phaseId, 'changes');
   if (!existsSync(dir)) return [];
   return readdirSync(dir).filter((e) => {
     const stat = statSync(join(dir, e));
@@ -155,8 +155,8 @@ export function listChanges(
 }
 
 /** 列出临时 changes */
-export function listAdhocChanges(specwfDir: string): string[] {
-  const dir = join(specwfDir, 'changes');
+export function listAdhocChanges(bpDir: string): string[] {
+  const dir = join(bpDir, 'changes');
   if (!existsSync(dir)) return [];
   return readdirSync(dir).filter((e) => {
     const stat = statSync(join(dir, e));
@@ -165,8 +165,8 @@ export function listAdhocChanges(specwfDir: string): string[] {
 }
 
 /** 列出归档的 changes（在 archive/changes/ 下） */
-export function listArchived(specwfDir: string): string[] {
-  const dir = join(specwfDir, 'archive', 'changes');
+export function listArchived(bpDir: string): string[] {
+  const dir = join(bpDir, 'archive', 'changes');
   if (!existsSync(dir)) return [];
   return readdirSync(dir).filter((e) => {
     const stat = statSync(join(dir, e));
