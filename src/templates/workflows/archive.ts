@@ -12,11 +12,22 @@ const instructions = `## Input
 
 ## Steps
 
-### Step 1: Resolve change name and get context
-Run \\\`bp context archive\\\` — outputs JSON with state (pending list) and file manifest. If a change name was provided, use it directly. If not, read the \\\`pending\\\` array, filter by status \\\`verifying\\\`, ask the user to pick.
+### Step 0: Classify change
+Read \`tasks.md\` and check task types:
+- **Lightweight**: ALL tasks are type: config | docs | refactor | scaffolding — no type:behavior
+- **Full**: any type:behavior tasks
 
-### Step 2: Dispatch archiver sub-agent
-**You are the orchestrator — dispatch, do not archive yourself.** Run \\\`bp dispatch archiver --change <change-name>\\\` for platform-specific dispatch instructions.
+### Step 1: Resolve change name and get context
+Run \`bp context archive\` — outputs JSON with state (pending list) and file manifest. If a change name was provided, use it directly. If not, read the \`pending\` array, filter by status \`verifying\`, ask the user to pick.
+
+### Step 2: Execute archival
+
+**If LIGHTWEIGHT — archive directly (skip sub-agent):**
+- Run \`bp archive bp/changes/<change-name>\` — handles delta-spec merge (none for lightweight) and directory move
+- No sub-agent needed — lightweight changes have no delta-specs to merge
+
+**If FULL — dispatch archiver sub-agent:**
+Run \`bp dispatch archiver --change <change-name>\` for platform-specific dispatch instructions.
 
 Construct the sub-agent prompt:
 - Task: archive the completed change — merge delta-specs, backfill context, move to archive/
@@ -35,7 +46,8 @@ Check \\\`tasks.md completion status\\\` and confirm:
 Run \\\`bp continue\\\` — if all phase changes are archived, routes to ship-phase.
 
 ## Guardrails
-- **You are the orchestrator** — dispatch archiver, do not archive yourself
+- **You are the orchestrator** — dispatch for full changes, archive directly for lightweight
+- Lightweight changes: use \`bp archive bp/changes/<name>\` directly — no sub-agent needed
 - Delta-spec merge must resolve conflicts, not overwrite
 - Archived changes are never deleted
 - If archival fails, the change stays in place`;
