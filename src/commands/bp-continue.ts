@@ -3,6 +3,7 @@
  */
 
 import { join } from 'node:path';
+import { existsSync } from 'node:fs';
 import { determineNextStep, determineChangeNextStep, STEP_TO_WORKFLOW } from '../core/continue.js';
 import { loadState, updateState } from '../core/state-file.js';
 import { validateStepAdvance } from '../core/state-validator.js';
@@ -98,25 +99,32 @@ function continueHandler(): void {
 
   // Phase context with pending changes: guide to change-level advancement
   if ((state.active_context.type === 'phase' && (state.changes.length > 0 || state.adhoc.length > 0))) {
-    const pending = state.changes.concat(state.adhoc).map((c: any) => ({
-      type: state.changes.includes(c) ? 'change' : 'adhoc',
-      name: c.name,
-      status: c.status,
-    }));
-    if (pending.length === 1) {
-      console.log(JSON.stringify({
-        hint: `Phase has 1 pending change. Run: \`bp continue change ${pending[0].name}\``,
-        current: { phase: state.project.current_phase, milestone: state.project.current_milestone, step: state.active_context.step },
-        pending,
+    // Check if this phase still needs discuss — don't block on stale pending changes
+    const phaseRef = state.active_context.ref;
+    const ctxPath = phaseRef ? join(bpDir, phaseRef, 'context.md') : null;
+    if (ctxPath && existsSync(ctxPath)) {
+      // Phase has started — show pending changes hint
+      const pending = state.changes.concat(state.adhoc).map((c: any) => ({
+        type: state.changes.includes(c) ? 'change' : 'adhoc',
+        name: c.name,
+        status: c.status,
       }));
-    } else {
-      console.log(JSON.stringify({
-        hint: `Phase has ${pending.length} pending changes. Pick one and run \`bp continue change <name>\`.`,
-        current: { phase: state.project.current_phase, milestone: state.project.current_milestone, step: state.active_context.step },
-        pending,
-      }));
+      if (pending.length === 1) {
+        console.log(JSON.stringify({
+          hint: `Phase has 1 pending change. Run: \`bp continue change ${pending[0].name}\``,
+          current: { phase: state.project.current_phase, milestone: state.project.current_milestone, step: state.active_context.step },
+          pending,
+        }));
+      } else {
+        console.log(JSON.stringify({
+          hint: `Phase has ${pending.length} pending changes. Pick one and run \`bp continue change <name>\`.`,
+          current: { phase: state.project.current_phase, milestone: state.project.current_milestone, step: state.active_context.step },
+          pending,
+        }));
+      }
+      return;
     }
-    return;
+    // New phase without context.md — fall through to normal continue
   }
 
   const result = determineNextStep(bpDir);
