@@ -67,13 +67,22 @@ function continueHandler(): void {
   const cwd = process.cwd();
 
   const state = loadState(bpDir);
+  const result = determineNextStep(bpDir);
+
   const validation = validateStepAdvance(state.active_context.type, state.active_context.step, state.active_context.ref, cwd);
   if (!validation.valid) {
-    console.log(JSON.stringify({ error: 'exit_conditions_not_met', details: validation.errors }));
+    console.log(JSON.stringify({
+      error: 'exit_conditions_not_met',
+      current: { context: result.context, step: state.active_context.step },
+      next: result.nextCommand ? {
+        command: result.nextCommand,
+        slash: result.slashCommand || null,
+        description: result.nextStepInfo?.description || null,
+      } : null,
+      details: validation.errors,
+    }));
     return;
   }
-
-  const result = determineNextStep(bpDir);
 
   if (result.nextCommand) {
     const currentStatus = resolveStatusKey(state.active_context.type, state.active_context.step, state.project.status);
