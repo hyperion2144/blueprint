@@ -56,13 +56,6 @@ export const AGENT_DEFS: AgentDef[] = [
     tools: ['read', 'grep', 'glob', 'lsp', 'ast_grep', 'bash'],
     spawns: '*',
   },
-  // bp-verifier
-  {
-    role: 'verifier',
-    description: 'Test verification — diagnose + route loopback',
-    tools: ['read', 'bash', 'grep', 'glob', 'lsp', 'edit', 'write'],
-    spawns: '*',
-  },
   // bp-phase-researcher
   {
     role: 'phase-researcher',
@@ -97,7 +90,6 @@ const AGENT_TO_MODEL_ROLE: Record<string, ModelRole> = {
   planner: 'plan',
   executor: 'execute',
   reviewer: 'review',
-  verifier: 'verify',
   // Brownfield/analysis agents not in profile map → fall back to 'default'
 };
 

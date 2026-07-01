@@ -13,6 +13,7 @@ import { register as registerList } from './commands/bp-list.js';
 import { register as registerTemplate } from './commands/bp-template.js';
 import { register as registerChange } from './commands/bp-change.js';
 import { register as registerDispatch } from './commands/bp-dispatch.js';
+import { register as registerShip } from './commands/bp-ship.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
@@ -35,5 +36,6 @@ registerList(program);
 registerTemplate(program);
 registerChange(program);
 registerDispatch(program);
+registerShip(program);
 
 program.parse(process.argv);

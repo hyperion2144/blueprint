@@ -38,7 +38,7 @@ describe('E2E: init → template → archive', () => {
     expect(parseInt(cmdCount)).toBe(16);
 
     const agentCount = execSync(`ls -1 ${join(testDir, '.omp', 'agents')} | wc -l`, { encoding: 'utf-8' }).trim();
-    expect(parseInt(agentCount)).toBe(8);
+    expect(parseInt(agentCount)).toBe(7);
   });
 
   it('step 3: bp template proposal 生成 proposal.md', () => {

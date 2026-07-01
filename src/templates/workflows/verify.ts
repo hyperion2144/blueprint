@@ -22,20 +22,19 @@ Run \`bp context verify\` — outputs JSON with state and file manifest. If a ch
 
 ### Step 2: Execute verification
 
-**If LIGHTWEIGHT — verify directly (skip sub-agent):**
-- Run \`npx vitest run\` — must pass
+Run all these checks yourself — no sub-agent needed:
+
+**All changes (lightweight + full):**
 - Run \`npx tsc --noEmit\` — must pass
-- Get template: \`bp template verification\`, fill with results
-- Status: passed if both pass, otherwise gaps_found
+- Run \`npx vitest run\` — must pass
 
-**If FULL — dispatch verifier sub-agent:**
-Run \`bp dispatch verifier --change <change-name>\` for platform-specific dispatch instructions.
+**Full changes additionally:**
+- Verify each delta-spec SHALL/MUST has a passing test (grep specs/ for requirements, match against tests)
+- Verify TDD commit integrity: RED→GREEN→REFACTOR sequence for each type:behavior task
 
-Construct the sub-agent prompt:
-- Task: verify the change delivers what it promised — goal-backward analysis + UAT
-- Read: delta-specs, review reports (spec-review.md, quality-review.md, goal-review.md), implementation
-- Output: verification.md with status (passed | gaps_found | human_needed), truth table, UAT results
-- The sub-agent's system prompt (.omp/agents/bp-verifier.md) contains verification protocol.
+**Write verification.md:**
+Get template: \`bp template verification\`, fill with results.
+- Status: \`passed\` if all checks pass, \`gaps_found\` if any fail, \`human_needed\` if ambiguous
 
 ### Step 3: Handle results
 - \\\`passed\\\` → advance to archive
@@ -46,9 +45,8 @@ Construct the sub-agent prompt:
 Run \\\`bp continue\\\` to proceed to archive (if passed).
 
 ## Guardrails
-- **You are the orchestrator** — dispatch for full changes, verify directly for lightweight
-- Verification uses goal-backward analysis
-- TDD commit integrity is a BLOCKER (full changes only)
+- No sub-agent — run checks yourself and write verification.md
+- Full changes: verify delta-spec SHALL/MUST coverage and TDD commit integrity
 - Test suite must pass completely`;
 
 export function getVerifySkillTemplate(): SkillTemplate {
