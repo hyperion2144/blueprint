@@ -81,7 +81,12 @@ For each selected area:
    \`\`\`
 
 ### Step 5: Write context.md
-Get the context template: \`specwf template context\`. Write \`context.md\` with:
+Get the context template: \`specwf template context\`. Write to \`specwf/milestones/<milestone-id>/phases/<phase-id>/context.md\`.
+
+Ensure the full path exists:
+\`\`\`bash
+mkdir -p specwf/milestones/<milestone-id>/phases/<phase-id>
+\`\`\`
 
 \`\`\`markdown
 # Context: <phase-id>
@@ -117,9 +122,11 @@ If no gray areas were discussed (express path): write a minimal context.md with 
 Run \`specwf continue\` to proceed to research-phase.
 
 ## Output
-- \`context.md\` — phase-level implementation decisions with D1/D2 format
+- \`specwf/milestones/<mid>/phases/<pid>/context.md\` — phase-level implementation decisions with D1/D2 format
 
 ## Guardrails
+- **Output goes in the phase directory** — NOT in specwf/ root
+- Ensure \`mkdir -p specwf/milestones/<mid>/phases/<pid>\` before writing
 - **Scope to this phase ONLY** — other phases are discussed separately
 - **Express path**: skip discussion if everything is clear — don't force questions
 - Identify 2-6 phase-specific gray areas before presenting to user

@@ -19,16 +19,21 @@ Construct the sub-agent prompt:
 - The sub-agent's system prompt (.omp/agents/specwf-phase-researcher.md) contains detailed research protocol.
 
 ### Step 3: Verify output
-Confirm \`research.md\` was written by the sub-agent with:
+Confirm \`research.md\` was written by the sub-agent at \`specwf/milestones/<milestone-id>/phases/<phase-id>/research.md\` with:
 - Recommended implementation paths with rationale
 - Known pitfalls and edge cases
-- TDD implications annotated
+- TDD implications for the phase's changes
+
+Ensure the directory exists:
+\`\`\`bash
+mkdir -p specwf/milestones/<milestone-id>/phases/<phase-id>
+\`\`\`
 
 ### Step 4: Advance
 Run \`specwf continue\` to proceed to the split phase.
 
 ## Output
-- \`research.md\` — phase-level implementation research with recommended paths and known pitfalls
+- \`specwf/milestones/<mid>/phases/<pid>/research.md\` — phase-level implementation research
 
 ## Guardrails
 - **You are the orchestrator** — dispatch the sub-agent, do not research yourself

@@ -84,7 +84,11 @@ Fill the template:
 \`\`\`
 
 ### Step 4: Create milestone directories
-For each milestone, create: \`specwf/milestones/<id>/\`
+For each milestone in the roadmap, create its directory:
+\`\`\`bash
+mkdir -p specwf/milestones/<milestone-id>/phases/<phase-id>
+\`\`\`
+Do this for every milestone-phase pair defined in the roadmap. Without these directories, the state machine cannot advance past roadmap.
 
 ### Step 5: Validate coverage
 - All requirements.md scope covered by milestones and phases

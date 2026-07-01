@@ -11,7 +11,14 @@ const instructions = `## Input
 
 ## Steps
 
-### Step 0: Classify change
+### Step 0: Resolve paths
+Run \`specwf state\` to get \`milestone\` and \`phase\`. Construct the change directory:
+\`\`\`text
+specwf/milestones/<milestone>/phases/<phase>/changes/<change-name>/
+\`\`\`
+(Adhoc changes go under \`specwf/changes/<name>/\`)
+
+### Step 1: Classify change
 Read \`tasks.md\` and check the task types:
 - **Lightweight**: ALL tasks are type: config | docs | refactor | scaffolding — no type:behavior
 - **Full**: any type:behavior tasks
@@ -31,7 +38,7 @@ Run \`specwf context apply\` — outputs JSON with state (including pending chan
 Run \`specwf dispatch executor --change <change-name>\` for platform-specific dispatch instructions.
 
 Construct the sub-agent prompt:
-- Change: <change-name> in specwf/changes/<change-name>/
+- Change: <change-name> in the change directory (from Step 0)
 - Task: implement all tasks in tasks.md following TDD protocol
 - Read: design.md, delta-specs
 - Output: code changes, tests, completion.md
@@ -46,7 +53,7 @@ After the executor finishes, check \`completion.md\` exists and confirm:
 - Each delta-spec SHALL/MUST has test coverage
 
 ### Step 4: Generate change summary
-Run \`specwf template change-summary --name <change-name> --dir specwf/changes/<change-name>\`, then fill it with actual details. Do NOT skip — the summary is the handoff artifact for review.
+Run \`specwf template change-summary --dir <change-dir>\`, then fill it with actual details. Do NOT skip — the summary is the handoff artifact for review.
 
 ### Step 5: Pre-advance checklist
 - [ ] All wave tasks complete

@@ -28,12 +28,19 @@ interface StepExitCriteria {
  * 当 CLI 尝试推进某步时，检查这些条件是否满足。
  */
 const EXIT_CRITERIA: StepExitCriteria[] = [
-  // milestone/active → 必须有 requirements.md（grill 产出后才能推进）
-
+  // project/roadmap-defined → must have roadmap + milestone directories
+  {
+    type: 'project', step: 'roadmap-defined',
+    checks: [
+      { path: 'roadmap.md', description: 'roadmap.md not found. Complete roadmap step first.' },
+      { path: 'milestones/', description: 'No milestone directories found. Create specwf/milestones/<id>/phases/<pid>/ for each milestone.' },
+    ],
+  },
+  // milestone/active → must have requirements.md
   {
     type: 'milestone', step: 'active',
     checks: [
-      { path: 'requirements.md', description: 'requirements.md 不存在' },
+      { path: 'requirements.md', description: 'requirements.md not found' },
     ],
   },
   // project/requirements-defined → 必须有完整的 requirements.md
@@ -50,32 +57,39 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
       { path: 'research/summary.md', description: 'research/summary.md 不存在，请先完成调研' },
     ],
   },
-  // phase/discuss → 必须先产出 context.md
+  // phase/discuss → must have context.md in phase dir
   {
     type: 'phase', step: 'discuss',
     checks: [
-      { path: 'context.md', description: 'context.md 不存在或为模板空壳。请先完成 discuss 步骤。' },
+      { path: 'context.md', description: 'context.md not found or still a template. Complete the discuss step for this phase.' },
     ],
   },
-  // phase/research → 必须有 phase 调研报告
+  // phase/research → must have research.md in phase dir
   {
     type: 'phase', step: 'research',
     checks: [
-      { path: 'research.md', description: 'research.md 不存在或为模板空壳。请先完成 research-phase 步骤。' },
+      { path: 'research.md', description: 'research.md not found or still a template. Complete research-phase for this phase.' },
     ],
   },
-  // adhoc/proposal → proposal.md 不能是模板
+  // phase/split → must have changes directories under the phase
+  {
+    type: 'phase', step: 'split',
+    checks: [
+      { path: 'changes/', description: 'No change directories found under this phase. Run split to create change directories.' },
+    ],
+  },
+  // adhoc/proposal → proposal.md must be filled (not template)
   {
     type: 'adhoc', step: 'proposal',
     checks: [
-      { path: 'changes/', description: 'change 的 proposal.md 为模板空壳，请填写后重试' },
+      { path: 'changes/', description: 'proposal.md is still a template. Fill in intent, scope, and must-haves.' },
     ],
   },
-  // change/planning → design.md + tasks.md 不能是模板
+  // change/planning → design.md + tasks.md must be filled
   {
     type: 'change', step: 'planning',
     checks: [
-      { path: 'changes/', description: 'design.md 或 tasks.md 为模板空壳，请填写后重试' },
+      { path: 'changes/', description: 'design.md or tasks.md is still a template. Complete the plan step.' },
     ],
   },
 ];
@@ -91,8 +105,8 @@ function isTemplateFile(filePath: string): boolean {
   }
 }
 
-function findChangeDir(specwfDir: string): string[] {
-  const changesDir = join(specwfDir, 'changes');
+function findChangeDir(specwfDir: string, baseDir?: string): string[] {
+  const changesDir = baseDir ? join(specwfDir, baseDir, 'changes') : join(specwfDir, 'changes');
   if (!existsSync(changesDir)) return [];
   try {
     return readdirSync(changesDir, { withFileTypes: true })
@@ -106,27 +120,43 @@ function findChangeDir(specwfDir: string): string[] {
 function checkExitCondition(specwfDir: string, check: ExitCheck, resolvedPath?: string): string | null {
   const fullPath = resolvedPath ?? join(specwfDir, check.path);
 
-  // 目录检查：在目录下找对应文件
-  if (check.path.endsWith('/') || check.description.includes('的 ')) {
-    // 检查 changes/ 目录下的所有 change
-    const changes = findChangeDir(specwfDir);
-    for (const change of changes) {
-      for (const doc of ['proposal.md', 'design.md', 'tasks.md']) {
-        const docPath = join(specwfDir, 'changes', change, doc);
-        if (existsSync(docPath) && isTemplateFile(docPath)) {
-          return `changes/${change}/${doc} 仍为模板空壳，请填写后重试`;
+  // Directory check: path ends with / → verify the directory has content
+  if (check.path.endsWith('/')) {
+    if (!existsSync(fullPath)) return `${check.path} directory not found. ${check.description}`;
+
+    if (check.path === 'changes/') {
+      // For changes/ directories: scan subdirs for template files
+      const changeNames = findChangeDir(specwfDir, resolvedPath);
+      if (changeNames.length === 0) return `No change directories found under ${check.path}. ${check.description}`;
+      const baseDir = resolvedPath ? join(specwfDir, resolvedPath, 'changes') : join(specwfDir, 'changes');
+      for (const change of changeNames) {
+        for (const doc of ['proposal.md', 'design.md', 'tasks.md']) {
+          const docPath = join(baseDir, change, doc);
+          if (existsSync(docPath) && isTemplateFile(docPath)) {
+            return `changes/${change}/${doc} is still a template. Fill in before advancing.`;
+          }
         }
       }
+      return null;
+    }
+
+    // For other directories (e.g. milestones/): check they have subdirectories
+    try {
+      const entries = readdirSync(fullPath, { withFileTypes: true });
+      const hasContent = entries.some((e) => e.isDirectory());
+      if (!hasContent) return `${check.path} is empty. ${check.description}`;
+    } catch {
+      return `${check.path} not accessible. ${check.description}`;
     }
     return null;
   }
 
-  // 文件存在性检查
+  // File existence check
   if (!existsSync(fullPath)) {
     return check.description;
   }
 
-  // 模板空壳检查（requirements.md, summary.md 等）
+  // Template empty check (requirements.md, summary.md, etc.)
   if (isTemplateFile(fullPath)) {
     return check.description;
   }
@@ -159,8 +189,9 @@ export function validateStepAdvance(
 
   const errors: string[] = [];
   for (const check of criteria.checks) {
-    // 对于含有 ref 的路径（如 milestones/xxx/phases/xxx/），拼接 ref 前缀
-    const resolvedPath = ref && !check.path.startsWith('changes/') && existsSync(join(specwfDir, ref, check.path))
+    // Phase context: prefix path with the phase ref (milestones/<mid>/phases/<pid>/)
+    // Non-phase context: use bare path relative to specwf/
+    const resolvedPath = (ref && contextType !== 'project' && contextType !== 'milestone' && !check.path.startsWith('changes/'))
       ? join(specwfDir, ref, check.path)
       : join(specwfDir, check.path);
     const error = checkExitCondition(specwfDir, check, resolvedPath);

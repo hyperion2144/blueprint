@@ -7,13 +7,19 @@ const instructions = `## Input
 - If no change name is available, check the \\\`pending\\\` array from \\\`specwf context <step>\\\` JSON output, then ask the user which to work on.
 
 ### Prerequisites
-- Change \\\`proposal.md\\\` must be confirmed (not template)
-- \\\`context.md\\\` — phase-level implementation decisions (for phase changes)
-- Related \\\`specs/\\\` and \\\`conventions/\\\` files
+- Change \`proposal.md\` must be confirmed (not template)
+- \`specwf/milestones/<mid>/phases/<pid>/context.md\` — phase decisions (get milestone/phase IDs from \`specwf state\`)
+- Related \`specs/\` and \`conventions/\` files
 
 ## Steps
 
-### Step 0: Classify change
+### Step 0: Resolve paths
+Run \`specwf state\` to get \`milestone\` and \`phase\`. Construct the change base path:
+\`\`\`text
+specwf/milestones/<milestone>/phases/<phase>/changes/<change-name>/
+\`\`\`
+
+### Step 1: Classify change
 Read \`proposal.md\` to determine change type. Check \`tasks.md\` if it already exists:
 - **Lightweight**: all tasks are type: config | docs | refactor | scaffolding — no type:behavior
 - **Full**: any type:behavior tasks, OR new feature with architectural decisions

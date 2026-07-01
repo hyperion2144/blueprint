@@ -20,9 +20,16 @@ Decompose the phase scope into independently implementable Change units:
 - Identify dependencies → dependency graph (must be a DAG)
 - Each change gets a descriptive kebab-case name
 
-Create each change:
+Create each change under the phase directory:
 \`\`\`bash
-specwf change new <name> --phase <phase-id>
+mkdir -p specwf/milestones/<milestone-id>/phases/<phase-id>/changes/<change-name>/specs
+\`\`\`
+
+Then populate each change directory from templates:
+\`\`\`bash
+specwf template proposal --dir specwf/milestones/<mid>/phases/<pid>/changes/<name>
+specwf template design --dir specwf/milestones/<mid>/phases/<pid>/changes/<name>
+specwf template tasks --dir specwf/milestones/<mid>/phases/<pid>/changes/<name>
 \`\`\`
 
 ### Step 3: Document dependency graph
@@ -49,7 +56,7 @@ Before advancing, verify:
 Run \`specwf continue\` to proceed to change planning.
 
 ## Output
-- \`specwf/changes/<name>/\` directories — one per change
+- \`specwf/milestones/<mid>/phases/<pid>/changes/<name>/\` — one directory per change
 - Updated \`state.md\` with change dependency graph
 
 ## Guardrails
