@@ -26,6 +26,7 @@ export interface WorkflowToggles {
   triple_review?: boolean;
   auto_advance?: boolean;
   spec_injection?: boolean;
+  commitDocs?: boolean;
 }
 
 /** review 配置 */
