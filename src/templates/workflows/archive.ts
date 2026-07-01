@@ -20,12 +20,15 @@ Run \`bp archive bp/changes/<change-name>\` (or \`bp archive bp/milestones/<mid>
 
 This single CLI command handles: delta-spec merge, code cognition backfill, directory move to archive/, state.md update.
 
-### Step 3: Verify archival
-Check \\\`tasks.md completion status\\\` and confirm:
-- Global \\\`bp/specs/\\\` updated with delta-specs
-- Change directory moved to \\\`bp/archive/<date>-<name>/\\\`
-- \\\`state.md\\\` reflects archived status
-- Active context auto-reset to next pending change or project level
+### Step 3: Understand what the CLI did (do NOT undo this)
+\`bp archive\` has already updated \`state.md\` — the change is intentionally removed from the active list. This is correct, not a bug:
+
+1. **Change removed from \`changes[]\` / \`adhoc[]\`** — it's no longer pending, this is expected
+2. **Phase changes get a history entry** in \`## History\` section: \`[date] Archived ch-name (milestone / phase)\`
+3. **\`active_context\` auto-reset** to the next pending change, or to project level if none remain
+4. **Change directory moved** to \`bp/archive/<milestone>/<phase>/<change>/\` (phase) or \`bp/archive/changes/<date>-<name>/\` (adhoc)
+
+**Do NOT write the change back into \`state.md\`** — the removal is the intended archival behavior.
 
 ### Step 4: Advance
 Run \\\`bp continue\\\` — if all phase changes are archived, routes to ship-phase.
