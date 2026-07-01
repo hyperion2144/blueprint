@@ -83,10 +83,11 @@ function dispatchHandler(role: string, options: { change?: string; dir: string }
     const templates = ROLE_TEMPLATES[role];
     if (templates && templates.length > 0) {
       lines.push('');
-      lines.push('Output file templates (the sub-agent should use these):');
+      lines.push('Tell the sub-agent to fetch its own output templates with:');
       for (const t of templates) {
         lines.push(`  \`specwf template ${t}\``);
       }
+      lines.push('(The sub-agent runs these CLI commands itself, not the orchestrator.)');
     }
 
     if (platforms.length > 1) {
