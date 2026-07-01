@@ -94,7 +94,12 @@ For each milestone, create: \`specwf/milestones/<id>/\`
 - First phase is always the thinnest possible end-to-end path
 
 ### Step 6: Advance
-Run \`specwf state set-milestone <id>\` to activate the first milestone, then \`specwf continue\`.
+Activate the first milestone and its first phase, then advance:
+\`\`\`bash
+specwf state set-milestone <first-milestone-id>
+specwf state set-phase <first-phase-id>
+specwf continue
+\`\`\`
 
 ## Output
 - \`specwf/roadmap.md\` — structured roadmap with milestone and phase tables, planning mode declared

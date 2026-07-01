@@ -28,7 +28,7 @@ Run \`specwf continue\` to proceed to the discuss phase for the active milestone
 
 | Situation | Command |
 |-----------|---------|
-| Just finished roadmap, want to start first milestone | \`specwf state set-milestone <id>\` then \`specwf continue\` |
+| Just finished roadmap, want to start first milestone | \`specwf state set-milestone <id>\` → \`specwf state set-phase <phase-id>\` → \`specwf continue\` |
 | Currently in a milestone, want to advance | \`specwf continue\` |
 | Want to switch to a different milestone | \`specwf state set-milestone <id>\` |
 | Want to jump to a specific phase | \`specwf state set-phase <id>\` |
