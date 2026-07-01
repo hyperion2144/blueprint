@@ -596,20 +596,20 @@ export const REQUIREMENTS_TEMPLATE = `# Requirements: {{name}}
 export const ROADMAP_TEMPLATE = `# Roadmap: {{name}}
 
 > Planning mode: {{mode}}
-> Structured roadmap with milestones and phases. Generated during the roadmap planning phase.
+> Milestones are major delivery checkpoints, not feature buckets. Each milestone represents a complete, demonstrable, shippable state.
 
 ---
 
-## Milestones (2-5 lifecycle stages)
+## Milestones
 
 ### {{milestone-id}}: {{milestone-name}}
-- **Goal**: {{what this milestone delivers}}
+- **Goal**: {{what this milestone delivers — a complete, usable state}}
 - **Mode**: {{mvp | technical-layer}}
 - **Success Criteria**:
   - {{verifiable criterion}}
   - {{verifiable criterion}}
 
-#### Phases (3-6 per milestone)
+#### Phases
 
 | ID | Goal | Depends On | Changes | Deliverable |
 |----|------|-----------|---------|------------|
@@ -617,12 +617,6 @@ export const ROADMAP_TEMPLATE = `# Roadmap: {{name}}
 | ph.2-{{name}} | {{goal}} | ph.1 | {{count}} | {{executable artifact}} |
 
 #### ph.1-{{name}}
-- **Goal**: {{what this phase delivers}}
-- **Deliverable**: {{runnable binary, deployed endpoint, test suite passing, etc.}}
-- **Inputs**: {{specs, conventions, docs}}
-- **Outputs**: {{code, specs, docs}}
-
-#### ph.2-{{name}}
 - **Goal**: {{what this phase delivers}}
 - **Deliverable**: {{runnable binary, deployed endpoint, test suite passing, etc.}}
 - **Inputs**: {{specs, conventions, docs}}

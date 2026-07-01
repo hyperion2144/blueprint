@@ -34,9 +34,9 @@ bp dispatch codebase-mapper
 bp dispatch spec-bootstrapper
 \`\`\`
 
-Then dispatch BOTH sub-agents simultaneously — **two separate sub-agent calls in the same response**, one for each agent type. Each sub-agent should use artifact templates (\`bp template codebase-stack\`, \`bp template codebase-architecture\`, etc.) to format outputs:
-- **Agent 1: codebase-mapper** — analyze src/, read package.json and tsconfig.json, map architecture, identify conventions and pitfalls. Output: bp/codebase/stack.md, codebase/architecture.md, codebase/structure.md, conventions/codebase-conventions.md, codebase/testing.md, codebase/integrations.md, codebase/concerns.md.
-- **Agent 2: spec-bootstrapper** — scan src/ for core modules and public APIs, extract SHALL/MUST from signatures/JSDoc/tests, annotate confidence levels. Output: bp/specs/<domain>/spec.md with BOOTSTRAPPED marker.
+Then dispatch BOTH sub-agents simultaneously — **two separate sub-agent calls in the same response**, one for each agent type.
+- **Agent 1: codebase-mapper** — analyze src/, read package.json and tsconfig.json, map architecture, identify conventions and pitfalls. The sub-agent fetches its own output templates: \`bp template codebase-stack\`, \`bp template codebase-architecture\`, \`bp template codebase-structure\`, \`bp template codebase-conventions\`, \`bp template codebase-testing\`, \`bp template codebase-integrations\`, \`bp template codebase-concerns\`. Output: bp/codebase/stack.md, codebase/architecture.md, codebase/structure.md, codebase/conventions.md, codebase/testing.md, codebase/integrations.md, codebase/concerns.md.
+- **Agent 2: spec-bootstrapper** — scan src/ for core modules and public APIs, extract SHALL/MUST from signatures/JSDoc/tests, annotate confidence levels. The sub-agent fetches its own output template: \`bp template spec\`. Output: bp/specs/<domain>/spec.md with BOOTSTRAPPED marker.
 
 After both complete, verify the output files exist.
 

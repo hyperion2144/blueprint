@@ -1,13 +1,13 @@
 ---
 project:
   name: blueprint
-  status: phase-discuss
+  status: phase-split
   current_milestone: m2-claude-code
   current_phase: null
 active_context:
   type: project
   ref: null
-  step: phase-discuss
+  step: phase-split
 changes:
   - name: scaffold-project
     status: archived

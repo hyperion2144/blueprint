@@ -34,11 +34,21 @@ Record the choice at the top of roadmap.md:
 > Planning mode: {{mvp | technical-layer}}
 \`\`\`
 
-### Step 3: Define Milestones (2-5 lifecycle-scale milestones)
-Get the roadmap template: \`bp template roadmap\`. Milestones are **major lifecycle stages**, not feature buckets:
-- A project typically has 2-5 milestones total
-- Each milestone represents a strategic delivery checkpoint (v1, v2, platform layer, etc.)
-- Do NOT create one milestone per feature or module
+### Step 3: Define Milestones
+Get the roadmap template: \`bp template roadmap\`. Determine milestones based on the project's scope, requirements, and chosen mode:
+
+**What is a milestone?** A major delivery checkpoint — the project reaches a complete, demonstrable, shippable state. NOT a feature bucket, NOT a sprint, NOT an iteration.
+
+**How to determine milestone count:**
+- Read requirements.md — how many distinct shippable increments make sense?
+- Simple projects (single capability, e.g. a CLI tool): maybe 1 milestone
+- Product projects (user-facing, iterative value): 2-3 milestones (MVP → v2 → v3)
+- Platform/infra projects (layered capabilities): 2-4 milestones (foundation → engine → integration → polish)
+- Do NOT create milestones just to have milestones — each must deliver something complete
+
+**How mode affects milestone content:**
+- **MVP mode**: each milestone = a version users can actually use. M1 = minimum shippable product, M2 = next feature set.
+- **Technical-layer mode**: each milestone = a complete technical layer that runs and passes tests. M1 = data + skeleton, M2 = core logic, M3 = integration/API.
 
 Fill the template:
 \`\`\`markdown
@@ -110,12 +120,12 @@ bp continue
 - \`bp/milestones/<id>/\` — per-milestone directories
 
 ## Guardrails
-- **2-5 milestones maximum** — milestones are lifecycle stages, not feature buckets
+- Milestones are delivery checkpoints, not feature buckets — each must be a complete, demonstrable state
 - Ask the user about MVP vs technical-layer **before** defining anything
 - MVP mode: each milestone independently shippable; first = minimum viable product
-- Technical-layer mode: each phase produces an executable/testable artifact
-- Phase count per milestone: 3-6 (do not create 10+ micro-phases)
-- Each phase deliverable must be verifiable — not \"design\" or \"planning\" as standalone phases
+- Technical-layer mode: each milestone produces an executable/testable artifact that builds on previous layers
+- Phase count per milestone: determine by what's needed to reach the milestone goal (typically 2-6)
+- Each phase deliverable must be verifiable — not "design" or "planning" as standalone phases
 - Start with the smallest viable milestone first`;
 
 export function getRoadmapSkillTemplate(): SkillTemplate {
