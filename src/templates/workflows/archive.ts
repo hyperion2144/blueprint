@@ -16,7 +16,9 @@ const instructions = `## Input
 Run \`bp context archive\` — outputs JSON with state (pending list) and file manifest. If a change name was provided, use it directly. If not, read the \`pending\` array, filter by status \`verifying\`, ask the user to pick.
 
 ### Step 2: Execute archival
-Run \`bp archive bp/changes/<change-name>\` — handles delta-spec merge, code cognition backfill, directory move, and state.md update in one command. No sub-agent needed.
+Run \`bp archive bp/changes/<change-name>\` (or \`bp archive bp/milestones/<mid>/phases/<pid>/changes/<name>\` for phase changes).
+
+This single CLI command handles: delta-spec merge, code cognition backfill, directory move to archive/, state.md update.
 
 ### Step 3: Verify archival
 Check \\\`tasks.md completion status\\\` and confirm:
