@@ -22,13 +22,17 @@ If a change name was provided: use it directly. If not: run \`bp state\`, list p
 ### Step 2: Execute review
 
 **If LIGHTWEIGHT — quick checklist (skip sub-agents):**
-- Check: \`npx tsc --noEmit\` passes
-- Check: \`npx vitest run\` passes (if tests exist)
-- Check: change-summary.md is filled (not template)
-- If all pass → write all three review files with PASS verdict and \"Lightweight — no behavioral changes\" note
-  - \`spec-review.md\`: \"No delta-specs — lightweight change\"
-  - \`quality-review.md\`: quick scan for obvious issues, PASS if clean
-  - \`goal-review.md\`: verify proposal must_haves are met
+
+First, check if this change produced any code:
+- **No code (pure config/docs)**: write one-line review files and advance — no tsc/vitest needed
+  - \`spec-review.md\`: "No delta-specs — config/doc change"
+  - \`quality-review.md\`: "No code changes — skip"
+  - \`goal-review.md\`: verify proposal must_haves are met, PASS or PARTIAL
+- **With code (refactor/scaffolding)**: run checks below
+  - \`npx tsc --noEmit\` — must pass
+  - \`npx vitest run\` — must pass (if tests exist)
+  - Quick scan for obvious issues → write reviews with PASS if clean
+  - All three review files required even if light — never leave a blank review
 
 **If FULL — dispatch parallel review sub-agents:**
 Run \`bp dispatch reviewer --change <change-name>\` for platform-specific dispatch instructions. Dispatch three in parallel, each with a different role: spec-review, quality-review, goal-review.

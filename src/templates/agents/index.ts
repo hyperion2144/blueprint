@@ -45,6 +45,7 @@ Your core responsibility is to analyze proposals, design technical solutions, cr
 - Annotate each task's type and dependencies
 
 ### Step 4: Pre-write delta-specs
+- Get template: \`bp template spec\` (one per domain)
 - Create spec files under specs/<domain>/
 - Use SHALL/MUST/SHOULD/MAY keywords
 - Ensure each spec item is testable
