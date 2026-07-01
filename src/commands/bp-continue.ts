@@ -96,6 +96,29 @@ function continueHandler(): void {
     return;
   }
 
+  // Phase context with pending changes: guide to change-level advancement
+  if ((state.active_context.type === 'phase' && (state.changes.length > 0 || state.adhoc.length > 0))) {
+    const pending = state.changes.concat(state.adhoc).map((c: any) => ({
+      type: state.changes.includes(c) ? 'change' : 'adhoc',
+      name: c.name,
+      status: c.status,
+    }));
+    if (pending.length === 1) {
+      console.log(JSON.stringify({
+        hint: `Phase has 1 pending change. Run: \`bp continue change ${pending[0].name}\``,
+        current: { phase: state.project.current_phase, milestone: state.project.current_milestone, step: state.active_context.step },
+        pending,
+      }));
+    } else {
+      console.log(JSON.stringify({
+        hint: `Phase has ${pending.length} pending changes. Pick one and run \`bp continue change <name>\`.`,
+        current: { phase: state.project.current_phase, milestone: state.project.current_milestone, step: state.active_context.step },
+        pending,
+      }));
+    }
+    return;
+  }
+
   const result = determineNextStep(bpDir);
 
   const validation = validateStepAdvance(state.active_context.type, state.active_context.step, state.active_context.ref, cwd);
