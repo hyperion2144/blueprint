@@ -1,13 +1,13 @@
 ---
 project:
   name: specwf
-  status: phase-discuss
+  status: phase-research
   current_milestone: m2-claude-code
   current_phase: null
 active_context:
   type: project
   ref: null
-  step: phase-discuss
+  step: phase-research
 changes:
   - name: scaffold-project
     status: archived

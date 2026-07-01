@@ -12,27 +12,43 @@ export function register(program: any): void {
   program
     .command('template <type>')
     .description(`Generate template file (${TEMPLATE_IDS.join('|')})`)
-    .option('--name <name>', 'change name', 'my-change')
-    .option('--dir <path>', 'target directory (default specwf/changes/<name>/)')
+    .option('--name <name>', 'change name (required when writing to changes/)')
+    .option('--dir <path>', 'target directory')
+    .option('--stdout', 'print template to stdout instead of writing to file')
     .action(templateHandler);
 }
 
-function templateHandler(type: string, options: { name: string; dir?: string }) {
+function templateHandler(type: string, options: { name?: string; dir?: string; stdout?: boolean }) {
   const template = ARTIFACT_TEMPLATES[type];
   if (!template) {
     console.error(`Unknown template type: ${type}. Available: ${TEMPLATE_IDS.join(', ')}`);
     process.exit(1);
   }
 
-  let content = template;
-  const name = options.name;
+  const name = options.name || 'unknown';
   const date = new Date().toISOString().slice(0, 10);
-
-  // Replace placeholders
+  let content = template;
   content = content.replace(/\{\{name\}\}/g, name);
   content = content.replace(/\{\{date\}\}/g, date);
 
-  // Determine target directory and filename
+  // Print to stdout
+  if (options.stdout) {
+    console.log(content);
+    return;
+  }
+
+  // Resolve target directory
+  let targetDir: string;
+  if (options.dir) {
+    targetDir = options.dir.startsWith('/') ? options.dir : join(process.cwd(), options.dir);
+  } else if (options.name) {
+    targetDir = join(process.cwd(), 'specwf', 'changes', options.name);
+  } else {
+    console.log(content);
+    return;
+  }
+
+  // Filename mapping
   const filenames: Record<string, string> = {
     proposal: 'proposal.md',
     design: 'design.md',
@@ -49,17 +65,16 @@ function templateHandler(type: string, options: { name: string; dir?: string }) 
     'codebase-architecture': 'codebase/architecture.md',
     'codebase-conventions': 'codebase/conventions.md',
     'codebase-pitfalls': 'codebase/pitfalls.md',
+    'spec': 'spec.md',
+    'completion': 'completion.md',
+    'requirements': 'requirements.md',
+    'roadmap': 'roadmap.md',
+    'research-stack': 'research/stack.md',
+    'research-architecture': 'research/architecture.md',
+    'research-pitfalls': 'research/pitfalls.md',
     'phase-research': 'phase-research.md',
   };
-
   const filename = filenames[type] ?? `${type}.md`;
-  let targetDir: string;
-
-  if (options.dir) {
-    targetDir = options.dir.startsWith('/') ? options.dir : join(process.cwd(), options.dir);
-  } else {
-    targetDir = join(process.cwd(), 'specwf', 'changes', name);
-  }
 
   mkdirSync(targetDir, { recursive: true });
   const fullPath = join(targetDir, filename);
