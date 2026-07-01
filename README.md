@@ -1,6 +1,6 @@
-# specwf — Spec-Driven Development Workflow
+# Blueprint — Spec-Driven Development Workflow
 
-specwf is an independent TypeScript CLI package that provides a spec-driven development workflow for AI coding agents. It combines core capabilities from three projects:
+Blueprint is an independent TypeScript CLI package that provides a spec-driven development workflow for AI coding agents. It combines core capabilities from three projects:
 
 - **OpenSpec** (MIT) — CLI architecture, change structure, delta-spec merge mechanism
 - **GSD Core** (MIT) — milestone/phase hierarchy, fresh-context sub-agent parallel execution
@@ -8,7 +8,7 @@ specwf is an independent TypeScript CLI package that provides a spec-driven deve
 
 ## Why
 
-AI coding agents are powerful but unpredictable — requirements exist only in chat history. specwf aligns on specs before writing code, executes heavy work in fresh-context sub-agents, and persists state across sessions through structured artifacts.
+AI coding agents are powerful but unpredictable — requirements exist only in chat history. Blueprint aligns on specs before writing code, executes heavy work in fresh-context sub-agents, and persists state across sessions through structured artifacts.
 
 ## Core Principles
 
@@ -34,17 +34,17 @@ Project → Milestone (persistent, defaults to v1) → Phase → Change
 
 | Command | Scope | Description |
 |---------|-------|-------------|
-| `specwf init` | Project | Initialize specwf project structure |
-| `specwf update` | Project | Regenerate platform files (commands, agents, skills) |
-| `specwf continue` | Project/Phase | Advance project or phase to next step |
-| `specwf continue change <name>` | Change | Advance a specific change to next step |
-| `specwf change new <name>` | Change | Create an adhoc change |
-| `specwf state` | All | View current state and pending work |
-| `specwf config` | Project | View/modify configuration |
-| `specwf context <step>` | All | Output file manifest for a step |
-| `specwf template <type>` | All | Generate artifact template |
-| `specwf list` | All | List milestones/phases/changes/archive |
-| `specwf archive <change>` | Change | Archive a completed change |
+| `Blueprint init` | Project | Initialize Blueprint project structure |
+| `Blueprint update` | Project | Regenerate platform files (commands, agents, skills) |
+| `Blueprint continue` | Project/Phase | Advance project or phase to next step |
+| `Blueprint continue change <name>` | Change | Advance a specific change to next step |
+| `Blueprint change new <name>` | Change | Create an adhoc change |
+| `Blueprint state` | All | View current state and pending work |
+| `Blueprint config` | Project | View/modify configuration |
+| `Blueprint context <step>` | All | Output file manifest for a step |
+| `Blueprint template <type>` | All | Generate artifact template |
+| `Blueprint list` | All | List milestones/phases/changes/archive |
+| `Blueprint archive <change>` | Change | Archive a completed change |
 
 ## Workflow
 
@@ -53,21 +53,21 @@ Project → Milestone (persistent, defaults to v1) → Phase → Change
 init → grill → research → roadmap → discuss → research-phase → split → [change cycle] → ship
 ```
 
-Advance with: `specwf continue`
+Advance with: `Blueprint continue`
 
 ### Change-level flow
 ```
 plan → apply → review → verify → archive
 ```
 
-Advance with: `specwf continue change <name>`
+Advance with: `Blueprint continue change <name>`
 
 ### Adhoc change flow
 ```
-specwf change new <name> → plan → apply → review → verify → archive
+Blueprint change new <name> → plan → apply → review → verify → archive
 ```
 
-Advance with: `specwf continue change <name>`
+Advance with: `Blueprint continue change <name>`
 
 ## Template Architecture
 
@@ -83,11 +83,11 @@ src/templates/
 └── agents/index.ts       — 9 agent system prompts
 ```
 
-Run `specwf update` to regenerate all 40 platform files from the TypeScript source.
+Run `Blueprint update` to regenerate all 40 platform files from the TypeScript source.
 
 ## Configuration
 
-Key settings in `specwf/project.yml`:
+Key settings in `bp/project.yml`:
 
 - `profile`: workflow strictness (`lite` / `standard` / `strict`)
 - `platform`: target platform (`omp` / `claude-code`)
@@ -104,12 +104,12 @@ Key settings in `specwf/project.yml`:
 
 ## Version
 
-- **Current**: v0.2.2 — English templates, inline continue instructions, sub-agent dispatch clarity
+- **Current**: v0.3.0 — English templates, inline continue instructions, sub-agent dispatch clarity
 - **Next**: m2-claude-code — Claude Code platform support
 
 ## Bootstrapping
 
-specwf was built using its own workflow. See `specwf/state.md` for the complete build history and all design decisions.
+Blueprint was built using its own workflow. See `bp/state.md` for the complete build history and all design decisions.
 
 ## License
 
