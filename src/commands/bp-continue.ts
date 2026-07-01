@@ -3,12 +3,13 @@
  */
 
 import { join } from 'node:path';
-import { determineNextStep, determineChangeNextStep } from '../core/continue.js';
+import { determineNextStep, determineChangeNextStep, STEP_TO_WORKFLOW } from '../core/continue.js';
 import { loadState, updateState } from '../core/state-file.js';
 import { validateStepAdvance } from '../core/state-validator.js';
 import { getTransition } from '../core/state-machine.js';
 import type { ContinueResult } from '../core/continue.js';
 import type { ChangeStatus } from '../types/index.js';
+import { WORKFLOW_REGISTRY, type WorkflowStep } from '../templates/workflows/registry.js';
 
 export function register(program: any): void {
   const cmd = program
@@ -71,15 +72,21 @@ function continueHandler(): void {
 
   const validation = validateStepAdvance(state.active_context.type, state.active_context.step, state.active_context.ref, cwd);
   if (!validation.valid) {
+    // Get current step instructions so the agent knows what to do
+    const stepKey = state.active_context.step.replace(/^(phase-|change-)/, '');
+    const wfStep = STEP_TO_WORKFLOW[stepKey] as WorkflowStep | undefined;
+    const currentInstructions = (wfStep && WORKFLOW_REGISTRY[wfStep]) ? WORKFLOW_REGISTRY[wfStep].command().content : undefined;
+
     console.log(JSON.stringify({
       error: 'exit_conditions_not_met',
-      current: { context: result.context, step: state.active_context.step },
+      current: { context: result.context, step: state.active_context.step, type: state.active_context.type },
       next: result.nextCommand ? {
         command: result.nextCommand,
         slash: result.slashCommand || null,
         description: result.nextStepInfo?.description || null,
       } : null,
       details: validation.errors,
+      instructions: currentInstructions || null,
     }));
     return;
   }

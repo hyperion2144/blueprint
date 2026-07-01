@@ -152,7 +152,7 @@ const STEP_INFO: Record<string, StepInfo> = {
 };
 
 /** Step name → WorkflowStep mapping for template lookup */
-const STEP_TO_WORKFLOW: Record<string, WorkflowStep> = {
+export const STEP_TO_WORKFLOW: Record<string, WorkflowStep> = {
   grill: 'grill',
   research: 'research',
   roadmap: 'roadmap',
