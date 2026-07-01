@@ -56,6 +56,9 @@ function shipHandler(options: { dryRun?: boolean }) {
     s.project.status = 'phase-shipped';
   });
 
+  // Read roadmap to find next phase
+  const nextPhase = findNextPhase(bpDir, milestone, phase);
+
   console.log(JSON.stringify({
     ok: true,
     mode: 'phase',
@@ -63,7 +66,12 @@ function shipHandler(options: { dryRun?: boolean }) {
     phase,
     changes: changes.length,
     summary: `bp/milestones/${milestone}/phases/${phase}/summary.md`,
-    hint: 'Phase shipped. Run `bp state set-phase <next-id>` then `bp continue` to start next phase.',
+    next: nextPhase ? {
+      phase: nextPhase,
+      action: `Run \`bp state set-phase ${nextPhase}\` then \`bp continue\` to start the next phase.`,
+    } : {
+      action: 'All phases in this milestone shipped. Run \`bp state set-milestone <next-id>\` to start the next milestone.',
+    },
   }));
 }
 
@@ -110,4 +118,19 @@ function generatePhaseSummary(
   }
 
   return lines.join('\n');
+}
+
+function findNextPhase(bpDir: string, milestoneId: string, currentPhase: string): string | null {
+  const roadmapPath = join(bpDir, 'roadmap.md');
+  if (!existsSync(roadmapPath)) return null;
+  try {
+    const content = readFileSync(roadmapPath, 'utf-8');
+    // Extract phase IDs from roadmap: ph.<num>-<name>
+    const phases = (content.match(/ph\.\d+-\w+/g) ?? []) as string[];
+    const idx = phases.indexOf(currentPhase);
+    if (idx >= 0 && idx < phases.length - 1) {
+      return phases[idx + 1];
+    }
+  } catch { /* roadmap not parseable */ }
+  return null;
 }
