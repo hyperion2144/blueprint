@@ -18,9 +18,13 @@ You are a **thinking partner**, not an interviewer. The user is the visionary �
 ## Steps
 
 ### Step 0: Resolve the active phase
-If a phase ID was provided, use it directly. If not: run \`specwf state\`, read \`current_phase\` from the output. If no active phase is set, ask the user.
+If a phase ID was provided, use it directly. If not:
 
-Print the phase identity:
+1. Run \`specwf state\` — read the \`milestone\` and \`phase\` fields from the JSON output.
+2. If \`phase\` is not null, use it.
+3. If \`phase\` is null: run \`specwf context discuss\` — the output includes \`milestone\` and roadmap path. Read roadmap.md for the phase list. Identify which phase has status \`discuss\` or is the first phase without \`context.md\`. Ask the user if ambiguous.
+
+Print the resolved phase identity:
 \`\`\`
 Phase: <phase-id>  |  Milestone: <milestone-id>  |  Mode: {{mvp | technical-layer}}
 Goal: <phase-goal from roadmap>
