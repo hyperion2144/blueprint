@@ -77,20 +77,17 @@ function archiveHandler(changePath: string) {
         state.adhoc = state.adhoc.filter((c) => c.name !== changeName);
       }
 
-      // Reset active_context if it pointed to the archived change
-      const currentRef = state.active_context.ref;
-      if (currentRef && currentRef.includes(changeName)) {
-        // Find next pending change
-        const nextChange = state.changes[0];
-        const nextAdhoc = state.adhoc[0];
-        if (nextAdhoc) {
-          state.active_context = { type: 'adhoc', ref: `changes/${nextAdhoc.name}`, step: nextAdhoc.status };
-        } else if (nextChange) {
-          state.active_context = { type: 'change', ref: `changes/${nextChange.name}`, step: nextChange.status };
-        } else {
-          // No pending changes — reset to project level
-          state.active_context = { type: 'project', ref: null, step: state.project.status };
-        }
+      // Reset active_context based on remaining pending changes
+      const nextChange = state.changes[0];
+      const nextAdhoc = state.adhoc[0];
+      if (nextAdhoc) {
+        state.active_context = { type: 'adhoc', ref: `changes/${nextAdhoc.name}`, step: nextAdhoc.status };
+      } else if (nextChange) {
+        state.active_context = { type: 'change', ref: `changes/${nextChange.name}`, step: nextChange.status };
+      } else {
+        // No pending changes — advance to ship-phase
+        state.active_context = { type: 'project', ref: null, step: 'archived' };
+        state.project.status = 'change-archived';
       }
     });
     console.log('✓ state.md updated');
