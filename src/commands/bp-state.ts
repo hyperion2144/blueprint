@@ -105,7 +105,7 @@ function setMilestone(id: string) {
     }
     state.project.current_milestone = id;
     state.project.current_phase = null;
-    state.active_context = { type: 'milestone', ref: `milestones/${id}`, step: 'active' };
+    // active_context.step unchanged — state machine advances via bp continue
   });
   console.log(JSON.stringify({ ok: true, milestone: id }));
 }
@@ -114,7 +114,7 @@ function setPhase(id: string) {
   const bpDir = findBlueprintDir();
   updateState(bpDir, (state) => {
     state.project.current_phase = id;
-    state.active_context = { type: 'phase', ref: `milestones/${state.project.current_milestone}/phases/${id}`, step: 'discuss' };
+    // active_context unchanged — state machine advances via bp continue
   });
   console.log(JSON.stringify({ ok: true, phase: id }));
 }

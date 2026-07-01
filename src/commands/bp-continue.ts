@@ -97,13 +97,23 @@ function continueHandler(): void {
 
     if (transition) {
       updateState(bpDir, (s) => {
-        // transition.to is the full state key (e.g. phase-research).
-        // For non-project types, active_context.step should be the base step name.
-        if (s.active_context.type === 'project' || s.active_context.type === 'milestone') {
-          s.active_context.step = transition.to;
-          s.project.status = transition.to;
+        // transition.to is the full state key (e.g. phase-discuss, change-planning)
+        const to = transition.to;
+
+        // Update active_context type and ref based on target state
+        if (to.startsWith('phase-')) {
+          s.active_context.type = 'phase';
+          s.active_context.ref = `milestones/${s.project.current_milestone}/phases/${s.project.current_phase}`;
+          s.active_context.step = to.substring(6); // strip 'phase-'
+        } else if (to.startsWith('change-')) {
+          s.active_context.type = 'change';
+          s.active_context.step = to.substring(7); // strip 'change-'
+          // Keep existing ref from change creation
         } else {
-          s.active_context.step = transition.to.includes('-') ? transition.to.split('-').slice(1).join('-') : transition.to;
+          s.active_context.step = to;
+          if (s.active_context.type === 'project' || s.active_context.type === 'milestone') {
+            s.project.status = to;
+          }
         }
       });
     }

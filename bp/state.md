@@ -5,9 +5,9 @@ project:
   current_milestone: m2-claude-code
   current_phase: null
 active_context:
-  type: project
+  type: change
   ref: null
-  step: change-verifying
+  step: archiving
 changes:
   - name: scaffold-project
     status: archived
