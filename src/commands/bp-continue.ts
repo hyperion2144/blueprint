@@ -187,6 +187,11 @@ function continueHandler(): void {
           }
         }
       });
+
+      // Recompute result after state advance to show the NEW step's instructions
+      const newResult = determineNextStep(bpDir);
+      formatContinueResult(newResult);
+      return;
     }
   }
 
@@ -244,6 +249,13 @@ function continueChangeHandler(name: string): void {
           s.active_context = { type: 'change', ref: `changes/${name}`, step: shortStatus };
         }
       });
+
+      // Recompute result after state advance
+      const newResult = determineChangeNextStep(bpDir, name);
+      if (!('error' in newResult)) {
+        formatContinueResult(newResult);
+        return;
+      }
     }
   }
 
