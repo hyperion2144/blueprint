@@ -122,11 +122,14 @@ function setPhase(id: string) {
 function setStep(step: string) {
   const bpDir = findBlueprintDir();
   updateState(bpDir, (state) => {
-    // Reject invalid steps — must match state machine step names (no type-prefix)
-    const validSteps = ['init', 'grill', 'requirements-defined', 'research', 'roadmap-defined',
-      'discuss', 'research-phase', 'split', 'planning', 'applying', 'reviewing', 'verifying', 'archiving', 'archived'];
+    // Reject invalid steps — must match what continue handler stores in active_context.step
+    // Project steps use full status name; phase/change steps use base name (no type-prefix)
+    const validProjectSteps = ['init', 'grill', 'requirements-defined', 'researching', 'researched', 'roadmap-defined', 'milestone-active', 'milestone-shipped'];
+    const validPhaseSteps = ['discuss', 'research', 'split'];
+    const validChangeSteps = ['planning', 'applying', 'reviewing', 'verifying', 'archiving', 'archived'];
+    const validSteps = [...validProjectSteps, ...validPhaseSteps, ...validChangeSteps];
     if (!validSteps.includes(step)) {
-      console.log(JSON.stringify({ error: `Invalid step "${step}". Valid: ${validSteps.join(', ')}. Use \`bp state set-phase <id>\` to reset.` }));
+      console.log(JSON.stringify({ error: `Invalid step "${step}". Use \`bp state set-phase <id>\` to reset to a valid phase.` }));
       return;
     }
     state.active_context.step = step;

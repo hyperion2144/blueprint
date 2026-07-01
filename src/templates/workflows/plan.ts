@@ -37,7 +37,7 @@ The change has no type:behavior tasks — you design and implement yourself with
 1. Get template: \`bp template design\` → write \`design.md\` (1-2 paragraphs of approach, no alternatives needed)
 2. Get template: \`bp template tasks\` → write \`tasks.md\` (list each task with type: config|docs|refactor|scaffolding)
 3. Skip delta-specs — not needed for non-behavioral changes
-4. Skip proposal review — proposal.md is optional for lightweight changes (can be a one-liner)
+4. \`proposal.md\` already exists (created by \`bp change new\`) — fill in one-line intent, scope can stay as-is
 
 **After writing files:**
 - Mark all task checkboxes as done in \`tasks.md\`
