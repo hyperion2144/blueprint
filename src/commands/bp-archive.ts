@@ -3,7 +3,7 @@
  */
 
 import { join, basename } from 'node:path';
-import { existsSync, readdirSync, readFileSync, mkdirSync, copyFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { loadState, updateState } from '../core/state-file.js';
 import { mergeAndWrite } from '../core/delta-merge.js';
@@ -94,6 +94,27 @@ function archiveHandler(changePath: string) {
       }
     });
     console.log('✓ state.md updated');
+
+    // Append history for non-adhoc (phase-scoped) changes
+    const isPhaseChange = changePath.includes('/milestones/') && changePath.includes('/phases/');
+    if (isPhaseChange) {
+      const parts = changePath.split(/[/\\]/);
+      const msIdx = parts.indexOf('milestones');
+      const chIdx = parts.indexOf('changes');
+      const msId = msIdx >= 0 ? parts[msIdx + 1] : '?';
+      const phId = chIdx > 0 ? parts[chIdx - 1] : '?';
+      const date = new Date().toISOString().slice(0, 10);
+      const entry = `[${date}] Archived \`${changeName}\` (${msId} / ${phId})`;
+
+      const statePath = join(bpDir, 'state.md');
+      let body = readFileSync(statePath, 'utf-8');
+      if (body.includes('## History')) {
+        body = body.replace('## History', `## History\n- ${entry}`);
+      } else {
+        body += `\n## History\n- ${entry}\n`;
+      }
+      writeFileSync(statePath, body, 'utf-8');
+    }
   } catch {
     // state update is non-critical
   }
