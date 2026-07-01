@@ -27,16 +27,14 @@ bp change new <change-name> --milestone <milestone-id> --phase <phase-id>
 This creates \`bp/milestones/<mid>/phases/<pid>/changes/<name>/\` with all artifact templates.
 
 ### Step 3: Document dependency graph
-Record in state.md:
-\`\`\`yaml
-changes:
-  - name: <change-1>
-    status: planned
-    depends_on: []
-  - name: <change-2>
-    status: planned
-    depends_on: [<change-1>]
+For each change with dependencies, run:
+\`\`\`bash
+bp state set-deps <change-name> --deps <dep1,dep2>
 \`\`\`
+
+Example: \`bp state set-deps c2 --deps c1\` means c2 depends on c1 (c1 must complete first).
+
+Verify with \`bp state\` — check each change's \`depends_on\` matches the DAG.
 
 ### Step 4: Validation checklist
 Before advancing, verify:

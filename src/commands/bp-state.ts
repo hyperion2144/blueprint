@@ -32,7 +32,27 @@ export function register(program: any): void {
     .description('Set current step')
     .action(setStep);
 
+  cmd
+    .command('set-deps <name>')
+    .description('Set change dependencies (comma-separated)')
+    .option('--deps <list>', 'comma-separated dependency names')
+    .action(setDeps);
+
   cmd.action(showState);
+}
+
+function setDeps(name: string, options: { deps?: string }) {
+  const bpDir = findBlueprintDir();
+  const depList = options.deps ? options.deps.split(',').map((d) => d.trim()).filter(Boolean) : [];
+  updateState(bpDir, (state) => {
+    const change = state.changes.find((c) => c.name === name) || state.adhoc.find((c) => c.name === name);
+    if (!change) {
+      console.log(JSON.stringify({ error: `Change "${name}" not found in state.changes or state.adhoc.` }));
+      return;
+    }
+    change.depends_on = depList;
+  });
+  console.log(JSON.stringify({ ok: true, name, depends_on: depList }));
 }
 
 function findBlueprintDir(): string {
