@@ -71,14 +71,28 @@ function continueHandler(): void {
 
   // Change/adhoc context: bp continue (no args) does NOT advance — use bp continue change <name>
   if (state.active_context.type === 'change' || state.active_context.type === 'adhoc') {
-    console.log(JSON.stringify({
-      hint: `Active context is at change level. Use \`bp continue change <name>\` to advance a specific change.`,
-      pending: state.changes.concat(state.adhoc).filter((c: any) => c.status !== 'archived').map((c: any) => ({
-        type: state.changes.includes(c) ? 'change' : 'adhoc',
-        name: c.name,
-        status: c.status,
-      })),
+    const pending = state.changes.concat(state.adhoc).filter((c: any) => c.status !== 'archived').map((c: any) => ({
+      type: state.changes.includes(c) ? 'change' : 'adhoc',
+      name: c.name,
+      status: c.status,
     }));
+
+    if (pending.length === 1) {
+      console.log(JSON.stringify({
+        hint: `Change \`${pending[0].name}\` is at \`${pending[0].status}\`. Run: \`bp continue change ${pending[0].name}\``,
+        pending,
+      }));
+    } else if (pending.length > 1) {
+      console.log(JSON.stringify({
+        hint: `Multiple changes pending. Pick one and run \`bp continue change <name>\`.`,
+        pending,
+      }));
+    } else {
+      console.log(JSON.stringify({
+        hint: 'No pending changes. Create one with `bp change new <name>`.',
+        pending: [],
+      }));
+    }
     return;
   }
 
