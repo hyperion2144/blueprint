@@ -201,7 +201,11 @@ function continueChangeHandler(name: string): void {
   const change = state.changes.find((c: any) => c.name === name) || state.adhoc.find((c: any) => c.name === name);
   if (change) {
     const ctxType = state.changes.includes(change) ? 'change' : 'adhoc';
-    const ref = `changes/${name}`;
+    // Phase change: ref = milestones/<mid>/phases/<pid>/changes/<name>
+    // Adhoc change: ref = changes/<name>
+    const ref = ctxType === 'change' && state.project.current_milestone && state.project.current_phase
+      ? `milestones/${state.project.current_milestone}/phases/${state.project.current_phase}/changes/${name}`
+      : `changes/${name}`;
     const validation = validateStepAdvance(ctxType, change.status, ref, cwd);
     if (!validation.valid) {
       console.log(JSON.stringify({

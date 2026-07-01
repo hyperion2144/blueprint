@@ -82,6 +82,8 @@ export const STATE_TRANSITIONS: StateTransition[] = [
   { from: 'phase-shipped', command: 'next-phase', to: 'phase-discuss', slashCommand: '/bp:discuss' },
   { from: 'phase-shipped', command: 'ship-milestone', to: 'milestone-shipped', slashCommand: '/bp:ship' },
 
+  // Phase change (not adhoc) — same as adhoc-proposal, routes to plan
+  { from: 'change-proposal', command: 'plan', to: 'change-planning', slashCommand: '/bp:plan', subagent: true },
   // 临时 change
   { from: 'adhoc-proposal', command: 'plan', to: 'change-planning', slashCommand: '/bp:plan', subagent: true },
   { from: 'change-archived', command: 'adhoc-done', to: 'adhoc-archived', slashCommand: '' },
