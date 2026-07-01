@@ -967,6 +967,41 @@ export const PHASE_RESEARCH_TEMPLATE = `# Phase Research: {{name}}
 - {{tdd-note-1}}
 `;
 
+export const UAT_TEMPLATE = `---
+status: testing
+scope: {{scope}}
+name: {{name}}
+source: {{source}}
+started: {{started}}
+updated: {{updated}}
+---
+
+## Current Test
+
+number: 1
+name: {{first_test_name}}
+expected: |
+  {{first_test_expected}}
+awaiting: user response
+
+## Tests
+
+{{tests}}
+
+## Summary
+
+total: {{total}}
+passed: 0
+issues: 0
+pending: {{total}}
+skipped: 0
+blocked: 0
+
+## Gaps
+
+[none yet]
+`;
+
 /** Template registry — maps template ID → body string */
 export const ARTIFACT_TEMPLATES: Record<string, string> = {
   proposal: PROPOSAL_TEMPLATE,
@@ -1001,6 +1036,7 @@ export const ARTIFACT_TEMPLATES: Record<string, string> = {
   'completion': SUMMARY_TEMPLATE,  // archiver completion.md
   // Phase research (produced by bp-phase-researcher)
   'phase-research': PHASE_RESEARCH_TEMPLATE,
+  'uat': UAT_TEMPLATE,
 };
 
 /** All template IDs for CLI listing */

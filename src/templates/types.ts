@@ -56,3 +56,7 @@ export interface AgentPromptTemplate {
   /** Full system prompt body */
   body: string;
 }
+
+/** Shared orchestrator rule injected into all sub-agent dispatcher commands.
+ *  Saves ~50 chars per template vs duplicating "You are the orchestrator". */
+export const ORCHESTRATOR_RULE = `**You are the orchestrator — dispatch sub-agents; do not do their work yourself.**\n\n`;

@@ -1,6 +1,7 @@
-import type { SkillTemplate, CommandTemplate } from '../types';
+import { ORCHESTRATOR_RULE } from '../types.js';
+import type { SkillTemplate, CommandTemplate } from '../types.js';
 
-const instructions = `## Input
+const instructions = ORCHESTRATOR_RULE + `## Input
 
 ### Parameters
 - **\`<change-name>\`** (required) — the change to review. Provided by \`bp continue\` output or user.
@@ -45,7 +46,7 @@ Construct each sub-agent prompt:
 
 ### Step 3: Aggregate results
 After all three complete, check each report:
-- \`spec-review.md\`: all SHALL/MUST covered? BLOCKERs?
+- \`spec-review.md\`: Verify spec.md is not empty template (has ≥1 concrete SHALL/MUST, not \`<name>\`/\`<behavior>\` placeholders). Then check all SHALL/MUST covered. BLOCKERs?
 - \`quality-review.md\`: any BLOCKERs or MAJOR issues?
 - \`goal-review.md\`: all goals ACHIEVED?
 
@@ -58,10 +59,10 @@ After all three complete, check each report:
 Run \`bp continue\` to proceed to verify.
 
 ## Guardrails
-- **You are the orchestrator** — dispatch for full changes, quick-checklist for lightweight
-- Full: All three reviews run in parallel — no inter-dependencies
-- Gate behavior depends on project.yml \`review.gate\` setting
-- Findings classified: BLOCKER (must fix), FLAG (should fix), NOTE (informational)`;
+- FULL: dispatch 3 reviewer sub-agents in parallel (spec/quality/goal)
+- LIGHTWEIGHT: quick checklist — no sub-agents needed
+- Review gate config in project.yml \`review.gate\`
+- Findings: BLOCKER (must fix), FLAG (should fix), NOTE (info)`;
 
 export function getReviewSkillTemplate(): SkillTemplate {
   return {

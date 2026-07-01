@@ -1,6 +1,7 @@
-import type { SkillTemplate, CommandTemplate } from '../types';
+import { ORCHESTRATOR_RULE } from '../types.js';
+import type { SkillTemplate, CommandTemplate } from '../types.js';
 
-const instructions = `## Input
+const instructions = ORCHESTRATOR_RULE + `## Input
 
 ### Parameters
 - **No parameters**: auto-detect ship context from \`bp state\`
@@ -17,29 +18,29 @@ Run \`bp context ship\` — outputs JSON with state info. Determine ship context
 
 ### Step 2: Dry-run first
 Always preview before executing:
-
 \`\`\`bash
 bp ship --dry-run
 \`\`\`
 
-Review the output — what will be created, what state will change.
+Review the output — dry-run validates:
+- All changes have change-summary.md
+- All verification.md status: passed
+- All three reviews (spec/quality/goal) PASS
+- If any FAIL, fix before proceeding
 
 ### Step 3: Ship phase
 Run \`bp ship\` — the CLI:
-1. Reads all archived changes in the current phase from \`bp/archive/<milestone>/<phase>/\`
-2. Extracts each change's \`change-summary.md\` and \`tasks.md\`
-3. Generates \`bp/milestones/<mid>/phases/<pid>/summary.md\` with all change summaries
-4. Updates state.md: marks phase as shipped (\`phase-shipped\`)
-5. Outputs a summary of what was shipped
+1. Validates all archived changes (dry-run checks above)
+2. Generates \`summary.md\` with verification matrix + full change summaries + review verdicts
+3. Updates state.md: phase-shipped
+4. Auto-commits (\`git add\` + \`git commit\`)
+5. Outputs JSON with next phase hint
 
-### Step 4: Milestone ship (when all phases are shipped)
-Run \`bp ship\` — creates release tag and updates version.
-
-### Step 5: Advance to next phase or milestone
-After shipping, read roadmap.md to determine what's next:
-- **Phase shipped but more phases in milestone**: run \`bp state set-phase <next-phase-id>\` then \`bp continue\`
-- **Milestone shipped**: run \`bp state set-milestone <next-milestone-id>\` then \`bp state set-phase <first-phase-id>\` then \`bp continue\`
-- **Last milestone shipped**: project complete — update project.md status
+### Step 4: Advance
+After shipping:
+- **More phases in milestone**: run \`bp state set-phase <next-phase-id>\` then \`bp continue\`
+- **All phases shipped**: run \`bp ship\` again — milestone ship creates version bump + git tag
+- **Last milestone**: project complete
 
 ## Output
 - PR on GitHub (phase ship)
@@ -47,9 +48,9 @@ After shipping, read roadmap.md to determine what's next:
 - Updated \`state.md\` and \`project.md\`
 
 ## Guardrails
-- Always run \`--dry-run\` first — never ship without previewing
-- Phase ship requires all changes archived
-- Milestone ship requires all phases shipped`;
+- Always \`--dry-run\` first; never ship without validation
+- All changes must be archived with reviews PASS + verification passed
+- CLI auto-commits — no manual \`git add\` needed`;
 
 export function getShipSkillTemplate(): SkillTemplate {
   return {

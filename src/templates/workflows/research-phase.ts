@@ -1,6 +1,7 @@
-import type { SkillTemplate, CommandTemplate } from '../types';
+import { ORCHESTRATOR_RULE } from '../types.js';
+import type { SkillTemplate, CommandTemplate } from '../types.js';
 
-const instructions = `## Input
+const instructions = ORCHESTRATOR_RULE + `## Input
 - \`context.md\` must exist (discuss phase done)
 - Related specs, conventions, and external dependencies
 
@@ -10,7 +11,7 @@ const instructions = `## Input
 Run \`bp context research-phase\` — outputs JSON with state and file manifest. Read all listed files before proceeding.
 
 ### Step 2: Dispatch phase researcher
-**You are the orchestrator — dispatch, do not research yourself.** Run \`bp dispatch phase-researcher\` for platform-specific dispatch instructions.
+Run \`bp dispatch phase-researcher\` for platform-specific dispatch instructions.
 
 Construct the sub-agent prompt:
 - Task: research implementation paths for this phase
@@ -36,7 +37,6 @@ Run \`bp continue\` to proceed to the split phase.
 - \`bp/milestones/<mid>/phases/<pid>/research.md\` — phase-level implementation research
 
 ## Guardrails
-- **You are the orchestrator** — dispatch the sub-agent, do not research yourself
 - Research must respect context.md locked decisions
 - Surface trade-offs explicitly`;
 

@@ -1,6 +1,7 @@
-import type { SkillTemplate, CommandTemplate } from '../types';
+import { ORCHESTRATOR_RULE } from '../types.js';
+import type { SkillTemplate, CommandTemplate } from '../types.js';
 
-const instructions = `## Input
+const instructions = ORCHESTRATOR_RULE + `## Input
 - \`bp/requirements.md\` must be complete (grill phase done)
 - \`bp/project.yml\` for technical constraints
 
@@ -10,7 +11,7 @@ const instructions = `## Input
 Run \`bp context research\` — outputs JSON with state and file manifest. Read all listed files before proceeding.
 
 ### Step 2: Dispatch research sub-agents
-**You are the orchestrator — dispatch, do not research yourself.** Run \`bp dispatch researcher\` for platform-specific dispatch instructions. Dispatch one per technical direction (stack, architecture, pitfalls) in parallel.
+Run \`bp dispatch researcher\` for platform-specific dispatch instructions. Dispatch one per technical direction (stack, architecture, pitfalls) in parallel.
 
 Construct each sub-agent prompt:
 - Task: research <stack | architecture | pitfalls> for this project
@@ -36,9 +37,8 @@ Run \`bp continue\` to proceed to roadmap definition.
 - \`research/summary.md\` — consolidated research conclusion
 
 ## Guardrails
-- **You are the orchestrator** — dispatch sub-agents, do not research yourself
-- Each sub-agent must compare at least 2 alternatives — never recommend the first option found
-- Sub-agents are independent and run in parallel
+- Dispatch sub-agents in parallel — they are independent
+- Each must compare ≥2 alternatives
 - Mark speculative findings with confidence levels`;
 
 export function getResearchSkillTemplate(): SkillTemplate {

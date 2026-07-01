@@ -1,6 +1,7 @@
-import type { SkillTemplate, CommandTemplate } from '../types';
+import { ORCHESTRATOR_RULE } from '../types.js';
+import type { SkillTemplate, CommandTemplate } from '../types.js';
 
-const instructions = `## Input
+const instructions = ORCHESTRATOR_RULE + `## Input
 
 ### Parameters
 - **\`<change-name>\`** (required) — the change to implement. Provided by \`bp continue\` output or user.
@@ -19,58 +20,59 @@ bp/milestones/<milestone>/phases/<phase>/changes/<change-name>/
 (Adhoc changes go under \`bp/changes/<name>/\`)
 
 ### Step 1: Classify change
-Read \`tasks.md\` and check the task types:
+Read \`tasks.md\` and check task types:
 - **Lightweight**: ALL tasks are type: config | docs | refactor | scaffolding — no type:behavior
 - **Full**: any type:behavior tasks
 
-### Step 1: Resolve change name and get context
-Run \`bp context apply\` — outputs JSON with state (including pending changes) and file manifest. If a change name was provided, use it directly. If not, read the \`pending\` array from the JSON, filter by status \`planning\`, and ask the user to pick. Then read all files listed in \`specs\`, \`conventions\`, and \`artifacts\`.
+### Step 2: Resolve change name and get context
+Run \`bp context apply\`. Read all listed files. If a change name was provided, use it directly. If not, read the \`pending\` array from the JSON, filter by status \`planning\`, and ask the user to pick.
 
-### Step 2: Execute implementation
+### Step 3: Execute implementation
 
-**If LIGHTWEIGHT — implement directly (skip sub-agent):**
-- No TDD protocol required — implement changes directly
-- Commit format: \`config|docs|refactor|chore(<scope>): <description>\`
-- Mark all tasks in \`tasks.md\` as checked; append \`## Completion\` section
-- Run \`npx vitest run\` and \`npx tsc --noEmit\` to verify
+**If LIGHTWEIGHT — implement task by task:**
 
-**If FULL — dispatch executor sub-agent:**
-Run \`bp dispatch executor --change <change-name>\` for platform-specific dispatch instructions.
+For each task in \`tasks.md\` (in wave order):
+1. Implement the change
+2. Verify: run applicable checks (\`tsc --noEmit\` / \`vitest run\`)
+3. Mark that task \`[x]\` — only AFTER verification passes
+4. Commit with format: \`config|docs|refactor|chore(<scope>): <description>\`
 
-Construct the sub-agent prompt:
-- Change: <change-name> in the change directory (from Step 0)
-- Task: implement all tasks in tasks.md following TDD protocol
+After ALL tasks pass verification:
+- Append \`## Completion\` section to \`tasks.md\` summarizing results
+
+**If FULL — you MUST dispatch the executor sub-agent. Do NOT implement type:behavior tasks yourself:**
+
+Run \`bp dispatch executor --change <change-name>\`. Construct the sub-agent prompt:
+- Change: <change-name> (path from Step 0)
+- Task: implement all tasks in tasks.md following TDD protocol (RED→GREEN→REFACTOR)
 - Read: design.md, delta-specs
-- Output: code changes, tests, tasks.md (with all boxes checked + ## Completion)
+- Output: code, tests, tasks.md (boxes checked ONLY after each task's tests pass)
+- The sub-agent's system prompt (.omp/agents/bp-executor.md) contains detailed TDD protocol.
 
-The sub-agent's system prompt (.omp/agents/bp-executor.md) contains detailed TDD protocol.
-
-### Step 3: Verify output and completion report
-After the executor finishes, check \`tasks.md\` has all boxes checked and \`## Completion\` section:
+### Step 4: Verify output and completion report
+After execution:
 - All tasks.md checkboxes checked
 - Type check passes (\`tsc --noEmit\`)
 - All tests pass (\`vitest run\`)
 - Each delta-spec SHALL/MUST has test coverage
 
-### Step 4: Generate change summary
-Run \`bp template change-summary --dir <change-dir>\`, then fill it with actual details. Do NOT skip — the summary is the handoff artifact for review.
+### Step 5: Generate change summary
+Run \`bp template change-summary --dir <change-dir>\`, fill with actual details. Do NOT skip.
 
-### Step 5: Pre-advance checklist
-- [ ] All wave tasks complete
+### Step 6: Pre-advance checklist
+- [ ] All tasks done and marked [x]
 - [ ] Type check passes
 - [ ] All tests pass
-- [ ] Change summary written and filled (not template)
-- [ ] tasks.md fully checked and verified
+- [ ] Change summary filled
+- [ ] tasks.md fully checked
 
-### Step 6: Advance
+### Step 7: Advance
 Run \`bp continue\` to proceed to review.
 
 ## Guardrails
-- **You are the orchestrator** — dispatch for full changes, implement directly for lightweight
-- Full: GREEN phase writes ONLY enough code to pass — save refactoring for REFACTOR
-- Full: Never skip RED — always write the failing test first
-- Lightweight: single commit per file type, no TDD ceremony
-- **Summary is mandatory**: advancing without a filled change-summary.md is a process violation`;
+- LIGHTWEIGHT: implement task-by-task, mark \\\`[x]\\\` after verify — never all at once
+- FULL: MUST dispatch executor sub-agent; RED→GREEN→REFACTOR enforced
+- Summary mandatory: no advance without filled change-summary.md`;
 
 export function getApplySkillTemplate(): SkillTemplate {
   return {

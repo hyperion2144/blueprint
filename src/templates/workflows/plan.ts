@@ -1,6 +1,7 @@
-import type { SkillTemplate, CommandTemplate } from '../types';
+import { ORCHESTRATOR_RULE } from '../types.js';
+import type { SkillTemplate, CommandTemplate } from '../types.js';
 
-const instructions = `## Input
+const instructions = ORCHESTRATOR_RULE + `## Input
 
 ### Parameters
 - **\\\`<change-name>\\\`** (required) — the change to plan. Provided by \\\`bp continue\\\` output or user.
@@ -20,60 +21,54 @@ bp/milestones/<milestone>/phases/<phase>/changes/<change-name>/
 \`\`\`
 
 ### Step 1: Classify change
-Read \`proposal.md\` to determine change type. Check \`tasks.md\` if it already exists:
+Read \`proposal.md\`. Read \`tasks.md\` if it exists. Classify:
 - **Lightweight**: all tasks are type: config | docs | refactor | scaffolding — no type:behavior
 - **Full**: any type:behavior tasks, OR new feature with architectural decisions
 
-### Step 1: Resolve change name and get context
+### Step 2: Resolve change name and get context
 If a change name was provided: use it directly. If not: run \`bp state\`, list pending changes with status \`planning\`, ask the user to pick. Then run \`bp context plan\` to get the file manifest. Read all listed files.
 
-### Step 2: Execute design
+### Step 3: Execute design
 
-**If LIGHTWEIGHT — design directly (skip sub-agent):**
+**If LIGHTWEIGHT:**
 
-The change has no type:behavior tasks — you design and implement yourself without dispatching a planner sub-agent.
+1. Run \`bp template design\`, fill approach (1-2 paragraphs), write \`design.md\`
+2. Run \`bp template tasks\`, list tasks with type annotations, write \`tasks.md\`
+3. Skip delta-specs (not needed for non-behavioral changes)
+4. **Leave all task boxes UNCHECKED** — apply phase marks them done after implementation
+5. Run \`bp continue\`
 
-**What to produce:**
-1. Run \`bp template design\` to get the template. Fill it with 1-2 paragraphs of approach, then write to \`design.md\` (no alternatives needed)
-2. Run \`bp template tasks\` to get the template. List each task with type annotation, then write to \`tasks.md\`
-3. Skip delta-specs — not needed for non-behavioral changes
+**If FULL — you MUST dispatch the planner sub-agent. Do NOT write design/tasks/specs yourself:**
 
-**After writing files:**
-- Mark all task checkboxes as done in \`tasks.md\`
-- Append \`## Completion\` section to \`tasks.md\` confirming all tasks complete
-- Run \`bp continue\` to proceed to apply
-
-**If FULL — dispatch planner sub-agent:**
-Run \`bp dispatch planner --change <change-name>\` for platform-specific dispatch instructions.
-
-Construct the sub-agent prompt:
-- Task: produce design.md, tasks.md, and delta-specs for this change
-- Read: bp/changes/<change-name>/proposal.md, context.md, related specs/, conventions/
+Run \`bp dispatch planner --change <change-name>\`. Construct the sub-agent prompt:
+- Task: produce design.md, tasks.md (boxes UNCHECKED), specs/<domain>/spec.md
+- Read: proposal.md, context.md, specs/, conventions/
 - Output: design.md, tasks.md, specs/<domain>/spec.md
 - The sub-agent's system prompt (.omp/agents/bp-planner.md) contains detailed instructions.
 
-### Step 3: Verify output
-After the planner finishes, check that \`tasks.md\` has all boxes checked and contains a \`## Completion\` section, and confirm:
-- \\\`design.md\\\` — architecture, data flow, alternatives
-- \\\`tasks.md\\\` — type annotations, TDD triples, wave grouping
-- \\\`specs/<domain>/spec.md\\\` — SHALL/MUST with scenarios
+### Step 4: Verify output
+Check produced files:
+- \`design.md\` — architecture, data flow, approach
+- \`tasks.md\` — type annotations, RED triples, wave grouping; **boxes must be UNCHECKED** (apply marks them)
+- \`specs/<domain>/spec.md\` — must have ≥1 non-template SHALL/MUST (reject if all \`<name>\`/\`<behavior>\` placeholders)
 - All must_haves from proposal.md covered
 - No contradictions with context.md
 
-### Step 4: Advance
-Run \\\`bp continue\\\` to proceed to the apply phase.
+### Step 5: Advance
+Run \`bp continue\` to proceed to the apply phase.
 
 ## Output
-- \\\`design.md\\\` — technical design document
-- \\\`tasks.md\\\` — implementation task checklist
-- \\\`specs/<domain>/spec.md\\\` — delta-specs
-- \\\`completion.md\\\` — sub-agent completion report
+- \`design.md\` — technical design document
+- \`tasks.md\` — implementation task checklist
+- \`specs/<domain>/spec.md\` — delta-specs
+- \`completion.md\` — sub-agent completion report
 
 ## Guardrails
-- **You are the orchestrator** — dispatch for full changes, design directly for lightweight
-- type:behavior tasks MUST have RED->GREEN->REFACTOR triples
-- Delta-specs describe behavior, not implementation details — skip for lightweight
-- If a change is too large to split into clear tasks, return to split phase`;
+- FULL: MUST dispatch planner sub-agent; do NOT write design/tasks/specs yourself
+- type:behavior tasks need RED→GREEN→REFACTOR triples
+- Delta-specs for behavior, not implementation — skip for LIGHTWEIGHT
+- tasks.md stays UNCHECKED after plan — apply marks each done
+- Too large to split? Return to split phase`;
 
 export function getPlanSkillTemplate(): SkillTemplate {
   return {

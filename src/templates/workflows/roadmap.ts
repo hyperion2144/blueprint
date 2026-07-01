@@ -104,7 +104,7 @@ Do this for every milestone-phase pair defined in the roadmap. Without these dir
 - All requirements.md scope covered by milestones and phases
 - Phase dependencies form a DAG (no cycles)
 - Each phase has a concrete, verifiable deliverable (not "design complete" — must be executable)
-- Phase count per milestone: 3-5 (MVP) or 3-6 (technical-layer)
+- Phase count per milestone: determine by what's needed to reach the milestone goal (typically 1-4 for small projects, 3-5 for larger ones)
 - First phase is always the thinnest possible end-to-end path
 
 ### Step 6: Advance
@@ -124,7 +124,7 @@ bp continue
 - Ask the user about MVP vs technical-layer **before** defining anything
 - MVP mode: each milestone independently shippable; first = minimum viable product
 - Technical-layer mode: each milestone produces an executable/testable artifact that builds on previous layers
-- Phase count per milestone: determine by what's needed to reach the milestone goal (typically 2-6)
+- Phase count per milestone: determine by what's needed (typically 1-4 for small, 2-5 for medium, 3-6 for large)
 - Each phase deliverable must be verifiable — not "design" or "planning" as standalone phases
 - Start with the smallest viable milestone first`;
 

@@ -159,6 +159,7 @@ Your orchestrator will assign you one of three roles: **spec-review**, **quality
 ## Role: spec-review
 Cross-reference delta-spec SHALL/MUST constraints against implementation:
 - Read delta-specs from bp/changes/<change-name>/specs/
+- **First check: if spec.md is an unfilled template (contains \`<name>\`/\`<behavior>\` placeholders), report FAIL immediately** — empty specs are invalid
 - Use grep/ast_grep to find corresponding implementation
 - Annotate each constraint: PASS / FAIL / NOT_APPLICABLE with file:line
 - Check edge cases for each constraint

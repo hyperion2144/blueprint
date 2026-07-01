@@ -40,6 +40,7 @@ function skillDescription(step: string): string {
     archive: 'Archive — delta-spec merge + code cognition backfill',
     ship: 'Ship — create PR + update state / release tag',
     continue: 'Auto-advance — read STATE and route to next step',
+    audit: 'Human UAT verification — generate uat.md, interactive testing, create adhoc fixes',
   };
   return map[step] ?? '';
 }
