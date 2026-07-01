@@ -34,7 +34,7 @@ If a change name was provided: use it directly. If not: run \`bp state\`, list p
 - Fill \`design.md\` with minimal architecture notes — no alternatives comparison needed
 - Fill \`tasks.md\` with implementation steps, each annotated with type
 - No delta-specs needed for config/doc/refactor changes
-- Write \`completion.md\` confirming lightweight plan complete
+- Mark all tasks in \`tasks.md\` as checked; append a \`## Completion\` section
 
 **If FULL — dispatch planner sub-agent:**
 Run \`bp dispatch planner --change <change-name>\` for platform-specific dispatch instructions.
