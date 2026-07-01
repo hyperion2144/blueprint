@@ -31,8 +31,8 @@ export function determineNextStep(specwfDir: string): ContinueResult {
 }
 
 /**
- * 查询指定 change 的下一步
- * 同时在 state.changes 和 state.adhoc 中查找
+ * Get next step for a specific change.
+ * Looks in both state.changes and state.adhoc.
  */
 export function determineChangeNextStep(
   specwfDir: string,
@@ -40,17 +40,16 @@ export function determineChangeNextStep(
 ): ContinueResult | { error: string } {
   const state = loadState(specwfDir);
 
-  // 先在普通 changes 中查找
+  // Look in regular changes first
   const change = state.changes.find((c) => c.name === changeName);
   if (change) {
     return determineFromChangeStatus(changeName, `change-${change.status}`, 'change');
   }
 
-  // 再在 adhoc changes 中查找
+  // Then look in adhoc changes
   const adhoc = state.adhoc.find((c) => c.name === changeName);
   if (adhoc) {
-    // adhoc 进入标准 change 循环后，状态键使用 change- 前缀
-    // 只有 proposal 仍使用 adhoc- 前缀（对应 adhoc-proposal）
+    // adhoc changes use change- prefix once past proposal (only proposal uses adhoc-)
     const prefix = adhoc.status === 'proposal' ? 'adhoc' : 'change';
     return determineFromChangeStatus(
       changeName,
@@ -60,7 +59,7 @@ export function determineChangeNextStep(
   }
 
   return {
-    error: `change 不存在: ${changeName}。可用: ${listAvailableChanges(state)}`,
+    error: `Change not found: ${changeName}. Available: ${listAvailableChanges(state)}`,
   };
 }
 
@@ -222,7 +221,7 @@ function listAvailableChanges(state: StateFile): string {
     ...state.changes.map((c) => c.name),
     ...state.adhoc.map((c) => c.name),
   ];
-  return names.join(', ') || '(无)';
+  return names.join(', ') || '(none)';
 }
 
 export function determineFromState(state: StateFile): ContinueResult {
@@ -274,7 +273,7 @@ function resolveStatus(state: StateFile): string {
 function formatContext(state: StateFile): string {
   const { type, ref, step } = state.active_context;
   switch (type) {
-    case 'project': return `项目层 — ${step}`;
+    case 'project': return `Project (${step})`;
     case 'milestone': return `Milestone ${state.project.current_milestone ?? '?'} — ${step}`;
     case 'phase': return `Phase ${state.project.current_phase ?? '?'} — ${step}`;
     case 'change': return `Change (${ref ?? '?'}) — ${step}`;
@@ -287,17 +286,17 @@ function generateHint(state: StateFile): string | null {
   const status = state.project.status;
   if (status === 'milestone-shipped') {
     const pendingAdhoc = state.adhoc.filter((c) => c.status !== 'archived');
-    const hintParts: string[] = ['当前 milestone 已完成。创建新 milestone: specwf state set-milestone <id>'];
+    const hints: string[] = ['Milestone shipped. Run `specwf state set-milestone <next-id>` to activate the next milestone.'];
     if (pendingAdhoc.length > 0) {
-      hintParts.push(
-        `待处理的临时 change: ${pendingAdhoc.map((c) => c.name).join(', ')}` +
-        `。使用: specwf continue change <name>`,
+      hints.push(
+        `Pending adhoc changes: ${pendingAdhoc.map(c => c.name).join(', ')}. ` +
+        `Use: specwf continue change <name>`,
       );
     }
-    return hintParts.join('\n    ');
+    return hints.join('\n  ');
   }
   if (status === 'phase-shipped') {
-    return '当前 phase 已完成。创建新 phase 或切换: specwf state set-milestone <id>';
+    return 'Phase shipped. Run `specwf state set-phase <next-phase-id>` to activate the next phase, or `specwf state set-milestone <next-id>` to ship the milestone.';
   }
   return null;
 }
