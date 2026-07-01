@@ -53,8 +53,8 @@ export interface StateTransition {
  */
 export const STATE_TRANSITIONS: StateTransition[] = [
   // 项目层路径
-  { from: 'initialized', command: 'grill', to: 'requirements-defined', slashCommand: '/bp:grill' },
-  { from: 'requirements-defined', command: 'research', to: 'researching', slashCommand: '/bp:research', subagent: true },
+  { from: 'initialized', command: 'grill', to: 'grill', slashCommand: '/bp:grill' },
+  { from: 'grill', command: 'research', to: 'researching', slashCommand: '/bp:research', subagent: true },
   { from: 'researching', command: 'research-done', to: 'researched', slashCommand: '' },
   { from: 'researched', command: 'roadmap', to: 'roadmap-defined', slashCommand: '/bp:roadmap' },
   { from: 'roadmap-defined', command: 'discuss', to: 'phase-discuss', slashCommand: '/bp:discuss' },
@@ -75,7 +75,7 @@ export const STATE_TRANSITIONS: StateTransition[] = [
   { from: 'change-reviewing', command: 'fix', to: 'change-applying', slashCommand: '/bp:apply', subagent: true },
 
   // Milestone 层（新里程碑 = 项目流程 - init）
-  { from: 'milestone-active', command: 'grill', to: 'requirements-defined', slashCommand: '/bp:grill' },
+  { from: 'milestone-active', command: 'grill', to: 'grill', slashCommand: '/bp:grill' },
 
   // Ship
   { from: 'change-archived', command: 'ship-phase', to: 'phase-shipped', slashCommand: '/bp:ship' },

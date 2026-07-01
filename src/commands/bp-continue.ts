@@ -28,29 +28,24 @@ export function register(program: any): void {
 }
 
 function formatContinueResult(result: ContinueResult, isAuto = false): void {
+  // Look up instructions for the CURRENT step
+  const stepKey = result.currentStep.replace(/^(phase-|change-)/, '');
+  const wfStep = (STEP_TO_WORKFLOW as Record<string, WorkflowStep>)[stepKey];
+  const currentInstructions = (wfStep && WORKFLOW_REGISTRY[wfStep]) ? WORKFLOW_REGISTRY[wfStep].command().content : undefined;
+
   const output: any = {
     _note: `Read the full instructions below before acting. Do not skip truncated content.${isAuto ? ' AUTO mode — fill with your own judgment, do not ask the user.' : ''}`,
     auto: isAuto || undefined,
     current: {
-      context: result.context,
       step: result.currentStep,
+      type: result.type,
+      status: result.status,
+      context: result.context,
     },
   };
 
-  if (result.nextCommand) {
-    output.next = {
-      command: result.nextCommand,
-      slash: result.slashCommand || null,
-      subagent: result.needsSubagent,
-      description: result.nextStepInfo?.description || null,
-      outputs: result.nextStepInfo?.artifacts || [],
-    };
-    if (result.instructions) {
-      output.next.instructions = result.instructions;
-    }
-  } else {
-    output.next = null;
-    if (result.hint) output.hint = result.hint;
+  if (currentInstructions) {
+    output.instructions = currentInstructions;
   }
 
   console.log(JSON.stringify(output, null, 2));
@@ -147,23 +142,13 @@ function continueHandler(options?: { auto?: boolean }): void {
 
   const validation = validateStepAdvance(state.active_context.type, state.active_context.step, state.active_context.ref, cwd);
   if (!validation.valid) {
-    // Get current step instructions so the agent knows what to do
-    const stepKey = state.active_context.step.replace(/^(phase-|change-)/, '');
-    const wfStep = STEP_TO_WORKFLOW[stepKey] as WorkflowStep | undefined;
-    const currentInstructions = (wfStep && WORKFLOW_REGISTRY[wfStep]) ? WORKFLOW_REGISTRY[wfStep].command().content : undefined;
-
     console.log(JSON.stringify({
       _note: isAuto ? 'AUTO mode — fill with your own judgment, do not ask the user.' : 'Read the full instructions below before acting.',
       auto: isAuto || undefined,
       error: 'exit_conditions_not_met',
-      current: { context: result.context, step: state.active_context.step, type: state.active_context.type },
-      next: result.nextCommand ? {
-        command: result.nextCommand,
-        slash: result.slashCommand || null,
-        description: result.nextStepInfo?.description || null,
-      } : null,
+      current: { step: state.active_context.step, type: state.active_context.type, status: state.project.status },
       details: validation.errors,
-      instructions: currentInstructions || null,
+      hint: `Complete the current step first. Run \`bp template ${state.active_context.step}\` if you need the step instructions.`,
     }));
     return;
   }
@@ -222,9 +207,12 @@ function continueChangeHandler(name: string, options?: { auto?: boolean }): void
     const validation = validateStepAdvance(ctxType, change.status, ref, cwd);
     if (!validation.valid) {
       console.log(JSON.stringify({
+        _note: isAuto ? 'AUTO mode — fill with your own judgment, do not ask the user.' : 'Read the full instructions below before acting.',
+        auto: isAuto || undefined,
         error: 'exit_conditions_not_met',
-        change: { name, status: change.status, type: ctxType },
+        current: { step: change.status, type: ctxType, status: state.project.status },
         details: validation.errors,
+        hint: `Complete the current step first. Run \`bp template ${change.status}\` if you need the step instructions.`,
       }));
       return;
     }

@@ -88,7 +88,7 @@ function generateStateBody(state: StateFile): string {
     '',
     '## State Machine',
     '',
-    'Project path: `initialized → requirements-defined → researched → roadmap-defined`',
+    'Project path: `initialized → grill → researched → roadmap-defined`',
     '',
   ];
 

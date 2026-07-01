@@ -141,7 +141,7 @@ function setPhase(id: string) {
 
 function setStep(step: string) {
   const bpDir = findBlueprintDir();
-  const validProjectSteps = ['init', 'grill', 'requirements-defined', 'researching', 'researched', 'roadmap-defined', 'milestone-active', 'milestone-shipped'];
+  const validProjectSteps = ['init', 'grill', 'grill', 'researching', 'researched', 'roadmap-defined', 'milestone-active', 'milestone-shipped'];
   const validPhaseSteps = ['discuss', 'research', 'split'];
   const validChangeSteps = ['planning', 'applying', 'reviewing', 'verifying', 'archiving', 'archived'];
   const validSteps = [...validProjectSteps, ...validPhaseSteps, ...validChangeSteps];

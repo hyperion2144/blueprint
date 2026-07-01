@@ -32,8 +32,8 @@ async function initHandler(options: {
   const bpDir = join(baseDir, 'bp');
 
   if (isInitialized(bpDir)) {
-    console.error('bp already initialized. Run `bp update` to regenerate platform files.');
-    process.exit(1);
+    console.log('Already initialized. Use `bp update` to refresh platform files.');
+    process.exit(0);
   }
 
   const wizard = await runInitWizard({ profile: options.profile, yes: options.yes });

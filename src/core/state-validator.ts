@@ -43,9 +43,9 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
       { path: 'requirements.md', description: 'requirements.md not found' },
     ],
   },
-  // project/requirements-defined → 必须有完整的 requirements.md
+  // project/grill → 必须有完整的 requirements.md
   {
-    type: 'project', step: 'requirements-defined',
+    type: 'project', step: 'grill',
     checks: [
       { path: 'requirements.md', description: 'requirements.md 内容为模板，请填写后重试' },
     ],
@@ -112,7 +112,7 @@ function isTemplateFile(filePath: string): boolean {
   try {
     const content = readFileSync(filePath, 'utf-8');
     // Count remaining {{placeholder}} patterns. More than 4 = still empty template.
-    const placeholders = content.match(/\{\{[a-zA-Z_-]+\}\}/g);
+    const placeholders = content.match(/\{\{[^}]+\}\}/g);
     return (placeholders?.length ?? 0) > 4;
   } catch {
     return false;

@@ -23,9 +23,9 @@ function writeState(dir: string, state: StateFile): void {
 }
 
 describe('determineNextStep', () => {
-  it('从 requirements-defined 推进到 research', () => {
+  it('从 grill 推进到 research', () => {
     writeState(tmpDir, {
-      project: { name: 'test', status: 'requirements-defined', current_milestone: null, current_phase: null },
+      project: { name: 'test', status: 'grill', current_milestone: null, current_phase: null },
       active_context: { type: 'project', ref: null, step: 'research' },
       changes: [],
       adhoc: [],

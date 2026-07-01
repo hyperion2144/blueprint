@@ -15,6 +15,8 @@ export interface StepInfo {
 export interface ContinueResult {
   currentStep: string;
   context: string;
+  type: string;
+  status: string;
   nextCommand: string | null;
   slashCommand: string | null;
   needsSubagent: boolean;
@@ -153,12 +155,24 @@ const STEP_INFO: Record<string, StepInfo> = {
 
 /** Step name → WorkflowStep mapping for template lookup */
 export const STEP_TO_WORKFLOW: Record<string, WorkflowStep> = {
+  // Project-level steps
   grill: 'grill',
-  research: 'research',
-  roadmap: 'roadmap',
+  researching: 'research',
+  researched: 'roadmap',
+  'roadmap-defined': 'discuss',
+  // Phase-level steps (after strip prefix)
+  research: 'research-phase',
   discuss: 'discuss',
-  'research-phase': 'research-phase',
   split: 'split',
+  // Change-level steps (after strip prefix)
+  planning: 'plan',
+  proposal: 'adhoc',
+  applying: 'apply',
+  reviewing: 'review',
+  verifying: 'verify',
+  archiving: 'archive',
+  // Other
+  'research-phase': 'research-phase',
   plan: 'plan',
   apply: 'apply',
   review: 'review',
@@ -166,6 +180,7 @@ export const STEP_TO_WORKFLOW: Record<string, WorkflowStep> = {
   archive: 'archive',
   'ship-phase': 'ship',
   'ship-milestone': 'ship',
+  shipped: 'ship',
   init: 'init',
   adhoc: 'adhoc',
   continue: 'continue',
@@ -204,6 +219,8 @@ function determineFromChangeStatus(
   return {
     currentStep: statusKey,
     context: `${type === 'adhoc' ? 'Adhoc Change' : 'Change'} (${name})`,
+    type,
+    status: statusKey,
     nextCommand: first?.command ?? null,
     slashCommand: first?.slashCommand || null,
     needsSubagent: first?.subagent ?? false,
@@ -242,6 +259,8 @@ export function determineFromState(state: StateFile): ContinueResult {
   return {
     currentStep: ctx.step,
     context: formatContext(state),
+    type: ctx.type,
+    status: state.project.status,
     nextCommand: first?.command ?? null,
     slashCommand: first?.slashCommand || null,
     needsSubagent: first?.subagent ?? false,

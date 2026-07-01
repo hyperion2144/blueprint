@@ -112,7 +112,7 @@ describe('E2E: init → template → archive', () => {
     const output = execSync(`node ${cliPath} continue`, { encoding: 'utf-8', cwd: testDir });
     const result = JSON.parse(output);
     expect(result.current).toBeDefined();
-    expect(result.next).toBeDefined();
+    expect(result.current.step).toBeDefined();
   });
 
   it('step 8: bp list 输出归档', () => {
