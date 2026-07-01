@@ -7,11 +7,11 @@
     "specwf": "bin/specwf.js"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && cp bin/cli.js bin/specwf.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepare": "npm run build || npx -y tsup",
+    "prepare": "npm run build || (npx -y tsup && cp bin/cli.js bin/specwf.js)",
     "prepublishOnly": "npm run typecheck && npm run test && npm run build"
   },
   "engines": {
