@@ -121,8 +121,8 @@ bp continue
 - **Default: 1 milestone.** Only add more if the user needs iterative releases.
 - M1 = shippable product a user can use. No "foundation", "setup", "scaffolding".
 - Mode (MVP/technical-layer) shapes **phases within a milestone**, not the milestones themselves.
-- Phase count per milestone: 2-4. First phase = thinnest end-to-end path.
-- If a milestone has only 1 phase, skip the phase layer — the milestone IS the unit of work.`;
+- Phase count per milestone by project size: small 1-2, medium 2-3, large 3-4.
+- First phase = thinnest end-to-end path (always phase 1, never phase 0).`;
 
 export function getRoadmapSkillTemplate(): SkillTemplate {
   return {
