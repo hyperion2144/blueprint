@@ -3,7 +3,7 @@ import type { SkillTemplate, CommandTemplate } from '../types';
 const instructions = `## Input
 
 ### Parameters
-- **No parameters**: operate on the current project from \`bp state\`
+- **\`<idea>\`** (optional) — the product idea, feature concept, or brief to grill. If not provided, ask the user: "What are you building? Describe the idea in a few sentences."
 
 ### Prerequisites
 - \`bp/requirements.md\` must exist (created by init)
@@ -14,9 +14,14 @@ const instructions = `## Input
 ### Step 1: Get context
 Run \`bp context grill\` — outputs state and requirements.md path. Read requirements.md.
 
-### Step 2: Interview relentlessly until shared understanding
+### Step 2: Get the idea
+If the user provided an idea in the prompt, use it. If not, use the \`ask\` tool to get it:
+- One question: "What are you building? Describe the idea in a few sentences."
+- Input type, no options — let the user describe freely.
 
-Interview the user relentlessly about every aspect of the project. Walk down each branch of the decision tree, resolving dependencies between decisions one-by-one.
+### Step 3: Interview relentlessly about this idea
+
+Interview the user relentlessly about every aspect of the idea. All questions must tie back to the idea — clarify, refine, expand, stress-test it. Walk down each branch of the decision tree, resolving dependencies one-by-one.
 
 **For every question, use the \`ask\` tool.** Never use plain text.
 Each \`ask\` call: 2-5 concrete options, one recommended answer, brief tradeoff per option.
@@ -25,18 +30,18 @@ Each \`ask\` call: 2-5 concrete options, one recommended answer, brief tradeoff 
 
 Stop only when all decisions are resolved — no ambiguity remains.
 
-### Step 3: Record decisions incrementally
+### Step 4: Record decisions incrementally
 After each consensus point, write it to \`bp/requirements.md\` immediately — do not batch at the end.
 
-### Step 4: Confirm consensus
+### Step 5: Confirm consensus
 Review requirements.md. If any ambiguity remains, go back to Step 2. Mark only truly unresolved items as \`[TODO: decide]\`.
 
-### Step 5: Commit
+### Step 6: Commit
 \`\`\`bash
 bp commit "docs: complete requirements" --files "bp/requirements.md" --scope docs --record
 \`\`\`
 
-### Step 6: Advance
+### Step 7: Advance
 Run \`bp continue\` to proceed to the research phase.
 
 ## Output
