@@ -35,14 +35,28 @@ This single CLI command handles: delta-spec merge, code cognition backfill, dire
 bp commit "docs(archive): archive <change-name>" --files "bp/archive/<mid>/<pid>/<change-dir>/" --scope docs --record
 \`\`\`
 
-### Step 5: Advance
+### Step 5: Check if last change — generate phase summary
+Run \`bp state\` and check the \`pending\` list. If no more pending changes remain in this phase:
+1. Get the summary template: \`bp template summary\`
+2. Collect all archived changes from \`bp/archive/<milestone>/<phase>/\`
+3. Write \`bp/milestones/<mid>/phases/<pid>/summary.md\` containing:
+   - Verification matrix (all changes with spec/quality/goal review status)
+   - Each change's key deliverables and decisions from change-summary.md
+   - Review verdicts
+4. Commit the summary:
+   \`\`\`bash
+   bp commit "docs(summary): phase complete for <phase-id>" --files "bp/milestones/<mid>/phases/<pid>/summary.md" --scope docs --record
+   \`\`\`
+
+### Step 6: Advance
 Run \`bp continue\` — if all phase changes are archived, routes to ship-phase.
 
 ## Guardrails
 - Run \`bp archive bp/changes/<name>\` — no sub-agent needed
 - Delta-spec merge must resolve conflicts, not overwrite
 - Archived changes are never deleted
-- If archival fails, the change stays in place`;
+- If archival fails, the change stays in place
+- **Last change in phase**: write summary.md before advancing — this is the handoff artifact for the next phase`;
 
 export function getArchiveSkillTemplate(): SkillTemplate {
   return {
