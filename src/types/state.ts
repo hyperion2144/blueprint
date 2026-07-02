@@ -66,13 +66,12 @@ export const STATE_TRANSITIONS: StateTransition[] = [
   { from: 'phase-split', command: 'plan', to: 'change-planning', slashCommand: '/bp:plan', subagent: true },
   { from: 'change-planning', command: 'apply', to: 'change-applying', slashCommand: '/bp:apply', subagent: true },
   { from: 'change-applying', command: 'review', to: 'change-reviewing', slashCommand: '/bp:review', subagent: true },
-  { from: 'change-reviewing', command: 'verify', to: 'change-verifying', slashCommand: '/bp:verify', subagent: true },
-  { from: 'change-verifying', command: 'archive', to: 'change-archiving', slashCommand: '/bp:archive', subagent: true },
+  { from: 'change-reviewing', command: 'archive', to: 'change-archiving', slashCommand: '/bp:archive' },
   { from: 'change-archiving', command: 'archive-done', to: 'change-archived', slashCommand: '' },
 
-  // 回环
-  { from: 'change-verifying', command: 'replan', to: 'change-planning', slashCommand: '/bp:plan', subagent: true },
-  { from: 'change-verifying', command: 'reapply', to: 'change-applying', slashCommand: '/bp:apply', subagent: true },
+  // 回环 (from reviewing — merged verify+archive step)
+  { from: 'change-reviewing', command: 'replan', to: 'change-planning', slashCommand: '/bp:plan', subagent: true },
+  { from: 'change-reviewing', command: 'reapply', to: 'change-applying', slashCommand: '/bp:apply', subagent: true },
   { from: 'change-reviewing', command: 'fix', to: 'change-applying', slashCommand: '/bp:apply', subagent: true },
 
   // Milestone 层（新里程碑 = 项目流程 - init）

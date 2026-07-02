@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 import { writeFileSync } from 'node:fs';
 import { saveConfig } from '../core/config.js';
+import type { ProjectConfig } from '../types/index.js';
 import { createSpecwfStructure, isInitialized } from '../core/file-tree.js';
 import { saveState } from '../core/state-file.js';
 import { runInitWizard } from '../prompts/init-wizard.js';
@@ -44,7 +45,7 @@ async function initHandler(options: {
   createSpecwfStructure(bpDir);
   console.log('✓ bp/ directory structure created');
 
-  saveConfig(bpDir, {
+  const config: ProjectConfig = {
     version: 1,
     platform,
     profile,
@@ -56,7 +57,8 @@ async function initHandler(options: {
     release: { template: 'standard' as const },
     conventions: { inject: true },
     models: {},
-  });
+  };
+  saveConfig(bpDir, config);
   console.log('✓ project.yml created (profile: ' + profile + ')');
 
   saveState(bpDir, {
@@ -91,7 +93,7 @@ async function initHandler(options: {
 
   // 自动生成平台文件
   try {
-    const files = generateAll({ version: 1, platform, profile, context: wizard.context, workflow: {}, review: {}, change: {}, git: { branching: 'none', create_tag: true }, conventions: { inject: true }, models: {} });
+    const files = generateAll(config);
     writeGeneratedFiles(files);
     console.log(`✓ Platform files generated (${files.length})`);
   } catch {

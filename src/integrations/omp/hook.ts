@@ -1,15 +1,12 @@
 /**
- * bp OMP Hook — automated spec injection and workflow guidance.
+ * bp OMP Hook — automated workflow state injection.
  *
  * Install: copy to .omp/hooks/pre/bp-hook.ts
  * Or generate via: bp update (writes to .omp/hooks/pre/bp.ts)
  *
- * Pattern: Trellis-style context injection.
- * - SessionStart: detect bp project, inject specs + conventions + workflow state
- * - BeforeAgentStart: remind agent of current step's constraints
- * - PreToolUse (task): inject sub-agent context from change directory
- *
- * Reference: Trellis context-injection.md — inject the right files at the right time.
+ * SessionStart: inject workflow state summary only.
+ *   Specs/conventions are injected on-demand by `bp context <step>`.
+ * BeforeAgentStart: remind agent of current step's pending work.
  */
 
 import { existsSync, readFileSync } from "node:fs";
@@ -17,49 +14,35 @@ import { join } from "node:path";
 import { execSync } from "node:child_process";
 
 interface HookAPI {
-  on(event: string, handler: (event: any, ctx: any) => any): void;
-  sendMessage(msg: any, opts?: any): void;
+  on(event: string, handler: (event: unknown, ctx: unknown) => unknown): void;
+  sendMessage(msg: unknown, opts?: unknown): void;
 }
 
 export default function bpHook(api: HookAPI): void {
-  // ── SessionStart: inject project specs + workflow state ──
-  api.on("session_start", async (_event: any, ctx: any) => {
-    const cwd = ctx.cwd ?? process.cwd();
-    if (!existsSync(join(cwd, "bp", "state.md"))) return;
+  // ── SessionStart: inject project state summary ──
+  api.on("session_start", async (_event: unknown, ctx: unknown) => {
+    const cwd = (ctx as Record<string, unknown> | null)?.cwd;
+    const workDir = typeof cwd === "string" ? cwd : process.cwd();
+    if (!existsSync(join(workDir, "bp", "state.md"))) return;
 
     try {
-      // Run bp context to get full state + specs + conventions
-      const output = execSync("bp context current", {
-        cwd,
+      const output = execSync("bp state", {
+        cwd: workDir,
         encoding: "utf-8",
         timeout: 5000,
       });
-      const data = JSON.parse(output);
+      const state = JSON.parse(output) as {
+        project?: string;
+        status?: string;
+        milestone?: string | null;
+        phase?: string | null;
+      };
 
       const lines: string[] = [];
-      lines.push(`[bp] Project: ${data.project} | Status: ${data.status}`);
-      if (data.milestone) lines.push(`Milestone: ${data.milestone}`);
-      if (data.phase) lines.push(`Phase: ${data.phase}`);
-
-      // Inject specs content
-      if (data.specs?.length) {
-        lines.push("\n─── Specs ───");
-        for (const spec of data.specs) {
-          if (spec.content) {
-            lines.push(`\n### ${spec.path}\n${spec.content.slice(0, 4096)}`);
-          }
-        }
-      }
-
-      // Inject conventions content
-      if (data.conventions?.length) {
-        lines.push("\n─── Conventions ───");
-        for (const conv of data.conventions) {
-          if (conv.content) {
-            lines.push(`\n### ${conv.path}\n${conv.content.slice(0, 2048)}`);
-          }
-        }
-      }
+      lines.push(`[bp] Project: ${state.project ?? "-"} | Status: ${state.status ?? "-"}`);
+      if (state.milestone) lines.push(`Milestone: ${state.milestone}`);
+      if (state.phase) lines.push(`Phase: ${state.phase}`);
+      lines.push("Run `bp context <step>` for specs/conventions injection.");
 
       api.sendMessage({
         role: "custom",
@@ -73,20 +56,28 @@ export default function bpHook(api: HookAPI): void {
   });
 
   // ── BeforeAgentStart: workflow-state hint ──
-  api.on("before_agent_start", async (_event: any, ctx: any) => {
-    const cwd = ctx.cwd ?? process.cwd();
-    if (!existsSync(join(cwd, "bp", "state.md"))) return;
+  api.on("before_agent_start", async (_event: unknown, ctx: unknown) => {
+    const cwd = (ctx as Record<string, unknown> | null)?.cwd;
+    const workDir = typeof cwd === "string" ? cwd : process.cwd();
+    if (!existsSync(join(workDir, "bp", "state.md"))) return;
 
     try {
-      const output = execSync("bp state", { cwd, encoding: "utf-8", timeout: 3000 });
-      const state = JSON.parse(output);
+      const output = execSync("bp state", { cwd: workDir, encoding: "utf-8", timeout: 3000 });
+      const state = JSON.parse(output) as {
+        pending?: Array<{ name: string; status: string }>;
+        status?: string;
+      };
 
-      const pending = state.pending || [];
+      const pending = state.pending ?? [];
       const hint = pending.length > 0
-        ? `[bp] Pending: ${pending.map((p: any) => `${p.name}[${p.status}]`).join(", ")}. Run \`bp continue\` to advance.`
-        : `[bp] Status: ${state.status}. Run \`bp continue\` to check next step.`;
+        ? `[bp] Pending: ${pending.map((p) => `${p.name}[${p.status}]`).join(", ")}. Run \`bp continue\` to advance.`
+        : `[bp] Status: ${state.status ?? "-"}. Run \`bp continue\` to check next step.`;
 
-      ctx.ui?.setStatus?.("bp", hint);
+      const ui = (ctx as Record<string, unknown> | null)?.ui;
+      if (ui && typeof ui === "object" && "setStatus" in ui) {
+        const setStatus = (ui as { setStatus: (label: string, value: string) => void }).setStatus;
+        setStatus("bp", hint);
+      }
     } catch {
       // skip
     }

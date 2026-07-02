@@ -156,7 +156,7 @@ function setStep(step: string) {
   const bpDir = findBlueprintDir();
   const validProjectSteps = ['init', 'grill', 'grill', 'researching', 'researched', 'roadmap-defined', 'milestone-active', 'milestone-shipped'];
   const validPhaseSteps = ['discuss', 'research', 'split'];
-  const validChangeSteps = ['planning', 'applying', 'reviewing', 'verifying', 'archiving', 'archived'];
+  const validChangeSteps = ['planning', 'applying', 'reviewing', 'archiving', 'archived'];
   const validSteps = [...validProjectSteps, ...validPhaseSteps, ...validChangeSteps];
   if (!validSteps.includes(step)) {
     console.log(JSON.stringify({ error: `Invalid step "${step}". Use \`bp state set-phase <id>\` to reset to a valid phase.` }));

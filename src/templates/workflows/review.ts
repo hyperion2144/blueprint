@@ -1,26 +1,18 @@
 import { ORCHESTRATOR_RULE } from '../types.js';
+import { CLASSIFY_CHANGE, CHANGE_NAME_RESOLVE, COMMIT_ADVANCE } from './shared.js';
 import type { SkillTemplate, CommandTemplate } from '../types.js';
 
 const instructions = ORCHESTRATOR_RULE + `## Input
 
 ### Parameters
 - **\`<change-name>\`** (required) — the change to review. Provided by \`bp continue\` output or user.
-- If no change name is available, check the \`pending\` array from \`bp context <step>\` output, then ask the user.
 
 ### Prerequisites
 - Apply phase complete: implementation code, tests, summary.md
 
 ## Steps
 
-### Step 0: Classify change
-Read \`tasks.md\` and check task types:
-- **Lightweight**: ALL tasks are type: config | docs | refactor | scaffolding — no type:behavior
-- **Full**: any type:behavior tasks
-
-### Step 1: Resolve change name and get context
-If a change name was provided: use it directly. If not: run \`bp state\`, list pending changes with status \`applying\`, ask the user to pick. Then run \`bp context review\` to get the file manifest. Read all listed files.
-
-### Step 2: Execute review
+${CLASSIFY_CHANGE}${CHANGE_NAME_RESOLVE('applying', 'review')}### Step 2: Execute review
 
 **If LIGHTWEIGHT — quick checklist (skip sub-agents):**
 
@@ -56,13 +48,7 @@ After all three complete, check each report:
 - Architecture-level issues → pause and ask user
 - No BLOCKERs → advance
 
-### Step 5: Commit
-\`\`\`bash
-bp commit "docs(review): triple review for <change-name>" --files "bp/.../<change-name>/spec-review.md,bp/.../<change-name>/quality-review.md,bp/.../<change-name>/goal-review.md" --scope docs --record
-\`\`\`
-
-### Step 6: Advance
-Run \`bp continue\` to proceed to verify.
+${COMMIT_ADVANCE('docs', 'triple review for <change-name>')}
 
 ## Guardrails
 - FULL: dispatch 3 reviewer sub-agents in parallel (spec/quality/goal)
@@ -73,7 +59,7 @@ Run \`bp continue\` to proceed to verify.
 export function getReviewSkillTemplate(): SkillTemplate {
   return {
     name: 'bp-review',
-    description: 'Triple review — dispatch reviewer sub-agents in parallel',
+    description: 'Triple review — spec/quality/goal (parallel sub-agents for Full changes)',
     instructions,
   };
 }
@@ -81,7 +67,7 @@ export function getReviewSkillTemplate(): SkillTemplate {
 export function getReviewCommandTemplate(): CommandTemplate {
   return {
     name: 'SpecWF: Review',
-    description: 'Triple review — dispatch reviewer sub-agents in parallel',
+    description: 'Triple review — spec/quality/goal (parallel sub-agents for Full changes)',
     category: 'Workflow',
     tags: ['bp', 'review', 'quality', 'specs', 'sub-agent'],
     content: instructions,

@@ -1,33 +1,18 @@
 import { ORCHESTRATOR_RULE } from '../types.js';
+import { RESOLVE_PATHS, CLASSIFY_CHANGE, CHANGE_NAME_RESOLVE, COMMIT_ADVANCE } from './shared.js';
 import type { SkillTemplate, CommandTemplate } from '../types.js';
 
 const instructions = ORCHESTRATOR_RULE + `## Input
 
 ### Parameters
 - **\`<change-name>\`** (required) — the change to implement. Provided by \`bp continue\` output or user.
-- If no change name is available, check the \`pending\` array from \`bp context <step>\` output, then ask the user which to work on.
 
 ### Prerequisites
 - Plan phase complete: \`design.md\`, \`tasks.md\`, delta-specs ready
 
 ## Steps
 
-### Step 0: Resolve paths
-Run \`bp state\` to get \`milestone\` and \`phase\`. Construct the change directory:
-\`\`\`text
-bp/milestones/<milestone>/phases/<phase>/changes/<change-name>/
-\`\`\`
-(Adhoc changes go under \`bp/changes/<name>/\`)
-
-### Step 1: Classify change
-Read \`tasks.md\` and check task types:
-- **Lightweight**: ALL tasks are type: config | docs | refactor | scaffolding — no type:behavior
-- **Full**: any type:behavior tasks
-
-### Step 2: Resolve change name and get context
-Run \`bp context apply\`. Read all listed files. If a change name was provided, use it directly. If not, read the \`pending\` array, filter by status \`planning\`, and ask the user to pick.
-
-### Step 3: Execute implementation
+${RESOLVE_PATHS}${CLASSIFY_CHANGE}${CHANGE_NAME_RESOLVE('planning', 'apply')}### Step 3: Execute implementation
 
 **If LIGHTWEIGHT — implement task by task:**
 
@@ -35,21 +20,14 @@ For each task in \`tasks.md\` (in wave order):
 1. Implement the change
 2. Verify: run applicable checks (\`tsc --noEmit\` / \`vitest run\`)
 3. Mark that task \`[x]\` — only AFTER verification passes
-4. Commit with \`bp commit\` using the task ID from \`tasks.md\`:
+4. Commit with \`bp commit\`:
    \`\`\`bash
-   # Read tasks.md first — task IDs are the labels like "task-1.1", "task-2.3"
-   # The tasks.md path is under the change directory:
-   #   bp/milestones/<mid>/phases/<pid>/changes/<name>/tasks.md
-   #   or bp/changes/<name>/tasks.md (adhoc)
-
    bp commit "feat(core): implement move validation" \\
      --files "src/core/move.ts,tests/unit/move.test.ts" \\
-     --scope core \\
-     --task task-1.3 \\
+     --scope core --task task-1.3 \\
      --tasks-path "bp/milestones/<mid>/phases/<pid>/changes/<name>/tasks.md"
    \`\`\`
    \`--task <id>\` writes \`<!-- commit: <hash> -->\` next to that task in \`tasks.md\`.
-   \`--tasks-path\` tells the CLI which \`tasks.md\` to update.
    If \`commitDocs: false\` in project.yml, doc files are auto-skipped.
 
 After ALL tasks pass verification:
@@ -75,16 +53,7 @@ After execution:
 ### Step 5: Generate change summary
 Run \`bp template change-summary --dir <change-dir>\`, fill with actual details. Do NOT skip.
 
-### Step 6: Pre-advance checklist
-- [ ] All tasks done and marked \`[x]\` each with \`<!-- commit: <hash> -->\` recorded
-- [ ] Type check passes
-- [ ] All tests pass
-- [ ] Change summary filled
-- [ ] \`tasks.md\` fully checked
-- [ ] All commits use \`bp commit\` (not raw \`git commit\`)
-
-### Step 7: Advance
-Run \`bp continue\` to proceed to review.
+${COMMIT_ADVANCE('docs', 'apply complete for <change-name>')}
 
 ## Guardrails
 - LIGHTWEIGHT: implement task-by-task, mark \`[x]\` after verify — never all at once
@@ -95,7 +64,7 @@ Run \`bp continue\` to proceed to review.
 export function getApplySkillTemplate(): SkillTemplate {
   return {
     name: 'bp-apply',
-    description: 'Code implementation — dispatch executor sub-agent for TDD RED->GREEN->REFACTOR',
+    description: 'Code implementation — dispatch executor sub-agent for TDD RED→GREEN→REFACTOR',
     instructions,
   };
 }
@@ -103,7 +72,7 @@ export function getApplySkillTemplate(): SkillTemplate {
 export function getApplyCommandTemplate(): CommandTemplate {
   return {
     name: 'SpecWF: Apply',
-    description: 'Code implementation — dispatch executor sub-agent for TDD RED->GREEN->REFACTOR',
+    description: 'Code implementation — dispatch executor sub-agent for TDD RED→GREEN→REFACTOR',
     category: 'Workflow',
     tags: ['bp', 'apply', 'implementation', 'tdd', 'sub-agent'],
     content: instructions,

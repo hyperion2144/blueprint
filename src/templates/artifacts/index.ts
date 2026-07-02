@@ -14,14 +14,7 @@ export const PROPOSAL_TEMPLATE = `# Proposal: {{name}}
 
 ## Intent
 
-<!--
-Describe why this change is needed:
-1. What specific problem exists or what capability is missing?
-2. Who is affected (users/developers/ops)? How severely?
-3. What happens if we don't make this change?
-4. Is this a bug fix / feature / tech debt / perf improvement?
-5. Is this linked to a known issue, user feedback, or metric? (attach issue link if available)
--->
+<!-- What problem/capability? Who affected? What if not done? Type: bugfix/feature/debt/perf? Issue link? -->
 
 {{intent}}
 
@@ -31,25 +24,13 @@ Describe why this change is needed:
 
 ### In scope
 
-<!--
-List all items covered by this change. One per line, verb-first.
-Example:
-- Add skeleton loading state on list pull-to-refresh
-- Add useScrollPerformance hook for scroll metrics
-- Memoize UserCard component
--->
+<!-- Items covered by this change. One per line, verb-first. -->
 
 {{in-scope-items}}
 
 ### Out of scope
 
-<!--
-Explicitly excluded changes to prevent scope creep. One per line with reason.
-Example:
-- Homepage skeleton screen (planned for next phase)
-- Server-side API pagination (unrelated to client performance)
-- Android list optimization (platform-specific, needs separate research)
--->
+<!-- Explicitly excluded changes with reason. Prevents scope creep. -->
 
 {{out-of-scope-items}}
 
@@ -57,16 +38,7 @@ Example:
 
 ## Approach
 
-<!--
-Describe the technical direction at a high level:
-1. Architecture layer: Which layer does the change touch (UI/Service/Store)? New modules needed?
-2. Library choices: New dependencies? Upgrades? Rationale?
-3. Data flow: How does data travel from source to UI? State management changes?
-4. Compatibility: Backward compatibility strategy? Migration needed?
-5. Testability: Are there injection points / mock seams for testing?
-
-No detailed implementation here — the design doc handles that.
--->
+<!-- High-level technical direction: architecture layer, library choices, data flow, compatibility, testability. No detailed implementation — design doc handles that. -->
 
 {{approach}}
 
@@ -74,15 +46,7 @@ No detailed implementation here — the design doc handles that.
 
 ## Must-haves
 
-<!--
-3-7 observable, verifiable must-have behaviors.
-Each must be a concrete statement — no ambiguity.
-Reviewers should be able to judge pass/fail using these conditions.
-
-Format: "MUST <condition>" or "SHALL <condition>"
-- Observable: visible on screen, checkable via CLI, assertable in tests
-- Verifiable: reviewer can confirm via action/command
--->
+<!-- 3-7 observable, verifiable must-haves. Format: "MUST/SHALL <condition>". Reviewers judge pass/fail from these. -->
 
 {{must-haves}}
 
@@ -90,15 +54,7 @@ Format: "MUST <condition>" or "SHALL <condition>"
 
 ## Non-goals
 
-<!--
-Explicit non-goals to prevent reviewers from asking "why wasn't X done?"
-Different from Out of scope (not in this change's scope).
-Non-goals are specific targets that might be incorrectly assumed to be in scope.
-Example:
-- Not pursuing Android list performance in this change
-- Not changing the existing pagination logic
-- Not adding new UI component library dependencies
--->
+<!-- Non-goals: targets that might be incorrectly assumed in scope. Different from Out of scope. -->
 
 {{non-goals}}
 `;
@@ -111,11 +67,7 @@ export const DESIGN_TEMPLATE = `# Design: {{name}}
 
 ## Context & Goals
 
-<!--
-1. Briefly describe context — what constraints exist?
-2. Core design goals (no more than 3)
-3. Must align with proposal Intent and Must-haves
--->
+<!-- Context/constraints + core design goals (≤3). Must align with proposal Intent and Must-haves. -->
 
 {{background-and-goals}}
 
@@ -125,13 +77,7 @@ export const DESIGN_TEMPLATE = `# Design: {{name}}
 
 ### Architecture Diagram
 
-<!--
-ASCII art showing module/component relationships:
-- New modules vs. existing modules
-- Data flow direction (arrows)
-- File/module boundaries
-Annotate: [NEW], [MODIFIED], [EXISTING]
--->
+<!-- ASCII art showing module relationships. Annotate: [NEW], [MODIFIED], [EXISTING]. -->
 
 \`\`\`text
 {{architecture-diagram}}
@@ -139,36 +85,19 @@ Annotate: [NEW], [MODIFIED], [EXISTING]
 
 ### Core Data Structures
 
-<!--
-Key types/interfaces/data structures introduced or modified by this design.
-Use TypeScript interface format. Brief description per type.
--->
+<!-- Key types/interfaces introduced or modified. TypeScript interface format, brief description per type. -->
 
 {{data-structures}}
 
 ### Data Flow
 
-<!--
-Step-by-step description of data flow from trigger to effect.
-Example:
-1. User scrolls list → FlatList fires onScroll
-2. OptimizedList reads itemHeight config → enables getItemLayout
-3. Layout engine skips dynamic measurement → uses fixed row height
-4. useScrollPerformance samples FPS every 500ms
-5. FPS data → Performance Reporter → backend
--->
+<!-- Step-by-step data flow from trigger to effect. -->
 
 {{data-flow}}
 
 ### Interface Design
 
-<!--
-Public API signatures exposed by this design:
-- Function/method names
-- Parameter lists (name + type + description)
-- Return types
-- sync/async
--->
+<!-- Public API signatures: function/method names, params (name+type+desc), return types, sync/async. -->
 
 {{api-signatures}}
 
@@ -176,9 +105,7 @@ Public API signatures exposed by this design:
 
 ## File Manifest
 
-<!--
-All files to create or modify, organized as a table.
--->
+<!-- All files to create or modify. -->
 
 | File Path | Description | Action |
 |-----------|-------------|--------|
@@ -202,9 +129,7 @@ All files to create or modify, organized as a table.
 
 ## Alternatives
 
-<!--
-Evaluated but rejected approaches, with rationale.
--->
+<!-- Evaluated but rejected approaches, with rationale. -->
 
 | Approach | Pros | Cons | Rejection Reason |
 |----------|------|------|-----------------|

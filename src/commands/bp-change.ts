@@ -38,14 +38,14 @@ function newChange(name: string, options: { dir: string; full?: boolean; intent?
   const changeType = isPhaseChange ? 'change' : 'adhoc';
 
   if (options.full) {
-    // Full cycle: proposal only, goes through plan → apply → review → verify → archive
+    // Full cycle: proposal only, goes through plan → apply → review → archive
     const content = (ARTIFACT_TEMPLATES['proposal'] ?? `# Proposal: ${name}\n`)
       .replace(/\{\{name\}\}/g, name)
       .replace(/\{\{date\}\}/g, date);
     writeFileSync(join(changeDir, 'proposal.md'), content, 'utf-8');
 
     console.log(`✓ Created change: ${changeDir} (full cycle)`);
-    console.log(`  proposal.md — fill in, then plan → apply → review → verify → archive`);
+    console.log(`  proposal.md — fill in, then plan → apply → review → archive`);
 
     const changeEntry = { name, status: 'proposal' as const, depends_on: [] as string[] };
     updateState(bpDir, (state) => {

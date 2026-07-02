@@ -1,26 +1,44 @@
-import type { SkillTemplate, CommandTemplate } from '../types';
+import { CLASSIFY_CHANGE, CHANGE_NAME_RESOLVE, COMMIT_ADVANCE } from './shared.js';
+import type { SkillTemplate, CommandTemplate } from '../types.js';
 
 const instructions = `## Input
 
 ### Parameters
-- **\\\`<change-name>\\\`** (required) — the change to archive. Provided by \\\`bp continue\\\` output or user.
-- If no change name, check the \\\`pending\\\` array from \\\`bp context archive\\\` output, filter by status \\\`verifying\\\`, and ask the user.
+- **\\\`<change-name>\\\`** (required) — the change to verify and archive. Provided by \\\`bp continue\\\` output or user.
 
 ### Prerequisites
-- Verify phase passed (verification.md status: passed)
-- All changes committed and pushed
+- Review phase complete: spec-review.md, quality-review.md, goal-review.md
+- All review blockers resolved
 
 ## Steps
 
-### Step 1: Resolve change name and get context
-Run \`bp context archive\` — outputs JSON with state (pending list) and file manifest. If a change name was provided, use it directly. If not, read the \`pending\` array, filter by status \`verifying\`, ask the user to pick.
+${CLASSIFY_CHANGE}${CHANGE_NAME_RESOLVE('reviewing', 'archive')}### Step 2: Run verification checks
 
-### Step 2: Execute archival
+Run all these checks yourself — no sub-agent needed:
+
+**All changes (lightweight + full):**
+- Run \`npx tsc --noEmit\` — must pass
+- Run \`npx vitest run\` — must pass
+
+**Full changes additionally:**
+- Verify each delta-spec SHALL/MUST has a passing test (grep specs/ for requirements, match against tests)
+- Verify TDD commit integrity: RED→GREEN→REFACTOR sequence for each type:behavior task
+
+**Write verification.md:**
+Get template: \`bp template verification\`, fill with results.
+- Status: \`passed\` if all checks pass, \`gaps_found\` if any fail, \`human_needed\` if ambiguous
+
+### Step 3: Handle verification results
+- \`passed\` → proceed to archival (Step 4)
+- \`gaps_found\` → route back to apply (reapply) or plan (replan) — do NOT archive
+- \`human_needed\` → surface to user with specific questions
+
+### Step 4: Execute archival
 Run \`bp archive bp/changes/<change-name>\` (or \`bp archive bp/milestones/<mid>/phases/<pid>/changes/<name>\` for phase changes).
 
 This single CLI command handles: delta-spec merge, code cognition backfill, directory move to archive/, state.md update.
 
-### Step 3: Understand what the CLI did (do NOT undo this)
+### Step 5: Understand what the CLI did (do NOT undo this)
 \`bp archive\` has already updated \`state.md\` — the change is intentionally removed from the active list. This is correct, not a bug:
 
 1. **Change removed from \`changes[]\` / \`adhoc[]\`** — it's no longer pending, this is expected
@@ -30,12 +48,9 @@ This single CLI command handles: delta-spec merge, code cognition backfill, dire
 
 **Do NOT write the change back into \`state.md\`** — the removal is the intended archival behavior.
 
-### Step 4: Commit
-\`\`\`bash
-bp commit "docs(archive): archive <change-name>" --files "bp/archive/<mid>/<pid>/<change-dir>/" --scope docs --record
-\`\`\`
+${COMMIT_ADVANCE('docs', 'verify + archive <change-name>')}
 
-### Step 5: Check if last change — generate phase summary
+### Step 7: Check if last change — generate phase summary
 Run \`bp state\` and check the \`pending\` list. If no more pending changes remain in this phase:
 1. Get the summary template: \`bp template summary\`
 2. Collect all archived changes from \`bp/archive/<milestone>/<phase>/\`
@@ -48,20 +63,21 @@ Run \`bp state\` and check the \`pending\` list. If no more pending changes rema
    bp commit "docs(summary): phase complete for <phase-id>" --files "bp/milestones/<mid>/phases/<pid>/summary.md" --scope docs --record
    \`\`\`
 
-### Step 6: Advance
+### Step 8: Advance
 Run \`bp continue\` — if all phase changes are archived, routes to ship-phase.
 
 ## Guardrails
-- Run \`bp archive bp/changes/<name>\` — no sub-agent needed
+- No sub-agent — run checks yourself, then archive
+- Full changes: verify delta-spec SHALL/MUST coverage and TDD commit integrity before archival
+- Test suite must pass completely — never archive a failing change
 - Delta-spec merge must resolve conflicts, not overwrite
 - Archived changes are never deleted
-- If archival fails, the change stays in place
 - **Last change in phase**: write summary.md before advancing — this is the handoff artifact for the next phase`;
 
 export function getArchiveSkillTemplate(): SkillTemplate {
   return {
     name: 'bp-archive',
-    description: 'Archive — dispatch archiver sub-agent for delta-spec merge + backfill',
+    description: 'Verify & archive — run checks, then delta-spec merge + directory move + state update',
     instructions,
   };
 }
@@ -69,9 +85,9 @@ export function getArchiveSkillTemplate(): SkillTemplate {
 export function getArchiveCommandTemplate(): CommandTemplate {
   return {
     name: 'SpecWF: Archive',
-    description: 'Archive — dispatch archiver sub-agent for delta-spec merge + backfill',
+    description: 'Verify & archive — run checks, then delta-spec merge + directory move + state update',
     category: 'Workflow',
-    tags: ['bp', 'archive', 'specs', 'merge', 'sub-agent'],
+    tags: ['bp', 'archive', 'verify', 'specs', 'merge'],
     content: instructions,
   };
 }

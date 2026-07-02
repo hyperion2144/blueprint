@@ -1,6 +1,6 @@
 /**
  * OMP Agent generator
- * Generates .omp/agents/bp-<role>.md files (8 agent definitions).
+ * Generates .omp/agents/bp-<role>.md files (7 agent definitions).
  *
  * Agent system prompts are imported from TypeScript modules in src/templates/agents/
  * instead of reading markdown files.
@@ -26,7 +26,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  * Agent definitions (8 total — model/thinkingLevel resolved from profile)
  * ================================================================ */
 
-/** 8 agent definitions */
+/** 7 agent definitions */
 export const AGENT_DEFS: AgentDef[] = [
   // bp-researcher
   {

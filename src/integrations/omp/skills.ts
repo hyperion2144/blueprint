@@ -36,8 +36,7 @@ function skillDescription(step: string): string {
     plan: 'Change design — technical design + task breakdown + delta-specs',
     apply: 'Code implementation — TDD RED→GREEN→REFACTOR',
     review: 'Triple review — spec review, quality review, goal review in parallel',
-    verify: 'Test verification — diagnose root cause + route loopback',
-    archive: 'Archive — delta-spec merge + code cognition backfill',
+    archive: 'Verify & archive — run checks, then delta-spec merge + directory move + state update',
     ship: 'Ship — create PR + update state / release tag',
     continue: 'Auto-advance — read STATE and route to next step',
     audit: 'Human UAT verification — generate uat.md, interactive testing, create adhoc fixes',
@@ -47,7 +46,7 @@ function skillDescription(step: string): string {
   return map[step] ?? '';
 }
 
-const STEPS = ['init', 'grill', 'research', 'roadmap', 'milestone', 'discuss', 'research-phase', 'split', 'adhoc', 'plan', 'apply', 'review', 'verify', 'archive', 'ship', 'continue', 'audit', 'auto', 'commit'] as const;
+const STEPS = ['init', 'grill', 'research', 'roadmap', 'milestone', 'discuss', 'research-phase', 'split', 'adhoc', 'plan', 'apply', 'review', 'archive', 'ship', 'continue', 'audit', 'auto', 'commit'] as const;
 
 export const SKILL_DEFS: SkillDef[] = STEPS.map((step) => ({
   step,

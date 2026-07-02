@@ -7,6 +7,9 @@
  * 3. Register in src/integrations/index.ts
  */
 
+/** OMP supports slash commands — skills are redundant (same content source). */
+export const supportsCommands = true;
+
 export { generateAllCommands, STEP_DEFS } from './commands.js';
 export { generateAllAgents, AGENT_DEFS } from './agents.js';
 export { generateAllSkills, SKILL_DEFS } from './skills.js';

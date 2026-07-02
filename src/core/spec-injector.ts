@@ -28,7 +28,7 @@ export interface ContextResult {
 /** 步骤类型分类 */
 const PROJECT_STEPS = ['init', 'grill', 'research', 'roadmap'];
 const PHASE_STEPS = ['discuss', 'research-phase', 'split'];
-const CHANGE_STEPS = ['plan', 'apply', 'review', 'verify', 'archive'];
+const CHANGE_STEPS = ['plan', 'apply', 'review', 'archive'];
 
 function isProjectStep(step: string): boolean {
   return PROJECT_STEPS.includes(step);

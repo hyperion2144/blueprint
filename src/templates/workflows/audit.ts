@@ -1,7 +1,6 @@
-import { ORCHESTRATOR_RULE } from '../types.js';
 import type { SkillTemplate, CommandTemplate } from '../types.js';
 
-const instructions = ORCHESTRATOR_RULE + `## Input
+const instructions = `## Input
 
 ### Parameters
 - **\`<scope>\`** — \`change <name>\` | \`phase <id>\` | \`milestone <id>\`

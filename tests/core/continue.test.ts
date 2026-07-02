@@ -62,11 +62,11 @@ describe('determineFromState', () => {
     expect(result.needsSubagent).toBe(true);
   });
 
-  it('change-verifying 有多个可用步骤', () => {
+  it('change-reviewing 有多个可用步骤（archive/replan/reapply/fix）', () => {
     const state: StateFile = {
-      project: { name: 'test', status: 'change-verifying', current_milestone: 'm1', current_phase: 'p1' },
-      active_context: { type: 'change', ref: 'changes/test', step: 'verifying' },
-      changes: [{ name: 'test', status: 'verifying', depends_on: [] }],
+      project: { name: 'test', status: 'change-reviewing', current_milestone: 'm1', current_phase: 'p1' },
+      active_context: { type: 'change', ref: 'changes/test', step: 'reviewing' },
+      changes: [{ name: 'test', status: 'reviewing', depends_on: [] }],
       adhoc: [],
     };
     const result = determineFromState(state);

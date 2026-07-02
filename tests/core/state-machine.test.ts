@@ -34,8 +34,8 @@ describe('getNextSteps', () => {
     expect(steps[0].command).toBe('research');
   });
 
-  it('change-verifying 有多个转移（archive/replan/reapply）', () => {
-    const steps = getNextSteps('change-verifying');
+  it('change-reviewing 有多个转移（archive/replan/reapply/fix）', () => {
+    const steps = getNextSteps('change-reviewing');
     expect(steps.length).toBeGreaterThanOrEqual(2);
     const commands = steps.map((s) => s.command);
     expect(commands).toContain('archive');

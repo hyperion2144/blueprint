@@ -16,7 +16,6 @@ import { getAdhocSkillTemplate, getAdhocCommandTemplate } from './adhoc';
 import { getPlanSkillTemplate, getPlanCommandTemplate } from './plan';
 import { getApplySkillTemplate, getApplyCommandTemplate } from './apply';
 import { getReviewSkillTemplate, getReviewCommandTemplate } from './review';
-import { getVerifySkillTemplate, getVerifyCommandTemplate } from './verify';
 import { getArchiveSkillTemplate, getArchiveCommandTemplate } from './archive';
 import { getShipSkillTemplate, getShipCommandTemplate } from './ship';
 import { getContinueSkillTemplate, getContinueCommandTemplate } from './continue';
@@ -30,7 +29,7 @@ import type { SkillTemplate, CommandTemplate } from '../types';
 export const ALL_WORKFLOW_STEPS = [
   'init', 'grill', 'research', 'roadmap', 'milestone',
   'discuss', 'research-phase', 'split', 'adhoc',
-  'plan', 'apply', 'review', 'verify', 'archive',
+  'plan', 'apply', 'review', 'archive',
   'ship', 'continue', 'audit', 'auto', 'commit',
 ] as const;
 
@@ -53,7 +52,6 @@ export const WORKFLOW_REGISTRY: Record<WorkflowStep, {
   plan:      { skill: getPlanSkillTemplate,      command: getPlanCommandTemplate },
   apply:     { skill: getApplySkillTemplate,     command: getApplyCommandTemplate },
   review:    { skill: getReviewSkillTemplate,    command: getReviewCommandTemplate },
-  verify:    { skill: getVerifySkillTemplate,    command: getVerifyCommandTemplate },
   archive:   { skill: getArchiveSkillTemplate,   command: getArchiveCommandTemplate },
   ship:      { skill: getShipSkillTemplate,      command: getShipCommandTemplate },
   continue:  { skill: getContinueSkillTemplate,  command: getContinueCommandTemplate },
