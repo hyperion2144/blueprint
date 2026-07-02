@@ -13,18 +13,7 @@ import { execSync } from 'node:child_process';
 import { loadConfig } from '../core/config.js';
 import { loadState, saveState } from '../core/state-file.js';
 
-interface CommanderProgram {
-  command(name: string): {
-    description(desc: string): CommanderChain;
-  };
-}
-
-interface CommanderChain {
-  option(flags: string, desc: string): CommanderChain;
-  action(fn: (...args: unknown[]) => void): void;
-}
-
-export function register(program: CommanderProgram): void {
+export function register(program: any): void {
   program
     .command('commit <message>')
     .description('Commit changes with conventional commit format, record hash to tasks.md')
