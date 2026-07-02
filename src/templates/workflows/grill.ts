@@ -20,28 +20,13 @@ Get the requirements template: \`bp template requirements\`. Interview the user 
 **For EVERY question, use the \`ask\` tool.** Never use plain text for questions.
 
 Each \`ask\` call MUST have:
-- **2-5 concrete options** (not "Option A" / "Option B" — each option describes the actual choice)
-- **One \`recommended\` answer** (0-indexed — mark your best recommendation)
-- Short \`description\` on each option explaining the tradeoff
-
-\`\`\`
-ask({
-  questions: [{
-    id: "platform",
-    question: "Which target platform?",
-    options: [
-      { label: "Web (Canvas + TypeScript)", description: "Zero install, fastest iteration, Vite + Vitest" },
-      { label: "CLI/Terminal (TUI)", description: "Node.js only, no browser needed" },
-      { label: "Desktop (Electron/Tauri)", description: "Native window, offline-first" },
-    ],
-    recommended: 0
-  }]
-})
-\`\`\`
+- **2-5 concrete options** describing actual choices (not "Option A" / "Option B")
+- **One recommended answer** — mark the best choice with brief rationale
+- Short tradeoff description per option
 
 Rules:
-1. **One question per \`ask\` call.** Never batch multiple questions in one \`ask\`.
-2. **Recommend first.** Always mark one option as \`recommended\` with brief rationale in the description.
+1. **One question per \`ask\` call.** Never batch multiple questions.
+2. **Recommend first.** Always provide a recommended answer, don't make the user guess.
 3. **Explore codebase first** if the answer can be found in existing files.
 4. **Walk each branch** of the decision tree — resolve dependencies one by one.
 
