@@ -173,7 +173,7 @@ function continueHandler(options?: { auto?: boolean }): void {
     // No more phases → suggest ship milestone
     console.log([
       '# bp continue — hint',
-      'hint: All phases in this milestone shipped. Run /bp:ship to ship the milestone, or bp state set-milestone <next> to start the next milestone.',
+      'hint: All phases in this milestone shipped. Run /bp:milestone <next-id> to start the next milestone, or /bp:ship to ship this one.',
     ].join('\n'));
     return;
   }
