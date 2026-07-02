@@ -50,9 +50,9 @@ bp commit "fix: correct push boundary check" --amend
 \`\`\`
 
 ### Step 3: Process CLI output
-The CLI returns structured JSON:
+The CLI returns structured output:
 
-\`\`\`json
+\`\`\`
 {
   "ok": true,
   "message": "feat(core): implement move validation",
@@ -78,7 +78,7 @@ If you didn't use \`--task\`, manually add the commit hash as a comment:
 ## Output
 - Git commit with conventional commit message
 - Commit hash recorded in tasks.md (via \`--task\` or manual annotation)
-- Structured JSON result for agent consumption
+- Structured output for agent consumption
 
 ## Guardrails
 - Always use \`--files\` explicitly — never trust \`git add -A\` in automated workflows

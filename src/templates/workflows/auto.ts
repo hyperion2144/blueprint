@@ -31,7 +31,7 @@ Run \`bp continue --auto\`. The CLI:
 3. Advances to the next step
 4. Outputs inline instructions for that step
 
-The JSON output includes \`auto: true\` — this confirms you're in autonomous mode.
+Check \`chars:\` and \`---END---\` marker in \`bp continue --auto\` output to confirm complete.
 
 ### Step 2: Execute the step autonomously
 Read the step instructions from the CLI output. Execute them WITHOUT asking the user.
@@ -74,7 +74,7 @@ After each significant advance (milestone activated, phase shipped, change archi
 - Any blockers reported with specific next actions
 
 ## Guardrails
-- **CRITICAL**: Check \`truncated\` field in \`bp continue --auto\` output. If \`true\`, read the source file listed at the end of the instructions BEFORE acting. Never execute partial instructions.
+- **CRITICAL**: Check \`---END---\` marker + \`chars:\` value in \`bp continue --auto\` output. If mismatch, output truncated — re-run.
 - NEVER use the \`ask\` tool in auto mode
 - NEVER pause for confirmation unless a change would be destructive (rm, force push, drop table)
 - If truly stuck (contradictory specs, missing critical info), report the blocker clearly and stop

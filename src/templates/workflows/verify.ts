@@ -4,7 +4,7 @@ const instructions = `## Input
 
 ### Parameters
 - **\\\`<change-name>\\\`** (required) — the change to verify. Provided by \\\`bp continue\\\` output or user.
-- If no change name, check the \\\`pending\\\` array from \\\`bp context verify\\\` JSON, filter by status \\\`reviewing\\\`, ask the user.
+- If no change name, check the \\\`pending\\\` array from \\\`bp context verify\\\` output, filter by status \\\`reviewing\\\`, ask the user.
 
 ### Prerequisites
 - Review phase complete: spec-review.md, quality-review.md, goal-review.md

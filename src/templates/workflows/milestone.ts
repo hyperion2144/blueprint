@@ -12,7 +12,7 @@ const instructions = `## Input
 ## Steps
 
 ### Step 1: Get context
-Run \`bp context milestone\` — outputs JSON with state and roadmap file paths. Read all listed files.
+Run \`bp context milestone\` — outputs state and roadmap file paths. Read all listed files.
 
 ### Step 2: Select milestone
 If a milestone ID was provided: run \`bp state set-milestone <id>\`.

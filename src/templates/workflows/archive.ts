@@ -4,7 +4,7 @@ const instructions = `## Input
 
 ### Parameters
 - **\\\`<change-name>\\\`** (required) — the change to archive. Provided by \\\`bp continue\\\` output or user.
-- If no change name, check the \\\`pending\\\` array from \\\`bp context archive\\\` JSON, filter by status \\\`verifying\\\`, and ask the user.
+- If no change name, check the \\\`pending\\\` array from \\\`bp context archive\\\` output, filter by status \\\`verifying\\\`, and ask the user.
 
 ### Prerequisites
 - Verify phase passed (verification.md status: passed)

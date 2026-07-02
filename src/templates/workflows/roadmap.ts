@@ -12,7 +12,7 @@ const instructions = `## Input
 ## Steps
 
 ### Step 1: Get context
-Run \`bp context roadmap\` — outputs JSON with state, requirements.md, and research/ paths. Read all listed files.
+Run \`bp context roadmap\` — outputs state, requirements.md, and research/ paths. Read all listed files.
 
 ### Step 2: Choose planning mode
 Ask the user which planning mode they prefer — this determines how milestones and phases are structured:

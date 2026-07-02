@@ -5,7 +5,7 @@ const instructions = ORCHESTRATOR_RULE + `## Input
 
 ### Parameters
 - **\`<change-name>\`** (required) — the change to review. Provided by \`bp continue\` output or user.
-- If no change name is available, check the \`pending\` array from \`bp context <step>\` JSON output, then ask the user.
+- If no change name is available, check the \`pending\` array from \`bp context <step>\` output, then ask the user.
 
 ### Prerequisites
 - Apply phase complete: implementation code, tests, summary.md

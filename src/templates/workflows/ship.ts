@@ -14,7 +14,7 @@ const instructions = ORCHESTRATOR_RULE + `## Input
 ## Steps
 
 ### Step 1: Get context
-Run \`bp context ship\` — outputs JSON with state info. Determine ship context (phase or milestone).
+Run \`bp context ship\` — outputs state info. Determine ship context (phase or milestone).
 
 ### Step 2: Dry-run first
 Always preview before executing:
@@ -34,7 +34,7 @@ Run \`bp ship\` — the CLI:
 2. Generates \`summary.md\` with verification matrix + full change summaries + review verdicts
 3. Updates state.md: phase-shipped
 4. Auto-commits (\`git add\` + \`git commit\`)
-5. Outputs JSON with next phase hint
+5. Outputs next phase hint
 
 ### Step 4: Advance
 After shipping:

@@ -20,7 +20,7 @@ You are a **thinking partner**, not an interviewer. The user is the visionary �
 ### Step 0: Resolve the active phase
 If a phase ID was provided, use it directly. If not:
 
-1. Run \`bp state\` — read \`milestone\` and \`phase\` fields from JSON.
+1. Run \`bp state\` — read \`milestone\` and \`phase\` fields.
 2. If both are non-null, use them.
 3. If \`phase\` is null: run \`bp context discuss\` to get the roadmap path. Read roadmap.md, identify the current phase. Run \`bp state set-phase <phase-id>\` to activate it.
 4. If \`milestone\` is null: run \`bp state set-milestone <milestone-id>\` first.
@@ -33,7 +33,7 @@ Deliverable: <executable artifact>
 \`\`\`
 
 ### Step 1: Get context
-Run \`bp context discuss\` — outputs JSON with state and roadmap path. Read roadmap.md and extract ONLY the section for this phase. Check if \`context.md\` already exists and load prior phase decisions to avoid re-asking.
+Run \`bp context discuss\` — outputs state and roadmap path. Read roadmap.md and extract ONLY the section for this phase. Check if \`context.md\` already exists and load prior phase decisions to avoid re-asking.
 
 ### Step 2: Identify gray areas
 Gray areas are **implementation decisions the user cares about** — things that could go multiple ways and would change the result. They are PHASE-SPECIFIC, not generic categories.

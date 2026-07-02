@@ -86,7 +86,7 @@ Inline instructions for the next workflow step, including:
 - Full step instructions (Input, Steps, Output, Guardrails)
 
 ## Guardrails
-- **CRITICAL — READ THIS FIRST**: The \`_note\` field in the output tells you if instructions are truncated. If \`truncated: true\`, you MUST read the source file listed at the end of the instructions. Never act on partial instructions.
+- **CRITICAL**: Check \`---END---\` marker exists at the end of output AND \`chars:\` value matches total received chars. If missing or mismatch, output was truncated — re-run \`bp continue\` to get the full output.
 - \`bp continue\` (no args) = project/phase level; \`bp continue change <name>\` = change level — do not mix them
 - Continue does NOT advance state if exit conditions are not met — it reports what's blocking
 - When multiple changes are pending, always present choices — do not silently pick one`;

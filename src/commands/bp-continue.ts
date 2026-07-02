@@ -28,34 +28,42 @@ export function register(program: any): void {
 }
 
 function formatContinueResult(result: ContinueResult, isAuto = false): void {
-  // Look up instructions for the CURRENT step
   const stepKey = result.currentStep.replace(/^(phase-|change-)/, '');
   const wfStep = (STEP_TO_WORKFLOW as Record<string, WorkflowStep>)[stepKey];
   const currentInstructions = (wfStep && WORKFLOW_REGISTRY[wfStep]) ? WORKFLOW_REGISTRY[wfStep].command().content : undefined;
 
   const instrLength = currentInstructions ? currentInstructions.length : 0;
-  const MAX_INLINE = 8000;
-  const truncated = instrLength > MAX_INLINE;
+  const lines: string[] = [];
 
-  const output: any = {
-    _note: `MUST read the full instructions field below. Output is ${truncated ? 'TRUNCATED (' + instrLength + ' chars) — read the rest from the source file' : 'complete (' + instrLength + ' chars)'}.${isAuto ? ' AUTO mode — fill with your own judgment, do not ask the user.' : ''}`,
-    truncated,
-    auto: isAuto || undefined,
-    current: {
-      step: result.currentStep,
-      type: result.type,
-      status: result.status,
-      context: result.context,
-    },
-  };
+  // Header
+  const stepLabel = result.type === 'change' || result.type === 'adhoc' ? `change → ${result.currentStep}` : `→ ${result.currentStep}`;
+  const autoTag = isAuto ? ' (AUTO)' : '';
+  lines.push(`# bp continue ${stepLabel}${autoTag}`);
+  lines.push(`step: ${result.currentStep}`);
+  lines.push(`type: ${result.type}`);
+  if (result.context) lines.push(`ref: ${result.context}`);
+  lines.push(`status: ${result.status}`);
+  if (isAuto) lines.push('auto: true');
+  lines.push(`chars: ${instrLength}`);
 
-  if (currentInstructions) {
-    output.instructions = truncated
-      ? currentInstructions.slice(0, MAX_INLINE) + `\n\n... (${instrLength - MAX_INLINE} more chars. Read source: .omp/commands/bp-${stepKey}.md)`
-      : currentInstructions;
+  // Pending changes if any
+  if (result.pending && result.pending.length > 0) {
+    lines.push('pending:');
+    for (const p of result.pending) {
+      const deps = p.depends_on && p.depends_on.length > 0 ? ` (needs: ${p.depends_on.join(', ')})` : '';
+      lines.push(`  ${p.name} [${p.status}]${deps}`);
+    }
   }
 
-  console.log(JSON.stringify(output, null, 2));
+  // Instructions body
+  if (currentInstructions) {
+    lines.push('');
+    lines.push('---INSTRUCTIONS---');
+    lines.push(currentInstructions);
+    lines.push('---END---');
+  }
+
+  console.log(lines.join('\n'));
 }
 
 function resolveStatusKey(type: string, step: string, projectStatus: string): string {
@@ -86,20 +94,24 @@ function continueHandler(options?: { auto?: boolean }): void {
     }));
 
     if (pending.length === 1) {
-      console.log(JSON.stringify({
-        hint: `Change \`${pending[0].name}\` is at \`${pending[0].status}\`. Run: \`bp continue change ${pending[0].name}\``,
-        pending,
-      }));
+      console.log([
+        '# bp continue — hint',
+        `hint: Change \`${pending[0].name}\` is at \`${pending[0].status}\`. Run: \`bp continue change ${pending[0].name}\``,
+        `pending: ${pending[0].name}[${pending[0].status}]`,
+      ].join('\n'));
     } else if (pending.length > 1) {
-      console.log(JSON.stringify({
-        hint: `Multiple changes pending. Pick one and run \`bp continue change <name>\`.`,
-        pending,
-      }));
+      const list = pending.map((p: any) => `${p.name}[${p.status}]`).join(', ');
+      console.log([
+        '# bp continue — hint',
+        'hint: Multiple changes pending. Pick one and run \`bp continue change <name>\`.',
+        `pending: ${list}`,
+      ].join('\n'));
     } else {
-      console.log(JSON.stringify({
-        hint: 'No pending changes. Create one with `bp change new <name>`.',
-        pending: [],
-      }));
+      console.log([
+        '# bp continue — hint',
+        'hint: No pending changes. Create one with \`bp change new <name>\`.',
+        'pending: none',
+      ].join('\n'));
     }
     return;
   }
@@ -117,17 +129,24 @@ function continueHandler(options?: { auto?: boolean }): void {
         status: c.status,
       }));
       if (pending.length === 1) {
-        console.log(JSON.stringify({
-          hint: `Phase has 1 pending change. Run: \`bp continue change ${pending[0].name}\``,
-          current: { phase: state.project.current_phase, milestone: state.project.current_milestone, step: state.active_context.step },
-          pending,
-        }));
+        console.log([
+          '# bp continue — hint',
+          `hint: Phase has 1 pending change. Run: \`bp continue change ${pending[0].name}\``,
+          `phase: ${state.project.current_phase}`,
+          `milestone: ${state.project.current_milestone}`,
+          `step: ${state.active_context.step}`,
+          `pending: ${pending[0].name}[${pending[0].status}]`,
+        ].join('\n'));
       } else {
-        console.log(JSON.stringify({
-          hint: `Phase has ${pending.length} pending changes. Pick one and run \`bp continue change <name>\`.`,
-          current: { phase: state.project.current_phase, milestone: state.project.current_milestone, step: state.active_context.step },
-          pending,
-        }));
+        const list = pending.map((p: any) => `${p.name}[${p.status}]`).join(', ');
+        console.log([
+          '# bp continue — hint',
+          `hint: Phase has ${pending.length} pending changes. Pick one and run \`bp continue change <name>\`.`,
+          `phase: ${state.project.current_phase}`,
+          `milestone: ${state.project.current_milestone}`,
+          `step: ${state.active_context.step}`,
+          `pending: ${list}`,
+        ].join('\n'));
       }
       return;
     }
@@ -138,25 +157,28 @@ function continueHandler(options?: { auto?: boolean }): void {
 
   // Unknown state — no transitions available for this type/step combo
   if (!result.nextCommand && result.availableSteps.length === 0) {
-    console.log(JSON.stringify({
-      error: 'unknown_state',
-      message: `State "${state.active_context.type}/${state.active_context.step}" has no defined transitions.`,
-      hint: 'Run `bp state set-phase <id>` or `bp state set-milestone <id>` to reset to a valid state.',
-      current: { type: state.active_context.type, step: state.active_context.step, milestone: state.project.current_milestone, phase: state.project.current_phase },
-    }));
+    console.log([
+      '# bp continue — blocked',
+      `error: State "${state.active_context.type}/${state.active_context.step}" has no defined transitions.`,
+      'hint: Run \`bp state set-phase <id>\` or \`bp state set-milestone <id>\` to reset to a valid state.',
+      `type: ${state.active_context.type}`,
+      `step: ${state.active_context.step}`,
+    ].join('\n'));
     return;
   }
 
   const validation = validateStepAdvance(state.active_context.type, state.active_context.step, state.active_context.ref, cwd);
   if (!validation.valid) {
-    console.log(JSON.stringify({
-      _note: isAuto ? 'AUTO mode — fill with your own judgment, do not ask the user.' : 'MUST read the full instructions below before acting. Output may be truncated.',
-      auto: isAuto || undefined,
-      error: 'exit_conditions_not_met',
-      current: { step: state.active_context.step, type: state.active_context.type, status: state.project.status },
-      details: validation.errors,
-      hint: `Complete the current step first. Run \`bp template ${state.active_context.step}\` if you need the step instructions.`,
-    }));
+    const note = isAuto ? 'AUTO mode' : 'MUST read instructions below, check ---END--- marker exists.';
+    console.log([
+      '# bp continue — blocked',
+      'error: exit conditions not met',
+      `note: ${note}`,
+      `step: ${state.active_context.step}`,
+      `type: ${state.active_context.type}`,
+      `reasons: ${validation.errors.join('; ')}`,
+      `hint: Complete the current step first. Run \`bp template ${state.active_context.step}\` if you need the step instructions.`,
+    ].join('\n'));
     return;
   }
 
@@ -213,21 +235,26 @@ function continueChangeHandler(name: string, options?: { auto?: boolean }): void
       : `changes/${name}`;
     const validation = validateStepAdvance(ctxType, change.status, ref, cwd);
     if (!validation.valid) {
-      console.log(JSON.stringify({
-        _note: isAuto ? 'AUTO mode — fill with your own judgment, do not ask the user.' : 'MUST read the full instructions below before acting. Output may be truncated.',
-        auto: isAuto || undefined,
-        error: 'exit_conditions_not_met',
-        current: { step: change.status, type: ctxType, status: state.project.status },
-        details: validation.errors,
-        hint: `Complete the current step first. Run \`bp template ${change.status}\` if you need the step instructions.`,
-      }));
+      const note = isAuto ? 'AUTO mode' : 'MUST read instructions below, check ---END--- marker exists.';
+      console.log([
+        '# bp continue — blocked',
+        'error: exit conditions not met',
+        `note: ${note}`,
+        `step: ${change.status}`,
+        `type: ${ctxType}`,
+        `reasons: ${validation.errors.join('; ')}`,
+        `hint: Complete the current step first. Run \`bp template ${change.status}\` if you need the step instructions.`,
+      ].join('\n'));
       return;
     }
   }
 
   const result = determineChangeNextStep(bpDir, name);
   if ('error' in result) {
-    console.log(JSON.stringify({ error: 'not_found', message: result.error }));
+    console.log([
+      '# bp continue — error',
+      `error: ${result.error}`,
+    ].join('\n'));
     return;
   }
 

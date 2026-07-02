@@ -12,7 +12,7 @@ const instructions = `## Input
 ## Steps
 
 ### Step 1: Get context
-Run \`bp context grill\` — outputs JSON with state and requirements.md path. Read requirements.md.
+Run \`bp context grill\` — outputs state and requirements.md path. Read requirements.md.
 
 ### Step 2: Explore requirements — one question at a time
 Get the requirements template: \`bp template requirements\`. Interview the user relentlessly until shared understanding is reached. Follow these rules:

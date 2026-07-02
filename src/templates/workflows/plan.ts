@@ -5,7 +5,7 @@ const instructions = ORCHESTRATOR_RULE + `## Input
 
 ### Parameters
 - **\\\`<change-name>\\\`** (required) — the change to plan. Provided by \\\`bp continue\\\` output or user.
-- If no change name is available, check the \\\`pending\\\` array from \\\`bp context <step>\\\` JSON output, then ask the user which to work on.
+- If no change name is available, check the \\\`pending\\\` array from \\\`bp context <step>\\\` output, then ask the user which to work on.
 
 ### Prerequisites
 - Change \`proposal.md\` must be confirmed (not template)

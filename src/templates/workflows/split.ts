@@ -12,7 +12,7 @@ const instructions = `## Input
 ## Steps
 
 ### Step 1: Get context
-Run \`bp context split\` — outputs JSON with state, context.md, and research.md paths. Read all listed files.
+Run \`bp context split\` — outputs state, context.md, and research.md paths. Read all listed files.
 
 ### Step 2: Split into changes
 Decompose the phase scope into independently implementable Change units:

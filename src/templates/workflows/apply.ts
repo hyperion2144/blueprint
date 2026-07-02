@@ -5,7 +5,7 @@ const instructions = ORCHESTRATOR_RULE + `## Input
 
 ### Parameters
 - **\`<change-name>\`** (required) — the change to implement. Provided by \`bp continue\` output or user.
-- If no change name is available, check the \`pending\` array from \`bp context <step>\` JSON output, then ask the user which to work on.
+- If no change name is available, check the \`pending\` array from \`bp context <step>\` output, then ask the user which to work on.
 
 ### Prerequisites
 - Plan phase complete: \`design.md\`, \`tasks.md\`, delta-specs ready
@@ -25,7 +25,7 @@ Read \`tasks.md\` and check task types:
 - **Full**: any type:behavior tasks
 
 ### Step 2: Resolve change name and get context
-Run \`bp context apply\`. Read all listed files. If a change name was provided, use it directly. If not, read the \`pending\` array from the JSON, filter by status \`planning\`, and ask the user to pick.
+Run \`bp context apply\`. Read all listed files. If a change name was provided, use it directly. If not, read the \`pending\` array, filter by status \`planning\`, and ask the user to pick.
 
 ### Step 3: Execute implementation
 

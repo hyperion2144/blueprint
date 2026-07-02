@@ -8,7 +8,7 @@ const instructions = ORCHESTRATOR_RULE + `## Input
 ## Steps
 
 ### Step 1: Check state and get context
-Run \`bp context research\` — outputs JSON with state and file manifest. Read all listed files before proceeding.
+Run \`bp context research\` — outputs state and file manifest. Read all listed files before proceeding.
 
 ### Step 2: Dispatch research sub-agents
 Run \`bp dispatch researcher\` for platform-specific dispatch instructions. Dispatch one per technical direction (stack, architecture, pitfalls) in parallel.
