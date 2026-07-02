@@ -33,8 +33,13 @@ function formatContinueResult(result: ContinueResult, isAuto = false): void {
   const wfStep = (STEP_TO_WORKFLOW as Record<string, WorkflowStep>)[stepKey];
   const currentInstructions = (wfStep && WORKFLOW_REGISTRY[wfStep]) ? WORKFLOW_REGISTRY[wfStep].command().content : undefined;
 
+  const instrLength = currentInstructions ? currentInstructions.length : 0;
+  const MAX_INLINE = 8000;
+  const truncated = instrLength > MAX_INLINE;
+
   const output: any = {
-    _note: `Read the full instructions below before acting. Do not skip truncated content.${isAuto ? ' AUTO mode — fill with your own judgment, do not ask the user.' : ''}`,
+    _note: `MUST read the full instructions field below. Output is ${truncated ? 'TRUNCATED (' + instrLength + ' chars) — read the rest from the source file' : 'complete (' + instrLength + ' chars)'}.${isAuto ? ' AUTO mode — fill with your own judgment, do not ask the user.' : ''}`,
+    truncated,
     auto: isAuto || undefined,
     current: {
       step: result.currentStep,
@@ -45,7 +50,9 @@ function formatContinueResult(result: ContinueResult, isAuto = false): void {
   };
 
   if (currentInstructions) {
-    output.instructions = currentInstructions;
+    output.instructions = truncated
+      ? currentInstructions.slice(0, MAX_INLINE) + `\n\n... (${instrLength - MAX_INLINE} more chars. Read source: .omp/commands/bp-${stepKey}.md)`
+      : currentInstructions;
   }
 
   console.log(JSON.stringify(output, null, 2));
@@ -143,7 +150,7 @@ function continueHandler(options?: { auto?: boolean }): void {
   const validation = validateStepAdvance(state.active_context.type, state.active_context.step, state.active_context.ref, cwd);
   if (!validation.valid) {
     console.log(JSON.stringify({
-      _note: isAuto ? 'AUTO mode — fill with your own judgment, do not ask the user.' : 'Read the full instructions below before acting.',
+      _note: isAuto ? 'AUTO mode — fill with your own judgment, do not ask the user.' : 'MUST read the full instructions below before acting. Output may be truncated.',
       auto: isAuto || undefined,
       error: 'exit_conditions_not_met',
       current: { step: state.active_context.step, type: state.active_context.type, status: state.project.status },
@@ -207,7 +214,7 @@ function continueChangeHandler(name: string, options?: { auto?: boolean }): void
     const validation = validateStepAdvance(ctxType, change.status, ref, cwd);
     if (!validation.valid) {
       console.log(JSON.stringify({
-        _note: isAuto ? 'AUTO mode — fill with your own judgment, do not ask the user.' : 'Read the full instructions below before acting.',
+        _note: isAuto ? 'AUTO mode — fill with your own judgment, do not ask the user.' : 'MUST read the full instructions below before acting. Output may be truncated.',
         auto: isAuto || undefined,
         error: 'exit_conditions_not_met',
         current: { step: change.status, type: ctxType, status: state.project.status },

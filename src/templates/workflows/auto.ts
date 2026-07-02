@@ -74,6 +74,7 @@ After each significant advance (milestone activated, phase shipped, change archi
 - Any blockers reported with specific next actions
 
 ## Guardrails
+- **CRITICAL**: Check \`truncated\` field in \`bp continue --auto\` output. If \`true\`, read the source file listed at the end of the instructions BEFORE acting. Never execute partial instructions.
 - NEVER use the \`ask\` tool in auto mode
 - NEVER pause for confirmation unless a change would be destructive (rm, force push, drop table)
 - If truly stuck (contradictory specs, missing critical info), report the blocker clearly and stop
