@@ -31,7 +31,7 @@ Ask the user which planning mode they prefer — this determines how milestones 
 
 Record the choice at the top of roadmap.md:
 \`\`\`markdown
-> Planning mode: {{mvp | technical-layer}}
+> Planning mode: <mvp || technical-layer>
 \`\`\`
 
 ### Step 3: Define Milestones
@@ -54,13 +54,13 @@ Fill the template:
 \`\`\`markdown
 # Roadmap
 
-> Planning mode: {{mode}}
+> Planning mode: <mode>
 
 ## Milestones
 
 | ID | Goal | Phases | Mode |
 |----|------|--------|------|
-| M1-<name> | <one-sentence goal> | <count> | {{mode}} |
+| M1-<name> | <one-sentence goal> | <count> | <mode> |
 
 ## M1-<name>: <goal>
 
@@ -70,7 +70,7 @@ Fill the template:
 
 ### Phases
 
-#### Phase: {{MVP mode or Technical-layer mode}}
+#### Phase: <MVP mode or Technical-layer mode>
 
 **MVP mode**: each phase is a user-facing feature slice
 - Phase 1: core flow skeleton → Phase 2: features → Phase 3: polish

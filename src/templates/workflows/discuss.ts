@@ -27,7 +27,7 @@ If a phase ID was provided, use it directly. If not:
 
 Print the resolved phase identity:
 \`\`\`
-Phase: <phase-id>  |  Milestone: <milestone-id>  |  Mode: {{mvp | technical-layer}}
+Phase: <phase-id>  |  Milestone: <milestone-id>  |  Mode: <mvp || technical-layer>
 Goal: <phase-goal from roadmap>
 Deliverable: <executable artifact>
 \`\`\`
@@ -91,7 +91,7 @@ mkdir -p bp/milestones/<milestone-id>/phases/<phase-id>
 \`\`\`markdown
 # Context: <phase-id>
 
-> Phase: <phase-id>  |  Milestone: <milestone-id>  |  Mode: {{mvp | technical-layer}}
+> Phase: <phase-id>  |  Milestone: <milestone-id>  |  Mode: <mvp || technical-layer>
 > Goal: <one-line from roadmap>
 > Deliverable: <executable artifact>
 
