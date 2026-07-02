@@ -60,9 +60,9 @@ describe('bp integration', () => {
 
   it('bp continue 显示下一步', () => {
     const output = execSync(`node ${cliPath} continue`, { encoding: 'utf-8', cwd: process.cwd() });
-    const result = JSON.parse(output);
-    // May return current+next (project/phase) or hint+pending (change/adhoc)
-    expect(result.current || result.hint).toBeDefined();
+    // Text format: "# bp continue ..." with key: value lines or hint
+    expect(output).toContain('bp continue');
+    expect(output).toMatch(/step:|hint:/);
   });
 
   it('bp config list', () => {

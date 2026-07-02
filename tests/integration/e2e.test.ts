@@ -107,12 +107,10 @@ describe('E2E: init → template → archive', () => {
   });
 
   it('step 7: bp continue 输出下一步', () => {
-    // 创建 requirements.md 使 continue 能通过校验
     writeFileSync(join(testDir, 'bp', 'requirements.md'), '# Requirements\n', 'utf-8');
     const output = execSync(`node ${cliPath} continue`, { encoding: 'utf-8', cwd: testDir });
-    const result = JSON.parse(output);
-    expect(result.current).toBeDefined();
-    expect(result.current.step).toBeDefined();
+    expect(output).toContain('bp continue');
+    expect(output).toContain('step:');
   });
 
   it('step 8: bp list 输出归档', () => {
