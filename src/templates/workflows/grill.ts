@@ -15,14 +15,37 @@ const instructions = `## Input
 Run \`bp context grill\` — outputs state and requirements.md path. Read requirements.md.
 
 ### Step 2: Explore requirements — one question at a time
-Get the requirements template: \`bp template requirements\`. Interview the user relentlessly until shared understanding is reached. Follow these rules:
+Get the requirements template: \`bp template requirements\`. Interview the user relentlessly until shared understanding is reached.
 
-1. **One question at a time.** Never batch multiple questions.
-2. **Provide your recommended answer** for each question, then ask if they agree.
-3. **Explore the codebase first** if the question can be answered by reading existing code or docs.
-4. **Walk each branch of the decision tree** — resolve dependencies between decisions one by one.
+**For EVERY question, use the \`ask\` tool.** Never use plain text for questions.
 
-Use the 5W1H framework:
+Each \`ask\` call MUST have:
+- **2-5 concrete options** (not "Option A" / "Option B" — each option describes the actual choice)
+- **One \`recommended\` answer** (0-indexed — mark your best recommendation)
+- Short \`description\` on each option explaining the tradeoff
+
+\`\`\`
+ask({
+  questions: [{
+    id: "platform",
+    question: "Which target platform?",
+    options: [
+      { label: "Web (Canvas + TypeScript)", description: "Zero install, fastest iteration, Vite + Vitest" },
+      { label: "CLI/Terminal (TUI)", description: "Node.js only, no browser needed" },
+      { label: "Desktop (Electron/Tauri)", description: "Native window, offline-first" },
+    ],
+    recommended: 0
+  }]
+})
+\`\`\`
+
+Rules:
+1. **One question per \`ask\` call.** Never batch multiple questions in one \`ask\`.
+2. **Recommend first.** Always mark one option as \`recommended\` with brief rationale in the description.
+3. **Explore codebase first** if the answer can be found in existing files.
+4. **Walk each branch** of the decision tree — resolve dependencies one by one.
+
+Use the 5W1H framework to discover what to ask:
 - **What** — core goals and value proposition
 - **Who** — target users, their roles and workflows
 - **Where** — deployment environment, platform constraints
