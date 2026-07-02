@@ -247,6 +247,12 @@ function continueHandler(options?: { auto?: boolean }): void {
       });
 
       // Recompute result after state advance to show the NEW step's instructions
+      const newState = loadState(bpDir);
+      // Chain: if we just advanced to ready, immediately trigger phase-ready logic
+      if (newState.active_context.step === 'ready') {
+        continueHandler(options);
+        return;
+      }
       const newResult = determineNextStep(bpDir);
       formatContinueResult(newResult, isAuto);
       return;

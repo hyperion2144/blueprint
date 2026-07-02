@@ -110,7 +110,7 @@ describe('E2E: init → template → archive', () => {
     writeFileSync(join(testDir, 'bp', 'requirements.md'), '# Requirements\n', 'utf-8');
     const output = execSync(`node ${cliPath} continue`, { encoding: 'utf-8', cwd: testDir });
     expect(output).toContain('bp continue');
-    expect(output).toContain('step:');
+    expect(output).toMatch(/step:|hint:/);
   });
 
   it('step 8: bp list 输出归档', () => {
