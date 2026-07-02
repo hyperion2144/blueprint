@@ -77,7 +77,7 @@ function showState() {
       const completed = (content.match(/^\s*-\s*\[x\]/gm) || []).length;
       if (total > 0) tasks = { total, completed };
     } catch { /* no tasks.md yet */ }
-    return { type, name: c.name, status: c.status, tasks };
+    return { type, name: c.name, status: c.status, depends_on: c.depends_on || [], tasks };
   });
 
   // Read milestone/phase status from roadmap if available
