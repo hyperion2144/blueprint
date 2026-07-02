@@ -20,6 +20,7 @@ export interface ContextResult {
   step: string;
   scope: { type: string; ref: string | null };
   specs: FileRef[];
+  globalSpecs: FileRef[];
   conventions: FileRef[];
   changeArtifacts: FileRef[];
   requirements: FileRef[];
@@ -51,6 +52,7 @@ export function generateContext(bpDir: string, step: string): ContextResult {
     step,
     scope: { type: ctx.type, ref: ctx.ref },
     specs: [],
+    globalSpecs: [],
     conventions: [],
     changeArtifacts: [],
     requirements: [],
@@ -71,11 +73,20 @@ export function generateContext(bpDir: string, step: string): ContextResult {
 
   if (isProjectStep(step)) {
     result.specs = getAllSpecs(bpDir).map(withContent(bpDir));
+    result.globalSpecs = result.specs;
   } else if (isPhaseStep(step)) {
     result.specs = getRelatedSpecs(bpDir, state).map(withContent(bpDir));
+    result.globalSpecs = result.specs;
   } else if (isChangeStep(step)) {
-    result.specs = getRelatedSpecs(bpDir, state).map(withContent(bpDir));
-    result.changeArtifacts = getChangeArtifacts(bpDir, state).map(withContent(bpDir));
+    // Global specs from bp/specs/ (the live behavioral contracts)
+    result.globalSpecs = getRelatedSpecs(bpDir, state).map(withContent(bpDir));
+    // Delta-specs from change directory (proposed changes to global specs)
+    result.specs = getChangeArtifacts(bpDir, state)
+      .filter((a) => a.path.startsWith('specs/'))
+      .map(withContent(bpDir));
+    result.changeArtifacts = getChangeArtifacts(bpDir, state)
+      .filter((a) => !a.path.startsWith('specs/'))
+      .map(withContent(bpDir));
   }
 
   return result;

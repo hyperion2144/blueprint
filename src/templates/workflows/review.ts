@@ -33,7 +33,7 @@ First, check if this change produced any code:
 2. Call the tool it specifies 3 times in parallel (spec-review, quality-review, goal-review). Set each sub-agent's prompt to:
 
 Per role:
-- **spec-review**: Read delta-specs from specs/; cross-reference against implementation. Output spec-review.md with PASS/FAIL per SHALL/MUST + file:line evidence. If spec.md is empty template, FAIL immediately.
+- **spec-review**: Read delta-specs from specs/ AND global specs (\`bp/specs/<domain>/spec.md\`). Cross-reference against implementation. Verify delta-spec ADDED/MODIFIED/REMOVED headers match global spec headers. Output spec-review.md with PASS/FAIL per SHALL/MUST + file:line evidence. Flag SPEC_DRIFT: implementation deviates from spec without SPEC_MISMATCH annotation. If spec.md is empty template, FAIL immediately.
 - **quality-review**: Audit code for bugs, security, conventions, AI mistakes. Output quality-review.md with BLOCKER/MAJOR/MINOR/INFO.
 - **goal-review**: Read proposal.md must_haves; verify each against implementation. Output goal-review.md with ACHIEVED/PARTIAL/NOT_ACHIEVED.
 

@@ -4,7 +4,7 @@ import type { SkillTemplate, CommandTemplate } from '../types.js';
 const instructions = `## Input
 
 ### Parameters
-- **\\\`<change-name>\\\`** (required) — the change to verify and archive. Provided by \\\`bp continue\\\` output or user.
+- **\`<change-name>\`** (required) — the change to verify and archive. Provided by \`bp continue\` output or user.
 
 ### Prerequisites
 - Review phase complete: spec-review.md, quality-review.md, goal-review.md
@@ -47,6 +47,11 @@ This single CLI command handles: delta-spec merge, code cognition backfill, dire
 4. **Change directory moved** to \`bp/archive/<milestone>/<phase>/<change>/\` (phase) or \`bp/archive/changes/<date>-<name>/\` (adhoc)
 
 **Do NOT write the change back into \`state.md\`** — the removal is the intended archival behavior.
+
+After \`bp archive\` merges delta-specs into global specs:
+- Verify merged global spec has no duplicate Requirement headers
+- Verify all ADDED Requirements from delta exist in merged spec
+- Verify all REMOVED Requirements from delta are gone from merged spec
 
 ${COMMIT_ADVANCE('docs', 'verify + archive <change-name>')}
 

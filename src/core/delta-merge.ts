@@ -50,7 +50,12 @@ export function mergeDeltaSpec(
     }
   }
 
-  // 2. 指纹不匹配或无指纹 → section 级合并
+  // 2. Check for semantic delta format (ADDED/MODIFIED/REMOVED sections)
+  if (hasSemanticSections(deltaSpec)) {
+    return semanticMerge(baseSpec, deltaSpec);
+  }
+
+  // 3. 通用 heading-tree 合并（向后兼容旧格式 delta-specs）
   const baseTree = parseHeadings(baseSpec);
   const deltaTree = parseHeadings(deltaSpec);
   const merged = mergeTrees(baseTree, deltaTree);
@@ -70,6 +75,158 @@ interface MergedNode {
 interface MergeOutput {
   nodes: MergedNode[];
   conflicts: Conflict[];
+}
+
+/** Check if delta spec uses ADDED/MODIFIED/REMOVED semantic sections */
+function hasSemanticSections(deltaSpec: string): boolean {
+  return deltaSpec.includes('## ADDED Requirements') ||
+    deltaSpec.includes('## MODIFIED Requirements') ||
+    deltaSpec.includes('## REMOVED Requirements');
+}
+
+/** Extract `### Requirement: X` nodes from under a specific `## ` section */
+function extractRequirementsFromSection(
+  tree: HeadingNode[],
+  sectionTitle: string,
+): HeadingNode[] {
+  const sectionNode = tree.find(
+    (n) => n.level === 2 && n.text === sectionTitle,
+  );
+  if (!sectionNode) return [];
+  return sectionNode.children.filter(
+    (n) => n.level === 3 && n.text.startsWith('Requirement:'),
+  );
+}
+
+/**
+ * Semantic merge: process ADDED/MODIFIED/REMOVED sections against global spec.
+ * Order: REMOVED first, then MODIFIED, then ADDED.
+ */
+function semanticMerge(baseSpec: string, deltaSpec: string): MergeResult {
+  const baseTree = parseHeadings(baseSpec);
+  const deltaTree = parseHeadings(deltaSpec);
+  const conflicts: Conflict[] = [];
+
+  // Find the `## Requirements` section in base tree
+  const baseReqsSection = baseTree.find(
+    (n) => n.level === 2 && n.text === 'Requirements',
+  );
+  if (!baseReqsSection) {
+    conflicts.push({
+      section: 'Requirements',
+      message: 'Global spec has no `## Requirements` section',
+      baseContent: baseSpec,
+      deltaContent: deltaSpec,
+    });
+    return { type: 'conflict', conflicts };
+  }
+
+  // Index base requirements by header text
+  const baseReqs = new Map<string, HeadingNode>();
+  for (const child of baseReqsSection.children) {
+    if (child.level === 3 && child.text.startsWith('Requirement:')) {
+      baseReqs.set(child.text, child);
+    }
+  }
+
+  // 1. REMOVED: delete matching headers from base
+  const removedReqs = extractRequirementsFromSection(deltaTree, 'REMOVED Requirements');
+  // Parse header names from the list items in REMOVED section
+  for (const removedNode of removedReqs) {
+    // REMOVED section items are list entries like `### Requirement: X` or text
+    const headerText = removedNode.text;
+    if (baseReqs.has(headerText)) {
+      baseReqs.delete(headerText);
+    } else {
+      conflicts.push({
+        section: headerText,
+        message: `REMOVED requirement "${headerText}" not found in global spec`,
+        baseContent: '',
+        deltaContent: removedNode.content,
+      });
+    }
+  }
+
+  // Also check list-style REMOVED entries (e.g., `- \`### Requirement: X\` — reason`)
+  const removedSection = deltaTree.find(
+    (n) => n.level === 2 && n.text === 'REMOVED Requirements',
+  );
+  if (removedSection) {
+    const removedLines = removedSection.content.split('\n');
+    for (const line of removedLines) {
+      const match = line.match(/### Requirement:\s*(.+?)(?:`\s*—|$)/);
+      if (match) {
+        const headerText = `Requirement: ${match[1].trim()}`;
+        if (baseReqs.has(headerText)) {
+          baseReqs.delete(headerText);
+        } else if (!conflicts.some((c) => c.section === headerText)) {
+          conflicts.push({
+            section: headerText,
+            message: `REMOVED requirement "${headerText}" not found in global spec`,
+            baseContent: '',
+            deltaContent: line,
+          });
+        }
+      }
+    }
+  }
+
+  // 2. MODIFIED: replace matching headers in base
+  const modifiedReqs = extractRequirementsFromSection(deltaTree, 'MODIFIED Requirements');
+  for (const modifiedNode of modifiedReqs) {
+    if (baseReqs.has(modifiedNode.text)) {
+      baseReqs.set(modifiedNode.text, modifiedNode);
+    } else {
+      conflicts.push({
+        section: modifiedNode.text,
+        message: `MODIFIED requirement "${modifiedNode.text}" not found in global spec`,
+        baseContent: '',
+        deltaContent: modifiedNode.content,
+      });
+    }
+  }
+
+  // 3. ADDED: append new headers to base
+  const addedReqs = extractRequirementsFromSection(deltaTree, 'ADDED Requirements');
+  for (const addedNode of addedReqs) {
+    if (baseReqs.has(addedNode.text)) {
+      conflicts.push({
+        section: addedNode.text,
+        message: `ADDED requirement "${addedNode.text}" already exists in global spec`,
+        baseContent: baseReqs.get(addedNode.text)?.content ?? '',
+        deltaContent: addedNode.content,
+      });
+    } else {
+      baseReqs.set(addedNode.text, addedNode);
+    }
+  }
+
+  if (conflicts.length > 0) {
+    return { type: 'conflict', conflicts };
+  }
+
+  // Rebuild the base tree with modified requirements
+  baseReqsSection.children = Array.from(baseReqs.values());
+
+  return { type: 'ok', merged: renderSimpleTree(baseTree) };
+}
+
+/** Simple markdown renderer for heading tree (no MergedNode wrapper) */
+function renderSimpleTree(nodes: HeadingNode[]): string {
+  const lines: string[] = [];
+  renderSimpleNodes(nodes, lines);
+  return lines.join('\n');
+}
+
+function renderSimpleNodes(nodes: HeadingNode[], lines: string[]): void {
+  for (const node of nodes) {
+    lines.push(`${'#'.repeat(node.level)} ${node.text}`);
+    if (node.content) lines.push(node.content);
+    if (node.children.length > 0) {
+      renderSimpleNodes(node.children, lines);
+    }
+    lines.push('');
+  }
 }
 
 /** 合并两棵 heading tree */

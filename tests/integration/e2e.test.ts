@@ -4,7 +4,7 @@ import { existsSync, readFileSync, mkdirSync, writeFileSync, rmSync } from 'node
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
-const cliPath = join(process.cwd(), 'bin/bp.js');
+const cliPath = join(process.cwd(), 'bin/cli.js');
 const testDir = join(tmpdir(), `bp-e2e-${Date.now()}`);
 
 afterAll(() => {
@@ -32,10 +32,9 @@ describe('E2E: init → template → archive', () => {
 
     expect(existsSync(join(testDir, '.omp', 'commands', 'bp-plan.md'))).toBe(true);
     expect(existsSync(join(testDir, '.omp', 'agents', 'bp-planner.md'))).toBe(true);
-    expect(existsSync(join(testDir, '.omp', 'skills', 'bp-plan', 'SKILL.md'))).toBe(true);
 
     const cmdCount = execSync(`ls -1 ${join(testDir, '.omp', 'commands')} | wc -l`, { encoding: 'utf-8' }).trim();
-    expect(parseInt(cmdCount)).toBe(19);
+    expect(parseInt(cmdCount)).toBe(18);
 
     const agentCount = execSync(`ls -1 ${join(testDir, '.omp', 'agents')} | wc -l`, { encoding: 'utf-8' }).trim();
     expect(parseInt(agentCount)).toBe(7);

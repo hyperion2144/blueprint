@@ -5,6 +5,7 @@
 
 import { readFileSync, readdirSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
+import type { SpecStackTemplate } from '../templates/spec-stacks/index.js';
 
 export interface ProjectInfo {
   type: string;
@@ -20,8 +21,8 @@ export interface ProjectInfo {
 export function detectProjectInfo(rootDir: string): ProjectInfo {
   const info: ProjectInfo = {
     type: 'unknown',
-    language: 'unknown',
-    framework: 'unknown',
+    language: '',
+    framework: '',
     hasPackageJson: false,
     hasTests: false,
     srcDirs: [],
@@ -57,7 +58,7 @@ export function detectProjectInfo(rootDir: string): ProjectInfo {
 
   // 检测源码目录
   for (const dir of ['src', 'app', 'lib', 'pkg', 'cmd']) {
-    if (existsSync(join(rootDir, dir)) && readdirSync(join(rootDir, dir), { withFileTypes: true }).some((e) => e.isDirectory())) {
+    if (existsSync(join(rootDir, dir)) && readdirSync(join(rootDir, dir), { withFileTypes: true }).length > 0) {
       info.srcDirs.push(dir);
     }
   }
@@ -116,45 +117,38 @@ function detectConventions(rootDir: string): string {
   return `# Project Conventions\n\nDetected: ${configs.length > 0 ? configs.join(', ') : 'no'}`;
 }
 
-/** spec bootstrap — 从代码提取初始行为契约 */
-export function bootstrapSpecs(rootDir: string, bpDir: string): string[] {
+/** spec bootstrap — create initial specs from tech stack template */
+export function bootstrapSpecs(
+  rootDir: string,
+  bpDir: string,
+  stack: SpecStackTemplate,
+): string[] {
   const specs: string[] = [];
+  const specsDir = join(bpDir, 'specs');
+  mkdirSync(specsDir, { recursive: true });
 
-  // 扫描 src/ 目录提取 spec 域
-  if (existsSync(join(rootDir, 'src'))) {
-    try {
-      for (const entry of readdirSync(join(rootDir, 'src'), { withFileTypes: true })) {
-        if (entry.isDirectory() && !entry.name.startsWith('_')) {
-          const domainDir = join(bpDir, 'specs', entry.name);
-          mkdirSync(domainDir, { recursive: true });
-          writeFileSync(
-            join(domainDir, 'spec.md'),
-            `# ${entry.name} Specification\n\n## Purpose\n\n[从上位代码自动提取的初始 spec — 待人工审核]\n\n## Requirements\n\n`,
-            'utf-8',
-          );
-          specs.push(entry.name);
-        }
-      }
-    } catch { /* ignore */ }
-  }
-
-  if (specs.length === 0) {
-    // 至少创建一个默认 spec 域
-    const domainDir = join(bpDir, 'specs', 'general');
+  for (const domain of stack.domains) {
+    const domainDir = join(specsDir, domain.name);
     mkdirSync(domainDir, { recursive: true });
-    writeFileSync(
-      join(domainDir, 'spec.md'),
-      `# General Specification\n\n## Purpose\n\n[从上位代码自动提取的初始 spec — 待人工审核]\n\n## Requirements\n\n`,
-      'utf-8',
-    );
-    specs.push('general');
+    writeFileSync(join(domainDir, 'spec.md'), domain.specContent, 'utf-8');
+    specs.push(domain.name);
   }
+
+  // Write conventions from stack template
+  const convDir = join(bpDir, 'conventions');
+  mkdirSync(convDir, { recursive: true });
+  writeFileSync(join(convDir, 'coding-standards.md'), stack.conventions, 'utf-8');
 
   return specs;
 }
 
 /** 完整 brownfield init 流程 */
-export async function runBrownfieldInit(rootDir: string, bpDir: string, info: ProjectInfo): Promise<string[]> {
+export async function runBrownfieldInit(
+  rootDir: string,
+  bpDir: string,
+  info: ProjectInfo,
+  stack: SpecStackTemplate,
+): Promise<string[]> {
   const report = generateCodebaseReport(rootDir, info);
 
   // 写入 codebase/
@@ -163,13 +157,8 @@ export async function runBrownfieldInit(rootDir: string, bpDir: string, info: Pr
   writeFileSync(join(codebaseDir, 'stack.md'), report.stack, 'utf-8');
   writeFileSync(join(codebaseDir, 'architecture.md'), report.structure, 'utf-8');
 
-  // 写入 conventions/
-  const convDir = join(bpDir, 'conventions');
-  mkdirSync(convDir, { recursive: true });
-  writeFileSync(join(convDir, 'codebase-conventions.md'), report.conventions, 'utf-8');
-
-  // bootstrap specs
-  const domains = bootstrapSpecs(rootDir, bpDir);
+  // bootstrap specs using tech stack template
+  const domains = bootstrapSpecs(rootDir, bpDir, stack);
 
   return domains;
 }

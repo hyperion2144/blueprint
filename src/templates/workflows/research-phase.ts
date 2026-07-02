@@ -15,6 +15,8 @@ Run \`bp context research-phase\` — outputs state and file manifest. Read all 
 2. Call the tool it specifies. Set the sub-agent's prompt to:
    - Task: research implementation paths for this phase
    - Read: context.md, related specs/, conventions/
+   - Cross-reference context.md decisions against existing bp/specs/ — flag contradictions
+   - Identify which specs this phase's changes will modify (delta-spec targets)
    - Output: research.md with recommended paths and TDD implications
 
 ### Step 3: Verify output

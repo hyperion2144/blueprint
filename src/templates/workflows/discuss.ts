@@ -80,6 +80,8 @@ mkdir -p bp/milestones/<milestone-id>/phases/<phase-id>
 
 If no gray areas were discussed (express path): write a minimal context.md with only the phase identity and "No gray areas — all decisions clear from roadmap and prior phases."
 
+Reference existing specs that this phase's decisions affect. If a decision changes a behavioral contract, note it as SPEC_CHANGE for plan phase.
+
 ### Step 6: Commit
 \`\`\`bash
 bp commit "docs(phase): write context.md for <phase-id>" --files "bp/milestones/<mid>/phases/<pid>/context.md" --scope docs --record

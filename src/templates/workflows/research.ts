@@ -14,6 +14,8 @@ Run \`bp context research\` — outputs state and file manifest. Read all listed
 1. Run \`bp dispatch researcher\` — outputs the sub-agent tool and its parameters.
 2. Call the tool it specifies 3 times in parallel (stack, architecture, pitfalls). Set each sub-agent's prompt to:
    - Read requirements.md + project.yml; fetch template with \`bp template research-<dir>\`
+   - Read bp/specs/ for existing behavioral contracts — research must respect them
+   - If research reveals spec gaps, note them as SPEC_GAP for plan phase
    - Output: research/<stack|architecture|pitfalls>.md
 
 ### Step 3: Verify sub-agent output

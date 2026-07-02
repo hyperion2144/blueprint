@@ -37,6 +37,9 @@ const ProjectConfigSchema = z.object({
   release: z.object({
     template: z.enum(['standard', 'detailed', 'minimal']).optional().default('standard'),
   }).optional().default({ template: 'standard' }),
+  spec: z.object({
+    stack: z.string().optional().default('generic'),
+  }).optional().default({ stack: 'generic' }),
   conventions: z.object({
     inject: z.boolean().optional().default(true),
   }).optional().default({ inject: true }),

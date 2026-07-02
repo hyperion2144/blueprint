@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { stringifyFrontmatter } from '../../src/parser/frontmatter.js';
 
-const cliPath = join(process.cwd(), 'bin/bp.js');
+const cliPath = join(process.cwd(), 'bin/cli.js');
 
 const testDir = join(tmpdir(), `bp-int-test-${Date.now()}`);
 const tmpTemplateDir = join(tmpdir(), `bp-tpl-test-${Date.now()}`);

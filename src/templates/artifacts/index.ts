@@ -710,13 +710,44 @@ export const CODEBASE_CONVENTIONS_TEMPLATE = `# Conventions: {{name}}
 - **Test framework patterns**: {{test-patterns}}
 `;
 
-export const SPEC_TEMPLATE = `<!-- BOOTSTRAPPED — extracted from {{source-files}} -->
+export const SPEC_TEMPLATE = `# Delta-Spec: {{domain-name}}
 
-# {{domain-name}}
+> Change: {{change-name}} | Domain: {{domain-name}}
 
-> Behavioral contract — {{description}}
+## ADDED Requirements
 
----
+### Requirement: {{req-name-1}}
+The system SHALL {{behavior-1}}.
+
+#### Scenario: {{scenario-name}}
+- **GIVEN** {{given}}
+- **WHEN** {{when}}
+- **THEN** {{then}}
+
+## MODIFIED Requirements
+
+<!-- Use same header as in global spec. Include complete modified requirement. -->
+
+### Requirement: {{existing-req-name}}
+The system SHALL {{new-behavior}}.
+
+#### Scenario: {{scenario-name}}
+- **GIVEN** {{given}}
+- **WHEN** {{when}}
+- **THEN** {{then}}
+← (was: {{old-behavior}})
+
+## REMOVED Requirements
+
+<!-- List removed requirement headers with reason -->
+- ` + '`### Requirement: {{removed-req-name}}`' + ` — Reason: {{reason}}
+`;
+
+export const GLOBAL_SPEC_TEMPLATE = `# {{domain-name}} Specification
+
+## Purpose
+
+{{purpose-description}}
 
 ## Requirements
 
@@ -727,8 +758,6 @@ The system SHALL {{behavior-1}}.
 - **GIVEN** {{given}}
 - **WHEN** {{when}}
 - **THEN** {{then}}
-
-> Confidence: {{confidence}} | Source: {{file}}:{{line}}
 `;
 
 export const CODEBASE_CONCERNS_TEMPLATE = `# Concerns: {{name}}
@@ -958,6 +987,7 @@ export const ARTIFACT_TEMPLATES: Record<string, string> = {
   'codebase-pitfalls': CODEBASE_CONCERNS_TEMPLATE,  // alias, deprecated
   // Change lifecycle
   'spec': SPEC_TEMPLATE,
+  'global-spec': GLOBAL_SPEC_TEMPLATE,
   'completion': SUMMARY_TEMPLATE,  // archiver completion.md
   // Phase research (produced by bp-phase-researcher)
   'phase-research': PHASE_RESEARCH_TEMPLATE,

@@ -40,6 +40,8 @@ After ALL tasks pass verification:
    - Change: <change-name> (path from Step 0)
    - Task: implement all tasks in tasks.md following TDD protocol (RED→GREEN→REFACTOR)
    - Read: requirements.md, roadmap.md (this phase), research.md, design.md, delta-specs
+   - Read delta-specs BEFORE implementing — each task must satisfy its referenced Requirements
+   - If implementation reveals a spec is wrong, annotate as SPEC_MISMATCH (don't silently deviate)
    - Output: code, tests, tasks.md (boxes checked after each task passes)
    - Commit each task with \`bp commit --task <id> --tasks-path ...\`
 

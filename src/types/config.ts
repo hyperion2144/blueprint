@@ -59,6 +59,12 @@ export interface ReleaseConfig {
   template?: 'standard' | 'detailed' | 'minimal';
 }
 
+/** spec 配置 */
+export interface SpecConfig {
+  /** 技术栈标识 */
+  stack: string;
+}
+
 /** project.yml 完整配置 */
 export interface ProjectConfig {
   version: number;
@@ -70,6 +76,7 @@ export interface ProjectConfig {
   change: ChangeConfig;
   git: GitConfig;
   release: ReleaseConfig;
+  spec: SpecConfig;
   conventions: {
     inject: boolean;
   };

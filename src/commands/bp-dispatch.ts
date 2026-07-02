@@ -15,7 +15,7 @@ interface DispatchFormat {
 
 /** Agent role → artifact template IDs for output files */
 const ROLE_TEMPLATES: Record<string, string[]> = {
-  planner: ['design', 'tasks'],
+  planner: ['design', 'tasks', 'spec', 'global-spec'],
   executor: [],  // produces code, no artifact templates
   reviewer: ['spec-review', 'quality-review', 'goal-review'],
   researcher: ['research-stack', 'research-architecture', 'research-pitfalls'],

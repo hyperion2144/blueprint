@@ -13,7 +13,7 @@ export type {
   ProjectConfig,
 } from './config.js';
 
-export { PROFILE_MODEL_MAP } from './config.js';
+export { PROFILE_MODEL_MAP, type SpecConfig } from './config.js';
 
 export type {
   EntityType,

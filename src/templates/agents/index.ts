@@ -283,14 +283,20 @@ ${READONLY_CONSTRAINTS}## Execution Flow
 - Read function signatures, JSDoc comments, and existing tests
 
 ### Step 2: Extract behavioral contracts
+- Read bp/project.yml \`spec.stack\` field for tech stack context
+- Use \`### Requirement:\` + \`#### Scenario: GIVEN/WHEN/THEN\` format (OpenSpec style)
+- Organize extracted specs by the domain structure defined in \`bp/specs/\` (created from tech stack template)
 - Infer SHALL/MUST constraints from tests and signatures
-- Annotate with confidence levels (HIGH/MEDIUM/LOW)
+- Annotate each requirement with:
+  - **Confidence**: HIGH (test-verified) / MEDIUM (code signature, no test) / LOW (inferred)
+  - **Source**: file:line reference
 
 ### Step 3: Output specs/<domain>/spec.md
-- Get template: \`bp template spec\` (one per domain)
+- Get template: \`bp template global-spec\` (one per domain)
+- Update existing spec.md files in \`bp/specs/<domain>/\` — replace skeleton with extracted content
 - Mark all entries as BOOTSTRAPPED with source file:line references
-- Annotate each requirement with confidence: HIGH/MEDIUM/LOW
-- Low-confidence entries flagged for human review`;
+- Low-confidence entries flagged for human review
+- Each Requirement header SHALL be unique within the spec (no duplicates)`;
 
 /** Registry mapping role → prompt string */
 export const AGENT_PROMPTS: Record<string, string> = {

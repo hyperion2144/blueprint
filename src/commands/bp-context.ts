@@ -42,6 +42,10 @@ function contextHandler(step: string) {
     lines.push('specs:');
     for (const s of result.specs) lines.push(`  ${s.path}`);
   }
+  if (result.globalSpecs && result.globalSpecs.length > 0) {
+    lines.push('globalSpecs:');
+    for (const s of result.globalSpecs) lines.push(`  ${s.path}`);
+  }
   if (result.conventions && result.conventions.length > 0) {
     lines.push('conventions:');
     for (const c of result.conventions) lines.push(`  ${c.path}`);

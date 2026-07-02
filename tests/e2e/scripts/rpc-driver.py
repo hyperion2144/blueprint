@@ -303,7 +303,7 @@ def collect_evidence(step_name: str):
     
     # bp state output
     try:
-        r = sp.run(f"node {MAIN}/bin/bp.js state", shell=True, cwd=FIXTURE,
+        r = sp.run(f"node {MAIN}/bin/cli.js state", shell=True, cwd=FIXTURE,
                    capture_output=True, text=True, timeout=10)
         with open(os.path.join(step_dir, "bp-state.json"), "w") as f:
             f.write(r.stdout)

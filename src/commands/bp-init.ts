@@ -1,7 +1,8 @@
 import { join } from 'node:path';
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, mkdirSync } from 'node:fs';
+import type { Command } from 'commander';
 import { saveConfig } from '../core/config.js';
-import type { ProjectConfig } from '../types/index.js';
+import type { ProjectConfig, SpecConfig } from '../types/index.js';
 import { createSpecwfStructure, isInitialized } from '../core/file-tree.js';
 import { saveState } from '../core/state-file.js';
 import { runInitWizard } from '../prompts/init-wizard.js';
@@ -9,8 +10,10 @@ import { detectProjectInfo, runBrownfieldInit } from '../core/brownfield.js';
 import { generateAll } from '../generators/index.js';
 import { REQUIREMENTS_TEMPLATE } from '../templates/artifacts/index.js';
 import { writeGeneratedFiles } from './_utils.js';
+import { getSpecStack, detectSpecStack } from '../templates/spec-stacks/detect.js';
+import type { SpecStackTemplate } from '../templates/spec-stacks/index.js';
 
-export function register(program: any): void {
+export function register(program: Command): void {
   program
     .command('init')
     .description('Initialize blueprint project structure')
@@ -42,6 +45,18 @@ async function initHandler(options: {
   const platform = wizard.platform;
   const isBrownfield = options.brownfield || wizard.brownfield;
 
+  // Resolve spec stack — auto-detect for brownfield, use wizard choice for greenfield
+  let stack: SpecStackTemplate;
+  let specStackId: string;
+  if (isBrownfield) {
+    const info = detectProjectInfo(process.cwd());
+    stack = detectSpecStack(info);
+    specStackId = stack.id;
+  } else {
+    specStackId = wizard.specStack;
+    stack = getSpecStack(specStackId);
+  }
+
   createSpecwfStructure(bpDir);
   console.log('✓ bp/ directory structure created');
 
@@ -55,11 +70,12 @@ async function initHandler(options: {
     change: {},
     git: { branching: 'none' as const, create_tag: true },
     release: { template: 'standard' as const },
+    spec: { stack: specStackId } as SpecConfig,
     conventions: { inject: true },
     models: {},
   };
   saveConfig(bpDir, config);
-  console.log('✓ project.yml created (profile: ' + profile + ')');
+  console.log('✓ project.yml created (profile: ' + profile + ', spec stack: ' + specStackId + ')');
 
   saveState(bpDir, {
     project: {
@@ -83,15 +99,30 @@ async function initHandler(options: {
   writeFileSync(join(bpDir, 'requirements.md'), reqContent, 'utf-8');
   console.log('✓ requirements.md created (template)');
 
+  // Initialize spec directories with tech stack templates
+  const specsDir = join(bpDir, 'specs');
+  for (const domain of stack.domains) {
+    const domainDir = join(specsDir, domain.name);
+    mkdirSync(domainDir, { recursive: true });
+    writeFileSync(join(domainDir, 'spec.md'), domain.specContent, 'utf-8');
+  }
+  console.log('✓ specs/ created (' + stack.domains.map((d) => d.name).join(', ') + ')');
+
+  // Create conventions from stack template
+  const convDir = join(bpDir, 'conventions');
+  mkdirSync(convDir, { recursive: true });
+  writeFileSync(join(convDir, 'coding-standards.md'), stack.conventions, 'utf-8');
+  console.log('✓ conventions/coding-standards.md created');
+
   if (isBrownfield) {
     const info = detectProjectInfo(process.cwd());
-    const domains = await runBrownfieldInit(process.cwd(), bpDir, info);
+    const domains = await runBrownfieldInit(process.cwd(), bpDir, info, stack);
     console.log("✓ Project structure scanned. Dispatch bp-codebase-mapper and bp-spec-bootstrapper sub-agents to complete analysis.");
   }
 
   console.log('Blueprint initialized.');
 
-  // 自动生成平台文件
+  // Generate platform files
   try {
     const files = generateAll(config);
     writeGeneratedFiles(files);
