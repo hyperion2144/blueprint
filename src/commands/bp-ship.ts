@@ -45,12 +45,13 @@ export function register(program: any): void {
     .description('Ship unpublished changes — PR or Release with configurable template')
     .option('--dry-run', 'Preview without executing')
     .option('--skip-commit', 'Skip git commit (for testing)')
+    .option('--mark-published', 'Mark shipped changes as [published] in state.md history')
     .action(shipHandler);
 }
 
 /* ── Main handler ──────────────────────────────────────────── */
 
-function shipHandler(options?: { dryRun?: boolean; skipCommit?: boolean }): void {
+function shipHandler(options?: { dryRun?: boolean; skipCommit?: boolean; markPublished?: boolean }): void {
   const cwd = process.cwd();
   const bpDir = join(cwd, 'bp');
   const state = loadState(bpDir);
@@ -75,7 +76,10 @@ function shipHandler(options?: { dryRun?: boolean; skipCommit?: boolean }): void
     unpublished: unpublished.length,
     changes: unpublished.map((e) => e.change),
     body: body.slice(0, 500),
-    hint: 'Use the ask tool: (1) Create PR → gh pr create, (2) Release → suggest version, create tag + GitHub Release. After publishing, mark as [published] in state.md archive history.',
+    published: options?.markPublished ? markPublished(bpDir, unpublished) : undefined,
+    hint: options?.markPublished
+      ? 'Changes marked [published].'
+      : 'Use the ask tool: (1) Create PR, (2) Release. Then run bp ship --mark-published to mark as published.',
   }, null, 2));
 }
 
@@ -193,6 +197,39 @@ function buildPrBody(
   }
 
   return lines.join('\n');
+}
+
+/* ── Artifact readers ──────────────────────────────────────── */
+
+function markPublished(bpDir: string, entries: Array<{ change: string; date: string }>): string {
+  const statePath = join(bpDir, 'state.md');
+  if (!existsSync(statePath)) return 'state.md not found';
+  try {
+    let content = readFileSync(statePath, 'utf-8');
+    let count = 0;
+    for (const e of entries) {
+      const escaped = e.change.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const pattern = '- [' + e.date + '] Archived `' + escaped + '`';
+      const idx = content.indexOf(pattern);
+      if (idx !== -1) {
+        const lineEnd = content.indexOf('\n', idx);
+        if (lineEnd !== -1) {
+          const line = content.slice(idx, lineEnd);
+          if (!line.includes('[published]')) {
+            content = content.slice(0, lineEnd) + ' [published]' + content.slice(lineEnd);
+            count++;
+          }
+        }
+      }
+    }
+    if (count > 0) {
+      writeFileSync(statePath, content, 'utf-8');
+      return `Marked \${count} changes as [published].`;
+    }
+    return 'No changes to mark (already published or not found).';
+  } catch (err: unknown) {
+    return `Failed: \${err instanceof Error ? err.message : String(err)}`;
+  }
 }
 
 /* ── Artifact readers ──────────────────────────────────────── */
