@@ -33,7 +33,14 @@ Deliverable: <executable artifact>
 \`\`\`
 
 ### Step 1: Get context
-Run \`bp context discuss\` — outputs state and roadmap path. Read roadmap.md and extract ONLY the section for this phase. Check if \`context.md\` already exists and load prior phase decisions to avoid re-asking.
+Run \`bp context discuss\` — outputs state and roadmap path. Read roadmap.md and extract ONLY the section for this phase.
+
+**Also read prior phase artifacts** (skip if this is the first phase):
+- Previous phase \`context.md\` — locked decisions that this phase builds on
+- Previous phase \`summary.md\` (if exists) — what was actually delivered
+- These ensure continuity: don't re-decide what was already settled, don't reinvent what was already built.
+
+Check if THIS phase's \`context.md\` already exists and load it to avoid re-asking.
 
 ### Step 2: Identify gray areas
 Gray areas are **implementation decisions the user cares about** — things that could go multiple ways and would change the result. They are PHASE-SPECIFIC, not generic categories.
