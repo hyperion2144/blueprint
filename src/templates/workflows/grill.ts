@@ -14,35 +14,22 @@ const instructions = `## Input
 ### Step 1: Get context
 Run \`bp context grill\` — outputs state and requirements.md path. Read requirements.md.
 
-### Step 2: Explore requirements — one question at a time
-Get the requirements template: \`bp template requirements\`. Interview the user relentlessly until shared understanding is reached.
+### Step 2: Interview relentlessly until shared understanding
 
-**For EVERY question, use the \`ask\` tool.** Never use plain text for questions.
+Interview the user relentlessly about every aspect of the project. Walk down each branch of the decision tree, resolving dependencies between decisions one-by-one.
 
-Each \`ask\` call MUST have:
-- **2-5 concrete options** describing actual choices (not "Option A" / "Option B")
-- **One recommended answer** — mark the best choice with brief rationale
-- Short tradeoff description per option
+**For every question, use the \`ask\` tool.** Never use plain text.
+Each \`ask\` call: 2-5 concrete options, one recommended answer, brief tradeoff per option.
 
-Rules:
-1. **One question per \`ask\` call.** Never batch multiple questions.
-2. **Recommend first.** Always provide a recommended answer, don't make the user guess.
-3. **Explore codebase first** if the answer can be found in existing files.
-4. **Walk each branch** of the decision tree — resolve dependencies one by one.
+**One question at a time.** Never batch. If the codebase or existing docs can answer the question, explore them instead of asking.
 
-Use the 5W1H framework to discover what to ask:
-- **What** — core goals and value proposition
-- **Who** — target users, their roles and workflows
-- **Where** — deployment environment, platform constraints
-- **When** — timeline, phases, priorities
-- **Why** — business motivation, success metrics
-- **How** — technical preferences, non-functional requirements
+Stop only when all decisions are resolved — no ambiguity remains.
 
 ### Step 3: Record decisions incrementally
 After each consensus point, write it to \`bp/requirements.md\` immediately — do not batch at the end.
 
 ### Step 4: Confirm consensus
-Review requirements.md with the user. Ensure no ambiguity remains. Mark unresolved items as \`[TODO: decide]\`.
+Review requirements.md. If any ambiguity remains, go back to Step 2. Mark only truly unresolved items as \`[TODO: decide]\`.
 
 ### Step 5: Commit
 \`\`\`bash
@@ -56,10 +43,11 @@ Run \`bp continue\` to proceed to the research phase.
 - \`bp/requirements.md\` — populated with agreed requirements
 
 ## Guardrails
-- No code is written during grill — this is pure exploration
-- Do not skip questions that seem obvious — hidden assumptions cause rework
-- Record decisions as they are made, not at the end
-- If the user cannot answer, mark \`[TODO: decide]\` and move on`;
+- No code is written during grill — pure exploration
+- Relentless: don't stop until every decision branch is resolved
+- One question per \`ask\` call; recommended answer always
+- Record decisions immediately, not at the end
+- If truly stuck, mark \`[TODO: decide]\` and move on`;
 
 export function getGrillSkillTemplate(): SkillTemplate {
   return {
