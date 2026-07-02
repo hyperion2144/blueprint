@@ -33,13 +33,18 @@ Record the choice at the top of roadmap.md:
 ### Step 3: Define Milestones
 Get the roadmap template: \`bp template roadmap\`.
 
-**What is a milestone?** A complete, shippable product state. M1 = first version a real user can use. NOT a feature bucket or tech layer.
+**Default: 1 milestone = the entire project.** In most cases, you only need one. Milestones are NOT development phases — they are product releases.
 
-**How many milestones?**
-- Simple projects: **1 milestone** (that's the whole product)
-- Product projects: **2 milestones** (v1.0 core → v2.0 expansion)
-- Complex platforms: **at most 3** — each independently usable
-- If you find yourself creating a milestone called "foundation", "scaffolding", "setup" — merge it into the first real milestone. No empty shells.
+- If the project IS "build a Sokoban game": M1-sokoban. Done.
+- If the project has a v1 core AND a planned v2 expansion: M1-core, M2-expansion.
+- If you find yourself creating M1-foundation, M2-features, M3-polish — STOP. Those are phases, not milestones. Merge them into one milestone.
+
+**Only add M2+ when:**
+1. The user explicitly wants iterative releases (v1.0 → v2.0)
+2. Each milestone independently delivers value to end users
+3. The scope is too large for a single release
+
+Fill the template with **1 milestone** by default:
 
 Fill the template:
 \`\`\`markdown
@@ -56,7 +61,7 @@ Fill the template:
 ## M1-<name>: <goal>
 
 ### Success Criteria
-- <measurable, verifiable condition>
+- <measurable, verifiable condition — what makes M1 "done">
 - <at least 2, max 5 criteria>
 
 ### Phases
@@ -113,13 +118,11 @@ bp continue
 - \`bp/milestones/<id>/\` — per-milestone directories
 
 ## Guardrails
-- Milestones are complete, shippable products — not tech layers or setup steps
-- M1 = a user can use it. No "foundation" or "scaffolding" milestones.
-- Ask the user about MVP vs technical-layer **before** defining anything — this shapes phases, not milestones
-- Mode applies to phase structure within each milestone
-- Phase count per milestone: 2-4 typically. First phase = thinnest end-to-end path.
-- Each phase deliverable must be verifiable and executable
-- If a milestone has only 1 phase, the phase IS the milestone — no extra nesting`;
+- **Default: 1 milestone.** Only add more if the user needs iterative releases.
+- M1 = shippable product a user can use. No "foundation", "setup", "scaffolding".
+- Mode (MVP/technical-layer) shapes **phases within a milestone**, not the milestones themselves.
+- Phase count per milestone: 2-4. First phase = thinnest end-to-end path.
+- If a milestone has only 1 phase, skip the phase layer — the milestone IS the unit of work.`;
 
 export function getRoadmapSkillTemplate(): SkillTemplate {
   return {
