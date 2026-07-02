@@ -78,9 +78,8 @@ export const STATE_TRANSITIONS: StateTransition[] = [
   // Milestone 层（新里程碑 = 项目流程 - init）
   { from: 'milestone-active', command: 'grill', to: 'grill', slashCommand: '/bp:grill' },
 
-  // Phase 间流转（用户手动触发 ship，不在 continue 链中）
+  // Phase 间流转
   { from: 'change-archived', command: 'next-change', to: 'phase-ready', slashCommand: '' },
-  { from: 'phase-ready', command: 'ship-phase', to: 'phase-shipped', slashCommand: '/bp:ship' },
 
   // Phase change (not adhoc) — same as adhoc-proposal, routes to plan
   { from: 'change-proposal', command: 'plan', to: 'change-planning', slashCommand: '/bp:plan', subagent: true },

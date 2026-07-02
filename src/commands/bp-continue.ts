@@ -3,7 +3,7 @@
  */
 
 import { join } from 'node:path';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { determineNextStep, determineChangeNextStep, STEP_TO_WORKFLOW } from '../core/continue.js';
 import { loadState, updateState } from '../core/state-file.js';
 import { validateStepAdvance } from '../core/state-validator.js';
@@ -158,6 +158,26 @@ function continueHandler(options?: { auto?: boolean }): void {
 
   const result = determineNextStep(bpDir);
 
+  // Special: phase-ready → auto-advance to next phase
+  if (state.active_context.step === 'phase-ready') {
+    const nextPhase = findNextPhase(bpDir, state.project.current_milestone, state.project.current_phase ?? '');
+    if (nextPhase) {
+      updateState(bpDir, (s) => {
+        s.project.current_phase = nextPhase;
+        s.active_context = { type: 'phase', ref: `milestones/${s.project.current_milestone}/phases/${nextPhase}`, step: 'start' };
+      });
+      const newResult = determineNextStep(bpDir);
+      formatContinueResult(newResult, isAuto);
+      return;
+    }
+    // No more phases → suggest ship milestone
+    console.log([
+      '# bp continue — hint',
+      'hint: All phases in this milestone shipped. Run /bp:ship to ship the milestone, or bp state set-milestone <next> to start the next milestone.',
+    ].join('\n'));
+    return;
+  }
+
   // Unknown state — no transitions available for this type/step combo
   if (!result.nextCommand && result.availableSteps.length === 0) {
     console.log([
@@ -292,4 +312,24 @@ function continueChangeHandler(name: string, options?: { auto?: boolean }): void
   }
 
   formatContinueResult(result, isAuto);
+}
+
+function findNextPhase(bpDir: string, milestoneId: string | null, currentPhase: string): string | null {
+  if (!milestoneId) return null;
+  const roadmapPath = join(bpDir, 'roadmap.md');
+  if (!existsSync(roadmapPath)) return null;
+  try {
+    const content = readFileSync(roadmapPath, 'utf-8');
+    // Find phases within the current milestone section
+    const escaped = milestoneId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp('##\\s+' + escaped + '[\\s\\S]*?(?=##\\s+M\\d|$)', 'i');
+    const msMatch = content.match(re);
+    if (!msMatch) return null;
+    const phases = (msMatch[0].match(/ph\.\d+-\w+/g) ?? []) as string[];
+    const idx = phases.indexOf(currentPhase);
+    if (idx >= 0 && idx < phases.length - 1) {
+      return phases[idx + 1];
+    }
+  } catch { /* roadmap not parseable */ }
+  return null;
 }
