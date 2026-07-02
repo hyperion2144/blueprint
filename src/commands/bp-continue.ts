@@ -346,7 +346,7 @@ function findNextPhase(bpDir: string, milestoneId: string | null, currentPhase: 
     const re = new RegExp('##\\s+' + escaped + '[\\s\\S]*?(?=##\\s+M\\d|$)', 'i');
     const msMatch = content.match(re);
     if (!msMatch) return null;
-    const phases = (msMatch[0].match(/ph\.\d+-\w+/g) ?? []) as string[];
+    const phases = (msMatch[0].match(/ph\.\d+(-\w+)?/g) ?? []) as string[];
     const idx = phases.indexOf(currentPhase);
     if (idx >= 0 && idx < phases.length - 1) {
       return phases[idx + 1];
