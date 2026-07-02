@@ -153,6 +153,18 @@ const STEP_INFO: Record<string, StepInfo> = {
     artifacts: ['git tag', 'RELEASE.md'],
     fileRef: '',
   },
+  'next-change': {
+    command: 'next-change',
+    description: 'Auto: check pending changes, route to next or mark phase ready',
+    artifacts: [],
+    fileRef: '',
+  },
+  'phase-ready': {
+    command: 'phase-ready',
+    description: 'All changes archived. Run /bp:ship to ship this phase.',
+    artifacts: [],
+    fileRef: '',
+  },
 };
 
 /** Step name → WorkflowStep mapping for template lookup */
@@ -182,6 +194,7 @@ export const STEP_TO_WORKFLOW: Record<string, WorkflowStep> = {
   archive: 'archive',
   'ship-phase': 'ship',
   'ship-milestone': 'ship',
+  'phase-ready': 'ship',
   shipped: 'ship',
   init: 'init',
   adhoc: 'adhoc',
