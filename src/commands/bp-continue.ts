@@ -163,12 +163,26 @@ function continueHandler(options?: { auto?: boolean }): void {
   if (state.active_context.step === 'ready') {
     const nextPhase = findNextPhase(bpDir, state.project.current_milestone, state.project.current_phase ?? '');
     if (nextPhase) {
+      // 1. Set the next phase
       updateState(bpDir, (s) => {
         s.project.current_phase = nextPhase;
-        s.active_context = { type: 'phase', ref: `milestones/${s.project.current_milestone}/phases/${nextPhase}`, step: 'activated' };
+        s.active_context = { type: 'phase', ref: `milestones/${s.project.current_milestone}/phases/${nextPhase}`, step: 'start' };
       });
-      const newResult = determineNextStep(bpDir);
-      formatContinueResult(newResult, isAuto);
+      // 2. Reload state and advance start → discuss
+      const newState = loadState(bpDir);
+      const advanceResult = determineNextStep(bpDir);
+      if (advanceResult.nextCommand) {
+        const currentKey = resolveStatusKey(newState.active_context.type, newState.active_context.step, newState.project.status);
+        const transition = getTransition(currentKey, advanceResult.nextCommand);
+        if (transition) {
+          updateState(bpDir, (s) => {
+            s.active_context.step = 'discuss';
+          });
+        }
+      }
+      // 3. Output discuss instructions
+      const finalResult = determineNextStep(bpDir);
+      formatContinueResult(finalResult, isAuto);
       return;
     }
     // No more phases → suggest ship milestone
