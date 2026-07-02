@@ -15,19 +15,15 @@ const instructions = `## Input
 Run \`bp context roadmap\` — outputs state, requirements.md, and research/ paths. Read all listed files.
 
 ### Step 2: Choose planning mode
-Ask the user which planning mode they prefer — this determines how milestones and phases are structured:
+Ask the user which planning mode they prefer — this determines how **phases** are structured within each milestone:
 
-**MVP mode** (recommended for product-facing projects):
-- Each milestone = a shippable product increment (v1.0, v2.0, …)
-- Phases within a milestone build toward that release
-- First milestone = minimum viable product
-- Each milestone delivers end-to-end user value independently
+**MVP mode** (for product-facing projects):
+- Each phase is a user-facing feature slice — every phase delivers something the user can see/use
+- Phase 1: thinnest end-to-end path → Phase 2: iterate and expand → Phase 3: polish
 
-**Technical-layer mode** (for infrastructure/platform/CLI projects):
-- Each milestone = a major technical capability layer
-- Phases decompose the layer into vertically executable slices
-- Each phase produces a demonstrable, testable increment (running binary, deployed service, etc.)
-- Layers build on each other — later layers depend on earlier ones
+**Technical-layer mode** (for infrastructure/platform/CLI):
+- Each phase builds a technical layer that produces a runnable/testable artifact
+- Phase 1: data + core logic → Phase 2: API + integration → Phase 3: hardening
 
 Record the choice at the top of roadmap.md:
 \`\`\`markdown
@@ -35,20 +31,15 @@ Record the choice at the top of roadmap.md:
 \`\`\`
 
 ### Step 3: Define Milestones
-Get the roadmap template: \`bp template roadmap\`. Determine milestones based on the project's scope, requirements, and chosen mode:
+Get the roadmap template: \`bp template roadmap\`.
 
-**What is a milestone?** A major delivery checkpoint — the project reaches a complete, demonstrable, shippable state. NOT a feature bucket, NOT a sprint, NOT an iteration.
+**What is a milestone?** A complete, shippable product state. M1 = first version a real user can use. NOT a feature bucket or tech layer.
 
-**How to determine milestone count:**
-- Read requirements.md — how many distinct shippable increments make sense?
-- Simple projects (single capability, e.g. a CLI tool): maybe 1 milestone
-- Product projects (user-facing, iterative value): 2-3 milestones (MVP → v2 → v3)
-- Platform/infra projects (layered capabilities): 2-4 milestones (foundation → engine → integration → polish)
-- Do NOT create milestones just to have milestones — each must deliver something complete
-
-**How mode affects milestone content:**
-- **MVP mode**: each milestone = a version users can actually use. M1 = minimum shippable product, M2 = next feature set.
-- **Technical-layer mode**: each milestone = a complete technical layer that runs and passes tests. M1 = data + skeleton, M2 = core logic, M3 = integration/API.
+**How many milestones?**
+- Simple projects: **1 milestone** (that's the whole product)
+- Product projects: **2 milestones** (v1.0 core → v2.0 expansion)
+- Complex platforms: **at most 3** — each independently usable
+- If you find yourself creating a milestone called "foundation", "scaffolding", "setup" — merge it into the first real milestone. No empty shells.
 
 Fill the template:
 \`\`\`markdown
@@ -72,14 +63,11 @@ Fill the template:
 
 #### Phase: <MVP mode or Technical-layer mode>
 
-**MVP mode**: each phase is a user-facing feature slice
-- Phase 1: core flow skeleton → Phase 2: features → Phase 3: polish
+**MVP mode** — each phase delivers user-observable value:
+- ph.1: thinnest end-to-end user flow → ph.2: expand features → ph.3: polish
 
-**Technical-layer mode**: each phase is a vertical slice through one layer
-- Phase 1: foundation (data model, CLI skeleton, tests)
-- Phase 2: core engine (primary logic, API surface)
-- Phase 3: integration (wiring, error handling, edge cases)
-- Phase 4: hardening (perf, security, docs)
+**Technical-layer mode** — each phase produces a runnable/testable artifact:
+- ph.1: data model + core logic → ph.2: API + integration → ph.3: hardening
 
 | ID | Goal | Depends On | Changes | Deliverable |
 |----|------|-----------|---------|------------|
@@ -125,13 +113,13 @@ bp continue
 - \`bp/milestones/<id>/\` — per-milestone directories
 
 ## Guardrails
-- Milestones are delivery checkpoints, not feature buckets — each must be a complete, demonstrable state
-- Ask the user about MVP vs technical-layer **before** defining anything
-- MVP mode: each milestone independently shippable; first = minimum viable product
-- Technical-layer mode: each milestone produces an executable/testable artifact that builds on previous layers
-- Phase count per milestone: determine by what's needed (typically 1-4 for small, 2-5 for medium, 3-6 for large)
-- Each phase deliverable must be verifiable — not "design" or "planning" as standalone phases
-- Start with the smallest viable milestone first`;
+- Milestones are complete, shippable products — not tech layers or setup steps
+- M1 = a user can use it. No "foundation" or "scaffolding" milestones.
+- Ask the user about MVP vs technical-layer **before** defining anything — this shapes phases, not milestones
+- Mode applies to phase structure within each milestone
+- Phase count per milestone: 2-4 typically. First phase = thinnest end-to-end path.
+- Each phase deliverable must be verifiable and executable
+- If a milestone has only 1 phase, the phase IS the milestone — no extra nesting`;
 
 export function getRoadmapSkillTemplate(): SkillTemplate {
   return {
