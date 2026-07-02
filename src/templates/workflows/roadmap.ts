@@ -54,9 +54,9 @@ Fill the template:
 
 ## Milestones
 
-| ID | Goal | Phases | Mode |
-|----|------|--------|------|
-| M1-<name> | <one-sentence goal> | <count> | <mode> |
+| ID | Goal | Phases |
+|----|------|--------|
+| M1-<name> | <one-sentence goal> | <count> |
 
 ## M1-<name>: <goal>
 
@@ -66,7 +66,7 @@ Fill the template:
 
 ### Phases
 
-#### Phase: <MVP mode or Technical-layer mode>
+> Mode: <mvp || technical-layer>
 
 **MVP mode** — each phase delivers user-observable value:
 - ph.1: thinnest end-to-end user flow → ph.2: expand features → ph.3: polish
