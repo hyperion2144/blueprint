@@ -88,8 +88,9 @@ function continueHandler(options?: { auto?: boolean }): void {
 
   const state = loadState(bpDir);
 
-  // Change/adhoc context: bp continue (no args) does NOT advance — use bp continue change <name>
-  if (state.active_context.type === 'change' || state.active_context.type === 'adhoc') {
+  // Change/adhoc context: bp continue (no args) normally does NOT advance — use bp continue change <name>
+  // Exception: archived changes trigger next-change → phase-ready auto-advance
+  if ((state.active_context.type === 'change' || state.active_context.type === 'adhoc') && state.active_context.step !== 'archived') {
     const pending = state.changes.concat(state.adhoc).filter((c: any) => c.status !== 'archived').map((c: any) => ({
       type: state.changes.includes(c) ? 'change' : 'adhoc',
       name: c.name,
@@ -120,13 +121,13 @@ function continueHandler(options?: { auto?: boolean }): void {
   }
 
   // Phase context with pending changes: guide to change-level advancement
-  if ((state.active_context.type === 'phase' && (state.changes.length > 0 || state.adhoc.length > 0))) {
+  if ((state.active_context.type === 'phase' && (state.changes.some((c: any) => c.status !== 'archived') || state.adhoc.some((c: any) => c.status !== 'archived')))) {
     // Check if this phase still needs discuss — don't block on stale pending changes
     const phaseRef = state.active_context.ref;
     const ctxPath = phaseRef ? join(bpDir, phaseRef, 'context.md') : null;
     if (ctxPath && existsSync(ctxPath)) {
       // Phase has started — show pending changes hint
-      const pending = state.changes.concat(state.adhoc).map((c: any) => ({
+      const pending = state.changes.concat(state.adhoc).filter((c: any) => c.status !== 'archived').map((c: any) => ({
         type: state.changes.includes(c) ? 'change' : 'adhoc',
         name: c.name,
         status: c.status,
@@ -159,7 +160,7 @@ function continueHandler(options?: { auto?: boolean }): void {
   const result = determineNextStep(bpDir);
 
   // Special: phase-ready → auto-advance to next phase
-  if (state.active_context.step === 'phase-ready') {
+  if (state.active_context.step === 'ready') {
     const nextPhase = findNextPhase(bpDir, state.project.current_milestone, state.project.current_phase ?? '');
     if (nextPhase) {
       updateState(bpDir, (s) => {
