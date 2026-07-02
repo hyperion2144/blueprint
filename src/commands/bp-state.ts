@@ -147,9 +147,10 @@ function setPhase(id: string) {
   const bpDir = findBlueprintDir();
   updateState(bpDir, (state) => {
     state.project.current_phase = id;
-    state.active_context = { type: 'phase', ref: `milestones/${state.project.current_milestone}/phases/${id}`, step: 'discuss' };
+    // Don't set step — agent should run /bp:discuss to start this phase
+    state.active_context = { type: 'phase', ref: `milestones/${state.project.current_milestone}/phases/${id}`, step: 'pending' };
   });
-  console.log(JSON.stringify({ ok: true, phase: id }));
+  console.log(JSON.stringify({ ok: true, phase: id, hint: 'Run /bp:discuss to start this phase.' }));
 }
 
 function setStep(step: string) {
