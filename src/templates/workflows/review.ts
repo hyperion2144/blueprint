@@ -36,13 +36,14 @@ First, check if this change produced any code:
   - All three review files required even if light — never leave a blank review
 
 **If FULL — dispatch parallel review sub-agents:**
-Run \`bp dispatch reviewer --change <change-name>\` for platform-specific dispatch instructions. Dispatch three in parallel, each with a different role: spec-review, quality-review, goal-review.
 
-Construct each sub-agent prompt:
-- Task: review the change according to assigned role
-- Read: proposal.md, delta-specs, design.md, implementation
-- Output: spec-review.md | quality-review.md | goal-review.md to bp/changes/<change-name>/
-- The sub-agent's system prompt (.omp/agents/bp-reviewer.md) contains per-role review checklists.
+1. Run \`bp dispatch reviewer --change <change-name>\` — outputs the sub-agent tool and its parameters.
+2. Call the tool it specifies 3 times in parallel (spec-review, quality-review, goal-review), each with \`assignment\` set to its role instructions below.
+
+\`assignment\` per role:
+- **spec-review**: Read delta-specs from specs/; cross-reference against implementation. Output spec-review.md with PASS/FAIL per SHALL/MUST + file:line evidence. If spec.md is empty template, FAIL immediately.
+- **quality-review**: Audit code for bugs, security, conventions, AI mistakes. Output quality-review.md with BLOCKER/MAJOR/MINOR/INFO.
+- **goal-review**: Read proposal.md must_haves; verify each against implementation. Output goal-review.md with ACHIEVED/PARTIAL/NOT_ACHIEVED.
 
 ### Step 3: Aggregate results
 After all three complete, check each report:

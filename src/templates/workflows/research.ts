@@ -11,14 +11,10 @@ const instructions = ORCHESTRATOR_RULE + `## Input
 Run \`bp context research\` — outputs state and file manifest. Read all listed files before proceeding.
 
 ### Step 2: Dispatch research sub-agents
-Run \`bp dispatch researcher\` for platform-specific dispatch instructions. Dispatch one per technical direction (stack, architecture, pitfalls) in parallel.
-
-Construct each sub-agent prompt:
-- Task: research <stack | architecture | pitfalls> for this project
-- Read: bp/requirements.md, bp/project.yml
-- Templates: tell the sub-agent to fetch its own with \`bp template research-stack\`, \`bp template research-architecture\`, \`bp template research-pitfalls\` (the sub-agent runs these CLI commands itself — do NOT pre-fetch and inline)
-- Output: research/stack.md | research/architecture.md | research/pitfalls.md
-- The sub-agent's system prompt (.omp/agents/bp-researcher.md) contains detailed research protocol.
+1. Run \`bp dispatch researcher\` — outputs the sub-agent tool and its parameters.
+2. Call the tool it specifies 3 times in parallel (stack, architecture, pitfalls), each with \`assignment\` set to:
+   - Read requirements.md + project.yml; fetch template with \`bp template research-<dir>\`
+   - Output: research/<stack|architecture|pitfalls>.md
 
 ### Step 3: Verify sub-agent output
 After all sub-agents complete, verify:

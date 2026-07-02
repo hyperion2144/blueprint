@@ -40,11 +40,11 @@ If a change name was provided: use it directly. If not: run \`bp state\`, list p
 
 **If FULL — you MUST dispatch the planner sub-agent. Do NOT write design/tasks/specs yourself:**
 
-Run \`bp dispatch planner --change <change-name>\`. Construct the sub-agent prompt:
-- Task: produce design.md, tasks.md (boxes UNCHECKED), specs/<domain>/spec.md
-- Read: proposal.md, context.md, specs/, conventions/
-- Output: design.md, tasks.md, specs/<domain>/spec.md
-- The sub-agent's system prompt (.omp/agents/bp-planner.md) contains detailed instructions.
+1. Run \`bp dispatch planner --change <change-name>\` — outputs the sub-agent tool to call and its parameters.
+2. Call the tool it specifies, with the \`assignment\` parameter set to:
+   - Task: produce design.md, tasks.md (boxes UNCHECKED), specs/<domain>/spec.md
+   - Read: proposal.md, context.md, specs/, conventions/
+   - Output: design.md, tasks.md, specs/<domain>/spec.md
 
 ### Step 4: Verify output
 Check produced files:

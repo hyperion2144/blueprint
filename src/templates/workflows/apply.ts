@@ -57,12 +57,13 @@ After ALL tasks pass verification:
 
 **If FULL — you MUST dispatch the executor sub-agent. Do NOT implement type:behavior tasks yourself:**
 
-Run \`bp dispatch executor --change <change-name>\`. Construct the sub-agent prompt:
-- Change: <change-name> (path from Step 0)
-- Task: implement all tasks in tasks.md following TDD protocol (RED→GREEN→REFACTOR)
-- Read: design.md, delta-specs
-- Output: code, tests, tasks.md (boxes checked ONLY after each task's tests pass)
-- The sub-agent's system prompt (.omp/agents/bp-executor.md) contains detailed TDD protocol.
+1. Run \`bp dispatch executor --change <change-name>\` — outputs the sub-agent tool and its parameters.
+2. Call the tool it specifies, with \`assignment\` set to:
+   - Change: <change-name> (path from Step 0)
+   - Task: implement all tasks in tasks.md following TDD protocol (RED→GREEN→REFACTOR)
+   - Read: design.md, delta-specs
+   - Output: code, tests, tasks.md (boxes checked after each task passes)
+   - Commit each task with \`bp commit --task <id> --tasks-path ...\`
 
 ### Step 4: Verify output and completion report
 After execution:

@@ -11,13 +11,11 @@ const instructions = ORCHESTRATOR_RULE + `## Input
 Run \`bp context research-phase\` — outputs state and file manifest. Read all listed files before proceeding.
 
 ### Step 2: Dispatch phase researcher
-Run \`bp dispatch phase-researcher\` for platform-specific dispatch instructions.
-
-Construct the sub-agent prompt:
-- Task: research implementation paths for this phase
-- Read: context.md, related specs/, conventions/
-- Output: research.md with recommended paths and TDD implications
-- The sub-agent's system prompt (.omp/agents/bp-phase-researcher.md) contains detailed research protocol.
+1. Run \`bp dispatch phase-researcher\` — outputs the sub-agent tool and its parameters.
+2. Call the tool it specifies, with \`assignment\` set to:
+   - Task: research implementation paths for this phase
+   - Read: context.md, related specs/, conventions/
+   - Output: research.md with recommended paths and TDD implications
 
 ### Step 3: Verify output
 Confirm \`research.md\` was written by the sub-agent at \`bp/milestones/<milestone-id>/phases/<phase-id>/research.md\` with:
