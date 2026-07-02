@@ -147,7 +147,7 @@ function setPhase(id: string) {
   const bpDir = findBlueprintDir();
   updateState(bpDir, (state) => {
     state.project.current_phase = id;
-    state.active_context = { type: 'phase', ref: `milestones/${state.project.current_milestone}/phases/${id}`, step: 'start' };
+    state.active_context = { type: 'phase', ref: `milestones/${state.project.current_milestone}/phases/${id}`, step: 'activated' };
   });
   console.log(JSON.stringify({ ok: true, phase: id }));
 }

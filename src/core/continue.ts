@@ -165,9 +165,9 @@ const STEP_INFO: Record<string, StepInfo> = {
     artifacts: [],
     fileRef: '',
   },
-  'phase-start': {
-    command: 'phase-start',
-    description: 'Phase activated. bp continue to enter discuss.',
+  'phase-activated': {
+    command: 'phase-activated',
+    description: 'Phase activated. bp continue to start.',
     artifacts: [],
     fileRef: '',
   },
@@ -207,7 +207,7 @@ export const STEP_TO_WORKFLOW: Record<string, WorkflowStep> = {
   'ship-phase': 'ship',
   'ship-milestone': 'ship',
   'phase-ready': 'ship',
-  'phase-start': 'discuss',
+  'phase-activated': 'discuss',
   'discuss-start': 'discuss',
   shipped: 'ship',
   init: 'init',

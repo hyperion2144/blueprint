@@ -60,7 +60,7 @@ export const STATE_TRANSITIONS: StateTransition[] = [
   { from: 'roadmap-defined', command: 'discuss', to: 'phase-discuss', slashCommand: '/bp:discuss' },
 
   // Phase 路径（phase-start 是 setPhase 后的入口，discuss-start 引导输出指令）
-  { from: 'phase-start', command: 'discuss-start', to: 'phase-discuss', slashCommand: '/bp:discuss' },
+  { from: 'phase-activated', command: 'discuss-start', to: 'phase-discuss', slashCommand: '/bp:discuss' },
   { from: 'phase-discuss', command: 'research-phase', to: 'phase-research', slashCommand: '/bp:research-phase', subagent: true },
   { from: 'phase-research', command: 'split', to: 'phase-split', slashCommand: '/bp:split' },
   { from: 'phase-split', command: 'plan', to: 'change-planning', slashCommand: '/bp:plan', subagent: true },

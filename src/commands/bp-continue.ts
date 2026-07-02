@@ -165,7 +165,7 @@ function continueHandler(options?: { auto?: boolean }): void {
     if (nextPhase) {
       updateState(bpDir, (s) => {
         s.project.current_phase = nextPhase;
-        s.active_context = { type: 'phase', ref: `milestones/${s.project.current_milestone}/phases/${nextPhase}`, step: 'start' };
+        s.active_context = { type: 'phase', ref: `milestones/${s.project.current_milestone}/phases/${nextPhase}`, step: 'activated' };
       });
       const newResult = determineNextStep(bpDir);
       formatContinueResult(newResult, isAuto);
