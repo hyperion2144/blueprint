@@ -1,0 +1,8 @@
+bp/project.yml
+bp/requirements.md
+bp/research/architecture.md
+bp/research/pitfalls.md
+bp/research/stack.md
+bp/research/summary.md
+bp/roadmap.md
+bp/state.md

@@ -1,0 +1,27 @@
+ .../2026-07-01-smoke-test}/change-summary.md       |   0
+ .../2026-07-01-smoke-test}/design.md               |   0
+ .../2026-07-01-smoke-test}/goal-review.md          |   0
+ .../2026-07-01-smoke-test}/proposal.md             |   0
+ .../2026-07-01-smoke-test}/quality-review.md       |   0
+ .../2026-07-01-smoke-test}/spec-review.md          |   0
+ .../specs/smoke-test/spec.md                       |   0
+ .../2026-07-01-smoke-test}/tasks.md                |   0
+ .../2026-07-01-smoke-test}/verification.md         |   0
+ .../phases/ph.1-foundation/summary.md              |  99 +++
+ .../changes/move-and-history/design.md             | 116 +++
+ .../changes/move-and-history/proposal.md           |  95 +++
+ .../specs/move-and-history/spec.md                 |  12 +
+ .../changes/move-and-history/tasks.md              |  69 ++
+ .../ph.2-core-engine/changes/reducer/design.md     | 116 +++
+ .../ph.2-core-engine/changes/reducer/proposal.md   |  95 +++
+ .../changes/reducer/specs/reducer/spec.md          |  12 +
+ .../ph.2-core-engine/changes/reducer/tasks.md      |  69 ++
+ .../changes/types-and-helpers/design.md            | 116 +++
+ .../changes/types-and-helpers/proposal.md          | 114 +++
+ .../specs/types-and-helpers/spec.md                |  12 +
+ .../changes/types-and-helpers/tasks.md             |  69 ++
+ .../phases/ph.2-core-engine/context.md             |  93 +++
+ .../phases/ph.2-core-engine/research.md            | 887 +++++++++++++++++++++
+ bp/specs/smoke-test/spec.md                        |  12 +
+ bp/state.md                                        |  24 +-
+ 26 files changed, 2002 insertions(+), 8 deletions(-)

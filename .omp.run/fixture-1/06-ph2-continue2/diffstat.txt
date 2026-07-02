@@ -1,0 +1,15 @@
+ .../2026-07-01-types-and-helpers}/COMPLETE.md      |   0
+ .../change-summary.md                              |   0
+ .../2026-07-01-types-and-helpers}/completion.json  |   0
+ .../2026-07-01-types-and-helpers}/design.md        |   0
+ .../2026-07-01-types-and-helpers}/goal-review.md   |   0
+ .../2026-07-01-types-and-helpers}/proposal.md      |   0
+ .../quality-review.md                              |   0
+ .../2026-07-01-types-and-helpers}/spec-review.md   |   0
+ .../specs/wincheck/spec.md                         |   0
+ .../2026-07-01-types-and-helpers}/tasks.md         |   0
+ .../2026-07-01-types-and-helpers}/verification.md  |   0
+ .../changes/move-and-history/proposal.md           | 149 ++++++++++++---------
+ bp/specs/wincheck/spec.md                          |  86 ++++++++++++
+ bp/state.md                                        |  10 +-
+ 14 files changed, 177 insertions(+), 68 deletions(-)

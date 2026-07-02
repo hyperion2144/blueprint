@@ -1,0 +1,5 @@
+{
+  "error": "timeout",
+  "events_count": 2242,
+  "text": "c1 执行完毕（11 测试通过，9 个原子提交，4 源文件 + 3 测试文件）。继续 review + verify。3 reviews 全部 PASS，2 个 FLAG（createInitialState 签名偏差）。修订 proposal 对齐实际签名后继续。c1 完成。推进 c2 (move-and-history)。"
+}

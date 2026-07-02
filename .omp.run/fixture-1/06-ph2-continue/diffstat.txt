@@ -1,0 +1,5 @@
+ .../changes/types-and-helpers/design.md            | 120 +++++++++------------
+ .../specs/types-and-helpers/spec.md                |  12 ---
+ .../types-and-helpers/specs/wincheck/spec.md       |  86 +++++++++++++++
+ bp/state.md                                        |   4 +-
+ 4 files changed, 140 insertions(+), 82 deletions(-)

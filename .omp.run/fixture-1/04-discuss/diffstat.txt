@@ -1,0 +1,21 @@
+ .../ph.1-foundation/changes/entry-canvas/design.md | 116 ++++
+ .../changes/entry-canvas/proposal.md               |  95 ++++
+ .../entry-canvas/specs/entry-canvas/spec.md        |  12 +
+ .../ph.1-foundation/changes/entry-canvas/tasks.md  |  69 +++
+ .../ph.1-foundation/changes/smoke-test/design.md   | 116 ++++
+ .../ph.1-foundation/changes/smoke-test/proposal.md |  95 ++++
+ .../changes/smoke-test/specs/smoke-test/spec.md    |  12 +
+ .../ph.1-foundation/changes/smoke-test/tasks.md    |  69 +++
+ .../changes/toolchain-and-types/change-summary.md  |  56 ++
+ .../changes/toolchain-and-types/design.md          | 111 ++++
+ .../changes/toolchain-and-types/proposal.md        |  86 +++
+ .../specs/toolchain-and-types/spec.md              |  12 +
+ .../changes/toolchain-and-types/tasks.md           |  91 ++++
+ .../changes/vite-vitest-configs/design.md          | 116 ++++
+ .../changes/vite-vitest-configs/proposal.md        |  95 ++++
+ .../specs/vite-vitest-configs/spec.md              |  12 +
+ .../changes/vite-vitest-configs/tasks.md           |  69 +++
+ .../phases/ph.1-foundation/context.md              |  78 +++
+ .../phases/ph.1-foundation/research.md             | 601 +++++++++++++++++++++
+ bp/state.md                                        |  25 +-
+ 20 files changed, 1932 insertions(+), 4 deletions(-)

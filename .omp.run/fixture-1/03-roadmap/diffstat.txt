@@ -1,0 +1,9 @@
+ .omp/hooks/pre/bp.ts        |  60 ++++++++++
+ bp/requirements.md          | 172 +++++++++++++++++++++++---
+ bp/research/architecture.md | 276 ++++++++++++++++++++++++++++++++++++++++++
+ bp/research/pitfalls.md     |  90 ++++++++++++++
+ bp/research/stack.md        | 285 ++++++++++++++++++++++++++++++++++++++++++++
+ bp/research/summary.md      | 148 +++++++++++++++++++++++
+ bp/roadmap.md               | 268 +++++++++++++++++++++++++++++++++++++++++
+ bp/state.md                 |  12 +-
+ 8 files changed, 1290 insertions(+), 21 deletions(-)

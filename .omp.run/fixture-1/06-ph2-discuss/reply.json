@@ -1,0 +1,5 @@
+{
+  "error": "timeout",
+  "events_count": 2374,
+  "text": "dispatch ph.2 research 子代理。ph.2 research 完成（887 行 / 25 个测试 / 4 文件）。进入 split。3 个变化拆分：\n\n- **c1: `types-and-helpers`** — 扩展 src/types.ts（Level, GameState, HistoryEntry, AnimSpec）+ coordKey helper + winCheck + tests\n- **c2: `move-and-history`** — move.ts + history.ts + tests\n- **c3: `reducer`** — reducer.ts + tests（整合 c1 + c2）\n\n依赖图：c2 → c1；c3 → c1 + c2继续 c1 (types-and-helpers) — 写 proposal。c1 是 FULL（有 type:behavior 测试）— dispatch planner。"
+}

@@ -1,0 +1,354 @@
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/COMPLETE.md b/bp/archive/M1-core-playable/ph.2-core-engine/2026-07-01-types-and-helpers/COMPLETE.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/COMPLETE.md
+rename to bp/archive/M1-core-playable/ph.2-core-engine/2026-07-01-types-and-helpers/COMPLETE.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/change-summary.md b/bp/archive/M1-core-playable/ph.2-core-engine/2026-07-01-types-and-helpers/change-summary.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/change-summary.md
+rename to bp/archive/M1-core-playable/ph.2-core-engine/2026-07-01-types-and-helpers/change-summary.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/completion.json b/bp/archive/M1-core-playable/ph.2-core-engine/2026-07-01-types-and-helpers/completion.json
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/completion.json
+rename to bp/archive/M1-core-playable/ph.2-core-engine/2026-07-01-types-and-helpers/completion.json
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/design.md b/bp/archive/M1-core-playable/ph.2-core-engine/2026-07-01-types-and-helpers/design.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/design.md
+rename to bp/archive/M1-core-playable/ph.2-core-engine/2026-07-01-types-and-helpers/design.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/goal-review.md b/bp/archive/M1-core-playable/ph.2-core-engine/2026-07-01-types-and-helpers/goal-review.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/goal-review.md
+rename to bp/archive/M1-core-playable/ph.2-core-engine/2026-07-01-types-and-helpers/goal-review.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/proposal.md b/bp/archive/M1-core-playable/ph.2-core-engine/2026-07-01-types-and-helpers/proposal.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/proposal.md
+rename to bp/archive/M1-core-playable/ph.2-core-engine/2026-07-01-types-and-helpers/proposal.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/quality-review.md b/bp/archive/M1-core-playable/ph.2-core-engine/2026-07-01-types-and-helpers/quality-review.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/quality-review.md
+rename to bp/archive/M1-core-playable/ph.2-core-engine/2026-07-01-types-and-helpers/quality-review.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/spec-review.md b/bp/archive/M1-core-playable/ph.2-core-engine/2026-07-01-types-and-helpers/spec-review.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/spec-review.md
+rename to bp/archive/M1-core-playable/ph.2-core-engine/2026-07-01-types-and-helpers/spec-review.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/specs/wincheck/spec.md b/bp/archive/M1-core-playable/ph.2-core-engine/2026-07-01-types-and-helpers/specs/wincheck/spec.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/specs/wincheck/spec.md
+rename to bp/archive/M1-core-playable/ph.2-core-engine/2026-07-01-types-and-helpers/specs/wincheck/spec.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/tasks.md b/bp/archive/M1-core-playable/ph.2-core-engine/2026-07-01-types-and-helpers/tasks.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/tasks.md
+rename to bp/archive/M1-core-playable/ph.2-core-engine/2026-07-01-types-and-helpers/tasks.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/verification.md b/bp/archive/M1-core-playable/ph.2-core-engine/2026-07-01-types-and-helpers/verification.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/verification.md
+rename to bp/archive/M1-core-playable/ph.2-core-engine/2026-07-01-types-and-helpers/verification.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/move-and-history/proposal.md b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/move-and-history/proposal.md
+index 8a67564..15559a6 100644
+--- a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/move-and-history/proposal.md
++++ b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/move-and-history/proposal.md
+@@ -1,21 +1,18 @@
+ # Proposal: move-and-history
+ 
+-> This document is a Change Proposal — align intent, scope, and approach before implementation. Complete each section; reviewers will evaluate this proposal before the design phase.
++> Phase ph.2-core-engine / Change 2 — pure move + history modules with TDD coverage.
+ 
+ ---
+ 
+ ## Intent
+ 
+-<!--
+-Describe why this change is needed:
+-1. What specific problem exists or what capability is missing?
+-2. Who is affected (users/developers/ops)? How severely?
+-3. What happens if we don't make this change?
+-4. Is this a bug fix / feature / tech debt / perf improvement?
+-5. Is this linked to a known issue, user feedback, or metric? (attach issue link if available)
+--->
++Implement the pure move validation/application logic and the entry-based undo stack helpers. These are the building blocks the reducer (c3) needs to orchestrate `move` / `undo` / `reset` intents.
+ 
+-Implement pure move.ts (validate + apply move/push) and history.ts (push/pop/clear) with tests
++1. **What problem**: After c1, we have types and `winCheck`, but no logic for "what happens when the player moves" or "how do we record/undo moves". The reducer (c3) cannot be written without these.
++2. **Who is affected**: c3 (reducer) — depends on both `move.ts` and `history.ts`.
++3. **If we don't make this change**: c3 cannot proceed; ph.3 cannot wire keyboard input.
++4. **Type**: prerequisite.
++5. **Linkage**: required by c3 (reducer); required by ph.3 (keyboard input handler → reducer → move + history).
+ 
+ ---
+ 
+@@ -23,73 +20,101 @@ Implement pure move.ts (validate + apply move/push) and history.ts (push/pop/cle
+ 
+ ### In scope
+ 
+-<!--
+-List all items covered by this change. One per line, verb-first.
+-Example:
+-- Add skeleton loading state on list pull-to-refresh
+-- Add useScrollPerformance hook for scroll metrics
+-- Memoize UserCard component
+--->
+-
+-{{in-scope-items}}
++- `src/core/move.ts` — pure: validate + apply move/push; returns `{ player, boxes, pushedIndex?, boxFrom? } | null`
++- `src/core/history.ts` — pure helpers: `pushEntry(state, entry): GameState`, `popEntry(state): { state, entry } | null`, `clearHistory(state): GameState`
++- Tests under `tests/unit/core/`:
++  - `move.test.ts` (≥ 6 tests covering: walk into floor, walk into wall (null), push box onto floor, push box onto target, push box blocked by wall (null), push box blocked by another box (null))
++  - `history.test.ts` (≥ 4 tests covering: push then pop restores state, pop empty stack returns null, clearHistory empties the stack, push preserves box identity via index)
+ 
+ ### Out of scope
+ 
+-<!--
+-Explicitly excluded changes to prevent scope creep. One per line with reason.
+-Example:
+-- Homepage skeleton screen (planned for next phase)
+-- Server-side API pagination (unrelated to client performance)
+-- Android list optimization (platform-specific, needs separate research)
+--->
+-
+-{{out-of-scope-items}}
++- `reducer.ts` — c3
++- `winCheck.ts` (already in c1)
++- `coordKey.ts` (already in c1)
++- `createInitialState.ts` (already in c1)
++- Renderer / keyboard input / gameShell — ph.3
++- Animator — ph.5
+ 
+ ---
+ 
+ ## Approach
+ 
+-<!--
+-Describe the technical direction at a high level:
+-1. Architecture layer: Which layer does the change touch (UI/Service/Store)? New modules needed?
+-2. Library choices: New dependencies? Upgrades? Rationale?
+-3. Data flow: How does data travel from source to UI? State management changes?
+-4. Compatibility: Backward compatibility strategy? Migration needed?
+-5. Testability: Are there injection points / mock seams for testing?
+-
+-No detailed implementation here — the design doc handles that.
+--->
+-
+-{{approach}}
++**`src/core/move.ts`** — direction arithmetic + tile lookup:
++```ts
++const DELTAS: Record<Direction, Coord> = {
++  N: { x: 0, y: -1 },
++  S: { x: 0, y:  1 },
++  E: { x:  1, y: 0 },
++  W: { x: -1, y: 0 },
++};
++
++export function attemptMove(state: GameState, dir: Direction): MoveResult | null {
++  const delta = DELTAS[dir];
++  const target: Coord = { x: state.player.x + delta.x, y: state.player.y + delta.y };
++  const beyond: Coord = { x: target.x + delta.x, y: target.y + delta.y };
++
++  // Wall at target → can't move
++  if (state.static.walls.has(target)) return null;
++
++  // Box at target?
++  const boxIdx = state.boxes.findIndex((b) => b.x === target.x && b.y === target.y);
++  if (boxIdx === -1) {
++    // No box → walk
++    return { player: target, boxes: null, pushedIndex: undefined, boxFrom: undefined };
++  }
++
++  // Box at target. Can we push it?
++  if (state.static.walls.has(beyond)) return null;
++  const blockerIdx = state.boxes.findIndex((b) => b.x === beyond.x && b.y === beyond.y);
++  if (blockerIdx !== -1) return null;
++
++  const boxFrom = state.boxes[boxIdx];
++  if (!boxFrom) return null; // satisfies noUncheckedIndexedAccess
++  const newBoxes = state.boxes.slice();
++  newBoxes[boxIdx] = beyond;
++  return { player: target, boxes: newBoxes, pushedIndex: boxIdx, boxFrom };
++}
++```
++
++**`src/core/history.ts`** — entry push/pop/clear:
++```ts
++export function pushEntry(state: GameState, entry: HistoryEntry): GameState {
++  return { ...state, history: [...state.history, entry] };
++}
++
++export function popEntry(state: GameState): { state: GameState; entry: HistoryEntry } | null {
++  if (state.history.length === 0) return null;
++  const entry = state.history[state.history.length - 1];
++  if (!entry) return null;
++  return { state: { ...state, history: state.history.slice(0, -1) }, entry };
++}
++
++export function clearHistory(state: GameState): GameState {
++  return { ...state, history: [] };
++}
++```
++
++**Tests** — pure logic, node env, per-test inline `Level` fixtures using `createInitialState` from c1.
+ 
+ ---
+ 
+ ## Must-haves
+ 
+-<!--
+-3-7 observable, verifiable must-have behaviors.
+-Each must be a concrete statement — no ambiguity.
+-Reviewers should be able to judge pass/fail using these conditions.
+-
+-Format: "MUST <condition>" or "SHALL <condition>"
+-- Observable: visible on screen, checkable via CLI, assertable in tests
+-- Verifiable: reviewer can confirm via action/command
+--->
+-
+-{{must-haves}}
++1. MUST export `attemptMove(state: GameState, dir: Direction): MoveResult | null` from `src/core/move.ts`.
++2. MUST export `pushEntry`, `popEntry`, `clearHistory` from `src/core/history.ts` with the signatures specified.
++3. MUST make `attemptMove` return `null` when the target tile is a wall.
++4. MUST make `attemptMove` return `null` when a push would push a box into another box.
++5. MUST make `popEntry` return `null` when the history stack is empty (no-op undo).
++6. MUST have ≥ 10 passing unit tests across `move.test.ts` and `history.test.ts`.
++7. MUST NOT introduce DOM imports in `src/core/`.
+ 
+ ---
+ 
+ ## Non-goals
+ 
+-<!--
+-Explicit non-goals to prevent reviewers from asking "why wasn't X done?"
+-Different from Out of scope (not in this change's scope).
+-Non-goals are specific targets that might be incorrectly assumed to be in scope.
+-Example:
+-- Not pursuing Android list performance in this change
+-- Not changing the existing pagination logic
+-- Not adding new UI component library dependencies
+--->
+-
+-{{non-goals}}
++- Not implementing the reducer (c3).
++- Not implementing the animator (ph.5).
++- Not implementing deadlock detection (ph.8).
++- Not implementing level loading (ph.3).
++- Not implementing input handling (ph.3).
++- Not adding lint / commit hooks (ph.9).
+\ No newline at end of file
+diff --git a/bp/specs/wincheck/spec.md b/bp/specs/wincheck/spec.md
+new file mode 100644
+index 0000000..7a0e33d
+--- /dev/null
++++ b/bp/specs/wincheck/spec.md
+@@ -0,0 +1,86 @@
++# wincheck — Delta Spec
++
++> Behavioral contract for `winCheck(state: GameState): boolean` introduced in change c1 (types-and-helpers), ph.2-core-engine.
++> Source: design.md, research.md (Win-check algorithm, P1), context.md D4, architecture.md "Win-check algorithm".
++
++---
++
++## ADDED Requirements
++
++### Requirement: Win condition is all-boxes-on-targets
++
++The system SHALL report `won: true` if and only if every box occupies a target tile. The check MUST be a pure function of `state.boxes` and `state.static.targets` with no side effects and no dependency on `moveCount`, `history`, or `player`.
++
++> Confidence: HIGH | Source: context.md D4, architecture.md "Win-check algorithm", research.md `winCheck` signature
++
++#### Scenario: all boxes on targets (structural equality via coordKey)
++
++- **GIVEN** a `GameState` whose `boxes` are structurally equal to `static.targets` but referentially distinct objects (e.g. boxes `[{1,1},{3,3}]`, targets `{{1,1},{3,3}}` built from separate object literals)
++- **WHEN** `winCheck(state)` is called
++- **THEN** it returns `true`, proving the `coordKey` reconciliation defeats `Set<Coord>` object identity (pitfall P1)
++
++#### Scenario: one box off target
++
++- **GIVEN** `boxes = [{1,1},{3,3}]` and `static.targets = {{1,1},{5,5}}` (one box not on a target)
++- **WHEN** `winCheck(state)` is called
++- **THEN** it returns `false`
++
++#### Scenario: box count differs from target count
++
++- **GIVEN** `boxes = [{1,1}]` and `static.targets = {{1,1},{3,3}}` (1 box, 2 targets)
++- **WHEN** `winCheck(state)` is called
++- **THEN** it returns `false` without iterating boxes (short-circuit on `boxes.length !== targets.size`)
++
++#### Scenario: empty boxes and empty targets (degenerate level)
++
++- **GIVEN** `boxes = []` and `static.targets` of size 0
++- **WHEN** `winCheck(state)` is called
++- **THEN** it returns `true` (vacuously all boxes are on targets; defined behavior for a no-box level)
++
++---
++
++### Requirement: Structural membership via coordKey, not Set#has
++
++The system SHALL NOT test box-on-target membership with `Set<Coord>#has` (which uses object identity). It MUST build a `Set<string>` of `coordKey(target)` from `state.static.targets` and test `coordKey(box)` membership against it. The `state.static.targets` set MUST NOT be mutated during the check.
++
++> Confidence: HIGH | Source: research.md P1, design.md "Data Flow"
++
++#### Scenario: freshly pushed box on a target is detected
++
++- **GIVEN** a box that was just pushed onto a target — a freshly allocated `Coord` object structurally equal to a target but a different reference than any object in `static.targets`
++- **WHEN** `winCheck(state)` is called
++- **THEN** it returns `true` (the fresh object is matched by `coordKey`, not by reference)
++
++#### Scenario: static.targets is not mutated by the check
++
++- **GIVEN** a `GameState` with a known `static.targets` set
++- **WHEN** `winCheck(state)` is called any number of times
++- **THEN** `state.static.targets` is unchanged (same size, same entries, same reference) — `winCheck` only reads `static`
++
++---
++
++### Requirement: O(B + T) cost, no incremental tracking
++
++The system SHALL compute the win state on every call in O(B + T) time where B = `boxes.length` and T = `targets.size`. It MUST NOT maintain an incremental "boxes-on-target" counter in `GameState`; the single source of truth is the per-call check.
++
++> Confidence: HIGH | Source: architecture.md "Win-check algorithm", research.md `winCheck` signature
++
++#### Scenario: recomputed on every transition
++
++- **GIVEN** a `won: true` state and a subsequent `undo` that removes a box from its target
++- **WHEN** `winCheck` is re-run on the undone state (by c3's reducer)
++- **THEN** it returns `false` (the flag is always derived, never stale — pitfall BLOCKER #3 / MAJOR #17 mitigation)
++
++---
++
++### Requirement: Pure and DOM-free
++
++The `winCheck` module MUST be a pure function importable in the node-env `unit` Vitest project with zero DOM setup. It MUST NOT import from `render/`, `input/`, `anim/`, `dom`, or `storage`. It MUST NOT allocate anything beyond the per-call `Set<string>` of target keys.
++
++> Confidence: HIGH | Source: context.md D1/D10, proposal Must-have #6
++
++#### Scenario: no DOM imports in src/core/
++
++- **GIVEN** the `src/core/winCheck.ts` source file
++- **WHEN** scanned for `dom`, `canvas`, `window`, or `document` imports
++- **THEN** no matches are found and the file runs under `vitest run` (unit project, node env) without a DOM harness
+diff --git a/bp/state.md b/bp/state.md
+index f347015..6ead2cc 100644
+--- a/bp/state.md
++++ b/bp/state.md
+@@ -6,14 +6,11 @@ project:
+   current_phase: ph.2-core-engine
+ active_context:
+   type: change
+-  ref: changes/types-and-helpers
+-  step: applying
++  ref: changes/move-and-history
++  step: planning
+ changes:
+-  - name: types-and-helpers
+-    status: applying
+-    depends_on: []
+   - name: move-and-history
+-    status: proposal
++    status: planning
+     depends_on:
+       - types-and-helpers
+   - name: reducer
+@@ -34,6 +31,7 @@ Project (init)
+ Project path: `initialized → grill → researched → roadmap-defined`
+ 
+ ## History
++- [2026-07-01] Archived `types-and-helpers` (M1-core-playable / ph.2-core-engine)
+ - [2026-07-01] Archived `smoke-test` (M1-core-playable / ph.1-foundation)
+ - [2026-07-01] Archived `entry-canvas` (M1-core-playable / ph.1-foundation)
+ - [2026-07-01] Archived `vite-vitest-configs` (M1-core-playable / ph.1-foundation)

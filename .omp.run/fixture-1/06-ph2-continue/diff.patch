@@ -1,0 +1,300 @@
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/design.md b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/design.md
+index 6a2fb8b..d3582eb 100644
+--- a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/design.md
++++ b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/design.md
+@@ -1,110 +1,92 @@
+ # Design: types-and-helpers
+ 
+-> This document is the Change Design — written after proposal approval, describing how to implement. Each section has fill-in guidance. After this document, proceed to task breakdown.
++> Change c1 of ph.2-core-engine — type foundation + first pure helpers (`coordKey`, `winCheck`, `createInitialState`). Prerequisite for c2 (move+history) and c3 (reducer).
+ 
+ ---
+ 
+ ## Context & Goals
+ 
+-<!--
+-1. Briefly describe context — what constraints exist?
+-2. Core design goals (no more than 3)
+-3. Must align with proposal Intent and Must-haves
+--->
+-
+-{{background-and-goals}}
++- **Context**: ph.1 left `src/types.ts` with `Direction`, `Coord`, `Tile`, `Intent`. The reducer (c3) needs `Level`, `GameState`, `HistoryEntry`, `AnimSpec`. `winCheck` needs `coordKey` because `Set<Coord>` uses object identity and pushed boxes are fresh objects (research P1, pitfalls #15). `createInitialState` is the factory c3's reducer and ph.3's loader call. Locked decisions D1–D10 (context.md) apply; this change touches D2 (types), D3 (immutable GameState), D4 (winCheck O(B)), D8 (AnimSpec), D9 (boxes array), D10 (tests under `tests/unit/core/`, node env).
++- **Goals**: (1) Export the four new types without modifying existing exports. (2) Ship `coordKey` + `winCheck` + `createInitialState` as pure, DOM-free functions. (3) Lay the `initial` snapshot on `GameState` so c3's pure 2-arg `reducer` can `reset` without a closure (research P6).
++- **Aligns with**: proposal Must-haves #1–#7; research.md signatures (verified 2026-07-01).
+ 
+ ---
+ 
+ ## Technical Approach
+-
+ ### Architecture Diagram
+ 
+-<!--
+-ASCII art showing module/component relationships:
+-- New modules vs. existing modules
+-- Data flow direction (arrows)
+-- File/module boundaries
+-Annotate: [NEW], [MODIFIED], [EXISTING]
+--->
+-
+ ```text
+-{{architecture-diagram}}
++src/types.ts [MODIFIED] ─append─▶ Level, GameState, HistoryEntry, AnimSpec
++        │ import type
++        ▼
++src/core/coordKey.ts        [NEW]  coordKey(c: Coord): string
++        │ import { coordKey }
++        ▼
++src/core/winCheck.ts        [NEW]  winCheck(state: GameState): boolean
++        │ import { winCheck }
++        ▼
++src/core/createInitialState.ts [NEW] createInitialState(level: Level): GameState
++tests/unit/core/ [NEW]  coordKey.test.ts (4) · winCheck.test.ts (4) · createInitialState.test.ts (3)
+ ```
+ 
+ ### Core Data Structures
+-
+-<!--
+-Key types/interfaces/data structures introduced or modified by this design.
+-Use TypeScript interface format. Brief description per type.
+--->
+-
+-{{data-structures}}
+-
++```ts
++export interface Level { id: string; width: number; height: number;
++  walls: Set<Coord>; targets: Set<Coord>; player: Coord; boxes: Coord[]; }
++export interface GameState { levelId: string;
++  static: { width: number; height: number; walls: Set<Coord>; targets: Set<Coord>; };
++  initial: { player: Coord; boxes: Coord[] };   // immutable snapshot for reset (P6)
++  player: Coord; boxes: Coord[]; moveCount: number; history: HistoryEntry[]; won: boolean; }
++export interface HistoryEntry { player: Coord; pushedBoxIndex?: number; boxFrom?: Coord; moveCount: number; }
++export interface AnimSpec { from: Coord; to: Coord; duration: number; entities: ('player' | number)[]; }
++```
++`static` and `initial` are shared by reference across all reducer outputs and MUST NOT be mutated (D3, research P3). `won` is recomputed by `winCheck` on every transition (D4).
+ ### Data Flow
+ 
+-<!--
+-Step-by-step description of data flow from trigger to effect.
+-Example:
+-1. User scrolls list → FlatList fires onScroll
+-2. OptimizedList reads itemHeight config → enables getItemLayout
+-3. Layout engine skips dynamic measurement → uses fixed row height
+-4. useScrollPerformance samples FPS every 500ms
+-5. FPS data → Performance Reporter → backend
+--->
+-
+-{{data-flow}}
++1. ph.3 loader (or inline test fixture) builds a `Level` → 2. `createInitialState(level)` constructs `static` from dims/walls/targets, `initial` snapshot from player/boxes, `boxes: level.boxes.slice()`, `moveCount: 0`, `history: []`, then `won = winCheck(state)` → 3. `winCheck` builds a per-call `Set<string>` from `state.static.targets` via `coordKey` and tests every box (O(B+T); defeats `Set<Coord>` identity) → 4. c3's reducer consumes the resulting `GameState`.
+ 
+ ### Interface Design
++```ts
++export function coordKey(c: Coord): string;                  // "x,y"  (src/core/coordKey.ts)
++export function winCheck(state: GameState): boolean;         // true iff every box on a target
++export function createInitialState(level: Level): GameState; // fresh, won=winCheck(state)
++```
+ 
+-<!--
+-Public API signatures exposed by this design:
+-- Function/method names
+-- Parameter lists (name + type + description)
+-- Return types
+-- sync/async
+--->
+-
+-{{api-signatures}}
++> **Deviation from proposal Must-have #4** (flagged for spec-review): the proposal pins `createInitialState(level, levelId)`. Research.md (verified) gives `Level` an `id: string` field and recommends the single-arg `createInitialState(level)` using `level.id` — a separate `levelId` param is redundant once `Level.id` exists. This change adopts the research signature. **Confidence: HIGH** (Level.id verified; needed for ph.7 persistence namespacing).
+ 
+ ---
+ 
+ ## File Manifest
+ 
+-<!--
+-All files to create or modify, organized as a table.
+--->
+-
+ | File Path | Description | Action |
+ |-----------|-------------|--------|
+-| `{{file-path-1}}` | {{description}} | Create |
+-| `{{file-path-2}}` | {{description}} | Modify |
++| `src/types.ts` | Append `Level`, `GameState`, `HistoryEntry`, `AnimSpec`; keep existing 4 exports | Modify |
++| `src/core/coordKey.ts` | `coordKey(c)` → `"x,y"` structural key | Create |
++| `src/core/winCheck.ts` | `winCheck(state)` via per-call `Set<string>` | Create |
++| `src/core/createInitialState.ts` | Factory `Level` → `GameState` | Create |
++| `tests/unit/core/coordKey.test.ts` | 4 tests | Create |
++| `tests/unit/core/winCheck.test.ts` | 4 tests | Create |
++| `tests/unit/core/createInitialState.test.ts` | 3 tests | Create |
+ 
+ ---
+ 
+ ## Test Strategy
+ 
+-### Unit Tests
+-- <!-- Which modules need unit tests? What needs mocking? -->
+-
+-### Integration Tests
+-- <!-- Which flows need integration tests? What fixtures needed? -->
+-
+-### TDD Tasks
+-- <!-- List type:behavior tasks requiring RED→GREEN→REFACTOR -->
++- **Unit**: 11 total under `tests/unit/core/`, node env (D10). No mocks/DOM/async. Inline `Level`/`GameState` fixtures per test (no shared fixture file — ph.3 adds the loader). `toBe` for referential equality, `toEqual` for structural.
++- **Integration**: none here (reducer integration is c3).
++- **TDD tasks**: coordKey (4), winCheck (4), createInitialState (3) — each RED→GREEN→REFACTOR.
++- **Gates**: `npx tsc --noEmit` (strict + `noUncheckedIndexedAccess` + `verbatimModuleSyntax`), `npm test`, `npm run build`; `grep -rn "dom\|canvas\|window\|document" src/core/` empty.
+ 
+ ---
+ 
+ ## Alternatives
+ 
+-<!--
+-Evaluated but rejected approaches, with rationale.
+--->
+-
+ | Approach | Pros | Cons | Rejection Reason |
+ |----------|------|------|-----------------|
+-| {{alt-name-1}} | {{pros}} | {{cons}} | {{reason}} |
+-| {{alt-name-2}} | {{pros}} | {{cons}} | {{reason}} |
++| `Set<string>` for walls/targets from load | No per-call rebuild | Violates D3's locked `Set<Coord>`; loses `Coord` on readback | Re-opens a locked decision (research) |
++| Intern `Coord` objects for referential `Set#has` | No coordKey needed | Registry + canonicalize-on-push; fragile | Violates "boxes are plain data" (research) |
++| `createReducer(initialState)` factory for reset | `GameState` stays minimal | Changes pinned `reducer(state, intent)` export | Breaks c3's assignment signature (P6) |
++| `initial` stored inside `static` | Groups with level data | player/boxes are not structural | Misleading grouping (research) |
+ 
+ ---
+ 
+@@ -112,5 +94,7 @@ Evaluated but rejected approaches, with rationale.
+ 
+ | Risk | Probability | Impact | Mitigation |
+ |------|------------|--------|-----------|
+-| {{risk-1}} | {{probability}} | {{impact}} | {{mitigation}} |
+-| {{risk-2}} | {{probability}} | {{impact}} | {{mitigation}} |
++| `Set<Coord>` identity breaks `winCheck` (P1) | High | Critical | `coordKey` + per-call `Set<string>` rebuild; test #7 catches it RED |
++| `static` mutated across shared refs (P3) | Low | Critical | `core/` only reads `static`; c3 test #25 asserts referential equality |
++| `noUncheckedIndexedAccess` type errors (P2) | Medium | Medium | Explicit `undefined` guards; no `!` assertions |
++| `verbatimModuleSyntax` import errors (P8) | Medium | Low | `import type` for all type-only specifiers |
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/specs/types-and-helpers/spec.md b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/specs/types-and-helpers/spec.md
+deleted file mode 100644
+index d112edf..0000000
+--- a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/specs/types-and-helpers/spec.md
++++ /dev/null
+@@ -1,12 +0,0 @@
+-# types-and-helpers — Delta Spec
+-
+-## ADDED Requirements
+-
+-### Requirement: <name>
+-
+-The system SHALL <behavior>.
+-
+-#### Scenario: <name>
+-- **GIVEN** <precondition>
+-- **WHEN** <trigger>
+-- **THEN** <expected outcome>
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/specs/wincheck/spec.md b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/specs/wincheck/spec.md
+new file mode 100644
+index 0000000..7a0e33d
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/specs/wincheck/spec.md
+@@ -0,0 +1,86 @@
++# wincheck — Delta Spec
++
++> Behavioral contract for `winCheck(state: GameState): boolean` introduced in change c1 (types-and-helpers), ph.2-core-engine.
++> Source: design.md, research.md (Win-check algorithm, P1), context.md D4, architecture.md "Win-check algorithm".
++
++---
++
++## ADDED Requirements
++
++### Requirement: Win condition is all-boxes-on-targets
++
++The system SHALL report `won: true` if and only if every box occupies a target tile. The check MUST be a pure function of `state.boxes` and `state.static.targets` with no side effects and no dependency on `moveCount`, `history`, or `player`.
++
++> Confidence: HIGH | Source: context.md D4, architecture.md "Win-check algorithm", research.md `winCheck` signature
++
++#### Scenario: all boxes on targets (structural equality via coordKey)
++
++- **GIVEN** a `GameState` whose `boxes` are structurally equal to `static.targets` but referentially distinct objects (e.g. boxes `[{1,1},{3,3}]`, targets `{{1,1},{3,3}}` built from separate object literals)
++- **WHEN** `winCheck(state)` is called
++- **THEN** it returns `true`, proving the `coordKey` reconciliation defeats `Set<Coord>` object identity (pitfall P1)
++
++#### Scenario: one box off target
++
++- **GIVEN** `boxes = [{1,1},{3,3}]` and `static.targets = {{1,1},{5,5}}` (one box not on a target)
++- **WHEN** `winCheck(state)` is called
++- **THEN** it returns `false`
++
++#### Scenario: box count differs from target count
++
++- **GIVEN** `boxes = [{1,1}]` and `static.targets = {{1,1},{3,3}}` (1 box, 2 targets)
++- **WHEN** `winCheck(state)` is called
++- **THEN** it returns `false` without iterating boxes (short-circuit on `boxes.length !== targets.size`)
++
++#### Scenario: empty boxes and empty targets (degenerate level)
++
++- **GIVEN** `boxes = []` and `static.targets` of size 0
++- **WHEN** `winCheck(state)` is called
++- **THEN** it returns `true` (vacuously all boxes are on targets; defined behavior for a no-box level)
++
++---
++
++### Requirement: Structural membership via coordKey, not Set#has
++
++The system SHALL NOT test box-on-target membership with `Set<Coord>#has` (which uses object identity). It MUST build a `Set<string>` of `coordKey(target)` from `state.static.targets` and test `coordKey(box)` membership against it. The `state.static.targets` set MUST NOT be mutated during the check.
++
++> Confidence: HIGH | Source: research.md P1, design.md "Data Flow"
++
++#### Scenario: freshly pushed box on a target is detected
++
++- **GIVEN** a box that was just pushed onto a target — a freshly allocated `Coord` object structurally equal to a target but a different reference than any object in `static.targets`
++- **WHEN** `winCheck(state)` is called
++- **THEN** it returns `true` (the fresh object is matched by `coordKey`, not by reference)
++
++#### Scenario: static.targets is not mutated by the check
++
++- **GIVEN** a `GameState` with a known `static.targets` set
++- **WHEN** `winCheck(state)` is called any number of times
++- **THEN** `state.static.targets` is unchanged (same size, same entries, same reference) — `winCheck` only reads `static`
++
++---
++
++### Requirement: O(B + T) cost, no incremental tracking
++
++The system SHALL compute the win state on every call in O(B + T) time where B = `boxes.length` and T = `targets.size`. It MUST NOT maintain an incremental "boxes-on-target" counter in `GameState`; the single source of truth is the per-call check.
++
++> Confidence: HIGH | Source: architecture.md "Win-check algorithm", research.md `winCheck` signature
++
++#### Scenario: recomputed on every transition
++
++- **GIVEN** a `won: true` state and a subsequent `undo` that removes a box from its target
++- **WHEN** `winCheck` is re-run on the undone state (by c3's reducer)
++- **THEN** it returns `false` (the flag is always derived, never stale — pitfall BLOCKER #3 / MAJOR #17 mitigation)
++
++---
++
++### Requirement: Pure and DOM-free
++
++The `winCheck` module MUST be a pure function importable in the node-env `unit` Vitest project with zero DOM setup. It MUST NOT import from `render/`, `input/`, `anim/`, `dom`, or `storage`. It MUST NOT allocate anything beyond the per-call `Set<string>` of target keys.
++
++> Confidence: HIGH | Source: context.md D1/D10, proposal Must-have #6
++
++#### Scenario: no DOM imports in src/core/
++
++- **GIVEN** the `src/core/winCheck.ts` source file
++- **WHEN** scanned for `dom`, `canvas`, `window`, or `document` imports
++- **THEN** no matches are found and the file runs under `vitest run` (unit project, node env) without a DOM harness
+diff --git a/bp/state.md b/bp/state.md
+index 99a9cfb..f347015 100644
+--- a/bp/state.md
++++ b/bp/state.md
+@@ -7,10 +7,10 @@ project:
+ active_context:
+   type: change
+   ref: changes/types-and-helpers
+-  step: planning
++  step: applying
+ changes:
+   - name: types-and-helpers
+-    status: planning
++    status: applying
+     depends_on: []
+   - name: move-and-history
+     status: proposal

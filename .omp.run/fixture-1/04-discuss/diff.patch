@@ -1,0 +1,2066 @@
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/entry-canvas/design.md b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/entry-canvas/design.md
+new file mode 100644
+index 0000000..d002284
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/entry-canvas/design.md
+@@ -0,0 +1,116 @@
++# Design: entry-canvas
++
++> This document is the Change Design — written after proposal approval, describing how to implement. Each section has fill-in guidance. After this document, proceed to task breakdown.
++
++---
++
++## Context & Goals
++
++<!--
++1. Briefly describe context — what constraints exist?
++2. Core design goals (no more than 3)
++3. Must align with proposal Intent and Must-haves
++-->
++
++{{background-and-goals}}
++
++---
++
++## Technical Approach
++
++### Architecture Diagram
++
++<!--
++ASCII art showing module/component relationships:
++- New modules vs. existing modules
++- Data flow direction (arrows)
++- File/module boundaries
++Annotate: [NEW], [MODIFIED], [EXISTING]
++-->
++
++```text
++{{architecture-diagram}}
++```
++
++### Core Data Structures
++
++<!--
++Key types/interfaces/data structures introduced or modified by this design.
++Use TypeScript interface format. Brief description per type.
++-->
++
++{{data-structures}}
++
++### Data Flow
++
++<!--
++Step-by-step description of data flow from trigger to effect.
++Example:
++1. User scrolls list → FlatList fires onScroll
++2. OptimizedList reads itemHeight config → enables getItemLayout
++3. Layout engine skips dynamic measurement → uses fixed row height
++4. useScrollPerformance samples FPS every 500ms
++5. FPS data → Performance Reporter → backend
++-->
++
++{{data-flow}}
++
++### Interface Design
++
++<!--
++Public API signatures exposed by this design:
++- Function/method names
++- Parameter lists (name + type + description)
++- Return types
++- sync/async
++-->
++
++{{api-signatures}}
++
++---
++
++## File Manifest
++
++<!--
++All files to create or modify, organized as a table.
++-->
++
++| File Path | Description | Action |
++|-----------|-------------|--------|
++| `{{file-path-1}}` | {{description}} | Create |
++| `{{file-path-2}}` | {{description}} | Modify |
++
++---
++
++## Test Strategy
++
++### Unit Tests
++- <!-- Which modules need unit tests? What needs mocking? -->
++
++### Integration Tests
++- <!-- Which flows need integration tests? What fixtures needed? -->
++
++### TDD Tasks
++- <!-- List type:behavior tasks requiring RED→GREEN→REFACTOR -->
++
++---
++
++## Alternatives
++
++<!--
++Evaluated but rejected approaches, with rationale.
++-->
++
++| Approach | Pros | Cons | Rejection Reason |
++|----------|------|------|-----------------|
++| {{alt-name-1}} | {{pros}} | {{cons}} | {{reason}} |
++| {{alt-name-2}} | {{pros}} | {{cons}} | {{reason}} |
++
++---
++
++## Risk Assessment
++
++| Risk | Probability | Impact | Mitigation |
++|------|------------|--------|-----------|
++| {{risk-1}} | {{probability}} | {{impact}} | {{mitigation}} |
++| {{risk-2}} | {{probability}} | {{impact}} | {{mitigation}} |
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/entry-canvas/proposal.md b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/entry-canvas/proposal.md
+new file mode 100644
+index 0000000..5f4cfba
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/entry-canvas/proposal.md
+@@ -0,0 +1,95 @@
++# Proposal: entry-canvas
++
++> This document is a Change Proposal — align intent, scope, and approach before implementation. Complete each section; reviewers will evaluate this proposal before the design phase.
++
++---
++
++## Intent
++
++<!--
++Describe why this change is needed:
++1. What specific problem exists or what capability is missing?
++2. Who is affected (users/developers/ops)? How severely?
++3. What happens if we don't make this change?
++4. Is this a bug fix / feature / tech debt / perf improvement?
++5. Is this linked to a known issue, user feedback, or metric? (attach issue link if available)
++-->
++
++Wire index.html, src/main.ts, src/types.ts; npm run dev boots a browser canvas
++
++---
++
++## Scope
++
++### In scope
++
++<!--
++List all items covered by this change. One per line, verb-first.
++Example:
++- Add skeleton loading state on list pull-to-refresh
++- Add useScrollPerformance hook for scroll metrics
++- Memoize UserCard component
++-->
++
++{{in-scope-items}}
++
++### Out of scope
++
++<!--
++Explicitly excluded changes to prevent scope creep. One per line with reason.
++Example:
++- Homepage skeleton screen (planned for next phase)
++- Server-side API pagination (unrelated to client performance)
++- Android list optimization (platform-specific, needs separate research)
++-->
++
++{{out-of-scope-items}}
++
++---
++
++## Approach
++
++<!--
++Describe the technical direction at a high level:
++1. Architecture layer: Which layer does the change touch (UI/Service/Store)? New modules needed?
++2. Library choices: New dependencies? Upgrades? Rationale?
++3. Data flow: How does data travel from source to UI? State management changes?
++4. Compatibility: Backward compatibility strategy? Migration needed?
++5. Testability: Are there injection points / mock seams for testing?
++
++No detailed implementation here — the design doc handles that.
++-->
++
++{{approach}}
++
++---
++
++## Must-haves
++
++<!--
++3-7 observable, verifiable must-have behaviors.
++Each must be a concrete statement — no ambiguity.
++Reviewers should be able to judge pass/fail using these conditions.
++
++Format: "MUST <condition>" or "SHALL <condition>"
++- Observable: visible on screen, checkable via CLI, assertable in tests
++- Verifiable: reviewer can confirm via action/command
++-->
++
++{{must-haves}}
++
++---
++
++## Non-goals
++
++<!--
++Explicit non-goals to prevent reviewers from asking "why wasn't X done?"
++Different from Out of scope (not in this change's scope).
++Non-goals are specific targets that might be incorrectly assumed to be in scope.
++Example:
++- Not pursuing Android list performance in this change
++- Not changing the existing pagination logic
++- Not adding new UI component library dependencies
++-->
++
++{{non-goals}}
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/entry-canvas/specs/entry-canvas/spec.md b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/entry-canvas/specs/entry-canvas/spec.md
+new file mode 100644
+index 0000000..e39b555
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/entry-canvas/specs/entry-canvas/spec.md
+@@ -0,0 +1,12 @@
++# entry-canvas — Delta Spec
++
++## ADDED Requirements
++
++### Requirement: <name>
++
++The system SHALL <behavior>.
++
++#### Scenario: <name>
++- **GIVEN** <precondition>
++- **WHEN** <trigger>
++- **THEN** <expected outcome>
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/entry-canvas/tasks.md b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/entry-canvas/tasks.md
+new file mode 100644
+index 0000000..773ec7e
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/entry-canvas/tasks.md
+@@ -0,0 +1,69 @@
++# Tasks: entry-canvas
++
++> This document breaks the design into executable tasks grouped by wave. Each task includes description, files, acceptance criteria, optional depends_on and spec_ref. type:behavior tasks must include RED test descriptions (GIVEN/WHEN/THEN format).
++
++---
++
++## TDD Type Annotations
++
++| type | Meaning | TDD Protocol |
++|------|---------|-------------|
++| `behavior` | Business behavior — implement a concrete, observable/assertable feature | **RED→GREEN→REFACTOR** (mandatory: test first → implement → refactor) |
++| `config` | Configuration — env vars, CI/CD, lint, tsconfig, etc. | Direct implementation, no TDD |
++| `refactor` | Refactoring — improve internal structure without changing behavior | Verify tests pass → refactor → verify again |
++| `docs` | Documentation — README, API docs, comments | Direct implementation, no TDD |
++| `scaffolding` | Skeleton code — new module shells, directory structure, templates | Direct implementation, no TDD |
++
++> **Rule**: If a task's core output is "a behavior" (user-perceptible or test-assertable), use `behavior`. If it's just "file exists" or "config takes effect", use `config`/`scaffolding`.
++
++---
++
++## Wave 1: {{wave-1-theme}}
++
++<!--
++A wave is an independently verifiable unit of work. Tasks within a wave may have dependencies but the wave is self-contained.
++Each wave completion enables verification (tsc + test pass).
++-->
++
++- [ ] task-{{id-1}}: [type:{{type}}] {{title}}
++  - **description**: {{What to do, approach, files/APIs to reference}}
++  - **files**: {{comma-separated file paths}}
++  - **acceptance**: {{observable, assertable acceptance criteria}}
++  - **depends_on**: [task-{{id-x}}] <!-- optional: predecessor -->
++  - **spec_ref**: specs/{{domain}}/spec.md <!-- optional: linked spec -->
++  {{if behavior}}
++  - ***RED test***:
++    ```
++    GIVEN {{precondition}}
++    WHEN {{trigger action}}
++    THEN {{expected result}}
++    ```
++  {{/if}}
++
++---
++
++## Wave 2: {{wave-2-theme}}
++
++- [ ] task-{{id-3}}: [type:{{type}}] {{title}}
++  - **description**: {{What to do}}
++  - **files**: {{file paths}}
++  - **acceptance**: {{acceptance criteria}}
++  - **depends_on**: [task-{{id-1}}] <!-- optional -->
++  {{if behavior}}
++  - ***RED test***:
++    ```
++    GIVEN {{precondition}}
++    WHEN {{trigger action}}
++    THEN {{expected result}}
++    ```
++  {{/if}}
++
++---
++
++## Verification
++
++- [ ] `tsc --noEmit` passes (or equivalent type check)
++- [ ] `vitest run` all test suites pass
++- [ ] Each wave's acceptance criteria confirmed (manual or automated)
++- [ ] New code passes lint check
++- [ ] No new type errors or warnings introduced
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/design.md b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/design.md
+new file mode 100644
+index 0000000..9fa22a8
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/design.md
+@@ -0,0 +1,116 @@
++# Design: smoke-test
++
++> This document is the Change Design — written after proposal approval, describing how to implement. Each section has fill-in guidance. After this document, proceed to task breakdown.
++
++---
++
++## Context & Goals
++
++<!--
++1. Briefly describe context — what constraints exist?
++2. Core design goals (no more than 3)
++3. Must align with proposal Intent and Must-haves
++-->
++
++{{background-and-goals}}
++
++---
++
++## Technical Approach
++
++### Architecture Diagram
++
++<!--
++ASCII art showing module/component relationships:
++- New modules vs. existing modules
++- Data flow direction (arrows)
++- File/module boundaries
++Annotate: [NEW], [MODIFIED], [EXISTING]
++-->
++
++```text
++{{architecture-diagram}}
++```
++
++### Core Data Structures
++
++<!--
++Key types/interfaces/data structures introduced or modified by this design.
++Use TypeScript interface format. Brief description per type.
++-->
++
++{{data-structures}}
++
++### Data Flow
++
++<!--
++Step-by-step description of data flow from trigger to effect.
++Example:
++1. User scrolls list → FlatList fires onScroll
++2. OptimizedList reads itemHeight config → enables getItemLayout
++3. Layout engine skips dynamic measurement → uses fixed row height
++4. useScrollPerformance samples FPS every 500ms
++5. FPS data → Performance Reporter → backend
++-->
++
++{{data-flow}}
++
++### Interface Design
++
++<!--
++Public API signatures exposed by this design:
++- Function/method names
++- Parameter lists (name + type + description)
++- Return types
++- sync/async
++-->
++
++{{api-signatures}}
++
++---
++
++## File Manifest
++
++<!--
++All files to create or modify, organized as a table.
++-->
++
++| File Path | Description | Action |
++|-----------|-------------|--------|
++| `{{file-path-1}}` | {{description}} | Create |
++| `{{file-path-2}}` | {{description}} | Modify |
++
++---
++
++## Test Strategy
++
++### Unit Tests
++- <!-- Which modules need unit tests? What needs mocking? -->
++
++### Integration Tests
++- <!-- Which flows need integration tests? What fixtures needed? -->
++
++### TDD Tasks
++- <!-- List type:behavior tasks requiring RED→GREEN→REFACTOR -->
++
++---
++
++## Alternatives
++
++<!--
++Evaluated but rejected approaches, with rationale.
++-->
++
++| Approach | Pros | Cons | Rejection Reason |
++|----------|------|------|-----------------|
++| {{alt-name-1}} | {{pros}} | {{cons}} | {{reason}} |
++| {{alt-name-2}} | {{pros}} | {{cons}} | {{reason}} |
++
++---
++
++## Risk Assessment
++
++| Risk | Probability | Impact | Mitigation |
++|------|------------|--------|-----------|
++| {{risk-1}} | {{probability}} | {{impact}} | {{mitigation}} |
++| {{risk-2}} | {{probability}} | {{impact}} | {{mitigation}} |
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/proposal.md b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/proposal.md
+new file mode 100644
+index 0000000..d711968
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/proposal.md
+@@ -0,0 +1,95 @@
++# Proposal: smoke-test
++
++> This document is a Change Proposal — align intent, scope, and approach before implementation. Complete each section; reviewers will evaluate this proposal before the design phase.
++
++---
++
++## Intent
++
++<!--
++Describe why this change is needed:
++1. What specific problem exists or what capability is missing?
++2. Who is affected (users/developers/ops)? How severely?
++3. What happens if we don't make this change?
++4. Is this a bug fix / feature / tech debt / perf improvement?
++5. Is this linked to a known issue, user feedback, or metric? (attach issue link if available)
++-->
++
++Add tests/unit/smoke.test.ts; npm test exits 0
++
++---
++
++## Scope
++
++### In scope
++
++<!--
++List all items covered by this change. One per line, verb-first.
++Example:
++- Add skeleton loading state on list pull-to-refresh
++- Add useScrollPerformance hook for scroll metrics
++- Memoize UserCard component
++-->
++
++{{in-scope-items}}
++
++### Out of scope
++
++<!--
++Explicitly excluded changes to prevent scope creep. One per line with reason.
++Example:
++- Homepage skeleton screen (planned for next phase)
++- Server-side API pagination (unrelated to client performance)
++- Android list optimization (platform-specific, needs separate research)
++-->
++
++{{out-of-scope-items}}
++
++---
++
++## Approach
++
++<!--
++Describe the technical direction at a high level:
++1. Architecture layer: Which layer does the change touch (UI/Service/Store)? New modules needed?
++2. Library choices: New dependencies? Upgrades? Rationale?
++3. Data flow: How does data travel from source to UI? State management changes?
++4. Compatibility: Backward compatibility strategy? Migration needed?
++5. Testability: Are there injection points / mock seams for testing?
++
++No detailed implementation here — the design doc handles that.
++-->
++
++{{approach}}
++
++---
++
++## Must-haves
++
++<!--
++3-7 observable, verifiable must-have behaviors.
++Each must be a concrete statement — no ambiguity.
++Reviewers should be able to judge pass/fail using these conditions.
++
++Format: "MUST <condition>" or "SHALL <condition>"
++- Observable: visible on screen, checkable via CLI, assertable in tests
++- Verifiable: reviewer can confirm via action/command
++-->
++
++{{must-haves}}
++
++---
++
++## Non-goals
++
++<!--
++Explicit non-goals to prevent reviewers from asking "why wasn't X done?"
++Different from Out of scope (not in this change's scope).
++Non-goals are specific targets that might be incorrectly assumed to be in scope.
++Example:
++- Not pursuing Android list performance in this change
++- Not changing the existing pagination logic
++- Not adding new UI component library dependencies
++-->
++
++{{non-goals}}
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/specs/smoke-test/spec.md b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/specs/smoke-test/spec.md
+new file mode 100644
+index 0000000..6dc31df
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/specs/smoke-test/spec.md
+@@ -0,0 +1,12 @@
++# smoke-test — Delta Spec
++
++## ADDED Requirements
++
++### Requirement: <name>
++
++The system SHALL <behavior>.
++
++#### Scenario: <name>
++- **GIVEN** <precondition>
++- **WHEN** <trigger>
++- **THEN** <expected outcome>
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/tasks.md b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/tasks.md
+new file mode 100644
+index 0000000..12fda6c
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/tasks.md
+@@ -0,0 +1,69 @@
++# Tasks: smoke-test
++
++> This document breaks the design into executable tasks grouped by wave. Each task includes description, files, acceptance criteria, optional depends_on and spec_ref. type:behavior tasks must include RED test descriptions (GIVEN/WHEN/THEN format).
++
++---
++
++## TDD Type Annotations
++
++| type | Meaning | TDD Protocol |
++|------|---------|-------------|
++| `behavior` | Business behavior — implement a concrete, observable/assertable feature | **RED→GREEN→REFACTOR** (mandatory: test first → implement → refactor) |
++| `config` | Configuration — env vars, CI/CD, lint, tsconfig, etc. | Direct implementation, no TDD |
++| `refactor` | Refactoring — improve internal structure without changing behavior | Verify tests pass → refactor → verify again |
++| `docs` | Documentation — README, API docs, comments | Direct implementation, no TDD |
++| `scaffolding` | Skeleton code — new module shells, directory structure, templates | Direct implementation, no TDD |
++
++> **Rule**: If a task's core output is "a behavior" (user-perceptible or test-assertable), use `behavior`. If it's just "file exists" or "config takes effect", use `config`/`scaffolding`.
++
++---
++
++## Wave 1: {{wave-1-theme}}
++
++<!--
++A wave is an independently verifiable unit of work. Tasks within a wave may have dependencies but the wave is self-contained.
++Each wave completion enables verification (tsc + test pass).
++-->
++
++- [ ] task-{{id-1}}: [type:{{type}}] {{title}}
++  - **description**: {{What to do, approach, files/APIs to reference}}
++  - **files**: {{comma-separated file paths}}
++  - **acceptance**: {{observable, assertable acceptance criteria}}
++  - **depends_on**: [task-{{id-x}}] <!-- optional: predecessor -->
++  - **spec_ref**: specs/{{domain}}/spec.md <!-- optional: linked spec -->
++  {{if behavior}}
++  - ***RED test***:
++    ```
++    GIVEN {{precondition}}
++    WHEN {{trigger action}}
++    THEN {{expected result}}
++    ```
++  {{/if}}
++
++---
++
++## Wave 2: {{wave-2-theme}}
++
++- [ ] task-{{id-3}}: [type:{{type}}] {{title}}
++  - **description**: {{What to do}}
++  - **files**: {{file paths}}
++  - **acceptance**: {{acceptance criteria}}
++  - **depends_on**: [task-{{id-1}}] <!-- optional -->
++  {{if behavior}}
++  - ***RED test***:
++    ```
++    GIVEN {{precondition}}
++    WHEN {{trigger action}}
++    THEN {{expected result}}
++    ```
++  {{/if}}
++
++---
++
++## Verification
++
++- [ ] `tsc --noEmit` passes (or equivalent type check)
++- [ ] `vitest run` all test suites pass
++- [ ] Each wave's acceptance criteria confirmed (manual or automated)
++- [ ] New code passes lint check
++- [ ] No new type errors or warnings introduced
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/toolchain-and-types/change-summary.md b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/toolchain-and-types/change-summary.md
+new file mode 100644
+index 0000000..f3a7b2d
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/toolchain-and-types/change-summary.md
+@@ -0,0 +1,56 @@
++# Change Summary: toolchain-and-types
++
++> Auto-generated summary after all waves complete.
++
++---
++
++## Intent
++
++Bootstrap the npm + TypeScript toolchain for the sokoban project so all later changes (c2: build/test configs, c3: canvas entry, c4: smoke test, plus all 9 later phases) can build, lint, and run on a known foundation. Required prerequisite for the entire project.
++
++## Output Files
++
++| File | Action |
++|------|--------|
++| `.gitignore` | Create |
++| `.nvmrc` | Create |
++| `tsconfig.json` | Create |
++| `tsconfig.node.json` | Create |
++| `package.json` | Create |
++| `package-lock.json` | Create (via `npm install`) |
++
++## Key Decisions
++
++- **Pinned versions match research** (`bp/research/stack.md` Final Selection table): vite 8.1.2, vitest 4.1.9, happy-dom 20.10.6, typescript 5.9.3 (within `^5.6.3` semver), @types/node 20.19.43 (within `^20.19.0`).
++- **Strict TypeScript from day one**: `strict: true`, `noUncheckedIndexedAccess: true`, `noImplicitOverride: true`, `verbatimModuleSyntax: true` — catches untyped grid-coordinate accesses early; aligns with the architecture research's recommendation that `core/` modules stay pure and tightly typed.
++- **ESM throughout**: `"type": "module"` + `moduleResolution: "bundler"` — required for `import.meta.glob` typing in ph.3 level loader; matches Vite 8 defaults.
++- **Project references via `tsconfig.node.json`**: separate composite project for Vite/Vitest config files using `@types/node`. Standard Vite 8 pattern.
++- **`.nvmrc` pins 20.19.0**: Vite 8 minimum; explicit so future contributors match.
++- **`engines.node`: `>=20.19.0`** in `package.json`: hard guard against older Node; npm refuses install on unsupported versions.
++
++## Verification Results
++
++- Type check (main project): **`npx tsc --noEmit` exits 0** — strict mode loads cleanly against empty `src/` and `tests/`.
++- Type check (composite build): `npx tsc -b` fails with `TS18003: No inputs were found in config file 'tsconfig.node.json'` — **expected** because `vite.config.ts` / `vitest.config.ts` don't exist yet. Resolved by c2. The build script `tsc -b && vite build` will work end-to-end after c2.
++- Tests: no tests in this change; c4 (`smoke-test`) is the first test-bearing change. `npm test` would currently fail because `vitest.config.ts` doesn't exist — expected.
++- Lint: not configured yet (ph.9).
++- Installed packages: 54 packages added via `npm install`; `package-lock.json` is 46 KB.
++- Tool versions verified: `vite/8.1.2`, `vitest/4.1.9`, `typescript/5.9.3`, `happy-dom/20.10.6`, `@types/node/20.19.43`.
++
++## Verification Commands Run
++
++```bash
++node --version          # v26.3.1 (≥ 20.19.0 minimum ✓)
++npm install             # exit 0; 54 packages
++npx tsc --noEmit        # exit 0
++npx tsc -b              # exit 1 (expected; c2 will fix)
++node_modules/.bin/tsc --version    # Version 5.9.3
++node_modules/.bin/vite --version   # 8.1.2
++node_modules/.bin/vitest --version # 4.1.9
++```
++
++## Readiness for c2
++
++c2 (`vite-vitest-configs`) is unblocked: it depends only on `package.json` + `npm install` having completed, both of which this change delivered. c2 will create `vite.config.ts` and `vitest.config.ts`, at which point `tsc -b` will succeed and `npm run build` will produce `dist/`.
++
++c3 (`entry-canvas`) is also unblocked at the dependency level — but `tsc --noEmit` on its `src/main.ts` will fail until c2 supplies `vite.config.ts` (because the main tsconfig references `tsconfig.node.json`). c3 should be applied after c2.
+\ No newline at end of file
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/toolchain-and-types/design.md b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/toolchain-and-types/design.md
+new file mode 100644
+index 0000000..84fffb0
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/toolchain-and-types/design.md
+@@ -0,0 +1,111 @@
++# Design: toolchain-and-types
++
++> Technical design for the toolchain bootstrap change.
++
++---
++
++## Context & Goals
++
++This change is the prerequisite for every other change in the project — it produces the `package.json`, `tsconfig.json`, `.nvmrc`, and `.gitignore` that allow later changes to `npm install`, run TypeScript checks, and exclude build artifacts from version control. No source code is introduced; only build / tooling configuration.
++
++**Constraints** (from `bp/research/stack.md` and `ph.1-foundation/context.md`):
++- Exact pinned versions: Vite 8.1.2, TypeScript 5.6, Vitest 4.1.9, happy-dom 20.10.6, Node 20.19+
++- Strict TypeScript (`strict`, `noUncheckedIndexedAccess`, `noImplicitOverride`) — applied from the start so every later file inherits the discipline
++- ESM (`"type": "module"`) to align with Vite 8 / Vitest 4 defaults
++- `private: true` to prevent accidental npm publish
++
++**Core goals** (3):
++1. `npm install` exits 0 and produces a committed `package-lock.json`
++2. `npx tsc --noEmit` runs cleanly against the empty `src/` and `tests/` skeleton (verified in c3 / c4)
++3. `.gitignore` excludes every build artifact path that any later phase produces
++
++---
++
++## Technical Approach
++
++This change produces **no source modules** — only configuration files. There is no architecture diagram or data flow to draw; the only artifacts are static files interpreted by npm, TypeScript, and git.
++
++### File Manifest
++
++| File Path | Description | Action |
++|-----------|-------------|--------|
++| `package.json` | npm manifest: `private`, `type: module`, `engines`, scripts, devDependencies | Create |
++| `tsconfig.json` | TypeScript project config: strict + bundler resolution + ES2022 + DOM lib + Vite client types | Create |
++| `tsconfig.node.json` | TS config for Vite/Vitest config files (Node + `@types/node`) | Create |
++| `.nvmrc` | Node version pin: `20.19.0` | Create |
++| `.gitignore` | Exclude build + test artifacts + env files + OS files | Create |
++| `package-lock.json` | Generated by `npm install`; committed for reproducibility | Create (via npm) |
++
++### Implementation Order
++
++1. Create `.gitignore` first (so subsequent file creations don't accidentally add artifacts).
++2. Create `.nvmrc` so future Node version checks are documented.
++3. Create `tsconfig.json` and `tsconfig.node.json` together (they reference each other).
++4. Create `package.json` last (so all referenced packages and scripts are correct).
++5. Run `npm install` to produce `package-lock.json`.
++6. Verify: `node --version` matches `.nvmrc`; `npx tsc --noEmit` runs without error against the (still empty) project; `cat package-lock.json | head` shows expected packages.
++
++### Key Configuration Decisions
++
++**`tsconfig.json`** (already locked by D3 in context.md):
++- `moduleResolution: 'bundler'` — required for `import.meta.glob` typing used by `level/loader.ts` in ph.3
++- `target: 'ES2022'` — modern enough for all browser targets; aligns with Vite 8 default
++- `strict: true` + `noUncheckedIndexedAccess: true` — catches the most likely game-loop bug class (untyped grid coordinate access)
++- `verbatimModuleSyntax: true` — forces explicit `import type` for type-only imports; clean module boundary enforcement
++- `types: ['vite/client']` — provides `import.meta.env` and `import.meta.glob` typings
++- `include: ['src', 'tests']` — matches where later phases add code
++
++**`tsconfig.node.json`** (referenced by main tsconfig via `references`):
++- `composite: true` — required for project references
++- `module: 'ESNext'`, `moduleResolution: 'bundler'`
++- `types: ['node']` — for `process.env` access in `vite.config.ts`
++- `include: ['vite.config.ts', 'vitest.config.ts', '*.config.ts']` — covers all config files
++
++**`package.json` scripts**:
++- `dev`: `vite` — runs Vite dev server on default port 5173
++- `build`: `tsc -b && vite build` — type-check both projects, then bundle
++- `preview`: `vite preview` — serves `dist/` for E2E tests (used in ph.8)
++- `test`: `vitest` — interactive watch mode (default)
++- `test:run`: `vitest run` — CI-friendly single-run mode (exits non-zero on failure)
++
++**`.gitignore`** (standard Vite + Vitest + Playwright set):
++- `node_modules/`, `dist/`, `coverage/`, `playwright-report/`, `test-results/`
++- `.env*` with `!.env.example` exception
++- `.DS_Store`, `*.log`, `*.tsbuildinfo`
++
++---
++
++## Test Strategy
++
++No tests in this change. The smoke test that proves Vitest works is in c4. The type-check that proves `tsconfig.json` is sound is the `npx tsc --noEmit` verification step below.
++
++### Verification
++
++- [ ] `node --version` outputs `v20.19.x`
++- [ ] `npm install` exits 0
++- [ ] `npx tsc --noEmit` exits 0 (will only succeed once c3 adds `src/main.ts`; c1 verifies it does not error on empty config)
++- [ ] `cat .gitignore` lists all required patterns
++- [ ] `cat .nvmrc` is exactly `20.19.0`
++- [ ] `package-lock.json` exists and is committed
++
++---
++
++## Alternatives
++
++| Approach | Pros | Cons | Rejection Reason |
++|----------|------|------|------------------|
++| Use `pnpm` or `bun` instead of `npm` | Faster install; stricter lockfile | Requirement locked to `npm` (NFR) | Violates locked decision |
++| Use `tsconfig.json` with `noEmit: true` for src and a separate emit config | Simpler initially | Breaks `tsc -b && vite build` script flow | Vite docs recommend project references for config files; cleaner |
++| Pin Vite to `^7` for broader Node compat | Avoids Node 20.19 requirement | Vite 7 is current-LTS-1; Vite 8 is current; no compatibility reason | Research.md recommends ^8.1.2; using it from the start avoids a forced upgrade later |
++| Add `@commitlint/cli`, `@commitlint/config-conventional`, `husky` in ph.1 | Catches bad commits early | Out of scope for ph.1 per D8 in context.md | Belongs in ph.9 |
++
++---
++
++## Risk Assessment
++
++| Risk | Probability | Impact | Mitigation |
++|------|------------|--------|------------|
++| `npm install` fails due to peer-dep conflict between Vite 8 / Vitest 4 / happy-dom | Low | High | Verified peer ranges in research.md; if conflict, fallback to Vite 7 + Vitest 4 is documented |
++| `.nvmrc` mismatch on developer machines (older Node) | Medium | Low | `.nvmrc` documents `20.19.0`; engines field rejects install on older Node |
++| `tsconfig.node.json` circular reference with main tsconfig | Low | Medium | Use `references` array (TS project references) instead of `extends`; well-documented pattern |
++| `package-lock.json` drift on subsequent installs | Low | Low | Commit lockfile; CI runs `npm ci` (not `npm install`) for reproducibility |
+\ No newline at end of file
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/toolchain-and-types/proposal.md b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/toolchain-and-types/proposal.md
+new file mode 100644
+index 0000000..05f0de2
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/toolchain-and-types/proposal.md
+@@ -0,0 +1,86 @@
++# Proposal: toolchain-and-types
++
++> This document is a Change Proposal — align intent, scope, and approach before implementation. Complete each section; reviewers will evaluate this proposal before the design phase.
++
++---
++
++## Intent
++
++Bootstrap the npm + TypeScript toolchain for the sokoban project so all later changes (c2: build/test configs, c3: canvas entry, c4: smoke test, plus all M1-M3 phases) can build, lint, and run on a known foundation.
++
++1. **What problem**: Project currently has only `bp/` (planning artifacts), `.git/`, `.omp/`, `.serena/`. No `package.json`, no `tsconfig.json`, no source code. Cannot `npm run dev`, `npm test`, or `npm run build`.
++2. **Who is affected**: developers / CI (which doesn't exist yet). The user cannot run the game until a toolchain exists.
++3. **If we don't make this change**: Every subsequent phase (c2, c3, c4, ph.2-ph.10) is blocked at its first step.
++4. **Type**: foundation / tech debt elimination / prerequisite for the entire project.
++5. **Linkage**: required by `bp/roadmap.md` ph.1-foundation deliverable; required by every change in ph.1-foundation plus all 9 later phases.
++
++---
++
++## Scope
++
++### In scope
++
++- Create `package.json` declaring `"private": true`, `"type": "module"`, and `"engines.node": ">=20.19.0"` with scripts and devDependencies
++- Create `tsconfig.json` with strict TypeScript settings (`strict`, `noUncheckedIndexedAccess`, `noImplicitOverride`, `moduleResolution: 'bundler'`, `target: 'ES2022'`, `lib: ['ES2022', 'DOM']`)
++- Create `tsconfig.node.json` for compiling Vite/Vitest config files (per Vite 8 recommendation)
++- Create `.nvmrc` pinning Node to `20.19.0`
++- Create `.gitignore` excluding `node_modules`, `dist`, `coverage`, `playwright-report`, `test-results`, `.env*`, `.DS_Store`
++- Add all locked devDependencies per `bp/research/stack.md`: `vite ^8.1.2`, `typescript ^5.6`, `vitest ^4.1.9`, `happy-dom ^20.10.6`, `@types/node ^20`
++- Run `npm install` to produce `package-lock.json`
++- Add `"prepare"` script deferred (no husky yet — added in ph.9)
++
++### Out of scope
++
++- `vite.config.ts` and `vitest.config.ts` content (change c2)
++- `index.html`, `src/main.ts`, `src/types.ts` (change c3)
++- `tests/unit/smoke.test.ts` (change c4)
++- ESLint / Prettier config (ph.9)
++- Husky / commitlint hooks (ph.9)
++- Conventional Commits enforcement (ph.9)
++- Lockfile for browserslist / can-i-use (ph.9 if needed)
++
++---
++
++## Approach
++
++Standard Vite + TypeScript ESM project layout. The toolchain is the foundation that all later changes build on; it must be minimal but complete enough that c2-c4 can each add their pieces without re-touching `package.json`.
++
++**Architecture layer**: build / tooling layer only. No source modules yet.
++
++**Library choices** (all locked by `bp/research/stack.md`):
++- `vite ^8.1.2` (build + dev server; current as of 2026-07-01 per verified npm registry)
++- `typescript ^5.6` (latest stable; supports `verbatimModuleSyntax` + `noUncheckedIndexedAccess`)
++- `vitest ^4.1.9` (peer-compatible with Vite 6/7/8 per its declared peer range; matches Vite 8)
++- `happy-dom ^20.10.6` (Vitest-recommended default; fast)
++- `@types/node ^20` (required for Vite config files in TS)
++
++**Data flow**: none yet — no source code.
++
++**Compatibility**: fresh project, no migration concerns. Setting `"engines.node": ">=20.19.0"` documents the Vite 8 minimum.
++
++**Testability**: smoke test wired in c4 will exercise Vitest; no test seams needed in this change.
++
++---
++
++## Must-haves
++
++1. MUST contain a `package.json` at repo root with `"private": true`, `"type": "module"`, and `"engines": { "node": ">=20.19.0" }`.
++2. MUST declare all locked devDependencies (`vite ^8.1.2`, `typescript ^5.6`, `vitest ^4.1.9`, `happy-dom ^20.10.6`, `@types/node ^20`) and no others.
++3. MUST define scripts: `dev` (vite), `build` (tsc -b && vite build), `preview` (vite preview), `test` (vitest), `test:run` (vitest run).
++4. MUST contain a `tsconfig.json` enabling `strict: true`, `noUncheckedIndexedAccess: true`, `noImplicitOverride: true`, `target: "ES2022"`, `moduleResolution: "bundler"`, `module: "ESNext"`, `lib: ["ES2022", "DOM"]`, `types: ["vite/client"]`, with `include: ["src", "tests"]`.
++5. MUST contain a `tsconfig.node.json` referencing the main tsconfig and including `vite.config.ts`, `vitest.config.ts`, and `*.config.ts` files, with `@types/node` types.
++6. MUST contain `.nvmrc` with the single line `20.19.0`.
++7. MUST contain `.gitignore` excluding at minimum: `node_modules`, `dist`, `coverage`, `playwright-report`, `test-results`, `.env*`, `.DS_Store`.
++8. MUST result in `npm install` exiting with code 0 and producing `package-lock.json`.
++
++---
++
++## Non-goals
++
++- Not introducing ESLint, Prettier, or any linting tool in this change (ph.9).
++- Not introducing husky, commitlint, or any commit hooks in this change (ph.9).
++- Not setting up CI workflows (ph.9).
++- Not creating the Vite or Vitest config files (c2).
++- Not creating the HTML entry point or any TypeScript source (c3).
++- Not creating any tests (c4).
++- Not initializing any level data or game logic (later phases).
+\ No newline at end of file
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/toolchain-and-types/specs/toolchain-and-types/spec.md b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/toolchain-and-types/specs/toolchain-and-types/spec.md
+new file mode 100644
+index 0000000..6674a95
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/toolchain-and-types/specs/toolchain-and-types/spec.md
+@@ -0,0 +1,12 @@
++# toolchain-and-types — Delta Spec
++
++## ADDED Requirements
++
++### Requirement: <name>
++
++The system SHALL <behavior>.
++
++#### Scenario: <name>
++- **GIVEN** <precondition>
++- **WHEN** <trigger>
++- **THEN** <expected outcome>
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/toolchain-and-types/tasks.md b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/toolchain-and-types/tasks.md
+new file mode 100644
+index 0000000..4d66d5a
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/toolchain-and-types/tasks.md
+@@ -0,0 +1,91 @@
++# Tasks: toolchain-and-types
++
++> Implementation task breakdown for the toolchain bootstrap change. All tasks are type:config / scaffolding (no type:behavior — this is a LIGHTWEIGHT change per change-planning protocol).
++
++---
++
++## TDD Type Annotations
++
++| type | Meaning | TDD Protocol |
++|------|---------|-------------|
++| `behavior` | Business behavior — implement a concrete, observable/assertable feature | **RED→GREEN→REFACTOR** (mandatory) |
++| `config` | Configuration — env vars, CI/CD, lint, tsconfig, etc. | Direct implementation, no TDD |
++| `refactor` | Refactoring — improve internal structure without changing behavior | Verify tests pass → refactor → verify again |
++| `docs` | Documentation — README, API docs, comments | Direct implementation, no TDD |
++| `scaffolding` | Skeleton code — new module shells, directory structure, templates | Direct implementation, no TDD |
++
++This change contains only `config` and `scaffolding` tasks — no RED→GREEN→REFACTOR cycles required.
++
++---
++
++## Wave 1: Toolchain bootstrap
++
++A single wave — all files are independent and small.
++
++- [x] task-1.1: [type:config] Create `.gitignore`
++  - **description**: Standard Vite + Vitest + Playwright ignore set; document every pattern.
++  - **files**: `.gitignore`
++  - **acceptance**: File exists at repo root; excludes `node_modules/`, `dist/`, `coverage/`, `playwright-report/`, `test-results/`, `.env*` (with `!.env.example`), `.DS_Store`, `*.log`, `*.tsbuildinfo`.
++
++- [x] task-1.2: [type:config] Create `.nvmrc`
++  - **description**: Pin Node version to Vite 8 minimum.
++  - **files**: `.nvmrc`
++  - **acceptance**: File contains the single line `20.19.0` (no trailing newline beyond POSIX convention).
++
++- [x] task-1.3: [type:config] Create `tsconfig.json`
++  - **description**: Strict TypeScript with bundler resolution and ES2022 target; types reference Vite client.
++  - **files**: `tsconfig.json`
++  - **acceptance**: File enables `strict: true`, `noUncheckedIndexedAccess: true`, `noImplicitOverride: true`, `verbatimModuleSyntax: true`, `target: 'ES2022'`, `moduleResolution: 'bundler'`, `lib: ['ES2022', 'DOM']`, `types: ['vite/client']`, `include: ['src', 'tests']`; references `tsconfig.node.json` via `references`.
++
++- [x] task-1.4: [type:config] Create `tsconfig.node.json`
++  - **description**: TS config for Vite/Vitest config files with Node types.
++  - **files**: `tsconfig.node.json`
++  - **acceptance**: File sets `composite: true`, `module: 'ESNext'`, `moduleResolution: 'bundler'`, `target: 'ES2022'`, `lib: ['ES2023']`, `types: ['node']`, `include: ['vite.config.ts', 'vitest.config.ts', '*.config.ts']`; noEmit is implicit through composite project.
++
++- [x] task-1.5: [type:config] Create `package.json`
++  - **description**: npm manifest with private + type:module + engines + scripts + devDependencies.
++  - **files**: `package.json`
++  - **acceptance**: File declares `"private": true`, `"type": "module"`, `"engines": { "node": ">=20.19.0" }`; scripts: `dev` (vite), `build` (tsc -b && vite build), `preview` (vite preview), `test` (vitest), `test:run` (vitest run); devDependencies: `vite ^8.1.2`, `typescript ^5.6`, `vitest ^4.1.9`, `happy-dom ^20.10.6`, `@types/node ^20`.
++
++- [x] task-1.6: [type:scaffolding] Run `npm install`
++  - **description**: Generate `package-lock.json` and populate `node_modules/`.
++  - **files**: `package-lock.json`, `node_modules/` (generated, ignored)
++  - **acceptance**: Command exits 0; `package-lock.json` exists at repo root; `node_modules/.package-lock.json` exists.
++  - **depends_on**: [task-1.5]
++
++- [x] task-1.7: [type:scaffolding] Verify toolchain
++  - **description**: Confirm Node version, TypeScript loads, lockfile is valid.
++  - **files**: (verification only)
++  - **acceptance**: `node --version` outputs `v20.19.x`; `npx tsc --noEmit` exits 0 against the empty project (no src files yet — TS still loads tsconfig); `cat package.json | grep -q '"private": true'` succeeds.
++  - **depends_on**: [task-1.6]
++
++---
++
++## Verification
++
++- [x] `node --version` matches `.nvmrc` (≥ 20.19.0)
++- [x] `npm install` exits 0 and produces `package-lock.json`
++- [x] `npx tsc --noEmit` runs without error against empty `src/` and `tests/`
++- [x] `.gitignore` excludes every required path pattern
++- [x] `package.json` declares `"private": true` and `"type": "module"`
++- [x] All locked devDependencies declared with correct semver ranges
++
++---
++
++## Completion
++
++All tasks complete. Verification passed. `bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/toolchain-and-types/` is ready for the apply phase, which will run the install + verification commands and report status.
++
++**Files produced by this change**:
++- `.gitignore`
++- `.nvmrc`
++- `tsconfig.json`
++- `tsconfig.node.json`
++- `package.json`
++- `package-lock.json` (generated)
++
++**Files NOT produced** (deferred to later changes / phases):
++- `vite.config.ts`, `vitest.config.ts` → c2
++- `index.html`, `src/main.ts`, `src/types.ts` → c3
++- `tests/unit/smoke.test.ts` → c4
++- ESLint / Prettier / husky / commitlint → ph.9
+\ No newline at end of file
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/vite-vitest-configs/design.md b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/vite-vitest-configs/design.md
+new file mode 100644
+index 0000000..5104de9
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/vite-vitest-configs/design.md
+@@ -0,0 +1,116 @@
++# Design: vite-vitest-configs
++
++> This document is the Change Design — written after proposal approval, describing how to implement. Each section has fill-in guidance. After this document, proceed to task breakdown.
++
++---
++
++## Context & Goals
++
++<!--
++1. Briefly describe context — what constraints exist?
++2. Core design goals (no more than 3)
++3. Must align with proposal Intent and Must-haves
++-->
++
++{{background-and-goals}}
++
++---
++
++## Technical Approach
++
++### Architecture Diagram
++
++<!--
++ASCII art showing module/component relationships:
++- New modules vs. existing modules
++- Data flow direction (arrows)
++- File/module boundaries
++Annotate: [NEW], [MODIFIED], [EXISTING]
++-->
++
++```text
++{{architecture-diagram}}
++```
++
++### Core Data Structures
++
++<!--
++Key types/interfaces/data structures introduced or modified by this design.
++Use TypeScript interface format. Brief description per type.
++-->
++
++{{data-structures}}
++
++### Data Flow
++
++<!--
++Step-by-step description of data flow from trigger to effect.
++Example:
++1. User scrolls list → FlatList fires onScroll
++2. OptimizedList reads itemHeight config → enables getItemLayout
++3. Layout engine skips dynamic measurement → uses fixed row height
++4. useScrollPerformance samples FPS every 500ms
++5. FPS data → Performance Reporter → backend
++-->
++
++{{data-flow}}
++
++### Interface Design
++
++<!--
++Public API signatures exposed by this design:
++- Function/method names
++- Parameter lists (name + type + description)
++- Return types
++- sync/async
++-->
++
++{{api-signatures}}
++
++---
++
++## File Manifest
++
++<!--
++All files to create or modify, organized as a table.
++-->
++
++| File Path | Description | Action |
++|-----------|-------------|--------|
++| `{{file-path-1}}` | {{description}} | Create |
++| `{{file-path-2}}` | {{description}} | Modify |
++
++---
++
++## Test Strategy
++
++### Unit Tests
++- <!-- Which modules need unit tests? What needs mocking? -->
++
++### Integration Tests
++- <!-- Which flows need integration tests? What fixtures needed? -->
++
++### TDD Tasks
++- <!-- List type:behavior tasks requiring RED→GREEN→REFACTOR -->
++
++---
++
++## Alternatives
++
++<!--
++Evaluated but rejected approaches, with rationale.
++-->
++
++| Approach | Pros | Cons | Rejection Reason |
++|----------|------|------|-----------------|
++| {{alt-name-1}} | {{pros}} | {{cons}} | {{reason}} |
++| {{alt-name-2}} | {{pros}} | {{cons}} | {{reason}} |
++
++---
++
++## Risk Assessment
++
++| Risk | Probability | Impact | Mitigation |
++|------|------------|--------|-----------|
++| {{risk-1}} | {{probability}} | {{impact}} | {{mitigation}} |
++| {{risk-2}} | {{probability}} | {{impact}} | {{mitigation}} |
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/vite-vitest-configs/proposal.md b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/vite-vitest-configs/proposal.md
+new file mode 100644
+index 0000000..fcebc86
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/vite-vitest-configs/proposal.md
+@@ -0,0 +1,95 @@
++# Proposal: vite-vitest-configs
++
++> This document is a Change Proposal — align intent, scope, and approach before implementation. Complete each section; reviewers will evaluate this proposal before the design phase.
++
++---
++
++## Intent
++
++<!--
++Describe why this change is needed:
++1. What specific problem exists or what capability is missing?
++2. Who is affected (users/developers/ops)? How severely?
++3. What happens if we don't make this change?
++4. Is this a bug fix / feature / tech debt / perf improvement?
++5. Is this linked to a known issue, user feedback, or metric? (attach issue link if available)
++-->
++
++Add Vite and Vitest config files; CLI commands load without error
++
++---
++
++## Scope
++
++### In scope
++
++<!--
++List all items covered by this change. One per line, verb-first.
++Example:
++- Add skeleton loading state on list pull-to-refresh
++- Add useScrollPerformance hook for scroll metrics
++- Memoize UserCard component
++-->
++
++{{in-scope-items}}
++
++### Out of scope
++
++<!--
++Explicitly excluded changes to prevent scope creep. One per line with reason.
++Example:
++- Homepage skeleton screen (planned for next phase)
++- Server-side API pagination (unrelated to client performance)
++- Android list optimization (platform-specific, needs separate research)
++-->
++
++{{out-of-scope-items}}
++
++---
++
++## Approach
++
++<!--
++Describe the technical direction at a high level:
++1. Architecture layer: Which layer does the change touch (UI/Service/Store)? New modules needed?
++2. Library choices: New dependencies? Upgrades? Rationale?
++3. Data flow: How does data travel from source to UI? State management changes?
++4. Compatibility: Backward compatibility strategy? Migration needed?
++5. Testability: Are there injection points / mock seams for testing?
++
++No detailed implementation here — the design doc handles that.
++-->
++
++{{approach}}
++
++---
++
++## Must-haves
++
++<!--
++3-7 observable, verifiable must-have behaviors.
++Each must be a concrete statement — no ambiguity.
++Reviewers should be able to judge pass/fail using these conditions.
++
++Format: "MUST <condition>" or "SHALL <condition>"
++- Observable: visible on screen, checkable via CLI, assertable in tests
++- Verifiable: reviewer can confirm via action/command
++-->
++
++{{must-haves}}
++
++---
++
++## Non-goals
++
++<!--
++Explicit non-goals to prevent reviewers from asking "why wasn't X done?"
++Different from Out of scope (not in this change's scope).
++Non-goals are specific targets that might be incorrectly assumed to be in scope.
++Example:
++- Not pursuing Android list performance in this change
++- Not changing the existing pagination logic
++- Not adding new UI component library dependencies
++-->
++
++{{non-goals}}
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/vite-vitest-configs/specs/vite-vitest-configs/spec.md b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/vite-vitest-configs/specs/vite-vitest-configs/spec.md
+new file mode 100644
+index 0000000..f809e99
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/vite-vitest-configs/specs/vite-vitest-configs/spec.md
+@@ -0,0 +1,12 @@
++# vite-vitest-configs — Delta Spec
++
++## ADDED Requirements
++
++### Requirement: <name>
++
++The system SHALL <behavior>.
++
++#### Scenario: <name>
++- **GIVEN** <precondition>
++- **WHEN** <trigger>
++- **THEN** <expected outcome>
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/vite-vitest-configs/tasks.md b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/vite-vitest-configs/tasks.md
+new file mode 100644
+index 0000000..30d842f
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/vite-vitest-configs/tasks.md
+@@ -0,0 +1,69 @@
++# Tasks: vite-vitest-configs
++
++> This document breaks the design into executable tasks grouped by wave. Each task includes description, files, acceptance criteria, optional depends_on and spec_ref. type:behavior tasks must include RED test descriptions (GIVEN/WHEN/THEN format).
++
++---
++
++## TDD Type Annotations
++
++| type | Meaning | TDD Protocol |
++|------|---------|-------------|
++| `behavior` | Business behavior — implement a concrete, observable/assertable feature | **RED→GREEN→REFACTOR** (mandatory: test first → implement → refactor) |
++| `config` | Configuration — env vars, CI/CD, lint, tsconfig, etc. | Direct implementation, no TDD |
++| `refactor` | Refactoring — improve internal structure without changing behavior | Verify tests pass → refactor → verify again |
++| `docs` | Documentation — README, API docs, comments | Direct implementation, no TDD |
++| `scaffolding` | Skeleton code — new module shells, directory structure, templates | Direct implementation, no TDD |
++
++> **Rule**: If a task's core output is "a behavior" (user-perceptible or test-assertable), use `behavior`. If it's just "file exists" or "config takes effect", use `config`/`scaffolding`.
++
++---
++
++## Wave 1: {{wave-1-theme}}
++
++<!--
++A wave is an independently verifiable unit of work. Tasks within a wave may have dependencies but the wave is self-contained.
++Each wave completion enables verification (tsc + test pass).
++-->
++
++- [ ] task-{{id-1}}: [type:{{type}}] {{title}}
++  - **description**: {{What to do, approach, files/APIs to reference}}
++  - **files**: {{comma-separated file paths}}
++  - **acceptance**: {{observable, assertable acceptance criteria}}
++  - **depends_on**: [task-{{id-x}}] <!-- optional: predecessor -->
++  - **spec_ref**: specs/{{domain}}/spec.md <!-- optional: linked spec -->
++  {{if behavior}}
++  - ***RED test***:
++    ```
++    GIVEN {{precondition}}
++    WHEN {{trigger action}}
++    THEN {{expected result}}
++    ```
++  {{/if}}
++
++---
++
++## Wave 2: {{wave-2-theme}}
++
++- [ ] task-{{id-3}}: [type:{{type}}] {{title}}
++  - **description**: {{What to do}}
++  - **files**: {{file paths}}
++  - **acceptance**: {{acceptance criteria}}
++  - **depends_on**: [task-{{id-1}}] <!-- optional -->
++  {{if behavior}}
++  - ***RED test***:
++    ```
++    GIVEN {{precondition}}
++    WHEN {{trigger action}}
++    THEN {{expected result}}
++    ```
++  {{/if}}
++
++---
++
++## Verification
++
++- [ ] `tsc --noEmit` passes (or equivalent type check)
++- [ ] `vitest run` all test suites pass
++- [ ] Each wave's acceptance criteria confirmed (manual or automated)
++- [ ] New code passes lint check
++- [ ] No new type errors or warnings introduced
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/context.md b/bp/milestones/M1-core-playable/phases/ph.1-foundation/context.md
+new file mode 100644
+index 0000000..07f66bb
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.1-foundation/context.md
+@@ -0,0 +1,78 @@
++# Context: ph.1-foundation
++
++> Phase: ph.1-foundation  |  Milestone: M1-core-playable  |  Mode: mvp
++> Goal: Establish the toolchain and empty canvas shell that all later phases build on.
++> Deliverable: `npm run dev` boots a browser with a blank `<canvas>` showing the project title. `npm test` runs Vitest with one smoke test. `npm run build` produces a `dist/`.
++
++## Locked Decisions
++
++### D1: Toolchain versions (frozen per `bp/research/stack.md`)
++- **Decision**: Vite ^8.1.2, TypeScript ^5.6, Vitest ^4.1.9, happy-dom ^20.10.6, npm.
++- **Rationale**: Verified against npm registry on 2026-07-01; all peer-compatible; Node 20.19+ required by Vite 8.
++- **Alternatives considered**: Vite ^7 (fallback if Node pin is older); esbuild; Parcel.
++- **Impact**: `package.json` devDeps, `.nvmrc` (20.19.0), all configs.
++
++### D2: Project file layout (per `bp/research/architecture.md` file-tree sketch)
++- **Decision**: `index.html` at root; `src/main.ts` entry; `src/core/`, `src/level/`, `src/state/`, `src/render/`, `src/input/`, `src/anim/`, `src/storage/`, `src/ui/`, `src/shell/`, `src/types.ts` as future module homes (created empty or as needed); `tests/unit/` and `tests/e2e/` for tests.
++- **Rationale**: Matches architecture research; module boundaries enforced early.
++- **Alternatives considered**: Flat `src/` layout (rejected — no module boundaries).
++- **Impact**: All subsequent phases' file creation.
++
++### D3: `tsconfig.json` settings (locked per research)
++- **Decision**: `moduleResolution: 'bundler'`, `target: 'ES2022'`, `strict: true`, `module: 'ESNext'`, `lib: ['ES2022', 'DOM']`, `types: ['vite/client']`, `noUncheckedIndexedAccess: true`, `noImplicitOverride: true`.
++- **Rationale**: `'bundler'` enables `import.meta.glob` typing; `strict + noUncheckedIndexedAccess` catch the bugs most likely in game-loop code (untyped grid accesses).
++- **Alternatives considered**: Looser strictness; `nodenext` module resolution (rejected — incompatible with Vite `import.meta.glob` ergonomics).
++- **Impact**: All subsequent TS files must pass strict checks before commit.
++
++### D4: `vite.config.ts` — env-driven base
++- **Decision**: `base: process.env.GH_PAGES_BASE ?? '/'` for ph.1 (env-driven shape established; production value set in ph.9 to `/sokoban/`).
++- **Rationale**: Matches pitfalls BLOCKER #11; ph.1 only needs the shape so ph.9 just flips the default.
++- **Alternatives considered**: Hardcoded `/`; hardcoded `/sokoban/`.
++- **Impact**: All asset URL decisions in later phases.
++
++### D5: `vitest.config.ts` — scoped DOM environment
++- **Decision**: Default env = `node`; use `environmentMatchGlobs: [['tests/**/*-dom.test.ts', 'happy-dom']]` for DOM-touching tests. Pure logic tests stay in `node` (faster).
++- **Rationale**: Happy-dom is faster than jsdom; pure game-logic tests need no DOM at all.
++- **Alternatives considered**: Always happy-dom; always jsdom; always node.
++- **Impact**: All test files in later phases; naming convention `-dom.test.ts` for DOM-touching tests.
++
++### D6: `index.html` — canvas + HUD placeholder
++- **Decision**: Single `<canvas id="game">` element plus a minimal `<div id="hud">` overlay (move count, level name placeholder). Static HTML; no bundler-rendered template.
++- **Rationale**: Matches architecture research (HUD as DOM, game world as Canvas); allows CSS-driven responsive layout from ph.6.
++- **Alternatives considered**: HUD drawn on canvas (rejected — complicates responsive resize).
++- **Impact**: All UI work in M2.
++
++### D7: Smoke test placeholder
++- **Decision**: `tests/unit/smoke.test.ts` with one trivial assertion (e.g., `expect(1 + 1).toBe(2)`) to confirm Vitest boots.
++- **Rationale**: Verifies the test runner is wired correctly without committing to any game-logic shape; ph.2 replaces with real tests.
++- **Alternatives considered**: No tests in ph.1 (rejected — leaves `npm test` undefined as a script).
++- **Impact**: `tests/unit/smoke.test.ts` removed/replaced in ph.2.
++
++### D8: `.gitignore` baseline
++- **Decision**: `node_modules/`, `dist/`, `.DS_Store`, `coverage/`, `playwright-report/`, `test-results/`, `.env*` (allow `.env.example`).
++- **Rationale**: Standard for Vite + Vitest + Playwright projects.
++- **Alternatives considered**: — (no realistic alternative).
++- **Impact**: All generated artifacts ignored.
++
++## Gray Areas (Unresolved)
++
++None. All decisions clear from `bp/requirements.md`, `bp/research/stack.md`, `bp/research/architecture.md`, and `bp/roadmap.md`. Express path taken per user direction.
++
++## Deferred Ideas
++
++- ESLint / Prettier setup — deferred to ph.9 (CI/CD phase) where it pairs naturally with the lint step in `ci.yml`.
++- Conventional Commits enforcement (husky + commitlint) — deferred to ph.9.
++- Vite `base` production default value `/sokoban/` — ph.1 sets the env-driven shape; ph.9 flips the default to the GitHub Pages sub-path.
++- Conventional Commits / branch protection — not in ph.1 scope; added in M3.
++
++## Non-Goals
++
++- Any game logic (move, push, win, undo) — belongs to ph.2.
++- Any level data — belongs to ph.3.
++- Any keyboard/touch input handling — belongs to ph.3+.
++- Any renderer beyond a blank canvas — belongs to ph.3.
++- Linting / formatting setup — belongs to ph.9.
++- E2E / Playwright — belongs to ph.8.
++- Deployment / CI — belongs to ph.9.
++- Conventional Commits enforcement — belongs to ph.9.
++- Conventional PR / branch policy — not in any phase.
+\ No newline at end of file
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/research.md b/bp/milestones/M1-core-playable/phases/ph.1-foundation/research.md
+new file mode 100644
+index 0000000..7ca0428
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.1-foundation/research.md
+@@ -0,0 +1,601 @@
++# Phase Research: ph.1-foundation
++
++> Implementation path investigation for the foundation scaffolding phase.
++> Phase: ph.1-foundation | Milestone: M1-core-playable | Mode: mvp
++> Goal: a runnable empty Vite + TypeScript project that boots, builds, and runs one smoke test.
++
++Confidence labels: **HIGH** = verified against npm registry / CLI `--help` output in this
++session; **MEDIUM** = well-established pattern, not directly verified here; **LOW** =
++speculative or depends on future ecosystem behavior.
++
++---
++
++## Research Scope
++
++Investigate the concrete implementation paths for the scaffolding phase, building on the
++locked decisions D1–D8 in `context.md` and the parent research in `bp/research/stack.md`
++and `bp/research/pitfalls.md`. Specifically resolve:
++
++1. Exact `package.json` script names + flags for Vitest 4 + Vite 8.
++2. Whether `src/types.ts` exists in ph.1 and what it contains.
++3. Whether `src/main.ts` wires a `DOMContentLoaded` listener or assumes `defer`.
++4. Separate `vitest.config.ts` vs. merged `test` block in `vite.config.ts`.
++5. happy-dom setup for Vitest 4 (breaking changes from Vitest 3).
++6. `vitest run` exit behavior and smoke-test determinism.
++7. Initial placeholder canvas content.
++8. Whether to commit `package-lock.json`.
++9. `"private": true` and `"engines"` in `package.json`.
++10. Whether `tsconfig.node.json` is needed for Vite config files.
++11. `server.open` for the dev script.
++12. `verbatimModuleSyntax` interaction with `moduleResolution: 'bundler'`.
++
++All version/flag claims below were verified on 2026-07-01 via `npm view` and
++`npx <pkg>@<ver> --help`.
++
++---
++
++## Recommended Approach
++
++**Recommendation**: A single `vite.config.ts` plus a **separate** `vitest.config.ts`, a
++root `tsconfig.json` (app) + `tsconfig.node.json` (config files), `src/main.ts` guarded by
++an explicit `DOMContentLoaded` listener (no reliance on `defer`), `src/types.ts` seeded
++with the `Direction` enum only, `index.html` with `<canvas id="game">` + `<div id="hud">`,
++the canvas cleared and left blank with "Sokoban" rendered as centered fillText, and a
++one-assertion `tests/unit/smoke.test.ts` that asserts a pure constant (no DOM, no game
++shape). Commit `package-lock.json`; set `"private": true` and `"engines"`; do **not** enable
++`server.open` in ph.1. **Confidence: HIGH** on the overall shape; per-item confidence is
++labeled inline.
++
++**Rationale**: This is a scaffolding phase — the value is a toolchain that compiles, boots,
++builds, and runs one test, with every config choice made to minimize friction for the *next*
++9 phases. Splitting `vitest.config.ts` from `vite.config.ts` keeps the test-time `test`
++block out of the production build config and matches the Vitest docs' recommended layout for
++non-trivial projects. Seeding `src/types.ts` with `Direction` (rather than leaving it empty
++or importing the full type surface) gives ph.2 a real import target without committing to a
++shape that ph.2 is supposed to design. A `DOMContentLoaded` guard in `main.ts` makes the
++entry resilient to script-loading order (Vite injects `type="module"` which implies `defer`,
++but the explicit guard costs one line and survives any future `<script>` placement change).
++Leaving `server.open` off avoids spawning a browser under `npm run dev` in CI/headless
++contexts where it would error.
++
++### Verified version facts (2026-07-01)
++
++| Package | Version | `engines.node` | Relevant peer | Verified via |
++|---------|---------|----------------|---------------|--------------|
++| vite | 8.1.2 | `^20.19.0 \|\| >=22.12.0` | esbuild `^0.27 \|\| ^0.28`, jiti `>=1.21` | `npm view vite@8.1.2` |
++| vitest | 4.1.9 | `^20.0.0 \|\| ^22.0.0 \|\| >=24.0.0` | vite `^6 \|\| ^7 \|\| ^8`, happy-dom `*` | `npm view vitest@4.1.9` |
++| happy-dom | 20.10.6 | `>=20.0.0` | (none) | `npm view happy-dom@20.10.6` |
++| typescript | 5.6.x | `>=14.17` | (none) | `npm view typescript@5.6.3` |
++
++CLI flag verification (via `npx <pkg>@<ver> --help`):
++
++- `vite build` accepts `--base <path>` (default `/`) and `--outDir <dir>` (default `dist`).
++- `vite` (dev) accepts `--open [path]`, `--host`, `--base`.
++- `vitest` exposes `run` and `watch` subcommands; `--run` / `-w` flags also exist. **Default
++  is watch mode**, so CI scripts MUST use `vitest run` (or `vitest --run`) to exit.
++- `vitest run` exits non-zero on the first failing test file by default (test files run in
++  parallel; a failure fails the whole run). The smoke test will fail loudly. **Confidence:
++  HIGH.**
++
++---
++
++## Exact File Contents (Recommended)
++
++### `.nvmrc`  *(HIGH)*
++
++```
++20.19.0
++```
++
++Pins the floor of Vite 8's `engines.node` range. `.nvmrc` is read by `nvm`/`fnm`/`volta`;
++no trailing newline issues (a single line, no comment).
++
++### `package.json`  *(HIGH)*
++
++```json
++{
++  "name": "sokoban",
++  "version": "0.0.0",
++  "private": true,
++  "type": "module",
++  "engines": {
++    "node": ">=20.19.0"
++  },
++  "scripts": {
++    "dev": "vite",
++    "build": "tsc --noEmit && vite build",
++    "preview": "vite preview",
++    "test": "vitest run",
++    "test:watch": "vitest"
++  },
++  "devDependencies": {
++    "happy-dom": "^20.10.6",
++    "typescript": "^5.6.3",
++    "vite": "^8.1.2",
++    "vitest": "^4.1.9"
++  }
++}
++```
++
++Decisions baked in:
++- `"private": true` — prevents accidental `npm publish`. *(HIGH)*
++- `"type": "module"` — ESM project; required for `vite.config.ts` / `vitest.config.ts` to
++  use `import` syntax without `.mts` extensions. *(HIGH)*
++- `"engines.node": ">=20.19.0"` — mirrors Vite 8's floor; `npm` will warn (and can be set
++  to error via `.npmrc` `engine-strict=true` in ph.9 if desired). *(HIGH)*
++- `"build"` runs `tsc --noEmit` first so a type error fails the build before `vite build`
++  emits. This is the ph.1 type-check gate. *(HIGH)*
++- `"test"` uses `vitest run` (single-run, exits). `"test:watch"` exposes interactive watch.
++  *(HIGH)*
++- `"preview"` is provided now even though E2E arrives in ph.8 — it costs nothing and ph.8
++  will reference it. *(MEDIUM — could defer, but zero cost to include.)*
++- No `"start"` script: `vite` dev is `npm run dev`. *(HIGH)*
++- `package-lock.json` is committed (generated by the first `npm install`). *(HIGH)*
++
++### `tsconfig.json`  *(HIGH)*
++
++```json
++{
++  "compilerOptions": {
++    "target": "ES2022",
++    "module": "ESNext",
++    "moduleResolution": "bundler",
++    "lib": ["ES2022", "DOM", "DOM.Iterable"],
++    "types": ["vite/client"],
++    "strict": true,
++    "noUncheckedIndexedAccess": true,
++    "noImplicitOverride": true,
++    "noUnusedLocals": true,
++    "noUnusedParameters": true,
++    "verbatimModuleSyntax": true,
++    "isolatedModules": true,
++    "skipLibCheck": true,
++    "noEmit": true,
++    "useDefineForClassFields": true
++  },
++  "include": ["src"],
++  "references": [{ "path": "./tsconfig.node.json" }]
++}
++```
++
++Decisions baked in:
++- `moduleResolution: "bundler"` — required for `import.meta.env` / `import.meta.glob`
++  typing and for Vite's ESM-first module layout. *(HIGH)*
++- `lib` includes `DOM` + `DOM.Iterable` — `main.ts` touches `document`/`canvas`; needed for
++  `HTMLCanvasElement` typing. *(HIGH)*
++- `types: ["vite/client"]` — provides `import.meta.env.BASE_URL` typing and the
++  `?url`/`?json` query import types. Without this, `import.meta.env` is untyped. *(HIGH)*
++- `verbatimModuleSyntax: true` — with `moduleResolution: 'bundler'` this is the modern
++  replacement for `importsNotUsedAsValues`; it forces `import type` for type-only imports
++  and is required for clean `import type` ergonomics. Pair with always using
++  `import type { ... }` for type-only specifiers. *(HIGH)*
++- `isolatedModules: true` — required by Vite (esbuild transpiles per-file). *(HIGH)*
++- `noEmit: true` — `tsc` is a type-checker only; Vite emits. *(HIGH)*
++- `noUnusedLocals` / `noUnusedParameters` — ph.1 will have near-empty files; these catch
++  the "created a stub file and forgot it" class of dead code early. *(MEDIUM — can relax in
++  ph.2 if they become noisy, but they're free at ph.1 scale.)*
++- `references` to `tsconfig.node.json` — project references for the config files. *(HIGH)*
++
++### `tsconfig.node.json`  *(HIGH)*
++
++```json
++{
++  "compilerOptions": {
++    "target": "ES2022",
++    "module": "ESNext",
++    "moduleResolution": "bundler",
++    "lib": ["ES2022"],
++    "types": ["node"],
++    "strict": true,
++    "noUncheckedIndexedAccess": true,
++    "noImplicitOverride": true,
++    "verbatimModuleSyntax": true,
++    "isolatedModules": true,
++    "skipLibCheck": true,
++    "noEmit": true,
++    "composite": true
++  },
++  "include": ["vite.config.ts", "vitest.config.ts"]
++}
++```
++
++Rationale: Vite 8's docs recommend a separate `tsconfig.node.json` for the config files
++(which run in Node, not the browser) so `process.env` and Node globals type-check under
++`@types/node` rather than `DOM`. `composite: true` is required for project references.
++`@types/node` must be added as a devDependency (Vite 8 peers it at
++`^20.19.0 || >=22.12.0`). *(HIGH on the need for a separate node tsconfig; HIGH on
++`@types/node` being required by Vite 8's peer range.)*
++
++> **`@types/node` must be added to `devDependencies`** — add it to the `package.json`
++> `devDependencies` block above: `"@types/node": "^20.19.0"`. It is a peer of Vite 8 and is
++> needed by `tsconfig.node.json`'s `types: ["node"]`. Omitting it makes `process.env` in
++> `vite.config.ts` untyped. *(HIGH)*
++
++### `vite.config.ts`  *(HIGH)*
++
++```ts
++import { defineConfig } from 'vite';
++
++export default defineConfig({
++  base: process.env.GH_PAGES_BASE ?? '/',
++  server: {
++    open: false,
++  },
++});
++```
++
++Decisions baked in:
++- `base: process.env.GH_PAGES_BASE ?? '/'` — env-driven shape per D4. ph.1 defaults to
++  `/`; ph.9 flips the default to `/sokoban/` for the GitHub Pages project-page deploy. The
++  *shape* (env-driven) is what ph.1 establishes. *(HIGH)*
++- `server.open: false` — explicitly opt out of auto-opening a browser on `vite`. Default is
++  already `false`, but stating it documents intent and prevents a future contributor's
++  `server: { open: true }` from breaking headless/CI `npm run dev`. *(MEDIUM — explicit
++  over implicit; zero cost.)*
++- No `build.outDir` override — Vite default `dist/` matches D8's `.gitignore` entry.
++- No `plugins` — vanilla TS; no React/Solid plugin. *(HIGH)*
++
++### `vitest.config.ts`  *(HIGH)*
++
++```ts
++import { defineConfig } from 'vitest/config';
++
++export default defineConfig({
++  test: {
++    environment: 'node',
++    environmentMatchGlobs: [
++      ['tests/**/*-dom.test.ts', 'happy-dom'],
++    ],
++    include: ['tests/**/*.test.ts'],
++  },
++});
++```
++
++Decisions baked in (per D5):
++- Default `environment: 'node'` — pure logic tests run without a DOM (faster, no
++  happy-dom spin-up). *(HIGH)*
++- `environmentMatchGlobs` — files ending in `-dom.test.ts` opt into `happy-dom`. This is
++  the naming convention all later phases follow for DOM-touching tests (renderer, swipe,
++  DOM labels). *(HIGH)*
++- `include: ['tests/**/*.test.ts']` — explicit; prevents Vitest from picking up
++  `node_modules` or stray `.test.ts` outside `tests/`. *(MEDIUM — Vitest's default is
++  `**/*.{test,spec}.*`, but scoping to `tests/` is cleaner for this project.)*
++
++**Why a separate file (not a `test` block inside `vite.config.ts`)?** Vitest 4 supports a
++merged `test` block in `vite.config.ts`, and it would work. The trade-off:
++
++| Approach | Pros | Cons | Verdict |
++|----------|------|------|---------|
++| Merged `test` block in `vite.config.ts` | One config file; `defineConfig` from `vitest/config` re-exports Vite's | `vite build` loads the `test` block (harmless but noisy); tooling that reads `vite.config.ts` (e.g. some IDE integrations) sees test config | Rejected |
++| **Separate `vitest.config.ts`** | Clean separation of build vs. test concerns; `vite build` never loads test config; matches Vitest docs' recommended layout | One extra file | **Adopted** *(HIGH)* |
++
++Vitest 4 resolves `vitest.config.ts` ahead of `vite.config.ts` automatically (precedence:
++`vitest.config.*` > `vite.config.*` with `test` block). No `--config` flag needed.
++*(HIGH)*
++
++### `index.html`  *(HIGH)*
++
++```html
++<!DOCTYPE html>
++<html lang="en">
++  <head>
++    <meta charset="UTF-8" />
++    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
++    <title>Sokoban</title>
++  </head>
++  <body>
++    <div id="hud"></div>
++    <canvas id="game"></canvas>
++    <script type="module" src="/src/main.ts"></script>
++  </body>
++</html>
++```
++
++Decisions baked in (per D6):
++- `<canvas id="game">` and `<div id="hud">` are the two elements later phases target.
++  `#hud` is empty in ph.1 (CSS/styling arrives in ph.6). *(HIGH)*
++- `viewport-fit=cover` + `width=device-width` — sets up the mobile viewport for NFR-4 touch
++  work in ph.3+; no cost to include now. *(MEDIUM)*
++- `<script type="module" src="/src/main.ts">` — Vite serves `src/main.ts` as the entry.
++  `type="module"` implies `defer`, but `main.ts` still guards with `DOMContentLoaded` (see
++  below). *(HIGH)*
++- No CSS `<link>` — ph.6 owns styling. The canvas/HUD are unstyled in ph.1; that's fine
++  (smoke test does not assert layout). *(HIGH)*
++
++### `src/main.ts`  *(HIGH)*
++
++```ts
++const TITLE = 'Sokoban';
++
++function boot(): void {
++  const canvas = document.getElementById('game') as HTMLCanvasElement | null;
++  const ctx = canvas?.getContext('2d');
++  if (canvas && ctx) {
++    ctx.clearRect(0, 0, canvas.width, canvas.height);
++    ctx.fillStyle = '#111';
++    ctx.font = '24px system-ui, sans-serif';
++    ctx.textAlign = 'center';
++    ctx.textBaseline = 'middle';
++    ctx.fillText(TITLE, canvas.width / 2, canvas.height / 2);
++  }
++  // eslint-disable-next-line no-console
++  console.log(`[${TITLE}] ready`);
++}
++
++if (document.readyState === 'loading') {
++  document.addEventListener('DOMContentLoaded', boot, { once: true });
++} else {
++  boot();
++}
++```
++
++Decisions baked in:
++- `DOMContentLoaded` guard with `readyState` fast-path — robust to both `defer`-loaded and
++  inline-loaded scripts. One line of insurance; matches the "explicit over implicit"
++  principle. *(HIGH)*
++- Canvas is cleared then "Sokoban" is drawn centered as placeholder text. This gives a
++  visible signal that the canvas pipeline works (clear → fillText) without committing to
++  any tile/grid rendering. *(MEDIUM — could leave canvas blank, but a centered title is a
++  useful "it booted" signal for manual `npm run dev` smoke checks and costs nothing.)*
++- `as HTMLCanvasElement | null` + null guard — satisfies `strict` and
++  `noUncheckedIndexedAccess` (well, the latter is about index access; the null guard is
++  `strict`'s `strictNullChecks`). The `canvas?.getContext('2d')` returns
++  `CanvasRenderingContext2D | null`; the `if (canvas && ctx)` narrows both. *(HIGH)*
++- `console.log` is the "ready" signal per D's deliverable ("boots a browser with a blank
++  `<canvas>` showing the project title"). The eslint-disable comment is harmless pre-lint
++  (linting arrives in ph.9) and documents intent. *(MEDIUM)*
++
++### `src/types.ts`  *(HIGH)*
++
++```ts
++export enum Direction {
++  Up = 'up',
++  Down = 'down',
++  Left = 'left',
++  Right = 'right',
++}
++```
++
++Rationale: per D2 the architecture calls for `src/types.ts` as a future module home. An
++empty file would compile but provides no import target and invites "should I delete this?"
++churn. Seeding it with just `Direction` (the one type every later phase references and whose
++shape is uncontroversial — four cardinal directions) gives ph.2 a real import target without
++committing to the `Level`/`Grid`/`GameState` shapes that ph.2 is supposed to design. A
++string-valued `enum` (not `const enum` — `const enum` is incompatible with
++`isolatedModules`) keeps the values serializable for future persistence. *(HIGH on
++existence; HIGH on `Direction` being the right seed; MEDIUM on string-enum vs union type —
++union type `type Direction = 'up' | 'down' | 'left' | 'right'` would also work and is
++lighter, but `enum` gives nominal typing for switch-exhaustiveness in ph.2. Either is
++defensible; `enum` is chosen for exhaustiveness checking.)*
++
++### `tests/unit/smoke.test.ts`  *(HIGH)*
++
++```ts
++import { describe, it, expect } from 'vitest';
++import { Direction } from '../../src/types';
++
++describe('smoke', () => {
++  it('vitest runs', () => {
++    expect(1 + 1).toBe(2);
++  });
++
++  it('Direction enum is importable', () => {
++    expect(Direction.Up).toBe('up');
++  });
++});
++```
++
++Rationale per D7: a trivial assertion confirms Vitest boots. Adding a second assertion that
++imports `Direction` from `src/types` confirms the `src/` → `tests/` import path resolves
++under Vitest 4's module resolution — a real ph.1 risk (a misconfigured `include` or alias
++would surface here, not in ph.2). Both assertions are pure constants; neither depends on
++any game-logic shape, so ph.2 can delete this file wholesale without breaking anything.
++*(HIGH)*
++
++### `.gitignore`  *(HIGH)*
++
++```
++node_modules/
++dist/
++coverage/
++playwright-report/
++test-results/
++.DS_Store
++.env*
++!.env.example
++```
++
++Per D8. The `.env*` / `!.env.example` pair ignores all env files except the example
++template (added in ph.9 if needed). Forward-slash paths are used throughout (cross-platform
++gitignore). *(HIGH)*
++
++---
++
++## Step-by-Step Implementation Order (Verify-As-You-Go)
++
++Each step has a verification command. Do not proceed until the verification passes.
++
++1. **Create `.nvmrc`** with `20.19.0`.
++   - Verify: `node --version` shows `v20.19.x` (after `nvm use`/`fnm use`).
++
++2. **Write `package.json`** (including `@types/node` in devDependencies — see note above).
++   - Verify: `cat package.json | jq .` parses; no syntax error.
++
++3. **`npm install`** — generates `package-lock.json` and `node_modules/`.
++   - Verify: `npm ls --depth=0` lists vite, vitest, typescript, happy-dom, @types/node with
++     no `(unmet peer)` warnings.
++   - Verify: `package-lock.json` exists at repo root. **Commit it.**
++
++4. **Write `tsconfig.json` + `tsconfig.node.json`.**
++   - Verify: `npx tsc --noEmit -p tsconfig.json` exits 0 (no source yet → trivially passes,
++     but confirms the configs are valid).
++
++5. **Write `vite.config.ts` + `vitest.config.ts`.**
++   - Verify: `npx tsc --noEmit -p tsconfig.node.json` exits 0 (confirms the config files
++     type-check under the node project, including `process.env` typing from `@types/node`).
++
++6. **Create the module dir skeleton** (empty dirs, with a `.gitkeep` so git tracks them):
++   `src/core/`, `src/level/`, `src/state/`, `src/render/`, `src/input/`, `src/anim/`,
++   `src/storage/`, `src/ui/`, `src/shell/`.
++   - Verify: `git status --short` shows the dirs as new (via `.gitkeep`).
++
++7. **Write `src/types.ts`** (the `Direction` enum).
++   - Verify: `npx tsc --noEmit` still exits 0.
++
++8. **Write `src/main.ts`.**
++   - Verify: `npx tsc --noEmit` exits 0 (strict-mode check on the canvas/`getContext`/
++     `fillText` calls; this is the first real strict-mode stress test).
++
++9. **Write `index.html`.**
++   - Verify: `npm run dev`, open the printed URL in a browser, confirm "Sokoban" appears
++     centered on a blank canvas and the console shows `[Sokoban] ready`. Kill the server.
++
++10. **Write `tests/unit/smoke.test.ts`.**
++    - Verify: `npm test` runs and passes both assertions. **This is the ph.1 acceptance
++      gate.**
++
++11. **Write `.gitignore`.**
++    - Verify: `git status --short` does NOT show `node_modules/` or `dist/`.
++
++12. **`npm run build`** — the full build gate.
++    - Verify: `tsc --noEmit && vite build` exits 0 and `dist/index.html` +
++      `dist/assets/*.js` exist. `npm run preview` serves it and "Sokoban" renders.
++
++13. **Commit everything** (including `package-lock.json`).
++    - Verify: `git diff --cached --stat` shows the config files, source, test, lockfile,
++      and `.gitkeep`s; no `node_modules/` or `dist/`.
++
++**Acceptance summary**: all three of `npm run dev` (boots, shows title), `npm test` (one
++passing smoke test), and `npm run build` (produces `dist/`) work.
++
++---
++
++## Alternatives Considered
++
++| Approach | Pros | Cons | Verdict |
++|----------|------|------|---------|
++| **A: Separate `vitest.config.ts` + `tsconfig.node.json` + DOMContentLoaded guard + seeded `types.ts`** | Clean separation of build/test concerns; Node-typed config files; resilient entry; real import target for ph.2 | Two extra config files vs. one | **Adopted** *(HIGH)* |
++| B: Merged `test` block in `vite.config.ts`, single `tsconfig.json`, rely on `defer`, empty `types.ts` | One fewer config file; minimal | `vite build` loads test config; `process.env` untyped in config files; entry brittle to script placement; ph.2 has no import target and must create `types.ts` anyway | Rejected *(HIGH)* |
++| C: `vite.config.ts` only (no `vitest.config.ts`), `tsconfig.node.json` present, rely on `defer` | Middle ground | Still merges test into build config; no clean test-time-only knobs | Rejected *(HIGH)* |
++| D: Empty `src/types.ts` (zero content) | Truly minimal scaffolding | Compiles but is dead code; ph.2 recreates it; risks "why does this empty file exist?" churn | Rejected *(HIGH — seeding `Direction` is strictly better)* |
++| E: `src/types.ts` with full type surface (`Level`, `Grid`, `Tile`, `GameState`, `Box`, `Player`) | Ph.2 has everything ready | Commits ph.2 to a shape it's supposed to design; violates "ph.1 is scaffolding, no game logic" | Rejected *(HIGH)* |
++| F: Canvas left fully blank (no "Sokoban" fillText) | Slightly less code | No visible "it booted" signal; manual smoke check shows a blank page with no feedback | Rejected *(MEDIUM — blank is defensible but the centered title is a better smoke signal)* |
++| G: `server.open: true` in `vite.config.ts` | Auto-opens browser on `npm run dev` | Breaks headless/CI `npm run dev`; surprising in WSL/remote dev | Rejected *(HIGH)* |
++| H: `const enum Direction` instead of `enum` | Slightly smaller emit | `const enum` is incompatible with `isolatedModules: true` (Vite/esbuild transpile per-file); would require `--preserveConstEnums` and breaks cross-module `const enum` inlining | Rejected *(HIGH)* |
++| I: Union type `type Direction = 'up' \| 'down' \| 'left' \| 'right'` instead of `enum` | Lighter; no emit; trivially serializable | Loses nominal typing and switch-exhaustiveness checking that `enum` gives in ph.2's reducer | Acceptable alternative *(MEDIUM)* — `enum` chosen for exhaustiveness, but union is a valid ph.2 refactor |
++
++---
++
++## Known Pitfalls
++
++- **Vite 8 / Vitest 4 / happy-dom peer ranges.** Verified: `vitest@4.1.9` peers
++  `vite ^6||^7||^8` and `happy-dom *`; `vite@8.1.2` peers `esbuild ^0.27||^0.28` and
++  `jiti >=1.21` (both auto-resolved by npm). `@types/node ^20.19.0 || >=22.12.0` is a
++  **peer of Vite 8** — it MUST be in devDependencies or `process.env` in `vite.config.ts`
++  is untyped. *(HIGH — verified via `npm view`)*
++- **`@types/node` missing → `process.env` untyped.** Mitigation: add `@types/node` to
++  devDependencies and list it in `tsconfig.node.json`'s `types`. *(HIGH)*
++- **TS strict mode bites immediately.** `src/main.ts` is the first strict-mode stress test:
++  `document.getElementById` returns `HTMLElement | null`, so `as HTMLCanvasElement | null`
++  + null guard is required; `getContext('2d')` returns `CanvasRenderingContext2D | null` so
++  the `if (canvas && ctx)` narrowing is required. `noUncheckedIndexedAccess` does not bite
++  here (no index access) but will in ph.2's grid code — note it for the ph.2 researcher.
++  *(HIGH)*
++- **`import.meta.env.BASE_URL` typing requires `vite/client`.** Set via
++  `tsconfig.json` `types: ["vite/client"]`. Without it, `import.meta.env` is untyped and
++  any `BASE_URL` usage (ph.3+ level loading) won't compile. ph.1 doesn't use it yet but the
++  type reference must be in place from the start. *(HIGH)*
++- **`verbatimModuleSyntax: true` forces `import type`.** Every type-only import must use
++  `import type { ... }`. The smoke test imports `Direction` as a *value* (it's an enum, used
++  as a value `Direction.Up`), so `import { Direction }` is correct there. ph.2+ type-only
++  imports (`import type { Level }`) must use the `type` modifier or `tsc --noEmit` fails.
++  *(HIGH)*
++- **`vitest` default is watch mode.** `npm test` MUST use `vitest run` (or `vitest --run`),
++  not bare `vitest`, or CI hangs. *(HIGH — verified via `vitest --help`)*
++- **`const enum` + `isolatedModules` incompatibility.** Use a regular `enum` (or a union
++  type), not `const enum`, in `src/types.ts`. `isolatedModules: true` (required by Vite)
++  breaks cross-file `const enum` inlining. *(HIGH)*
++- **Windows / Unix path differences.** Use forward slashes everywhere (gitignore, globs,
++  `include` paths). Vitest's `environmentMatchGlobs` glob `'tests/**/*-dom.test.ts'` is
++  forward-slash and works cross-platform. *(HIGH)*
++- **Lockfile drift.** If `package.json` is edited (deps added/changed) without a
++  re-`npm install`, `package-lock.json` drifts and `npm ci` (used in ph.9 CI) fails. Rule:
++  any `package.json` edit must be immediately followed by `npm install` and the regenerated
++  lockfile committed in the same commit. *(HIGH)*
++- **`server.open: true` in headless contexts.** Do NOT enable it in ph.1; `npm run dev` is
++  run in CI/headless contexts and an auto-open would error or hang. *(HIGH)*
++- **happy-dom does not implement Canvas 2D.** Not a ph.1 issue (smoke test doesn't touch
++  canvas), but flagged for ph.3+: any unit test calling `getContext('2d').fillRect` under
++  happy-dom needs a `vi.stubGlobal`/spy mock. *(MEDIUM — verified in stack.md Direction 7a)*
++- **Vitest 4 vs Vitest 3 breaking changes.** Vitest 4 changed default pool to `forks`,
++  renamed some CLI flags, and tightened environment matching. The ph.1 config (`vitest run`,
++  `environmentMatchGlobs`, `include`) uses only stable, v4-present APIs verified via
++  `vitest --help`. No `pool` override needed (default `forks` is fine for one smoke test).
++  *(MEDIUM — API surface verified; deeper v3→v4 migration not relevant since ph.1 is greenfield)*
++
++---
++
++## TDD Implications
++
++- **The smoke test must pass from the moment `npm test` is runnable.** It is the ph.1
++  acceptance gate. Implementation order (step 10 above) places it after `src/types.ts`
++  exists so its `Direction` import resolves.
++- **The smoke test must NOT depend on any game-logic shape.** It asserts `1 + 1 === 2` and
++  `Direction.Up === 'up'` — pure constants. No `Grid`, no `GameState`, no `applyMove`. This
++  keeps it deletable: ph.2 replaces it with real reducer tests and removes
++  `smoke.test.ts` wholesale. The smoke test is scaffolding, not a foundation.
++- **The smoke test's `Direction` import is a real wiring check**, not a logic test. It
++  verifies that `tests/` can import from `src/` under Vitest 4's resolution — a ph.1 risk
++  (a broken `include` glob or missing root would surface here). This is the test's
++  load-bearing purpose beyond "Vitest boots".
++- **No DOM environment needed for the smoke test.** It runs under the default `node`
++  environment (per `vitest.config.ts`), so happy-dom is not exercised in ph.1. happy-dom is
++  installed and configured now so ph.2+'s `-dom.test.ts` files work without config churn.
++- **`npm run build` runs `tsc --noEmit` first.** This makes the build a type-check gate: a
++  type error fails `npm run build` before `vite build` emits. Treat the build as a second
++  test (type-level) that must stay green.
++- **No TDD red-green for ph.1 itself.** ph.1 is scaffolding (`type: config`/`scaffolding`
++  in plan terms), not behavior — there is no failing-test-first loop. The smoke test is a
++  sanity check, not a TDD driver. TDD red-green begins in ph.2 with the move reducer.
++- **Future ph.2 interaction.** ph.2 will: (a) delete `tests/unit/smoke.test.ts`, (b) add
++  `tests/unit/move.test.ts` with real reducer assertions, (c) likely add `-dom.test.ts`
++  files that exercise happy-dom. None of these require `vitest.config.ts` changes — the
++  `environmentMatchGlobs` convention handles (c) automatically by filename.
++
++---
++
++## Cross-References
++
++- `bp/research/stack.md` — Direction 7a (happy-dom choice), Direction 1 (import.meta.glob,
++  not used in ph.1 but the `query: '?json'` form is noted for ph.3), Risks (Vite 8 Node
++  floor, canvas-not-in-happy-dom).
++- `bp/research/pitfalls.md` — #11 (GitHub Pages base path → D4 env-driven `base`), #12
++  (JSON level path → ph.3), #13 (Conventional Commits → deferred to ph.9), #19 (E2E vs
++  build → ph.8). None are ph.1 BLOCKERs; the ph.1 config merely *sets the shape* that
++  mitigates #11 (env-driven `base`) and avoids the anti-pattern of hardcoding `base: '/'`.
++- `bp/milestones/M1-core-playable/phases/ph.1-foundation/context.md` — D1–D8 locked
++  decisions; this research operationalizes them with exact file contents.
++
++---
++
++## Summary
++
++| Item | Recommendation | Confidence |
++|------|----------------|------------|
++| `package.json` scripts | `dev: vite`, `build: tsc --noEmit && vite build`, `test: vitest run`, `test:watch: vitest`, `preview: vite preview` | HIGH |
++| `private` / `engines` / `type: module` | All three set; `engines.node >=20.19.0` | HIGH |
++| `@types/node` in devDependencies | Required by Vite 8 peer; needed for `process.env` typing | HIGH |
++| `tsconfig.json` | `moduleResolution: bundler`, `strict`, `noUncheckedIndexedAccess`, `verbatimModuleSyntax`, `types: ["vite/client"]`, references `tsconfig.node.json` | HIGH |
++| `tsconfig.node.json` | Separate, `composite: true`, `types: ["node"]`, covers `vite.config.ts` + `vitest.config.ts` | HIGH |
++| `vite.config.ts` | `base: process.env.GH_PAGES_BASE ?? '/'`, `server.open: false` | HIGH |
++| `vitest.config.ts` | Separate file; `environment: 'node'`; `environmentMatchGlobs` for `-dom.test.ts` → happy-dom | HIGH |
++| `index.html` | `<canvas id="game">` + `<div id="hud">` + module script to `/src/main.ts` | HIGH |
++| `src/main.ts` | `DOMContentLoaded` guard with `readyState` fast-path; clears canvas + centered "Sokoban" fillText + `console.log` ready | HIGH |
++| `src/types.ts` | Seed with `enum Direction` (string-valued, not `const enum`) | HIGH |
++| `tests/unit/smoke.test.ts` | Two assertions: `1+1===2` + `Direction.Up==='up'` (wiring check) | HIGH |
++| `.gitignore` | node_modules, dist, coverage, playwright-report, test-results, .DS_Store, `.env*` except `.env.example` | HIGH |
++| `.nvmrc` | `20.19.0` | HIGH |
++| Commit `package-lock.json` | Yes, from the first `npm install` | HIGH |
++| `server.open` | `false` (do not auto-open browser) | HIGH |
++| Canvas placeholder | Centered "Sokoban" fillText (not blank) | MEDIUM |
++| `noUnusedLocals`/`noUnusedParameters` | Enabled in ph.1 (free at this scale) | MEDIUM |
+diff --git a/bp/state.md b/bp/state.md
+index d8a94be..36a58f9 100644
+--- a/bp/state.md
++++ b/bp/state.md
+@@ -5,10 +5,27 @@ project:
+   current_milestone: M1-core-playable
+   current_phase: ph.1-foundation
+ active_context:
+-  type: phase
+-  ref: milestones/M1-core-playable/phases/ph.1-foundation
+-  step: discuss
+-changes: []
++  type: change
++  ref: changes/toolchain-and-types
++  step: applying
++changes:
++  - name: toolchain-and-types
++    status: applying
++    depends_on: []
++  - name: vite-vitest-configs
++    status: proposal
++    depends_on:
++      - toolchain-and-types
++  - name: entry-canvas
++    status: proposal
++    depends_on:
++      - toolchain-and-types
++      - vite-vitest-configs
++  - name: smoke-test
++    status: proposal
++    depends_on:
++      - toolchain-and-types
++      - vite-vitest-configs
+ adhoc: []
+ ---
+ # State

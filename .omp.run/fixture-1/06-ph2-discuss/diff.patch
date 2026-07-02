@@ -1,0 +1,2167 @@
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/change-summary.md b/bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/change-summary.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/change-summary.md
+rename to bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/change-summary.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/design.md b/bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/design.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/design.md
+rename to bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/design.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/goal-review.md b/bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/goal-review.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/goal-review.md
+rename to bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/goal-review.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/proposal.md b/bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/proposal.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/proposal.md
+rename to bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/proposal.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/quality-review.md b/bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/quality-review.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/quality-review.md
+rename to bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/quality-review.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/spec-review.md b/bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/spec-review.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/spec-review.md
+rename to bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/spec-review.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/specs/smoke-test/spec.md b/bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/specs/smoke-test/spec.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/specs/smoke-test/spec.md
+rename to bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/specs/smoke-test/spec.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/tasks.md b/bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/tasks.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/tasks.md
+rename to bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/tasks.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/verification.md b/bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/verification.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/verification.md
+rename to bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/verification.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/summary.md b/bp/milestones/M1-core-playable/phases/ph.1-foundation/summary.md
+new file mode 100644
+index 0000000..efbc413
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.1-foundation/summary.md
+@@ -0,0 +1,99 @@
++# Phase Summary: ph.1-foundation
++> Milestone: M1-core-playable
++> Date: 2026-07-01
++
++## Changes (4)
++
++### 2026-07-01-entry-canvas
++
++# Change Summary: entry-canvas
++
++> Auto-generated summary after all waves complete.
++
++---
++
++## Intent
++
++Add the project entry point — `index.html`, `src/main.ts`, `src/types.ts` — so `npm run dev` boots a browser and `npm run build` produces a deployable `dist/`. Resolves c2's `UNRESOLVED_ENTRY` error.
++
++## Output Files
++
++| File | Action |
++|------|--------|
++| `index.html` | Create |
++| `src/main.ts` | Create |
++| `src/types.ts` | Create |
++
++## Key Decisions
++
++- **`index.html` is plain static HTML**: dark 
++...
++
++### 2026-07-01-smoke-test
++
++# Change Summary: smoke-test
++
++> Auto-generated summary after all waves complete.
++
++---
++
++## Intent
++
++Verify the test infrastructure works as designed — Vitest 4 projects routing (`unit` / `unit-dom`) and Vite client types (`import.meta.glob`). The core smoke test was added in c1 to satisfy the verify gate; this change extends coverage.
++
++## Output Files
++
++| File | Action |
++|------|--------|
++| `tests/unit/smoke-dom.test.ts` | Create |
++| `tests/unit/glob-types.test.ts` | Create |
++
++## Key Decisions
++
++- *
++...
++
++### 2026-07-01-toolchain-and-types
++
++# Change Summary: toolchain-and-types
++
++> Auto-generated summary after all waves complete.
++
++---
++
++## Intent
++
++Bootstrap the npm + TypeScript toolchain for the sokoban project so all later changes (c2: build/test configs, c3: canvas entry, c4: smoke test, plus all 9 later phases) can build, lint, and run on a known foundation. Required prerequisite for the entire project.
++
++## Output Files
++
++| File | Action |
++|------|--------|
++| `.gitignore` | Create |
++| `.nvmrc` | Create |
++| `tsconfig.json` | Create 
++...
++
++### 2026-07-01-vite-vitest-configs
++
++# Change Summary: vite-vitest-configs
++
++> Auto-generated summary after all waves complete.
++
++---
++
++## Intent
++
++Add the Vite and Vitest config files so the project's build and test scripts can resolve their configuration. Resolves the c1 TS18003 error (no inputs found for `tsconfig.node.json`).
++
++## Output Files
++
++| File | Action |
++|------|--------|
++| `vite.config.ts` | Create |
++| `vitest.config.ts` | Create |
++
++## Key Decisions
++
++- **`vite.config.ts`**: minimal config with env-driven `base`. No plugins 
++...
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/move-and-history/design.md b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/move-and-history/design.md
+new file mode 100644
+index 0000000..a563a29
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/move-and-history/design.md
+@@ -0,0 +1,116 @@
++# Design: move-and-history
++
++> This document is the Change Design — written after proposal approval, describing how to implement. Each section has fill-in guidance. After this document, proceed to task breakdown.
++
++---
++
++## Context & Goals
++
++<!--
++1. Briefly describe context — what constraints exist?
++2. Core design goals (no more than 3)
++3. Must align with proposal Intent and Must-haves
++-->
++
++{{background-and-goals}}
++
++---
++
++## Technical Approach
++
++### Architecture Diagram
++
++<!--
++ASCII art showing module/component relationships:
++- New modules vs. existing modules
++- Data flow direction (arrows)
++- File/module boundaries
++Annotate: [NEW], [MODIFIED], [EXISTING]
++-->
++
++```text
++{{architecture-diagram}}
++```
++
++### Core Data Structures
++
++<!--
++Key types/interfaces/data structures introduced or modified by this design.
++Use TypeScript interface format. Brief description per type.
++-->
++
++{{data-structures}}
++
++### Data Flow
++
++<!--
++Step-by-step description of data flow from trigger to effect.
++Example:
++1. User scrolls list → FlatList fires onScroll
++2. OptimizedList reads itemHeight config → enables getItemLayout
++3. Layout engine skips dynamic measurement → uses fixed row height
++4. useScrollPerformance samples FPS every 500ms
++5. FPS data → Performance Reporter → backend
++-->
++
++{{data-flow}}
++
++### Interface Design
++
++<!--
++Public API signatures exposed by this design:
++- Function/method names
++- Parameter lists (name + type + description)
++- Return types
++- sync/async
++-->
++
++{{api-signatures}}
++
++---
++
++## File Manifest
++
++<!--
++All files to create or modify, organized as a table.
++-->
++
++| File Path | Description | Action |
++|-----------|-------------|--------|
++| `{{file-path-1}}` | {{description}} | Create |
++| `{{file-path-2}}` | {{description}} | Modify |
++
++---
++
++## Test Strategy
++
++### Unit Tests
++- <!-- Which modules need unit tests? What needs mocking? -->
++
++### Integration Tests
++- <!-- Which flows need integration tests? What fixtures needed? -->
++
++### TDD Tasks
++- <!-- List type:behavior tasks requiring RED→GREEN→REFACTOR -->
++
++---
++
++## Alternatives
++
++<!--
++Evaluated but rejected approaches, with rationale.
++-->
++
++| Approach | Pros | Cons | Rejection Reason |
++|----------|------|------|-----------------|
++| {{alt-name-1}} | {{pros}} | {{cons}} | {{reason}} |
++| {{alt-name-2}} | {{pros}} | {{cons}} | {{reason}} |
++
++---
++
++## Risk Assessment
++
++| Risk | Probability | Impact | Mitigation |
++|------|------------|--------|-----------|
++| {{risk-1}} | {{probability}} | {{impact}} | {{mitigation}} |
++| {{risk-2}} | {{probability}} | {{impact}} | {{mitigation}} |
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/move-and-history/proposal.md b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/move-and-history/proposal.md
+new file mode 100644
+index 0000000..8a67564
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/move-and-history/proposal.md
+@@ -0,0 +1,95 @@
++# Proposal: move-and-history
++
++> This document is a Change Proposal — align intent, scope, and approach before implementation. Complete each section; reviewers will evaluate this proposal before the design phase.
++
++---
++
++## Intent
++
++<!--
++Describe why this change is needed:
++1. What specific problem exists or what capability is missing?
++2. Who is affected (users/developers/ops)? How severely?
++3. What happens if we don't make this change?
++4. Is this a bug fix / feature / tech debt / perf improvement?
++5. Is this linked to a known issue, user feedback, or metric? (attach issue link if available)
++-->
++
++Implement pure move.ts (validate + apply move/push) and history.ts (push/pop/clear) with tests
++
++---
++
++## Scope
++
++### In scope
++
++<!--
++List all items covered by this change. One per line, verb-first.
++Example:
++- Add skeleton loading state on list pull-to-refresh
++- Add useScrollPerformance hook for scroll metrics
++- Memoize UserCard component
++-->
++
++{{in-scope-items}}
++
++### Out of scope
++
++<!--
++Explicitly excluded changes to prevent scope creep. One per line with reason.
++Example:
++- Homepage skeleton screen (planned for next phase)
++- Server-side API pagination (unrelated to client performance)
++- Android list optimization (platform-specific, needs separate research)
++-->
++
++{{out-of-scope-items}}
++
++---
++
++## Approach
++
++<!--
++Describe the technical direction at a high level:
++1. Architecture layer: Which layer does the change touch (UI/Service/Store)? New modules needed?
++2. Library choices: New dependencies? Upgrades? Rationale?
++3. Data flow: How does data travel from source to UI? State management changes?
++4. Compatibility: Backward compatibility strategy? Migration needed?
++5. Testability: Are there injection points / mock seams for testing?
++
++No detailed implementation here — the design doc handles that.
++-->
++
++{{approach}}
++
++---
++
++## Must-haves
++
++<!--
++3-7 observable, verifiable must-have behaviors.
++Each must be a concrete statement — no ambiguity.
++Reviewers should be able to judge pass/fail using these conditions.
++
++Format: "MUST <condition>" or "SHALL <condition>"
++- Observable: visible on screen, checkable via CLI, assertable in tests
++- Verifiable: reviewer can confirm via action/command
++-->
++
++{{must-haves}}
++
++---
++
++## Non-goals
++
++<!--
++Explicit non-goals to prevent reviewers from asking "why wasn't X done?"
++Different from Out of scope (not in this change's scope).
++Non-goals are specific targets that might be incorrectly assumed to be in scope.
++Example:
++- Not pursuing Android list performance in this change
++- Not changing the existing pagination logic
++- Not adding new UI component library dependencies
++-->
++
++{{non-goals}}
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/move-and-history/specs/move-and-history/spec.md b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/move-and-history/specs/move-and-history/spec.md
+new file mode 100644
+index 0000000..a4346d2
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/move-and-history/specs/move-and-history/spec.md
+@@ -0,0 +1,12 @@
++# move-and-history — Delta Spec
++
++## ADDED Requirements
++
++### Requirement: <name>
++
++The system SHALL <behavior>.
++
++#### Scenario: <name>
++- **GIVEN** <precondition>
++- **WHEN** <trigger>
++- **THEN** <expected outcome>
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/move-and-history/tasks.md b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/move-and-history/tasks.md
+new file mode 100644
+index 0000000..a3028f7
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/move-and-history/tasks.md
+@@ -0,0 +1,69 @@
++# Tasks: move-and-history
++
++> This document breaks the design into executable tasks grouped by wave. Each task includes description, files, acceptance criteria, optional depends_on and spec_ref. type:behavior tasks must include RED test descriptions (GIVEN/WHEN/THEN format).
++
++---
++
++## TDD Type Annotations
++
++| type | Meaning | TDD Protocol |
++|------|---------|-------------|
++| `behavior` | Business behavior — implement a concrete, observable/assertable feature | **RED→GREEN→REFACTOR** (mandatory: test first → implement → refactor) |
++| `config` | Configuration — env vars, CI/CD, lint, tsconfig, etc. | Direct implementation, no TDD |
++| `refactor` | Refactoring — improve internal structure without changing behavior | Verify tests pass → refactor → verify again |
++| `docs` | Documentation — README, API docs, comments | Direct implementation, no TDD |
++| `scaffolding` | Skeleton code — new module shells, directory structure, templates | Direct implementation, no TDD |
++
++> **Rule**: If a task's core output is "a behavior" (user-perceptible or test-assertable), use `behavior`. If it's just "file exists" or "config takes effect", use `config`/`scaffolding`.
++
++---
++
++## Wave 1: {{wave-1-theme}}
++
++<!--
++A wave is an independently verifiable unit of work. Tasks within a wave may have dependencies but the wave is self-contained.
++Each wave completion enables verification (tsc + test pass).
++-->
++
++- [ ] task-{{id-1}}: [type:{{type}}] {{title}}
++  - **description**: {{What to do, approach, files/APIs to reference}}
++  - **files**: {{comma-separated file paths}}
++  - **acceptance**: {{observable, assertable acceptance criteria}}
++  - **depends_on**: [task-{{id-x}}] <!-- optional: predecessor -->
++  - **spec_ref**: specs/{{domain}}/spec.md <!-- optional: linked spec -->
++  {{if behavior}}
++  - ***RED test***:
++    ```
++    GIVEN {{precondition}}
++    WHEN {{trigger action}}
++    THEN {{expected result}}
++    ```
++  {{/if}}
++
++---
++
++## Wave 2: {{wave-2-theme}}
++
++- [ ] task-{{id-3}}: [type:{{type}}] {{title}}
++  - **description**: {{What to do}}
++  - **files**: {{file paths}}
++  - **acceptance**: {{acceptance criteria}}
++  - **depends_on**: [task-{{id-1}}] <!-- optional -->
++  {{if behavior}}
++  - ***RED test***:
++    ```
++    GIVEN {{precondition}}
++    WHEN {{trigger action}}
++    THEN {{expected result}}
++    ```
++  {{/if}}
++
++---
++
++## Verification
++
++- [ ] `tsc --noEmit` passes (or equivalent type check)
++- [ ] `vitest run` all test suites pass
++- [ ] Each wave's acceptance criteria confirmed (manual or automated)
++- [ ] New code passes lint check
++- [ ] No new type errors or warnings introduced
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/reducer/design.md b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/reducer/design.md
+new file mode 100644
+index 0000000..4cfc641
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/reducer/design.md
+@@ -0,0 +1,116 @@
++# Design: reducer
++
++> This document is the Change Design — written after proposal approval, describing how to implement. Each section has fill-in guidance. After this document, proceed to task breakdown.
++
++---
++
++## Context & Goals
++
++<!--
++1. Briefly describe context — what constraints exist?
++2. Core design goals (no more than 3)
++3. Must align with proposal Intent and Must-haves
++-->
++
++{{background-and-goals}}
++
++---
++
++## Technical Approach
++
++### Architecture Diagram
++
++<!--
++ASCII art showing module/component relationships:
++- New modules vs. existing modules
++- Data flow direction (arrows)
++- File/module boundaries
++Annotate: [NEW], [MODIFIED], [EXISTING]
++-->
++
++```text
++{{architecture-diagram}}
++```
++
++### Core Data Structures
++
++<!--
++Key types/interfaces/data structures introduced or modified by this design.
++Use TypeScript interface format. Brief description per type.
++-->
++
++{{data-structures}}
++
++### Data Flow
++
++<!--
++Step-by-step description of data flow from trigger to effect.
++Example:
++1. User scrolls list → FlatList fires onScroll
++2. OptimizedList reads itemHeight config → enables getItemLayout
++3. Layout engine skips dynamic measurement → uses fixed row height
++4. useScrollPerformance samples FPS every 500ms
++5. FPS data → Performance Reporter → backend
++-->
++
++{{data-flow}}
++
++### Interface Design
++
++<!--
++Public API signatures exposed by this design:
++- Function/method names
++- Parameter lists (name + type + description)
++- Return types
++- sync/async
++-->
++
++{{api-signatures}}
++
++---
++
++## File Manifest
++
++<!--
++All files to create or modify, organized as a table.
++-->
++
++| File Path | Description | Action |
++|-----------|-------------|--------|
++| `{{file-path-1}}` | {{description}} | Create |
++| `{{file-path-2}}` | {{description}} | Modify |
++
++---
++
++## Test Strategy
++
++### Unit Tests
++- <!-- Which modules need unit tests? What needs mocking? -->
++
++### Integration Tests
++- <!-- Which flows need integration tests? What fixtures needed? -->
++
++### TDD Tasks
++- <!-- List type:behavior tasks requiring RED→GREEN→REFACTOR -->
++
++---
++
++## Alternatives
++
++<!--
++Evaluated but rejected approaches, with rationale.
++-->
++
++| Approach | Pros | Cons | Rejection Reason |
++|----------|------|------|-----------------|
++| {{alt-name-1}} | {{pros}} | {{cons}} | {{reason}} |
++| {{alt-name-2}} | {{pros}} | {{cons}} | {{reason}} |
++
++---
++
++## Risk Assessment
++
++| Risk | Probability | Impact | Mitigation |
++|------|------------|--------|-----------|
++| {{risk-1}} | {{probability}} | {{impact}} | {{mitigation}} |
++| {{risk-2}} | {{probability}} | {{impact}} | {{mitigation}} |
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/reducer/proposal.md b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/reducer/proposal.md
+new file mode 100644
+index 0000000..7b531a9
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/reducer/proposal.md
+@@ -0,0 +1,95 @@
++# Proposal: reducer
++
++> This document is a Change Proposal — align intent, scope, and approach before implementation. Complete each section; reviewers will evaluate this proposal before the design phase.
++
++---
++
++## Intent
++
++<!--
++Describe why this change is needed:
++1. What specific problem exists or what capability is missing?
++2. Who is affected (users/developers/ops)? How severely?
++3. What happens if we don't make this change?
++4. Is this a bug fix / feature / tech debt / perf improvement?
++5. Is this linked to a known issue, user feedback, or metric? (attach issue link if available)
++-->
++
++Implement reducer.ts orchestrating move/undo/reset; tests covering all intent types and edge cases
++
++---
++
++## Scope
++
++### In scope
++
++<!--
++List all items covered by this change. One per line, verb-first.
++Example:
++- Add skeleton loading state on list pull-to-refresh
++- Add useScrollPerformance hook for scroll metrics
++- Memoize UserCard component
++-->
++
++{{in-scope-items}}
++
++### Out of scope
++
++<!--
++Explicitly excluded changes to prevent scope creep. One per line with reason.
++Example:
++- Homepage skeleton screen (planned for next phase)
++- Server-side API pagination (unrelated to client performance)
++- Android list optimization (platform-specific, needs separate research)
++-->
++
++{{out-of-scope-items}}
++
++---
++
++## Approach
++
++<!--
++Describe the technical direction at a high level:
++1. Architecture layer: Which layer does the change touch (UI/Service/Store)? New modules needed?
++2. Library choices: New dependencies? Upgrades? Rationale?
++3. Data flow: How does data travel from source to UI? State management changes?
++4. Compatibility: Backward compatibility strategy? Migration needed?
++5. Testability: Are there injection points / mock seams for testing?
++
++No detailed implementation here — the design doc handles that.
++-->
++
++{{approach}}
++
++---
++
++## Must-haves
++
++<!--
++3-7 observable, verifiable must-have behaviors.
++Each must be a concrete statement — no ambiguity.
++Reviewers should be able to judge pass/fail using these conditions.
++
++Format: "MUST <condition>" or "SHALL <condition>"
++- Observable: visible on screen, checkable via CLI, assertable in tests
++- Verifiable: reviewer can confirm via action/command
++-->
++
++{{must-haves}}
++
++---
++
++## Non-goals
++
++<!--
++Explicit non-goals to prevent reviewers from asking "why wasn't X done?"
++Different from Out of scope (not in this change's scope).
++Non-goals are specific targets that might be incorrectly assumed to be in scope.
++Example:
++- Not pursuing Android list performance in this change
++- Not changing the existing pagination logic
++- Not adding new UI component library dependencies
++-->
++
++{{non-goals}}
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/reducer/specs/reducer/spec.md b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/reducer/specs/reducer/spec.md
+new file mode 100644
+index 0000000..3e3a95e
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/reducer/specs/reducer/spec.md
+@@ -0,0 +1,12 @@
++# reducer — Delta Spec
++
++## ADDED Requirements
++
++### Requirement: <name>
++
++The system SHALL <behavior>.
++
++#### Scenario: <name>
++- **GIVEN** <precondition>
++- **WHEN** <trigger>
++- **THEN** <expected outcome>
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/reducer/tasks.md b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/reducer/tasks.md
+new file mode 100644
+index 0000000..5e218ac
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/reducer/tasks.md
+@@ -0,0 +1,69 @@
++# Tasks: reducer
++
++> This document breaks the design into executable tasks grouped by wave. Each task includes description, files, acceptance criteria, optional depends_on and spec_ref. type:behavior tasks must include RED test descriptions (GIVEN/WHEN/THEN format).
++
++---
++
++## TDD Type Annotations
++
++| type | Meaning | TDD Protocol |
++|------|---------|-------------|
++| `behavior` | Business behavior — implement a concrete, observable/assertable feature | **RED→GREEN→REFACTOR** (mandatory: test first → implement → refactor) |
++| `config` | Configuration — env vars, CI/CD, lint, tsconfig, etc. | Direct implementation, no TDD |
++| `refactor` | Refactoring — improve internal structure without changing behavior | Verify tests pass → refactor → verify again |
++| `docs` | Documentation — README, API docs, comments | Direct implementation, no TDD |
++| `scaffolding` | Skeleton code — new module shells, directory structure, templates | Direct implementation, no TDD |
++
++> **Rule**: If a task's core output is "a behavior" (user-perceptible or test-assertable), use `behavior`. If it's just "file exists" or "config takes effect", use `config`/`scaffolding`.
++
++---
++
++## Wave 1: {{wave-1-theme}}
++
++<!--
++A wave is an independently verifiable unit of work. Tasks within a wave may have dependencies but the wave is self-contained.
++Each wave completion enables verification (tsc + test pass).
++-->
++
++- [ ] task-{{id-1}}: [type:{{type}}] {{title}}
++  - **description**: {{What to do, approach, files/APIs to reference}}
++  - **files**: {{comma-separated file paths}}
++  - **acceptance**: {{observable, assertable acceptance criteria}}
++  - **depends_on**: [task-{{id-x}}] <!-- optional: predecessor -->
++  - **spec_ref**: specs/{{domain}}/spec.md <!-- optional: linked spec -->
++  {{if behavior}}
++  - ***RED test***:
++    ```
++    GIVEN {{precondition}}
++    WHEN {{trigger action}}
++    THEN {{expected result}}
++    ```
++  {{/if}}
++
++---
++
++## Wave 2: {{wave-2-theme}}
++
++- [ ] task-{{id-3}}: [type:{{type}}] {{title}}
++  - **description**: {{What to do}}
++  - **files**: {{file paths}}
++  - **acceptance**: {{acceptance criteria}}
++  - **depends_on**: [task-{{id-1}}] <!-- optional -->
++  {{if behavior}}
++  - ***RED test***:
++    ```
++    GIVEN {{precondition}}
++    WHEN {{trigger action}}
++    THEN {{expected result}}
++    ```
++  {{/if}}
++
++---
++
++## Verification
++
++- [ ] `tsc --noEmit` passes (or equivalent type check)
++- [ ] `vitest run` all test suites pass
++- [ ] Each wave's acceptance criteria confirmed (manual or automated)
++- [ ] New code passes lint check
++- [ ] No new type errors or warnings introduced
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/design.md b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/design.md
+new file mode 100644
+index 0000000..6a2fb8b
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/design.md
+@@ -0,0 +1,116 @@
++# Design: types-and-helpers
++
++> This document is the Change Design — written after proposal approval, describing how to implement. Each section has fill-in guidance. After this document, proceed to task breakdown.
++
++---
++
++## Context & Goals
++
++<!--
++1. Briefly describe context — what constraints exist?
++2. Core design goals (no more than 3)
++3. Must align with proposal Intent and Must-haves
++-->
++
++{{background-and-goals}}
++
++---
++
++## Technical Approach
++
++### Architecture Diagram
++
++<!--
++ASCII art showing module/component relationships:
++- New modules vs. existing modules
++- Data flow direction (arrows)
++- File/module boundaries
++Annotate: [NEW], [MODIFIED], [EXISTING]
++-->
++
++```text
++{{architecture-diagram}}
++```
++
++### Core Data Structures
++
++<!--
++Key types/interfaces/data structures introduced or modified by this design.
++Use TypeScript interface format. Brief description per type.
++-->
++
++{{data-structures}}
++
++### Data Flow
++
++<!--
++Step-by-step description of data flow from trigger to effect.
++Example:
++1. User scrolls list → FlatList fires onScroll
++2. OptimizedList reads itemHeight config → enables getItemLayout
++3. Layout engine skips dynamic measurement → uses fixed row height
++4. useScrollPerformance samples FPS every 500ms
++5. FPS data → Performance Reporter → backend
++-->
++
++{{data-flow}}
++
++### Interface Design
++
++<!--
++Public API signatures exposed by this design:
++- Function/method names
++- Parameter lists (name + type + description)
++- Return types
++- sync/async
++-->
++
++{{api-signatures}}
++
++---
++
++## File Manifest
++
++<!--
++All files to create or modify, organized as a table.
++-->
++
++| File Path | Description | Action |
++|-----------|-------------|--------|
++| `{{file-path-1}}` | {{description}} | Create |
++| `{{file-path-2}}` | {{description}} | Modify |
++
++---
++
++## Test Strategy
++
++### Unit Tests
++- <!-- Which modules need unit tests? What needs mocking? -->
++
++### Integration Tests
++- <!-- Which flows need integration tests? What fixtures needed? -->
++
++### TDD Tasks
++- <!-- List type:behavior tasks requiring RED→GREEN→REFACTOR -->
++
++---
++
++## Alternatives
++
++<!--
++Evaluated but rejected approaches, with rationale.
++-->
++
++| Approach | Pros | Cons | Rejection Reason |
++|----------|------|------|-----------------|
++| {{alt-name-1}} | {{pros}} | {{cons}} | {{reason}} |
++| {{alt-name-2}} | {{pros}} | {{cons}} | {{reason}} |
++
++---
++
++## Risk Assessment
++
++| Risk | Probability | Impact | Mitigation |
++|------|------------|--------|-----------|
++| {{risk-1}} | {{probability}} | {{impact}} | {{mitigation}} |
++| {{risk-2}} | {{probability}} | {{impact}} | {{mitigation}} |
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/proposal.md b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/proposal.md
+new file mode 100644
+index 0000000..6f669e6
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/proposal.md
+@@ -0,0 +1,114 @@
++# Proposal: types-and-helpers
++
++> Phase ph.2-core-engine — types extension, coordKey helper, and winCheck with TDD coverage.
++
++---
++
++## Intent
++
++Establish the type foundation and the first pure-logic module (`winCheck`) for the game core. Without these, `move.ts`, `history.ts`, and `reducer.ts` (changes c2 and c3) cannot be implemented.
++
++1. **What problem**: After ph.1, `src/types.ts` has `Direction`, `Coord`, `Tile`, `Intent` — but the reducer needs `Level`, `GameState`, `HistoryEntry`, `AnimSpec`. The `winCheck` algorithm needs a `coordKey` helper because `Set<Coord>` uses object identity and our reducer produces fresh `Coord` objects.
++2. **Who is affected**: c2 (move + history) and c3 (reducer) — both depend on the types and the coordKey helper. ph.3's level loader consumes `Level`.
++3. **If we don't make this change**: c2 and c3 cannot proceed.
++4. **Type**: prerequisite / foundation.
++5. **Linkage**: required by c2, c3, and ph.3 (first level).
++
++---
++
++## Scope
++
++### In scope
++
++- Extend `src/types.ts` with:
++  - `Level` interface (grid dimensions, walls, targets, player start, box starts)
++  - `GameState` interface (immutable per D3; includes `initial` ref for reset per research finding)
++  - `HistoryEntry` interface (entry-based per D5)
++  - `AnimSpec` interface (per D8)
++- Add `src/core/coordKey.ts` — pure helper `coordKey(c: Coord): string` returning `"x,y"`
++- Add `src/core/winCheck.ts` — `winCheck(state: GameState): boolean` (per D4)
++- Add `src/core/createInitialState.ts` — factory `createInitialState(level: Level): GameState`
++- Tests under `tests/unit/core/`:
++  - `coordKey.test.ts` — basic coordKey behavior (4 tests)
++  - `winCheck.test.ts` — win detection (4 tests covering no-boxes, all-on-targets, partial, empty)
++  - `createInitialState.test.ts` — initial state from Level (3 tests)
++
++### Out of scope
++
++- `move.ts` — c2
++- `history.ts` — c2
++- `reducer.ts` — c3
++- Any DOM-touching code — ph.3+
++- Level JSON loader — ph.3
++- Renderer / gameShell — ph.3
++- Animator — ph.5
++
++---
++
++## Approach
++
++Pure types + pure helpers. Zero side effects.
++
++**`src/types.ts` extensions** (additions, not replacements):
++- `Level` — shape of one level: dimensions, walls Set, targets Set, player start, box starts
++- `GameState` — runtime state: levelId, static (Level shared by ref), player, boxes, moveCount, history, won, initial (for reset)
++- `HistoryEntry` — single entry in undo stack
++- `AnimSpec` — animation request: from, to, duration, entities (player + pushed box index)
++
++**`src/core/coordKey.ts`**:
++```ts
++export function coordKey(c: Coord): string {
++  return `${c.x},${c.y}`;
++}
++```
++
++**`src/core/winCheck.ts`**:
++```ts
++export function winCheck(state: GameState): boolean {
++  if (state.boxes.length !== state.static.targets.size) return false;
++  const targetKeys = new Set(Array.from(state.static.targets).map(coordKey));
++  return state.boxes.every((b) => targetKeys.has(coordKey(b)));
++}
++```
++
++**`src/core/createInitialState.ts`**:
++```ts
++export function createInitialState(level: Level, levelId: string): GameState {
++  return {
++    levelId,
++    static: level,
++    player: { ...level.playerStart },
++    boxes: level.boxStarts.map((c) => ({ ...c })),
++    moveCount: 0,
++    history: [],
++    won: false,
++    initial: { player: { ...level.playerStart }, boxes: level.boxStarts.map((c) => ({ ...c })) },
++  };
++}
++```
++
++**Tests**: each test sets up a small Level inline (no JSON loader yet). Uses Vitest's `describe`/`it`/`expect` per D10.
++
++---
++
++## Must-haves
++
++1. MUST export from `src/types.ts`: `Level`, `GameState`, `HistoryEntry`, `AnimSpec` (in addition to existing `Direction`, `Coord`, `Tile`, `Intent`).
++2. MUST export `coordKey(c: Coord): string` from `src/core/coordKey.ts`.
++3. MUST export `winCheck(state: GameState): boolean` from `src/core/winCheck.ts` returning true only when every box is on a target tile.
++4. MUST export `createInitialState(level: Level, levelId: string): GameState` from `src/core/createInitialState.ts` with `won: false`, `moveCount: 0`, `history: []`, and an `initial` field capturing the starting positions.
++5. MUST have ≥ 11 passing unit tests across `coordKey.test.ts`, `winCheck.test.ts`, and `createInitialState.test.ts`.
++6. MUST NOT introduce any DOM imports in `src/core/` (verifiable by `grep`).
++7. MUST keep `npm run build` and `npx tsc --noEmit` passing.
++
++---
++
++## Non-goals
++
++- Not implementing move validation logic (c2).
++- Not implementing history push/pop (c2).
++- Not implementing the reducer orchestrator (c3).
++- Not implementing level loading from JSON (ph.3).
++- Not implementing deadlock detection (ph.8).
++- Not adding lint / commit hooks (ph.9).
++- Not changing test infrastructure (already verified by ph.1 c4).
+\ No newline at end of file
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/specs/types-and-helpers/spec.md b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/specs/types-and-helpers/spec.md
+new file mode 100644
+index 0000000..d112edf
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/specs/types-and-helpers/spec.md
+@@ -0,0 +1,12 @@
++# types-and-helpers — Delta Spec
++
++## ADDED Requirements
++
++### Requirement: <name>
++
++The system SHALL <behavior>.
++
++#### Scenario: <name>
++- **GIVEN** <precondition>
++- **WHEN** <trigger>
++- **THEN** <expected outcome>
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/tasks.md b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/tasks.md
+new file mode 100644
+index 0000000..4a8c51a
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/changes/types-and-helpers/tasks.md
+@@ -0,0 +1,69 @@
++# Tasks: types-and-helpers
++
++> This document breaks the design into executable tasks grouped by wave. Each task includes description, files, acceptance criteria, optional depends_on and spec_ref. type:behavior tasks must include RED test descriptions (GIVEN/WHEN/THEN format).
++
++---
++
++## TDD Type Annotations
++
++| type | Meaning | TDD Protocol |
++|------|---------|-------------|
++| `behavior` | Business behavior — implement a concrete, observable/assertable feature | **RED→GREEN→REFACTOR** (mandatory: test first → implement → refactor) |
++| `config` | Configuration — env vars, CI/CD, lint, tsconfig, etc. | Direct implementation, no TDD |
++| `refactor` | Refactoring — improve internal structure without changing behavior | Verify tests pass → refactor → verify again |
++| `docs` | Documentation — README, API docs, comments | Direct implementation, no TDD |
++| `scaffolding` | Skeleton code — new module shells, directory structure, templates | Direct implementation, no TDD |
++
++> **Rule**: If a task's core output is "a behavior" (user-perceptible or test-assertable), use `behavior`. If it's just "file exists" or "config takes effect", use `config`/`scaffolding`.
++
++---
++
++## Wave 1: {{wave-1-theme}}
++
++<!--
++A wave is an independently verifiable unit of work. Tasks within a wave may have dependencies but the wave is self-contained.
++Each wave completion enables verification (tsc + test pass).
++-->
++
++- [ ] task-{{id-1}}: [type:{{type}}] {{title}}
++  - **description**: {{What to do, approach, files/APIs to reference}}
++  - **files**: {{comma-separated file paths}}
++  - **acceptance**: {{observable, assertable acceptance criteria}}
++  - **depends_on**: [task-{{id-x}}] <!-- optional: predecessor -->
++  - **spec_ref**: specs/{{domain}}/spec.md <!-- optional: linked spec -->
++  {{if behavior}}
++  - ***RED test***:
++    ```
++    GIVEN {{precondition}}
++    WHEN {{trigger action}}
++    THEN {{expected result}}
++    ```
++  {{/if}}
++
++---
++
++## Wave 2: {{wave-2-theme}}
++
++- [ ] task-{{id-3}}: [type:{{type}}] {{title}}
++  - **description**: {{What to do}}
++  - **files**: {{file paths}}
++  - **acceptance**: {{acceptance criteria}}
++  - **depends_on**: [task-{{id-1}}] <!-- optional -->
++  {{if behavior}}
++  - ***RED test***:
++    ```
++    GIVEN {{precondition}}
++    WHEN {{trigger action}}
++    THEN {{expected result}}
++    ```
++  {{/if}}
++
++---
++
++## Verification
++
++- [ ] `tsc --noEmit` passes (or equivalent type check)
++- [ ] `vitest run` all test suites pass
++- [ ] Each wave's acceptance criteria confirmed (manual or automated)
++- [ ] New code passes lint check
++- [ ] No new type errors or warnings introduced
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/context.md b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/context.md
+new file mode 100644
+index 0000000..42b09e6
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/context.md
+@@ -0,0 +1,93 @@
++# Context: ph.2-core-engine
++
++> Phase: ph.2-core-engine  |  Milestone: M1-core-playable  |  Mode: mvp
++> Goal: Implement and unit-test the pure game rules in `src/core/`.
++> Deliverable: `npm test` runs ≥ 12 unit tests covering move, push, win, undo, history, all passing. Zero DOM imports in `core/`.
++
++## Locked Decisions
++
++### D1: Module layout
++- **Decision**: Pure functions in `src/core/`: `reducer.ts`, `move.ts`, `winCheck.ts`, `history.ts`. No imports from `render/`, `input/`, `anim/`, `dom`, `storage`. Importable in Vitest with zero DOM setup.
++- **Rationale**: Matches architecture research Section "Module Boundaries (no god-objects)"; `core/` is the simulation layer where every acceptance-critical rule (move validity, push, win, undo) lives.
++- **Alternatives considered**: Single `game.ts` god-object (rejected — untestable without DOM/canvas).
++- **Impact**: All `core/` files; tests live in `tests/unit/core/`.
++
++### D2: Types — extend `src/types.ts`
++- **Decision**: Add `GameState`, `HistoryEntry`, `AnimSpec`, `Level` to `src/types.ts`. Keep `Direction`, `Coord`, `Tile`, `Intent` from ph.1.
++- **Rationale**: All cross-module types live in one place per architecture; reducer consumes `Intent`, returns `GameState` + optional `AnimSpec`.
++- **Alternatives considered**: Per-module type files (rejected — types are referenced across modules).
++- **Impact**: `src/types.ts` will be ~80 lines by end of ph.2.
++
++### D3: GameState shape (immutable)
++- **Decision**: `GameState` is immutable; each reducer call returns a new object with shallow-copied `boxes`/`history`; `static` is reused by reference.
++- **Rationale**: Architecture research "State Model (immutable GameState)" — undo is replay/snapshot-stack friendly; pure functions testable.
++- **Alternatives considered**: Mutable state with manual cloning (rejected — error-prone).
++- **Impact**: All core functions; ph.3+ shell consumes `GameState`.
++
++### D4: Win check algorithm
++- **Decision**: `O(B)` — `boxes.length === targets.size && boxes.every(b => targets.has(b))`. Recomputed inside reducer on move, undo, AND reset (not only on move).
++- **Rationale**: Architecture research "Win-check algorithm" — single source of truth; cheap at ≤30 boxes.
++- **Alternatives considered**: Incremental counter on push (rejected — adds state for no gain at this scale).
++- **Impact**: `winCheck.ts`; reducer invokes on every transition.
++
++### D5: Undo stack representation (entry-based, unlimited depth)
++- **Decision**: `HistoryEntry = { player, pushedBoxIndex?, boxFrom?, moveCount }`. Push entry on every successful move; pop on undo. No depth cap.
++- **Rationale**: Architecture research "Undo stack representation" — entry-based is O(1) memory per move vs O(level-size) snapshots; unlimited per NFR-6.
++- **Alternatives considered**: Full-state snapshots per move (rejected — entry-based exposes push semantics directly for tests).
++- **Impact**: `history.ts`; reducer pushes on move, pops on undo.
++
++### D6: Reset semantics — clear undo stack
++- **Decision**: `reset` clears the undo stack (reset = fresh start boundary). User cannot undo into pre-reset history.
++- **Rationale**: Matches player intuition; simpler than preserving stack; documented in tests.
++- **Alternatives considered**: Preserve stack (undo returns to pre-reset state) — rejected, surprising behavior.
++- **Impact**: reducer `reset` branch; `tests/unit/core/reducer.test.ts` covers this explicitly.
++
++### D7: Invalid move handling — return same state
++- **Decision**: When `move` is invalid (wall / blocked box), reducer returns the same logical state object (same reference), no anim spec.
++- **Rationale**: No allocation on invalid moves; caller can `===` check to detect "no change"; pure-function semantics preserved.
++- **Alternatives considered**: Return `null` (rejected — forces every caller to null-check; less ergonomic).
++- **Impact**: `move.ts` returns either new `Coord` or unchanged; reducer passes through.
++
++### D8: AnimSpec shape — defined now, unused until ph.5
++- **Decision**: `AnimSpec = { from, to, duration, entities: ('player' | number)[] }` defined in `src/types.ts` from this phase. Reducer emits `anim?: AnimSpec` on every successful move; **omits** `anim` on undo/reset (snap-only in ph.2; ph.5 may add reverse tween for undo as an optional refinement).
++- **Rationale**: Define the interface now so ph.5 plugs in without reducer signature change. Undo as snap is simpler and matches the architecture's "no queue blocking" NFR.
++- **Alternatives considered**: Defer AnimSpec to ph.5 (rejected — requires reducer signature change in ph.5, more churn).
++- **Impact**: Reducer signature `{ state, anim? }`; ph.5's animator consumes `AnimSpec` directly.
++
++### D9: Box identity — index-based
++- **Decision**: Boxes are an array of `Coord`; index = box identity. Pushing box at index `i` updates `boxes[i]`.
++- **Rationale**: Architecture research "State Model" — order-stable array; index is the natural identity for ≤10 boxes.
++- **Alternatives considered**: `Map<id, Coord>` (rejected — adds Map overhead; IDs would need to be strings which are less ergonomic).
++- **Impact**: All reducer branches operate on `boxes[i]`.
++
++### D10: Test framework conventions
++- **Decision**: All `core/` tests live under `tests/unit/core/` and run under the `unit` project (node env — pure logic). Use Vitest's `describe` / `it` / `expect`. Each test sets up a level inline (no shared fixtures yet — ph.3 introduces the loader).
++- **Rationale**: Fast node env; explicit fixtures per test for clarity; ph.3's loader will give us real levels to test against.
++- **Alternatives considered**: Fixture files per test (rejected — overkill for pure logic).
++- **Impact**: All ph.2 tests.
++
++## Gray Areas (Unresolved)
++
++None. All decisions clear from `bp/requirements.md`, `bp/research/architecture.md` (Section: State Model, Undo Stack Representation, Win-check Algorithm, Animation Interruption), `bp/research/pitfalls.md` BLOCKER #3, #4, MAJOR #17, and ph.1-foundation artifacts. Express path taken per user direction.
++
++## Deferred Ideas
++
++- **Deadlock detection** — `ph.8-e2e-and-deadlock` adds the corner-trap check. Not in ph.2 because the basic game logic is the priority; deadlock is a polish feature.
++- **Animator / tween** — ph.5 introduces `src/anim/animator.ts`. ph.2 reducer emits `AnimSpec` data values but no animator consumes them yet.
++- **Level loader / validator** — ph.3.
++- **Renderer / keyboard input / gameShell** — ph.3.
++- **Touch / responsive / persistence** — ph.6, ph.7.
++
++## Non-Goals
++
++- Not implementing the renderer (ph.3).
++- Not implementing keyboard input (ph.3).
++- Not implementing the game shell orchestrator (ph.3).
++- Not loading levels from JSON (ph.3).
++- Not implementing the rAF animator (ph.5).
++- Not implementing touch input (ph.6).
++- Not implementing localStorage persistence (ph.7).
++- Not implementing deadlock detection (ph.8).
++- Not adding linting or commit hooks (ph.9).
++- Not adding e2e tests (ph.8).
++- Not deploying to GitHub Pages (ph.9).
+\ No newline at end of file
+diff --git a/bp/milestones/M1-core-playable/phases/ph.2-core-engine/research.md b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/research.md
+new file mode 100644
+index 0000000..687ab40
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.2-core-engine/research.md
+@@ -0,0 +1,887 @@
++# Phase Research: ph.2-core-engine
++
++> Implementation path investigation for the pure game core phase.
++> Phase: ph.2-core-engine | Milestone: M1-core-playable | Mode: mvp
++> Goal: Implement and unit-test the pure game rules in `src/core/` — a functional
++> reducer plus move/push, win check, and an entry-based undo stack. Zero DOM imports.
++> `npm test` runs ≥ 12 unit tests covering move, push, win, undo, history, all passing.
++
++Confidence labels: **HIGH** = verified against the locked context, existing `src/types.ts`,
++`tsconfig.json`, `vitest.config.ts`, and the parent research in this session;
++**MEDIUM** = well-established pattern with one residual interpretation gap;
++**LOW** = speculative or depends on a downstream phase.
++
++---
++
++## Research Scope
++
++Investigate the concrete implementation paths for the pure game core, building on the locked
++decisions D1–D10 in `context.md` and the parent research in
++`bp/research/architecture.md` (State Model, Undo Stack Representation, Win-check Algorithm)
++and `bp/research/pitfalls.md` (BLOCKER #3, #4; MAJOR #17). Specifically resolve:
++
++1. Exact TypeScript signatures for the four core modules (`reducer`, `move`, `winCheck`,
++   `history`) plus the extended types in `src/types.ts` (`GameState`, `HistoryEntry`,
++   `AnimSpec`, `Level`).
++2. The `Set<Coord>` object-identity trap (D3 locks `Set<Coord>` for `walls`/`targets`, but
++   `Set#has` uses referential equality — pushed boxes are fresh objects, so
++   `targets.has(pushedBox)` is always `false`). Recommend a `coordKey` reconciliation that
++   respects the lock.
++3. How the pure 2-arg `reducer(state, intent)` performs `reset` without access to the
++   initial level (the reducer has no closure over `initialState`).
++4. `AnimSpec` push semantics: the locked shape `{ from, to, duration, entities }` has a
++   single `from`/`to` but a push moves player and box along different segments. Define the
++   interpretation the reducer emits so ph.5 can consume it without a signature change.
++5. Direction arithmetic convention (`N` = y−1, etc.) and how to build inline `Level`
++   fixtures in tests.
++6. `noUncheckedIndexedAccess: true` handling for `boxes[i]` reads and writes.
++7. `static` referential-equality invariant (shared by reference; never mutated).
++8. Animation `duration` source (constant vs. config).
++9. Whether `boxesOnTargets(state)` belongs in ph.2 or is deferred to ph.3.
++10. Test list (≥ 12) with GIVEN/WHEN/THEN triples and RED→GREEN→REFACTOR ordering.
++
++All claims below were verified on 2026-07-01 against the files listed in
++`context.md` ("Existing artifacts to read").
++
++---
++
++## Recommended Approach
++
++**Recommendation**: Four pure modules in `src/core/` (`reducer.ts`, `move.ts`,
++`winCheck.ts`, `history.ts`) plus one tiny shared helper `src/core/coordKey.ts`, backed by
++extended types in `src/types.ts`. `GameState` is immutable and shallow-copied per
++transition; `static` is reused by reference. A `coordKey(c: Coord): string` helper
++reconciles `Set<Coord>` referential equality with the structural membership tests that
++`winCheck` and `move` require. `reducer(state, intent)` stays a pure 2-arg function by
++carrying an immutable `initial` snapshot on `GameState` (a necessary, minimal extension of
++D3's locked shape). `AnimSpec` is emitted on every successful move with `from`/`to` = the
++**player's** previous→current coords and `entities` listing `'player'` plus the pushed box
++index when applicable; the ph.5 animator derives each entity's visual segment from the
++shared move delta. Undo and reset snap (no anim), and `won` is recomputed via `winCheck` on
++every transition (move, undo, reset). All core tests live in `tests/unit/core/` and run
++under the `unit` Vitest project (node env). **Confidence: HIGH** on the overall shape;
++per-item confidence is labeled inline.
++
++**Rationale**: This is the simulation layer — every acceptance-critical rule (move
++validity, push, win, undo, reset boundary) lives here and must be testable without a DOM.
++The four-module split matches D1 and the architecture's "no god-objects" boundary. The
++`coordKey` helper is the single correction the locked `Set<Coord>` shape needs to be
++*correct* without amending D3's type: `Set<Coord>` stays the storage type (matching the
++architecture diagram), and the lookup functions derive a `Set<string>` per call — O(W) or
++O(T) per move, trivial at ≤ ~225 walls / ≤ 30 targets. Carrying `initial` on `GameState`
++is the only way to keep `reducer` a pure 2-arg function (the alternative is a
++`createReducer` factory, which changes the export shape the assignment pins down). Defining
++`AnimSpec` now per D8 lets ph.5 plug in without a reducer signature change; interpreting
++`from`/`to` as the player's segment with a shared delta is the cleanest reading that fits
++the locked shape and handles pushes. Recomputing `won` on undo/reset (not only on move) is
++the mitigation for pitfalls BLOCKER #3 and MAJOR #17 — a pushed-then-undone box must clear
++`won`, and reset must clear the undo stack.
++
++---
++
++## Verified facts (2026-07-01)
++
++| Fact | Source | Confidence |
++|------|--------|------------|
++| Existing `src/types.ts` exports `Direction`, `Coord` (readonly x/y), `Tile`, `Intent` (move/undo/reset) | `read src/types.ts` | HIGH |
++| `Intent` already includes `{ type: 'move'; dir: Direction } \| { type: 'undo' } \| { type: 'reset' }` — ph.2 does **not** need to touch `Intent` | `read src/types.ts` | HIGH |
++| `tsconfig.json` has `strict: true`, `noUncheckedIndexedAccess: true`, `verbatimModuleSyntax: true`, `isolatedModules: true`, `noFallthroughCasesInSwitch: true` | `read tsconfig.json` | HIGH |
++| `vitest.config.ts` defines two projects: `unit` (node env, `tests/unit/**/*.test.ts`, excludes `*-dom.test.ts`) and `unit-dom` (happy-dom, `*-dom.test.ts` only) | `read vitest.config.ts` | HIGH |
++| Core tests at `tests/unit/core/*.test.ts` are matched by the `unit` project (node env, no DOM) — no `-dom` suffix, so they are NOT excluded | `read vitest.config.ts` | HIGH |
++| `npm test` script = `vitest run` (single-run, exits non-zero on first failing file) | `bp/.../ph.1-foundation/research.md` | HIGH |
++| `Set#has` / `Set#add` use SameValueZero (object identity for objects) — `{x:1,y:2} !== {x:1,y:2}` structurally | ES spec + pitfalls.md #15 | HIGH |
++| `noUncheckedIndexedAccess: true` makes `arr[i]` typed `T \| undefined` for all index reads | TS docs | HIGH |
++| `verbatimModuleSyntax: true` requires `import type { ... }` for type-only specifiers | TS docs + ph.1 research | HIGH |
++
++---
++
++## Exact TypeScript Signatures (Recommended)
++
++### `src/types.ts` — extended (HIGH)
++
++Append to the existing four exports (`Direction`, `Coord`, `Tile`, `Intent`). Do **not**
++modify the existing types.
++
++```ts
++// --- existing (unchanged) ---
++// export type Direction = 'N' | 'S' | 'E' | 'W';
++// export interface Coord { readonly x: number; readonly y: number; }
++// export type Tile = 'floor' | 'wall' | 'target';
++// export type Intent = { type: 'move'; dir: Direction } | { type: 'undo' } | { type: 'reset' };
++
++// --- new in ph.2 ---
++
++/** Immutable level definition. Constructed once (ph.3 loader; inline in ph.2 tests). */
++export interface Level {
++  id: string;
++  width: number;
++  height: number;
++  /** Walls. Membership must be tested via `coordKey`, NOT `Set#has` (object identity). */
++  walls: Set<Coord>;
++  /** Targets. Same `coordKey` caveat as `walls`. */
++  targets: Set<Coord>;
++  /** Player start position. */
++  player: Coord;
++  /** Initial box positions, order-stable; index = box identity for the lifetime of the level. */
++  boxes: Coord[];
++}
++
++/** Immutable game state. Each reducer call returns a NEW object; `static` and `initial`
++ *  are reused by reference across all outputs and MUST NOT be mutated. */
++export interface GameState {
++  levelId: string;
++  /** Level-derived immutable data, shared by reference across every reducer output. */
++  static: {
++    width: number;
++    height: number;
++    walls: Set<Coord>;
++    targets: Set<Coord>;
++  };
++  /** Immutable snapshot for `reset`. Shared by reference; never mutated. */
++  initial: {
++    player: Coord;
++    boxes: Coord[]; // frozen by convention; reducer copies on reset via .slice()
++  };
++  player: Coord;            // logical integer tile coords
++  boxes: Coord[];           // order-stable; index = box identity
++  moveCount: number;
++  history: HistoryEntry[];  // undo stack, unlimited depth
++  won: boolean;             // recomputed by winCheck on every transition
++}
++
++/** One entry per successful move (walk or push). Pushed on move; popped on undo. */
++export interface HistoryEntry {
++  /** Player position BEFORE the move. */
++  player: Coord;
++  /** Index into `boxes[]` of the pushed box, if this move was a push. */
++  pushedBoxIndex?: number;
++  /** Box position BEFORE the push, if this move was a push. */
++  boxFrom?: Coord;
++  /** `moveCount` BEFORE the move (== state.moveCount - 1 after a forward move). */
++  moveCount: number;
++}
++
++/** Descriptive animation spec emitted by the reducer on a successful move.
++ *  `from` / `to` are the PLAYER's previous → current logical coords.
++ *  Every entity in `entities` translates by the same delta `= to − from` (the move dir).
++ *  The ph.5 animator derives each entity's visual segment from its committed logical
++ *  position and this shared delta. Emitted ONLY on `move`; omitted on `undo`/`reset`. */
++export interface AnimSpec {
++  from: Coord;
++  to: Coord;
++  duration: number;                  // ms; = MOVE_DURATION_MS from reducer.ts
++  entities: ('player' | number)[];   // 'player' and/or the pushed box index
++}
++```
++
++**Two extensions to D3's locked `GameState` shape** (both flagged for the planner):
++
++1. **`initial: { player; boxes }`** — required so the pure 2-arg `reducer(state, intent)`
++   can perform `reset` without a closure over the level. The alternative is a
++   `createReducer(initialState)` factory, which changes the export shape the assignment
++   pins down (`reducer(state, intent)`). `initial` is immutable and shared by reference
++   across all reducer outputs (never copied, never mutated), so it carries no per-move
++   allocation cost. **Confidence: HIGH that *some* initial reference is required for pure
++   reset; MEDIUM on the field location (top-level `initial` vs. inside `static` vs.
++   factory).** Top-level `initial` is recommended because it is player/box data, not
++   structural level data, so it does not belong in `static` (walls/targets/dimensions).
++
++2. **`levelId: string`** — already in the architecture's sketch; included for parity with
++   `Level.id` and for ph.7 persistence namespacing. **HIGH.**
++
++### `src/core/coordKey.ts` — shared helper (HIGH)
++
++A fifth file beyond D1's four (`reducer`, `move`, `winCheck`, `history`). D1 lists the four
++*rule* modules; `coordKey` is a leaf utility shared by `move` and `winCheck` (importing it
++from either would create a needless cross-rule-module dependency). The alternative —
++duplicating the one-liner in both files — is worse than a 4-line shared file. Recommended.
++
++```ts
++import type { Coord } from '../types';
++
++/** Structural key for `Coord`. Use for `Set`/`Map` membership where `Set<Coord>` would
++ *  fall back to object identity. Format: `"x,y"` (e.g. `{x:3,y:7}` -> `"3,7"`). */
++export function coordKey(c: Coord): string {
++  return `${c.x},${c.y}`;
++}
++```
++
++### `src/core/winCheck.ts` (HIGH)
++
++```ts
++import type { GameState } from '../types';
++import { coordKey } from './coordKey';
++
++/**
++ * O(B + T) per call. `B` = boxes.length, `T` = targets.size (≤ ~30 each).
++ * Builds a string-keyed set from `state.static.targets` per call to defeat `Set<Coord>`
++ * object identity. Cheap and exact; no incremental counter (architecture: Win-check).
++ */
++export function winCheck(state: GameState): boolean {
++  if (state.boxes.length !== state.static.targets.size) return false;
++  const targetKeys = new Set<string>();
++  for (const t of state.static.targets) targetKeys.add(coordKey(t));
++  return state.boxes.every((b) => targetKeys.has(coordKey(b)));
++}
++```
++
++**Why the per-call `Set<string>` rebuild?** `state.static.targets` is a `Set<Coord>` (D3
++lock). A box pushed onto a target is a *fresh* `Coord` object (`{ x: bx + dx, y: by + dy }`),
++so `state.static.targets.has(freshBox)` returns `false` even when the box is structurally on
++a target. Building `targetKeys: Set<string>` once per `winCheck` call restores structural
++equality. Rebuild cost is O(T) ≤ ~30 — negligible. `static` itself is never mutated. **HIGH.**
++
++### `src/core/move.ts` (HIGH)
++
++```ts
++import type { Coord, Direction, GameState } from '../types';
++import { coordKey } from './coordKey';
++
++/** Result of a successful move. `null` means the move was invalid (wall or blocked box). */
++export interface MoveResult {
++  /** New player position. */
++  player: Coord;
++  /** New boxes array. A fresh array ONLY when a box was pushed; otherwise the SAME
++   *  reference as `state.boxes` (no allocation on a pure walk — the reducer still
++   *  shallow-copies for its own output, but `move` itself doesn't). */
++  boxes: Coord[];
++  /** Index of the pushed box, if this move was a push. */
++  pushedIndex?: number;
++  /** Previous position of the pushed box, if this move was a push. */
++  boxFrom?: Coord;
++}
++
++/** Direction → tile delta. y increases downward (screen/canvas convention). */
++const DELTA: Record<Direction, Coord> = {
++  N: { x: 0, y: -1 },
++  S: { x: 0, y: 1 },
++  E: { x: 1, y: 0 },
++  W: { x: -1, y: 0 },
++};
++
++/**
++ * Attempt to move the player one tile in `dir`. Pushes a box if the destination is
++ * occupied by a box and the tile beyond it is floor/target (not wall, not another box).
++ * Returns `null` for an invalid move (into a wall, or into a box that cannot be pushed).
++ * PURE: does not mutate `state`; reads only.
++ */
++export function move(state: GameState, dir: Direction): MoveResult | null {
++  const d = DELTA[dir];
++  const next: Coord = { x: state.player.x + d.x, y: state.player.y + d.y };
++
++  // Wall check (structural via coordKey).
++  const wallKeys = new Set<string>();
++  for (const w of state.static.walls) wallKeys.add(coordKey(w));
++  if (wallKeys.has(coordKey(next))) return null;
++
++  // Is there a box at `next`? (index search; ≤ ~30 boxes)
++  const boxIndex = state.boxes.findIndex((b) => b.x === next.x && b.y === next.y);
++  if (boxIndex === -1) {
++    // Pure walk.
++    return { player: next, boxes: state.boxes };
++  }
++
++  // Push: check the tile beyond the box.
++  const beyond: Coord = { x: next.x + d.x, y: next.y + d.y };
++  if (wallKeys.has(coordKey(beyond))) return null;          // blocked by wall
++  if (state.boxes.some((b) => b.x === beyond.x && b.y === beyond.y)) return null; // by box
++
++  const boxFrom = state.boxes[boxIndex]; // Coord | undefined under noUncheckedIndexedAccess
++  if (boxFrom === undefined) return null; // defensive; index came from findIndex so safe
++
++  const newBoxes = state.boxes.slice();
++  newBoxes[boxIndex] = beyond;
++  return { player: next, boxes: newBoxes, pushedIndex: boxIndex, boxFrom };
++}
++```
++
++**Notes:**
++- `DELTA` uses the standard screen convention (y down). Tests assert this explicitly. **HIGH.**
++- `wallKeys` is rebuilt per call (O(W) ≤ ~225). Alternative: cache on `state.static` —
++  rejected, it would mean mutating `static` (violates the referential-equality invariant)
++  or adding a parallel `Set<string>` field to `static` (bloats D3's locked shape). Per-call
++  rebuild is simpler and cheap. **HIGH.**
++- `boxes` array is only copied on a push; a pure walk returns the *same* `boxes` reference.
++  The reducer still produces a new `GameState`, but `move` itself avoids one allocation on
++  walks. **MEDIUM** — micro-optimization; the executor may simplify to always-copy if it
++  reads cleaner. Flagged as a REFACTOR-stage decision.
++- `noUncheckedIndexedAccess`: `state.boxes[boxIndex]` is `Coord | undefined`; guarded with
++  an explicit `undefined` check even though `findIndex` guarantees the index is valid. This
++  satisfies the compiler without a non-null assertion. **HIGH.**
++- `findIndex` / `some` use structural `x`/`y` comparison directly (not `coordKey`) — fine
++  for a linear scan; `coordKey` is only needed for `Set` membership.
++
++### `src/core/history.ts` (HIGH)
++
++```ts
++import type { GameState, HistoryEntry } from '../types';
++
++/** Push `entry` onto the undo stack. Returns a NEW state with `history` shallow-copied
++ *  (append); all other fields shared by reference. Does NOT mutate `state`. */
++export function pushEntry(state: GameState, entry: HistoryEntry): GameState {
++  return { ...state, history: [...state.history, entry] };
++}
++
++/** Pop the top entry off the undo stack. Returns `null` if the stack is empty.
++ *  The returned `state` has the entry REMOVED from `history` but positions are NOT
++ *  restored — the reducer's `undo` branch reads `entry` and restores player/box/moveCount
++ *  itself, then recomputes `won`. This keeps `history.ts` as pure stack mechanics. */
++export function popEntry(
++  state: GameState,
++): { state: GameState; entry: HistoryEntry } | null {
++  if (state.history.length === 0) return null;
++  const entry = state.history[state.history.length - 1]; // HistoryEntry | undefined
++  if (entry === undefined) return null; // defensive under noUncheckedIndexedAccess
++  const history = state.history.slice(0, -1);
++  return { state: { ...state, history }, entry };
++}
++
++/** Clear the undo stack entirely (reset = hard boundary per D6 / MAJOR #17).
++ *  Returns a NEW state with `history: []`. */
++export function clearHistory(state: GameState): GameState {
++  return { ...state, history: [] };
++}
++```
++
++**Note on the pop/restore split:** `popEntry` only removes the entry; the *semantic* restore
++(player/box/moveCount) is the reducer's job. This avoids duplicating the restore logic and
++keeps `history.ts` trivially testable as pure stack operations. The reducer's `undo` branch
++is the single place that interprets a `HistoryEntry`. **HIGH.**
++
++### `src/core/reducer.ts` (HIGH)
++
++```ts
++import type { AnimSpec, GameState, Intent, Level } from '../types';
++import { move } from './move';
++import { winCheck } from './winCheck';
++import { pushEntry, popEntry, clearHistory } from './history';
++
++/** Move tween duration (ms). Constant for ph.2; ph.5 animator consumes this.
++ *  Exported so tests can assert `anim.duration` without a magic number. */
++export const MOVE_DURATION_MS = 120;
++
++export interface ReducerResult {
++  state: GameState;
++  /** Present on a successful `move`; absent on `undo`, `reset`, and no-op moves. */
++  anim?: AnimSpec;
++}
++
++/** Build the initial `GameState` from a `Level`. Used by ph.3 loader and by tests. */
++export function createInitialState(level: Level): GameState {
++  const initial = { player: level.player, boxes: level.boxes.slice() };
++  return {
++    levelId: level.id,
++    static: {
++      width: level.width,
++      height: level.height,
++      walls: level.walls,
++      targets: level.targets,
++    },
++    initial,
++    player: level.player,
++    boxes: level.boxes.slice(),
++    moveCount: 0,
++    history: [],
++    won: winCheck({ boxes: level.boxes, static: { targets: level.targets } } as GameState),
++  };
++}
++
++/** Pure reducer. `reset` reads `state.initial` (immutable, shared by ref). */
++export function reducer(state: GameState, intent: Intent): ReducerResult {
++  switch (intent.type) {
++    case 'move': {
++      const result = move(state, intent.dir);
++      if (result === null) return { state }; // invalid: same ref, no anim (D7)
++
++      const entry = {
++        player: state.player,
++        pushedBoxIndex: result.pushedIndex,
++        boxFrom: result.boxFrom,
++        moveCount: state.moveCount,
++      };
++      const moved = pushEntry(state, entry);
++      const next: GameState = {
++        ...moved,
++        player: result.player,
++        boxes: result.boxes,
++        moveCount: state.moveCount + 1,
++      };
++      next.won = winCheck(next);
++      const anim: AnimSpec = {
++        from: state.player,
++        to: result.player,
++        duration: MOVE_DURATION_MS,
++        entities:
++          result.pushedIndex === undefined
++            ? ['player']
++            : ['player', result.pushedIndex],
++      };
++      return { state: next, anim };
++    }
++
++    case 'undo': {
++      const popped = popEntry(state);
++      if (popped === null) return { state }; // empty stack: same ref, no anim
++
++      const { state: poppedState, entry } = popped;
++      // Restore positions from the entry.
++      let boxes = poppedState.boxes;
++      if (entry.pushedBoxIndex !== undefined && entry.boxFrom !== undefined) {
++        const idx = entry.pushedBoxIndex;
++        const from = entry.boxFrom;
++        boxes = poppedState.boxes.map((b, i) => (i === idx ? from : b));
++      }
++      const restored: GameState = {
++        ...poppedState,
++        player: entry.player,
++        boxes,
++        moveCount: entry.moveCount,
++      };
++      restored.won = winCheck(restored);
++      return { state: restored }; // no anim on undo (D8)
++    }
++
++    case 'reset': {
++      const cleared = clearHistory(state);
++      const fresh: GameState = {
++        ...cleared,
++        player: state.initial.player,
++        boxes: state.initial.boxes.slice(),
++        moveCount: 0,
++      };
++      fresh.won = winCheck(fresh);
++      return { state: fresh }; // no anim on reset (D8)
++    }
++  }
++}
++```
++
++**Notes:**
++- `MOVE_DURATION_MS = 120` is a constant exported from `reducer.ts`. Rationale: ph.2 has no
++  config system; a constant is the simplest thing that lets tests assert `anim.duration`
++  without a magic number and lets ph.5 import it. ph.9 may lift it to a config if tuning is
++  needed. **HIGH** on constant-now; **MEDIUM** on the exact value (120 ms is within the
++  NFR-5 100–150 ms band; ph.5 may tune). See Pitfalls.
++- `createInitialState` computes `won` once via a minimal-shape `GameState` cast. This is the
++  only slightly awkward spot; the alternative is to inline the winCheck logic
++  (`level.boxes.every(b => targetKeys.has(coordKey(b)))`) — but that duplicates `winCheck`.
++  The `as GameState` cast is contained to this one factory. **MEDIUM** — the executor may
++  prefer to build the full state first and then call `winCheck(state)` to set `won` (cleaner;
++  avoids the cast). Recommended for the executor: construct `state` fully with `won: false`,
++  then `state.won = winCheck(state)` before returning. This removes the cast entirely.
++- `noFallthroughCasesInSwitch` is satisfied: each `case` returns. The switch is exhaustive
++  over `Intent` (`'move' | 'undo' | 'reset'`), so no default is needed. **HIGH.**
++- Invalid move returns the **same** `state` reference (`{ state }`), enabling `===` checks
++  in tests and callers (D7). Undo on empty stack likewise returns the same ref. **HIGH.**
++- `static` is never copied (spread `{ ...moved }` / `{ ...cleared }` copies the *reference*
++  to `static`), satisfying the referential-equality invariant. **HIGH.**
++
++---
++
++## Alternatives Considered
++
++| Approach | Pros | Cons | Verdict |
++|----------|------|------|---------|
++| **`Set<Coord>` + per-call `coordKey` rebuild** (recommended) | Respects D3's locked `Set<Coord>` type; correct structural equality; O(W)/O(T) per call is trivial at this scale; `static` stays a plain `Set<Coord>` matching the architecture diagram | Rebuilds a `Set<string>` on every `move`/`winCheck` call (≤ ~225 + ~30 entries — nanoseconds) | **Adopt.** *(HIGH)* |
++| `Set<string>` for `walls`/`targets` from the start (keyed by `coordKey`) | No per-call rebuild; membership is O(1) structural | Violates D3's locked `Set<Coord>` shape — requires a `context.md` amendment; loses the `Coord` object on readback (must parse the string) | Rejected for ph.2 (would re-open a locked decision). *(HIGH on correctness, but out of scope.)* |
++| `Map<string, Coord>` keyed by `coordKey` | O(1) structural lookup AND keeps the `Coord` value | Heavier than needed; `Set<Coord>` + `coordKey` rebuild is simpler at this scale | Rejected. *(HIGH)* |
++| Intern `Coord` objects (one canonical instance per tile) | `Set<Coord>#has` works referentially; no `coordKey` needed | Requires an interning registry; pushes a box's new coord must be canonicalized post-push — fragile and surprising; violates "boxes are plain data" | Rejected. *(HIGH)* |
++| `createReducer(initialState)` factory (closures over initial) | `GameState` stays exactly D3's shape (no `initial` field); reset reads the closed-over initial | Changes the export from `reducer(state, intent)` to a factory-returned function — breaks the assignment's pinned signature; tests must call `const r = createReducer(init)` first | Rejected as primary; documented as the cleanest alternative if the planner prefers to keep `GameState` minimal. *(MEDIUM)* |
++| `initial` stored inside `static` | Keeps `initial` grouped with level-derived data | `static` is structural (walls/targets/dimensions); player/boxes start positions are not structural — misleading grouping | Rejected. *(MEDIUM)* |
++| `popEntry` applies the restore (returns fully-restored state) | Reducer `undo` branch is one line | Splits undo semantics across `history.ts` and `reducer.ts`; `history.ts` must know about `won` recompute or leave it stale | Rejected. *(HIGH)* |
++| `AnimSpec` with per-entity `from`/`to` map | Fully precise for pushes | Violates D8's locked `{ from, to, duration, entities }` shape; requires a context amendment | Rejected for ph.2. Documented as a ph.5 refinement option if the shared-delta interpretation proves insufficient. *(MEDIUM)* |
++| `boxesOnTargets(state): Set<number>` in ph.2 | Renderer (ph.3) will need it | The *renderer* needs it, not the core; core's job is `won: boolean` via `winCheck`. Defining it now is YAGNI. | Deferred to ph.3. *(HIGH)* |
++
++---
++
++## Known Pitfalls
++
++### P1: `Set<Coord>` uses object identity — `Set#has` is broken for fresh coords *(HIGH)*
++
++**The trap.** D3 locks `static.walls: Set<Coord>` and `static.targets: Set<Coord>`. ES
++`Set` uses SameValueZero, which for objects is referential equality. A box pushed onto a
++target is a *fresh* `Coord` (`{ x: bx + dx, y: by + dy }`), so
++`state.static.targets.has(freshBox)` returns `false` even when the box is structurally on a
++target — `winCheck` would never report a win. Likewise `walls.has(next)` for a freshly
++computed `next` coord: the wall `Coord` objects were created by the level loader, the
++player's `next` is freshly computed — different references, `false` negative, the player
++would walk through walls.
++
++**How the design avoids it.** `coordKey(c: Coord): string` returns `"${c.x},${c.y}"`. Both
++`move` and `winCheck` build a local `Set<string>` from `state.static.walls` / `.targets`
++once per call and test `coordKey(candidate)` against it. `static` itself is never mutated
++and stays a `Set<Coord>` (D3 lock intact). Cost: O(W) ≤ ~225 + O(T) ≤ ~30 per move —
++nanoseconds. **Mitigation confidence: HIGH.**
++
++**Test coverage.** Test #7 (all boxes on targets → `won: true`) and test #23 (push last
++box onto target → `won: true`) both rely on this path; if `coordKey` were missing they
++would fail, making the trap surface in RED.
++
++### P2: `noUncheckedIndexedAccess: true` — `boxes[i]` is `Coord | undefined` *(HIGH)*
++
++**The trap.** `tsconfig.json` has `noUncheckedIndexedAccess: true`. Every `arr[i]` read is
++`T | undefined`. Affected sites: `state.boxes[boxIndex]` in `move.ts`; the undo-restore
++`boxes.map((b, i) => i === idx ? from : b)` is fine (no index read), but
++`state.history[state.history.length - 1]` in `popEntry` is `HistoryEntry | undefined`.
++
++**How the design avoids it.** Explicit `undefined` guards after every indexed read, even
++when the index is provably valid (e.g. `findIndex` → `boxIndex`):
++```ts
++const boxFrom = state.boxes[boxIndex];
++if (boxFrom === undefined) return null;
++```
++This satisfies the compiler without `!` non-null assertions (which would hide a genuine
++future regression if `boxIndex` ever became stale). For array *updates*, the design uses
++`.slice()` + index assignment (`newBoxes[boxIndex] = beyond`) — assignment to a known index
++is allowed under `noUncheckedIndexedAccess` (it only narrows *reads*), but reads back
++immediately after would still be `| undefined`; the design avoids read-back. **Mitigation
++confidence: HIGH.**
++
++### P3: `static` referential equality — must be reused by reference, never mutated *(HIGH)*
++
++**The trap.** D3 / architecture: `static` is derived once from the `Level` and reused by
++reference across every reducer output. If any code mutates `static.walls` or
++`static.targets`, every historical `GameState` in the undo stack is corrupted (they all
++share the same `static`). This is the architecture's stated Risk: "Set<Coord> mutation when
++sharing state.static".
++
++**How the design avoids it.** `move` and `winCheck` only *read* `static` (iterating to
++build a local `Set<string>`); they never call `.add`/`.delete`/`.clear` on `static.walls`
++or `static.targets`. The reducer's spread (`{ ...moved }`, `{ ...cleared }`, `{ ...state }`)
++copies the `static` *reference*, not the object. `createInitialState` is the single place
++that constructs `static`, from the `Level`, once.
++
++**Test coverage.** Test #25 runs N=5 moves and asserts `state.static === initialState.static`
++(referential equality). This catches any accidental copy or mutation. **Mitigation
++confidence: HIGH.**
++
++### P4: Animation `duration` — constant vs. config *(MEDIUM)*
++
++**The trap.** D8 defines `AnimSpec.duration` but does not say where the value comes from.
++Hardcoding a bare `120` in the reducer couples ph.2 to a magic number; building a config
++system in ph.2 is over-engineering (no config exists yet).
++
++**How the design avoids it.** Export `MOVE_DURATION_MS = 120` from `reducer.ts`. Tests
++import it and assert `anim.duration === MOVE_DURATION_MS` (no magic number in tests). ph.5
++imports the same constant for the animator. ph.9 may lift it to a config if tuning is
++needed. The value 120 ms is within the NFR-5 100–150 ms band. **Mitigation confidence:
++HIGH on the mechanism (exported constant); MEDIUM on the exact value (ph.5 may tune).**
++
++### P5: `AnimSpec` push semantics — single `from`/`to` for two moving entities *(MEDIUM)*
++
++**The trap.** D8 locks `AnimSpec = { from, to, duration, entities: ('player' | number)[] }`.
++A push moves the player (A→B) and the box (B→C) along different segments, but the shape has
++only one `from`/`to`. A naive reading would animate both entities over the same segment.
++
++**How the design avoids it.** Interpret `from`/`to` as the **player's** previous→current
++coords. Every entity in `entities` translates by the shared move delta `delta = to − from`
++(which equals the direction vector). For a push, the box's visual segment is
++`[boxLogicalOld, boxLogicalOld + delta]` = `[B, C]`, and the player's is `[A, B]` = `[from,
++to]`. The ph.5 animator, which has access to each entity's committed logical position (and
++a one-step previous-position lag via `HistoryEntry`), derives each segment from the shared
++delta. This keeps the locked shape intact and is internally consistent. **Mitigation
++confidence: MEDIUM** — the interpretation is sound, but ph.5 is the consumer that confirms
++it; if ph.5 finds the shared-delta derivation awkward, the alternative is a per-entity
++`from`/`to` map, which would require a context amendment (documented in Alternatives).
++
++### P6: Pure 2-arg `reducer` needs an initial-state reference for `reset` *(HIGH)*
++
++**The trap.** The assignment pins `reducer(state, intent): { state; anim? }` — a 2-arg
++pure function. `reset` must rebuild the initial state, but a pure 2-arg function has no
++closure over the `Level` or `initialState`. Options: (a) a `createReducer` factory
++(changes the export shape), (b) carry `initial` on `GameState` (extends D3), (c) embed
++initial positions in `static` (misleading grouping).
++
++**How the design avoids it.** Option (b): `GameState.initial = { player, boxes }`, set
++once by `createInitialState`, immutable, shared by reference across all reducer outputs
++(never copied except `boxes.slice()` at reset). The reducer's `reset` branch reads
++`state.initial` and produces a fresh state with `history: []`, `moveCount: 0`,
++`player: initial.player`, `boxes: initial.boxes.slice()`. `initial` carries no per-move
++allocation cost (spread copies the reference). **Mitigation confidence: HIGH** that an
++initial reference is required; **MEDIUM** on the field location (top-level `initial` is
++recommended; the planner may prefer a factory — see Alternatives).
++
++### P7: Undo must restore BOTH player and box, and recompute `won` (BLOCKER #3, #17) *(HIGH)*
++
++**The trap.** Pitfalls #3 (BLOCKER): undo that only restores the player leaves the pushed
++box displaced. #17 (MAJOR): reset that does not clear the undo stack lets the player rewind
++into pre-reset history. Both are correctness, not polish.
++
++**How the design avoids it.** `HistoryEntry` carries `pushedBoxIndex` + `boxFrom` for
++pushes; the reducer's `undo` branch restores `boxes[pushedBoxIndex] = boxFrom` via
++`.map()` (immutable) AND `player = entry.player` AND `moveCount = entry.moveCount`, then
++recomputes `won = winCheck(restored)`. `reset` calls `clearHistory(state)` first, so
++post-reset undo is a no-op (empty stack). `won` is recomputed on move, undo, AND reset
++(D4). **Mitigation confidence: HIGH.**
++
++**Test coverage.** Test #19 (undo of push restores both), #20 (undo on empty stack =
++no-op), #22 (reset then undo = no-op), #24 (win → undo → `won: false`).
++
++### P8: `verbatimModuleSyntax: true` — type-only imports must use `import type` *(HIGH)*
++
++**The trap.** `verbatimModuleSyntax` errors on `import { Coord } from '../types'` when
++`Coord` is used only as a type — it must be `import type { Coord } from '../types'`. Mixed
++value+type imports need `import { move } from './move'` + a separate
++`import type { Coord } from '../types'`.
++
++**How the design avoids it.** Every signature above uses `import type` for type-only
++specifiers (`Coord`, `Direction`, `GameState`, `HistoryEntry`, `AnimSpec`, `Intent`,
++`Level`, `MoveResult`) and a plain `import` for runtime values (`move`, `winCheck`,
++`pushEntry`, `popEntry`, `clearHistory`, `coordKey`). **Mitigation confidence: HIGH.**
++
++### P9: Invalid move must return the SAME reference, not a clone (D7) *(HIGH)*
++
++**The trap.** A naive reducer might return `{ ...state }` on an invalid move "for
++consistency" — breaking the `===` contract callers rely on (D7) and allocating gratuitously.
++
++**How the design avoids it.** `move` returns `null` for invalid; the reducer's `move` branch
++returns `{ state }` (the original reference, no spread) when `result === null`. Same for
++`undo` on an empty stack. **Mitigation confidence: HIGH.**
++
++**Test coverage.** Test #17 (`expect(result.state).toBe(originalState)`) and #20.
++
++---
++
++## TDD Implications
++
++- **All tests RED first.** Write each test, run `npm test`, watch it fail for the right
++  reason (import-not-found or assertion mismatch), then implement until GREEN, then
++  REFACTOR. No implementation file is written before its first failing test.
++- **Pure logic only.** No DOM, no mocks, no fake clock (anim is a data value, not a tween).
++  Tests run under the `unit` Vitest project (node env) — confirmed by `vitest.config.ts`.
++- **Fast.** Target: full `tests/unit/core/` suite < 50 ms. No I/O, no async, no DOM.
++- **Per-test inline fixtures.** Each test constructs a `Level` inline (small `Set<Coord>`
++  walls/targets, a player, boxes) and calls `createInitialState(level)`. No shared fixture
++  file (D10). A tiny `makeLevel()` test helper local to each file is acceptable; do NOT
++  create a shared `tests/unit/core/fixtures.ts` in ph.2 (defer to ph.3 with the loader).
++- **Test count target: ≥ 12.** The list below has 25 tests — well above the bar. The
++  executor may prune to ~15 if RED→GREEN velocity demands, but the BLOCKER-coverage tests
++  (#19, #20, #22, #23, #24, #25) are mandatory.
++- **`expect.toBe` for referential equality** (invalid move, empty-stack undo, `static`
++  invariance); `toEqual` for structural equality of new states.
++
++---
++
++## Test List (GIVEN / WHEN / THEN)
++
++Test files live in `tests/unit/core/`. Organized by module. 25 tests total; minimum 12
++required.
++
++### `tests/unit/core/move.test.ts` — `move` helper (6 tests)
++
++1. **move into floor**
++   - GIVEN a state with player at `{2,2}`, no box at `{2,1}`, no wall at `{2,1}`
++   - WHEN `move(state, 'N')`
++   - THEN returns `{ player: {2,1}, boxes: <same ref> }` with no `pushedIndex`/`boxFrom`.
++
++2. **move into wall**
++   - GIVEN a state with a wall at `{2,1}` (in `static.walls`)
++   - WHEN `move(state, 'N')`
++   - THEN returns `null`.
++
++3. **push box onto floor**
++   - GIVEN player at `{2,2}`, box at `{2,1}`, floor at `{2,0}`
++   - WHEN `move(state, 'N')`
++   - THEN returns `{ player: {2,1}, boxes: [{2,0}], pushedIndex: 0, boxFrom: {2,1} }`.
++
++4. **push box blocked by wall**
++   - GIVEN player at `{2,2}`, box at `{2,1}`, wall at `{2,0}`
++   - WHEN `move(state, 'N')`
++   - THEN returns `null` (neither player nor box moves).
++
++5. **push box blocked by another box**
++   - GIVEN player at `{2,2}`, box0 at `{2,1}`, box1 at `{2,0}`
++   - WHEN `move(state, 'N')`
++   - THEN returns `null` (cannot push two boxes).
++
++6. **push box onto target succeeds** (move does not treat target specially)
++   - GIVEN player at `{2,2}`, box at `{2,1}`, target at `{2,0}` (and no wall)
++   - WHEN `move(state, 'N')`
++   - THEN returns a push result with `boxes: [{2,0}]` (validity is walls/boxes only).
++
++### `tests/unit/core/winCheck.test.ts` — `winCheck` (4 tests)
++
++7. **all boxes on targets → true** (exercises `coordKey` path)
++   - GIVEN a state with `boxes = [{1,1},{3,3}]` and `targets = {{1,1},{3,3}}` (same
++     structure, different object refs)
++   - WHEN `winCheck(state)`
++   - THEN returns `true`.
++
++8. **one box off target → false**
++   - GIVEN `boxes = [{1,1},{3,3}]`, `targets = {{1,1},{5,5}}`
++   - WHEN `winCheck(state)`
++   - THEN returns `false`.
++
++9. **box count ≠ target count → false**
++   - GIVEN `boxes = [{1,1}]`, `targets = {{1,1},{3,3}}` (count mismatch)
++   - WHEN `winCheck(state)`
++   - THEN returns `false`.
++
++10. **empty boxes and empty targets → true** (degenerate but defined)
++    - GIVEN `boxes = []`, `targets = {}` (size 0)
++    - WHEN `winCheck(state)`
++    - THEN returns `true`.
++
++### `tests/unit/core/history.test.ts` — stack helpers (4 tests)
++
++11. **pushEntry is immutable and appends**
++    - GIVEN a state with `history = [e0]`
++    - WHEN `pushEntry(state, e1)`
++    - THEN returns a NEW state with `history = [e0, e1]` AND the original `state.history`
++      is still `[e0]` (no mutation).
++
++12. **popEntry on non-empty returns entry + shortened state**
++    - GIVEN `history = [e0, e1]`
++    - WHEN `popEntry(state)`
++    - THEN returns `{ state: { history: [e0] }, entry: e1 }`.
++
++13. **popEntry on empty returns null**
++    - GIVEN `history = []`
++    - WHEN `popEntry(state)`
++    - THEN returns `null`.
++
++14. **clearHistory empties the stack**
++    - GIVEN `history = [e0, e1, e2]`
++    - WHEN `clearHistory(state)`
++    - THEN returns a NEW state with `history = []`.
++
++### `tests/unit/core/reducer.test.ts` — reducer integration (11 tests)
++
++15. **reducer walk: state advances, anim emitted, no push**
++    - GIVEN initial state (player `{2,2}`, floor `{2,1}`)
++    - WHEN `reducer(state, { type: 'move', dir: 'N' })`
++    - THEN `result.state.player === {2,1}`, `moveCount === 1`, `history.length === 1`,
++      `result.anim.entities === ['player']`, `result.anim.duration === MOVE_DURATION_MS`,
++      `result.anim.from === {2,2}`, `result.anim.to === {2,1}`, `won === false`.
++
++16. **reducer push: box moves, anim lists box index**
++    - GIVEN player `{2,2}`, box0 at `{2,1}`, floor `{2,0}`
++    - WHEN `reducer(state, { type: 'move', dir: 'N' })`
++    - THEN `result.state.boxes[0] === {2,0}`, `result.anim.entities === ['player', 0]`,
++      `history.length === 1`, `moveCount === 1`.
++
++17. **reducer invalid move returns same reference, no anim** (D7)
++    - GIVEN player `{2,2}`, wall at `{2,1}`
++    - WHEN `const r = reducer(state, { type: 'move', dir: 'N' })`
++    - THEN `r.state === state` (referential), `r.anim === undefined`.
++
++18. **reducer undo of walk restores player + moveCount, no anim**
++    - GIVEN state after one walk (`moveCount 1`, `history.length 1`)
++    - WHEN `reducer(state, { type: 'undo' })`
++    - THEN `result.state.player === initial.player`, `moveCount === 0`,
++      `history.length === 0`, `result.anim === undefined`.
++
++19. **reducer undo of push restores player AND box** (BLOCKER #3)
++    - GIVEN state after one push (box0 moved `{2,1}`→`{2,0}`, player `{2,2}`→`{2,1}`)
++    - WHEN `reducer(state, { type: 'undo' })`
++    - THEN `result.state.player === {2,2}`, `result.state.boxes[0] === {2,1}`,
++      `moveCount === 0`.
++
++20. **reducer undo on empty stack is a no-op (same ref)** (BLOCKER #3 edge)
++    - GIVEN fresh state (`history.length 0`)
++    - WHEN `const r = reducer(state, { type: 'undo' })`
++    - THEN `r.state === state`, `r.anim === undefined`.
++
++21. **reducer reset restores initial positions, moveCount 0, history cleared**
++    - GIVEN state after several moves (player and boxes moved, `moveCount 3`,
++      `history.length 3`)
++    - WHEN `reducer(state, { type: 'reset' })`
++    - THEN `result.state.player === initial.player`, `result.state.boxes` deep-equals
++      `initial.boxes`, `moveCount === 0`, `history.length === 0`, `result.anim === undefined`.
++
++22. **reset clears the undo stack — reset then undo is a no-op** (MAJOR #17)
++    - GIVEN state after several moves
++    - WHEN `reducer(state, { type: 'reset' })` then `reducer(resetState, { type: 'undo' })`
++    - THEN the second call returns `resetState` by reference (`===`), no anim — cannot
++      rewind into pre-reset history.
++
++23. **win detection: push last box onto target → `won: true`**
++    - GIVEN a level with one box already on its target and one box off-target, player
++      positioned to push the off-target box onto the last free target
++    - WHEN the winning push move is dispatched
++    - THEN `result.state.won === true`.
++
++24. **win recomputed on undo: win → undo → `won: false`** (BLOCKER #3 / D4)
++    - GIVEN a `won: true` state from test #23
++    - WHEN `reducer(wonState, { type: 'undo' })`
++    - THEN `result.state.won === false` (the undone push removed a box from its target).
++
++25. **`static` referential equality across N moves** (architecture Risk / P3)
++    - GIVEN an initial state
++    - WHEN 5 successive walk moves are dispatched (a sequence that does not hit walls)
++    - THEN every intermediate `result.state.static === initialState.static` (same
++      reference; `static` never copied or mutated).
++
++---
++
++## Step-by-Step Implementation Order (RED → GREEN → REFACTOR)
++
++Dependency order: types → `coordKey` → `winCheck` → `move` → `history` → reducer. Each
++step: write the test(s) RED, implement to GREEN, REFACTOR. Run `npm test` after each GREEN.
++
++**Wave 0 — types (no tests; compile-only).**
++1. Append `Level`, `GameState`, `HistoryEntry`, `AnimSpec` to `src/types.ts` (per
++   signatures above). Run `npx tsc --noEmit` → GREEN (compiles). No RED step here — types
++   have no runtime behavior; the RED gate is the first test that imports them.
++
++**Wave 1 — `coordKey` + `winCheck` (tests #7–#10).**
++2. RED: write `tests/unit/core/winCheck.test.ts` with tests #7–#10. The file imports
++   `winCheck` from `src/core/winCheck.ts` which does not exist yet → RED (import error).
++3. GREEN: create `src/core/coordKey.ts` and `src/core/winCheck.ts` per signatures. Tests
++   #7–#10 pass.
++4. REFACTOR: none expected (the `coordKey` rebuild is already the minimal form).
++
++**Wave 2 — `move` (tests #1–#6).**
++5. RED: write `tests/unit/core/move.test.ts` with tests #1–#6. Import errors → RED.
++6. GREEN: implement `src/core/move.ts` per signature. Tests #1–#6 pass.
++7. REFACTOR: decide whether `move` returns the same `boxes` ref on a walk (recommended) or
++   always copies. Keep the same-ref optimization only if tests still read cleanly;
++   otherwise simplify to always-copy.
++
++**Wave 3 — `history` (tests #11–#14).**
++8. RED: write `tests/unit/core/history.test.ts` with tests #11–#14. RED.
++9. GREEN: implement `src/core/history.ts` per signature. Tests #11–#14 pass.
++10. REFACTOR: none expected.
++
++**Wave 4 — `reducer` + `createInitialState` (tests #15–#25).**
++11. RED: write `tests/unit/core/reducer.test.ts` with tests #15–#25. RED.
++12. GREEN: implement `src/core/reducer.ts` (including `createInitialState` and
++    `MOVE_DURATION_MS`) per signature. Tests #15–#25 pass.
++13. REFACTOR: remove the `as GameState` cast in `createInitialState` by constructing the
++    full state with `won: false` first, then `state.won = winCheck(state)` before returning
++    (cleaner; avoids the cast). Re-run tests → still GREEN.
++
++**Wave 5 — full-suite gate.**
++14. Run `npm test` → all `tests/unit/**/*.test.ts` (ph.1 smoke + ph.2 core) GREEN, exit 0.
++15. Run `npx tsc --noEmit` → GREEN (no type errors, `noUncheckedIndexedAccess` +
++    `verbatimModuleSyntax` satisfied across all new files).
++16. Run `npm run build` → GREEN (confirms no DOM import leaked into `src/core/` — a DOM
++    import would break the node-env `unit` project and/or the build).
++
++**Defer to ph.3 / ph.5 / ph.8** (non-goals per context.md):
++- `boxesOnTargets(state)` helper → ph.3 (renderer needs it).
++- Animator consuming `AnimSpec` → ph.5.
++- Deadlock (corner-trap) detection → ph.8.
++- Level loader / validator → ph.3.
++
++---
++
++## Confidence Summary
++
++| Recommendation | Confidence |
++|---|---|
++| Four core modules + `coordKey.ts` helper in `src/core/` | **HIGH** |
++| `coordKey` + per-call `Set<string>` rebuild to fix `Set<Coord>` identity (respects D3) | **HIGH** |
++| `GameState.initial` field for pure 2-arg `reset` | **HIGH** (needed) / **MEDIUM** (location) |
++| `winCheck`: O(B+T), `boxes.length === targets.size && every(targetKeys.has(coordKey(b)))` | **HIGH** |
++| `move`: `null` on invalid; fresh `boxes` only on push; `DELTA` with y-down | **HIGH** |
++| `history`: `popEntry` returns entry + popped-stack state; reducer does semantic restore | **HIGH** |
++| `reducer`: recompute `won` on move/undo/reset; same-ref on invalid/empty-undo | **HIGH** |
++| `AnimSpec.from/to` = player's segment; shared delta for box; entities lists movers | **MEDIUM** (ph.5 confirms) |
++| `MOVE_DURATION_MS = 120` exported constant | **HIGH** (mechanism) / **MEDIUM** (value) |
++| `boxesOnTargets` deferred to ph.3 | **HIGH** |
++| All 25 tests listed with GIVEN/WHEN/THEN; ≥ 12 mandatory | **HIGH** |
++| Tests run under `unit` project (node env, no DOM) — verified against `vitest.config.ts` | **HIGH** |
++| `noUncheckedIndexedAccess` handled via explicit `undefined` guards (no `!`) | **HIGH** |
++| `static` referential equality invariant held + tested (#25) | **HIGH** |
++| `verbatimModuleSyntax` → `import type` for all type-only specifiers | **HIGH** |
+diff --git a/bp/specs/smoke-test/spec.md b/bp/specs/smoke-test/spec.md
+new file mode 100644
+index 0000000..6dc31df
+--- /dev/null
++++ b/bp/specs/smoke-test/spec.md
+@@ -0,0 +1,12 @@
++# smoke-test — Delta Spec
++
++## ADDED Requirements
++
++### Requirement: <name>
++
++The system SHALL <behavior>.
++
++#### Scenario: <name>
++- **GIVEN** <precondition>
++- **WHEN** <trigger>
++- **THEN** <expected outcome>
+diff --git a/bp/state.md b/bp/state.md
+index 9c07084..99a9cfb 100644
+--- a/bp/state.md
++++ b/bp/state.md
+@@ -1,19 +1,26 @@
+ ---
+ project:
+   name: sokoban
+-  status: researched
++  status: phase-shipped
+   current_milestone: M1-core-playable
+-  current_phase: ph.1-foundation
++  current_phase: ph.2-core-engine
+ active_context:
+   type: change
+-  ref: changes/smoke-test
+-  step: applying
++  ref: changes/types-and-helpers
++  step: planning
+ changes:
+-  - name: smoke-test
+-    status: applying
++  - name: types-and-helpers
++    status: planning
++    depends_on: []
++  - name: move-and-history
++    status: proposal
+     depends_on:
+-      - toolchain-and-types
+-      - vite-vitest-configs
++      - types-and-helpers
++  - name: reducer
++    status: proposal
++    depends_on:
++      - types-and-helpers
++      - move-and-history
+ adhoc: []
+ ---
+ # State
+@@ -27,6 +34,7 @@ Project (init)
+ Project path: `initialized → grill → researched → roadmap-defined`
+ 
+ ## History
++- [2026-07-01] Archived `smoke-test` (M1-core-playable / ph.1-foundation)
+ - [2026-07-01] Archived `entry-canvas` (M1-core-playable / ph.1-foundation)
+ - [2026-07-01] Archived `vite-vitest-configs` (M1-core-playable / ph.1-foundation)
+ - [2026-07-01] Archived `toolchain-and-types` (M1-core-playable / ph.1-foundation)

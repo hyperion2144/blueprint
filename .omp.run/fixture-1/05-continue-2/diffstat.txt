@@ -1,0 +1,13 @@
+ .../2026-07-01-smoke-test}/change-summary.md       |  0
+ .../2026-07-01-smoke-test}/design.md               |  0
+ .../2026-07-01-smoke-test}/goal-review.md          |  0
+ .../2026-07-01-smoke-test}/proposal.md             |  0
+ .../2026-07-01-smoke-test}/quality-review.md       |  0
+ .../2026-07-01-smoke-test}/spec-review.md          |  0
+ .../specs/smoke-test/spec.md                       |  0
+ .../2026-07-01-smoke-test}/tasks.md                |  0
+ .../2026-07-01-smoke-test}/verification.md         |  0
+ .../phases/ph.1-foundation/summary.md              | 99 ++++++++++++++++++++++
+ bp/specs/smoke-test/spec.md                        | 12 +++
+ bp/state.md                                        | 18 ++--
+ 12 files changed, 118 insertions(+), 11 deletions(-)

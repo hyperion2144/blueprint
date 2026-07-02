@@ -1,0 +1,197 @@
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/change-summary.md b/bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/change-summary.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/change-summary.md
+rename to bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/change-summary.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/design.md b/bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/design.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/design.md
+rename to bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/design.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/goal-review.md b/bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/goal-review.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/goal-review.md
+rename to bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/goal-review.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/proposal.md b/bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/proposal.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/proposal.md
+rename to bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/proposal.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/quality-review.md b/bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/quality-review.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/quality-review.md
+rename to bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/quality-review.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/spec-review.md b/bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/spec-review.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/spec-review.md
+rename to bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/spec-review.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/specs/smoke-test/spec.md b/bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/specs/smoke-test/spec.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/specs/smoke-test/spec.md
+rename to bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/specs/smoke-test/spec.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/tasks.md b/bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/tasks.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/tasks.md
+rename to bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/tasks.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/verification.md b/bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/verification.md
+similarity index 100%
+rename from bp/milestones/M1-core-playable/phases/ph.1-foundation/changes/smoke-test/verification.md
+rename to bp/archive/M1-core-playable/ph.1-foundation/2026-07-01-smoke-test/verification.md
+diff --git a/bp/milestones/M1-core-playable/phases/ph.1-foundation/summary.md b/bp/milestones/M1-core-playable/phases/ph.1-foundation/summary.md
+new file mode 100644
+index 0000000..efbc413
+--- /dev/null
++++ b/bp/milestones/M1-core-playable/phases/ph.1-foundation/summary.md
+@@ -0,0 +1,99 @@
++# Phase Summary: ph.1-foundation
++> Milestone: M1-core-playable
++> Date: 2026-07-01
++
++## Changes (4)
++
++### 2026-07-01-entry-canvas
++
++# Change Summary: entry-canvas
++
++> Auto-generated summary after all waves complete.
++
++---
++
++## Intent
++
++Add the project entry point — `index.html`, `src/main.ts`, `src/types.ts` — so `npm run dev` boots a browser and `npm run build` produces a deployable `dist/`. Resolves c2's `UNRESOLVED_ENTRY` error.
++
++## Output Files
++
++| File | Action |
++|------|--------|
++| `index.html` | Create |
++| `src/main.ts` | Create |
++| `src/types.ts` | Create |
++
++## Key Decisions
++
++- **`index.html` is plain static HTML**: dark 
++...
++
++### 2026-07-01-smoke-test
++
++# Change Summary: smoke-test
++
++> Auto-generated summary after all waves complete.
++
++---
++
++## Intent
++
++Verify the test infrastructure works as designed — Vitest 4 projects routing (`unit` / `unit-dom`) and Vite client types (`import.meta.glob`). The core smoke test was added in c1 to satisfy the verify gate; this change extends coverage.
++
++## Output Files
++
++| File | Action |
++|------|--------|
++| `tests/unit/smoke-dom.test.ts` | Create |
++| `tests/unit/glob-types.test.ts` | Create |
++
++## Key Decisions
++
++- *
++...
++
++### 2026-07-01-toolchain-and-types
++
++# Change Summary: toolchain-and-types
++
++> Auto-generated summary after all waves complete.
++
++---
++
++## Intent
++
++Bootstrap the npm + TypeScript toolchain for the sokoban project so all later changes (c2: build/test configs, c3: canvas entry, c4: smoke test, plus all 9 later phases) can build, lint, and run on a known foundation. Required prerequisite for the entire project.
++
++## Output Files
++
++| File | Action |
++|------|--------|
++| `.gitignore` | Create |
++| `.nvmrc` | Create |
++| `tsconfig.json` | Create 
++...
++
++### 2026-07-01-vite-vitest-configs
++
++# Change Summary: vite-vitest-configs
++
++> Auto-generated summary after all waves complete.
++
++---
++
++## Intent
++
++Add the Vite and Vitest config files so the project's build and test scripts can resolve their configuration. Resolves the c1 TS18003 error (no inputs found for `tsconfig.node.json`).
++
++## Output Files
++
++| File | Action |
++|------|--------|
++| `vite.config.ts` | Create |
++| `vitest.config.ts` | Create |
++
++## Key Decisions
++
++- **`vite.config.ts`**: minimal config with env-driven `base`. No plugins 
++...
+diff --git a/bp/specs/smoke-test/spec.md b/bp/specs/smoke-test/spec.md
+new file mode 100644
+index 0000000..6dc31df
+--- /dev/null
++++ b/bp/specs/smoke-test/spec.md
+@@ -0,0 +1,12 @@
++# smoke-test — Delta Spec
++
++## ADDED Requirements
++
++### Requirement: <name>
++
++The system SHALL <behavior>.
++
++#### Scenario: <name>
++- **GIVEN** <precondition>
++- **WHEN** <trigger>
++- **THEN** <expected outcome>
+diff --git a/bp/state.md b/bp/state.md
+index 9c07084..7b97b53 100644
+--- a/bp/state.md
++++ b/bp/state.md
+@@ -1,19 +1,14 @@
+ ---
+ project:
+   name: sokoban
+-  status: researched
++  status: phase-shipped
+   current_milestone: M1-core-playable
+-  current_phase: ph.1-foundation
++  current_phase: ph.2-core-engine
+ active_context:
+-  type: change
+-  ref: changes/smoke-test
+-  step: applying
+-changes:
+-  - name: smoke-test
+-    status: applying
+-    depends_on:
+-      - toolchain-and-types
+-      - vite-vitest-configs
++  type: phase
++  ref: milestones/M1-core-playable/phases/ph.2-core-engine
++  step: discuss
++changes: []
+ adhoc: []
+ ---
+ # State
+@@ -27,6 +22,7 @@ Project (init)
+ Project path: `initialized → grill → researched → roadmap-defined`
+ 
+ ## History
++- [2026-07-01] Archived `smoke-test` (M1-core-playable / ph.1-foundation)
+ - [2026-07-01] Archived `entry-canvas` (M1-core-playable / ph.1-foundation)
+ - [2026-07-01] Archived `vite-vitest-configs` (M1-core-playable / ph.1-foundation)
+ - [2026-07-01] Archived `toolchain-and-types` (M1-core-playable / ph.1-foundation)

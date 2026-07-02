@@ -35,7 +35,7 @@ describe('E2E: init → template → archive', () => {
     expect(existsSync(join(testDir, '.omp', 'skills', 'bp-plan', 'SKILL.md'))).toBe(true);
 
     const cmdCount = execSync(`ls -1 ${join(testDir, '.omp', 'commands')} | wc -l`, { encoding: 'utf-8' }).trim();
-    expect(parseInt(cmdCount)).toBe(17);
+    expect(parseInt(cmdCount)).toBe(18);
 
     const agentCount = execSync(`ls -1 ${join(testDir, '.omp', 'agents')} | wc -l`, { encoding: 'utf-8' }).trim();
     expect(parseInt(agentCount)).toBe(7);
