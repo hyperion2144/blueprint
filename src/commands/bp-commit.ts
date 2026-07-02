@@ -15,13 +15,13 @@ import { loadState, saveState } from '../core/state-file.js';
 
 interface CommanderProgram {
   command(name: string): {
-    description(desc: string): {
-      option(flags: string, desc: string): {
-        action(fn: (...args: unknown[]) => void): void;
-      };
-      action(fn: (...args: unknown[]) => void): void;
-    };
+    description(desc: string): CommanderChain;
   };
+}
+
+interface CommanderChain {
+  option(flags: string, desc: string): CommanderChain;
+  action(fn: (...args: unknown[]) => void): void;
 }
 
 export function register(program: CommanderProgram): void {
@@ -42,6 +42,7 @@ export function register(program: CommanderProgram): void {
 interface CommitResult {
   ok?: boolean;
   error?: string;
+  note?: string;
   message?: string;
   hash?: string;
   files?: number;
@@ -98,10 +99,10 @@ function commitHandler(
   }
 
   if (codeFiles.length === 0 && allFiles.length > 0) {
-    console.log(JSON.stringify({
-      error: 'All specified files are doc files and commit_docs is disabled. Nothing to commit.',
-      skipped: skippedDocs,
-    }));
+    console.log([
+      'error: All specified files are doc files and commit_docs is disabled. Nothing to commit.',
+      `skipped: ${skippedDocs.join(', ')}`,
+    ].join('\n'));
     return;
   }
 

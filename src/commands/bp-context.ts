@@ -53,7 +53,7 @@ function contextHandler(step: string) {
   if (result.requirements && result.requirements.length > 0) {
     lines.push('requirements:');
     for (const r of result.requirements) {
-      lines.push(typeof r === 'string' ? `  ${r}` : `  ${(r as Record<string, unknown>).path ?? r}`);
+      lines.push(typeof r === 'string' ? `  ${r}` : `  ${(r as unknown as Record<string, unknown>).path ?? r}`);
     }
   }
 

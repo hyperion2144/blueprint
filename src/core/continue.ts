@@ -26,6 +26,8 @@ export interface ContinueResult {
   nextStepInfo?: StepInfo;
   /** Full inline instructions for the next step (from TS template) */
   instructions?: string;
+  /** Pending changes for hint display */
+  pending?: { name: string; status: string; depends_on?: string[] }[];
 }
 
 export function determineNextStep(bpDir: string): ContinueResult {
