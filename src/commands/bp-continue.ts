@@ -55,6 +55,9 @@ function formatContinueResult(result: ContinueResult, isAuto = false): void {
     }
   }
 
+  // Hint
+  if (result.hint) lines.push(`hint: ${result.hint}`);
+
   // Instructions body
   if (currentInstructions) {
     lines.push('');

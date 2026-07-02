@@ -161,7 +161,7 @@ const STEP_INFO: Record<string, StepInfo> = {
   },
   'phase-ready': {
     command: 'phase-ready',
-    description: 'All changes archived. Ship this phase (/bp:ship) or start next phase (bp state set-phase <next> then /bp:discuss).',
+    description: 'Use ask tool: "Ship this phase?" — /bp:ship to ship, or "Start next phase" to continue.',
     artifacts: [],
     fileRef: '',
   },
