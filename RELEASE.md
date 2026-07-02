@@ -1,3 +1,45 @@
+# v0.4.1 — 文本格式输出、bp commit 集成、/bp-auto、依赖展示
+
+> 2026-07-02
+
+继续 → context → state 全部改为文本格式（去 JSON），bp commit 增强，新增 /bp-auto 和 /bp-commit 命令。
+
+### 输出格式：JSON → 文本
+
+- `bp continue` 输出改为 `# bp continue → plan` + `---INSTRUCTIONS---...---END---` 格式
+- `bp state` 输出改为 `# bp state` + `key: value` 格式
+- `bp context` 输出改为 `# bp context <step>` + 文件列表格式
+- 截断检测：agent 通过 `---END---` 标记 + `chars:` 值判断完整性
+- 所有模板中的 "JSON output" 措辞清理为 "output"
+- 修复 `{{}}` 花括号被 OMP 误解析的问题
+
+### bp commit 集成
+
+- `--task <id>` 自动将 commit hash 写入 tasks.md (`<!-- commit: <hash> -->`)
+- `--tasks-path` 指定要更新的 tasks.md 路径
+- `--record` 追加到 state.md 历史
+- `commitDocs` 为 false 时自动跳过文档文件
+- 所有产出文档的步骤 (grill/research/roadmap/discuss/split/plan/review/verify/archive) 添加 `bp commit` 步骤
+- executor agent prompt 每种 commit type 都有完整示例
+- commit scope 定义在 `bp/conventions/coding.md`
+
+### 新增命令
+
+- `/bp-auto` — 全自动模式，AI 自主填充所有决策，循环推进至完成
+- `/bp-commit` — 提交 code/docs，conventional commits + hash 记录
+
+### 其他
+
+- `bp state` 返回 `depends_on` 依赖列表
+- continue 输出增强截断检测（`---END---` 标记）
+
+### 验证
+
+- tsc --noEmit: 0 errors
+- vitest: 79/79 tests passed
+
+---
+
 # v0.4.0 — 任务流修复、Ship 增强、Audit/UAT、死代码清理
 
 > 2026-07-01
