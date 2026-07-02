@@ -98,21 +98,34 @@ function showState() {
     }
   } catch { /* no roadmap */ }
 
-  const output: any = {
-    project: project.name,
-    status: project.status,
-    milestone: project.current_milestone,
-    phase: project.current_phase,
-    context: {
-      type: active_context.type,
-      step: active_context.step,
-      ref: active_context.ref || null,
-    },
-    pending: withProgress(pendingChanges, 'change').concat(withProgress(pendingAdhoc, 'adhoc')),
-  };
-  if (roadmap) output.roadmap = roadmap;
+  const lines: string[] = [];
+  lines.push('# bp state');
+  lines.push(`project: ${project.name}`);
+  lines.push(`status: ${project.status}`);
+  lines.push(`milestone: ${project.current_milestone ?? '-'}`);
+  lines.push(`phase: ${project.current_phase ?? '-'}`);
+  lines.push(`type: ${active_context.type}`);
+  lines.push(`step: ${active_context.step}`);
+  if (active_context.ref) lines.push(`ref: ${active_context.ref}`);
 
-  console.log(JSON.stringify(output, null, 2));
+  const pending = withProgress(pendingChanges, 'change').concat(withProgress(pendingAdhoc, 'adhoc'));
+  if (pending.length > 0) {
+    lines.push('pending:');
+    for (const p of pending) {
+      const deps = p.depends_on && p.depends_on.length > 0 ? ` (needs: ${(p.depends_on as string[]).join(', ')})` : '';
+      const tasks = p.tasks ? ` [${p.tasks.completed}/${p.tasks.total} tasks]` : '';
+      lines.push(`  ${p.name} [${p.status}]${deps}${tasks}`);
+    }
+  }
+
+  if (roadmap) {
+    lines.push('roadmap:');
+    for (const r of roadmap) {
+      lines.push(`  ${r.id} ${r.active ? '*' : ''}`);
+    }
+  }
+
+  console.log(lines.join('\n'));
 }
 
 function setMilestone(id: string) {

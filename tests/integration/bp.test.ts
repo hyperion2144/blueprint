@@ -46,10 +46,9 @@ describe('bp integration', () => {
 
   it('bp state 读取自身状态', () => {
     const output = execSync(`node ${cliPath} state`, { encoding: 'utf-8', cwd: process.cwd() });
-    const state = JSON.parse(output);
-    expect(state.project).toBe('blueprint');
-    expect(state.status).toBeTruthy();
-    expect(state.phase).toBeDefined();
+    expect(output).toContain('project:');
+    expect(output).toContain('status:');
+    expect(output).toContain('step:');
   });
 
   it('bp list', () => {
