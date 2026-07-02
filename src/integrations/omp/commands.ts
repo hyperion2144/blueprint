@@ -17,7 +17,7 @@ export interface CommandDef {
   agents: string[];
 }
 
-/** 18 step definitions */
+/** 19 step definitions */
 export const STEP_DEFS: CommandDef[] = [
   { step: 'init', name: 'bp:init', description: 'Initialize bp project structure and generate platform files', usesAgent: true, agents: ['researcher'] },
   { step: 'grill', name: 'bp:grill', description: 'Requirements exploration — detailed questioning until shared understanding', usesAgent: false, agents: [] },
@@ -37,6 +37,7 @@ export const STEP_DEFS: CommandDef[] = [
   { step: 'continue', name: 'bp:continue', description: 'Auto-advance — read STATE and route to next step', usesAgent: false, agents: [] },
   { step: 'audit', name: 'bp:audit', description: 'Human UAT verification — generate uat.md, interactive testing, adhoc fixes', usesAgent: true, agents: [] },
   { step: 'auto', name: 'bp:auto', description: 'Fully autonomous mode — auto-advance through all steps, AI fills all decisions', usesAgent: false, agents: [] },
+  { step: 'commit', name: 'bp:commit', description: 'Commit changes — conventional commits + hash recording to tasks.md', usesAgent: false, agents: [] },
 ];
 
 /** Generate a single slash command file content from the TypeScript template */

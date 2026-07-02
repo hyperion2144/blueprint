@@ -1,0 +1,106 @@
+import type { SkillTemplate, CommandTemplate } from '../types.js';
+
+const instructions = `## Input
+
+### Parameters
+- **\`<message>\`** (required) — conventional commit message (e.g. "feat: add undo stack")
+- \`--files <list>\` — comma-separated file paths to stage (e.g. "src/core/move.ts,tests/unit/move.test.ts")
+- \`--scope <scope>\` — commit scope (e.g. "core", "cli", "test")
+- \`--task <id>\` — task ID to record hash against in tasks.md (e.g. "task-1.3")
+- \`--tasks-path <path>\` — explicit path to tasks.md (auto-detected if omitted)
+- \`--record\` — also append commit to state.md history
+- \`--amend\` — amend previous commit
+
+### Prerequisites
+- Git repo initialized
+- \`bp/project.yml\` with \`workflow.commitDocs\` config (default: true)
+
+## Core Behavior
+
+\`bp commit\` handles three concerns in one call:
+1. **Commit** — stage files, conventional commit message, returns hash
+2. **Doc filtering** — when \`commitDocs: false\`, skips \`bp/\`, \`.md\`, \`docs/\` files
+3. **Hash recording** — writes commit hash to tasks.md and/or state.md
+
+## Steps
+
+### Step 1: Determine files and scope
+After implementing a task or wave, collect:
+- Changed files (from git status or known output)
+- The task ID(s) being completed
+- A conventional commit message describing the change
+
+### Step 2: Run bp commit
+Run \`bp commit "<message>"\` with the appropriate flags:
+
+\`\`\`bash
+# Single task, record hash:
+bp commit "feat(core): implement move validation" \\
+  --files "src/core/move.ts,tests/unit/move.test.ts" \\
+  --scope core \\
+  --task task-1.3
+
+# Wave completion, no task recording:
+bp commit "feat(engine): add undo stack and history" \\
+  --files "src/core/move.ts,src/core/history.ts,tests/unit/move.test.ts,tests/unit/history.test.ts" \\
+  --scope engine
+
+# Amend previous commit:
+bp commit "fix: correct push boundary check" --amend
+\`\`\`
+
+### Step 3: Process CLI output
+The CLI returns structured JSON:
+
+\`\`\`json
+{
+  "ok": true,
+  "message": "feat(core): implement move validation",
+  "hash": "a1b2c3d",
+  "files": 2,
+  "skipped": ["bp/state.md"],
+  "taskRecorded": { "task": "task-1.3", "hash": "a1b2c3d", "path": "bp/.../tasks.md" }
+}
+\`\`\`
+
+**Key fields:**
+- \`hash\` — short commit hash, use to annotate tasks.md
+- \`taskRecorded\` — confirms hash was written to tasks.md
+- \`skipped\` — doc files excluded when \`commitDocs: false\`
+
+### Step 4: Annotate tasks.md (if not using --task)
+If you didn't use \`--task\`, manually add the commit hash as a comment:
+
+\`\`\`markdown
+- [x] task-1.3: [type:behavior] Implement move validation <!-- commit: a1b2c3d -->
+\`\`\`
+
+## Output
+- Git commit with conventional commit message
+- Commit hash recorded in tasks.md (via \`--task\` or manual annotation)
+- Structured JSON result for agent consumption
+
+## Guardrails
+- Always use \`--files\` explicitly — never trust \`git add -A\` in automated workflows
+- Use \`--task\` whenever the commit completes a specific task
+- Use \`--record\` for milestone-level commits (ship, archive)
+- When \`commitDocs: false\`, doc changes are skipped but listed in \`skipped\` — review manually if needed
+- Commit messages follow Conventional Commits strictly: \`type(scope): description\``;
+
+export function getCommitSkillTemplate(): SkillTemplate {
+  return {
+    name: 'bp-commit',
+    description: 'Commit changes — conventional commits + hash recording to tasks.md',
+    instructions,
+  };
+}
+
+export function getCommitCommandTemplate(): CommandTemplate {
+  return {
+    name: 'SpecWF: Commit',
+    description: 'Commit changes — conventional commits + hash recording to tasks.md',
+    category: 'Workflow',
+    tags: ['bp', 'commit', 'git', 'conventional-commits', 'hash'],
+    content: instructions,
+  };
+}
