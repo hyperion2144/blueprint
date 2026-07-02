@@ -119,12 +119,16 @@ function commitHandler(
     });
   } catch (err: unknown) {
     const stderr = err instanceof Error ? err.message : String(err);
-    if (stderr.includes('nothing to commit')) {
-      console.log(JSON.stringify({ ok: true, note: 'Nothing to commit.' }));
+    const gitOutput = (err as Record<string, unknown>).stdout as string ?? '';
+    const gitStderr = (err as Record<string, unknown>).stderr as string ?? '';
+    const combined = stderr + gitOutput + gitStderr;
+    if (combined.includes('nothing to commit') || combined.includes('nothing added to commit')) {
+      // Commit skipped but hash recording should still happen (use HEAD)
+      // Fall through to hash/record logic below — do NOT return
     } else {
       console.log(JSON.stringify({ error: 'git commit failed', details: stderr.slice(0, 200) }));
+      return;
     }
-    return;
   }
 
   // ── Get hash ───────────────────────────────────────────────────
