@@ -9,7 +9,15 @@ const instructions = `## Input
 ### Step 1: Initialize or update
 Run \`bp init --yes\`. If the CLI says already initialized, run \`bp update\` to refresh platform files instead. Do NOT re-read skeleton files.
 
-### Step 2: Advance
+### Step 2: Configure release template
+Use the \`ask\` tool to ask: "Which PR/release body template?" Options:
+- **standard** (recommended): Summary + Changes + Verification
+- **detailed**: + User Stories + Key Decisions + Risks
+- **minimal**: Summary + Changes only
+
+Write the choice to \`bp/project.yml\` under \`release.template\`.
+
+### Step 3: Advance
 Run \`bp continue\`. The output tells you what to do next (grill if greenfield, brownfield analysis otherwise). Follow the output instructions — do not question or repeat them.
 
 ## Guardrails

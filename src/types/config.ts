@@ -53,6 +53,12 @@ export interface GitConfig {
   create_tag?: boolean;
 }
 
+/** release 配置 */
+export interface ReleaseConfig {
+  /** PR body 模板：standard(默认) | detailed | minimal */
+  template?: 'standard' | 'detailed' | 'minimal';
+}
+
 /** project.yml 完整配置 */
 export interface ProjectConfig {
   version: number;
@@ -63,6 +69,7 @@ export interface ProjectConfig {
   review: ReviewConfig;
   change: ChangeConfig;
   git: GitConfig;
+  release: ReleaseConfig;
   conventions: {
     inject: boolean;
   };

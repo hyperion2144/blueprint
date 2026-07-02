@@ -34,6 +34,9 @@ const ProjectConfigSchema = z.object({
     branching: z.enum(['none', 'phase', 'milestone']).optional(),
     create_tag: z.boolean().optional(),
   }).optional().default({}),
+  release: z.object({
+    template: z.enum(['standard', 'detailed', 'minimal']).optional().default('standard'),
+  }).optional().default({ template: 'standard' }),
   conventions: z.object({
     inject: z.boolean().optional().default(true),
   }).optional().default({ inject: true }),

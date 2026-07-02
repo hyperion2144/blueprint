@@ -53,6 +53,7 @@ async function initHandler(options: {
     review: {},
     change: {},
     git: { branching: 'none' as const, create_tag: true },
+    release: { template: 'standard' as const },
     conventions: { inject: true },
     models: {},
   });

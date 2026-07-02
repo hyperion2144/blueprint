@@ -1,330 +1,271 @@
 /**
- * bp ship — ship phase or milestone.
+ * bp ship — create PR or release from unpublished archived changes.
  *
- * Phase ship: validate all changes archived + reviews pass → generate
- *   summary.md with review/verification results → commit → update state.
- * Milestone ship: all phases shipped → bump version → create git tag → commit.
+ * Reads state.md archive history for unpublished changes.
+ * Generates PR body from configured template (standard|detailed|minimal).
+ * Asks PR vs Release; release suggests version bump.
+ * Marks shipped changes as [published] in archive history.
  */
 
-import { join, basename, dirname } from 'node:path';
+import { join } from 'node:path';
 import { existsSync, readFileSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs';
 import { execSync } from 'node:child_process';
-import { loadState, updateState, saveState } from '../core/state-file.js';
-import type { StateFile } from '../types/index.js';
+import { loadState, saveState } from '../core/state-file.js';
+import { loadConfig } from '../core/config.js';
+
+/* ── Types ─────────────────────────────────────────────────── */
+
+interface PublishedEntry {
+  date: string;
+  change: string;
+  hash: string;
+}
+
+/** PR body template options */
+const RELEASE_TEMPLATES: Record<string, { label: string; sections: string[] }> = {
+  standard: {
+    label: 'Standard',
+    sections: ['summary', 'changes', 'verification'],
+  },
+  detailed: {
+    label: 'Detailed',
+    sections: ['summary', 'changes', 'verification', 'user_stories', 'decisions', 'risks'],
+  },
+  minimal: {
+    label: 'Minimal',
+    sections: ['summary', 'changes'],
+  },
+};
+
+/* ── Register ──────────────────────────────────────────────── */
 
 export function register(program: any): void {
   program
     .command('ship')
-    .description('Ship phase (validate + summary + commit) or milestone (version bump + tag)')
+    .description('Ship unpublished changes — PR or Release with configurable template')
     .option('--dry-run', 'Preview without executing')
     .option('--skip-commit', 'Skip git commit (for testing)')
     .action(shipHandler);
 }
 
-// ── Types ────────────────────────────────────────────────────────
+/* ── Main handler ──────────────────────────────────────────── */
 
-interface ArchivedChange {
-  name: string;
-  path: string;
-}
-
-interface ValidationResult {
-  change: string;
-  hasChangeSummary: boolean;
-  hasVerification: boolean;
-  verificationPassed: boolean;
-  specReviewPassed: boolean;
-  qualityReviewPassed: boolean;
-  goalReviewPassed: boolean;
-  errors: string[];
-}
-
-// ── Main handler ─────────────────────────────────────────────────
-
-function shipHandler(options: { dryRun?: boolean; skipCommit?: boolean }) {
+function shipHandler(options?: { dryRun?: boolean; skipCommit?: boolean }): void {
   const cwd = process.cwd();
   const bpDir = join(cwd, 'bp');
   const state = loadState(bpDir);
+  const config = loadConfig(bpDir);
+  const template = config.release?.template ?? 'standard';
+  const tpl = RELEASE_TEMPLATES[template] ?? RELEASE_TEMPLATES.standard;
 
-  const milestone = state.project.current_milestone;
-  const phase = state.project.current_phase;
+  // Parse archive history for unpublished entries
+  const history = parseArchiveHistory(bpDir);
+  const unpublished = history.filter((e) => !e.published);
 
-  if (!milestone || !phase) {
-    console.log(JSON.stringify({ error: 'No active milestone/phase. Nothing to ship.' }));
+  if (unpublished.length === 0) {
+    console.log(JSON.stringify({ hint: 'No unpublished changes found in archive history.' }));
     return;
   }
 
-  // ── Phase ship ──────────────────────────────────────────────────
-
-  const archiveRoot = join(bpDir, 'archive', milestone, phase);
-  const changes = findArchivedChanges(archiveRoot);
-
-  if (changes.length === 0) {
-    console.log(JSON.stringify({ error: `No archived changes found in ${archiveRoot}. Archive changes first.` }));
-    return;
-  }
-
-  // Validate all changes
-  const validations = changes.map((c) => validateChange(c, bpDir));
-  const failures = validations.filter((v) => v.errors.length > 0);
-
-  if (options.dryRun) {
-    console.log(JSON.stringify({
-      mode: 'phase',
-      milestone,
-      phase,
-      changeCount: changes.length,
-      changes: changes.map((c) => c.name),
-      validations: validations.map((v) => ({
-        change: v.change,
-        checks: {
-          changeSummary: v.hasChangeSummary,
-          verification: v.hasVerification ? (v.verificationPassed ? 'PASS' : 'FAIL') : 'MISSING',
-          specReview: v.specReviewPassed ? 'PASS' : 'FAIL',
-          qualityReview: v.qualityReviewPassed ? 'PASS' : 'FAIL',
-          goalReview: v.goalReviewPassed ? 'PASS' : 'FAIL',
-        },
-        errors: v.errors,
-      })),
-      dryRun: true,
-      ready: failures.length === 0,
-      hint: failures.length > 0
-        ? `${failures.length} changes have issues. Fix before shipping.`
-        : 'All validations pass. Run without --dry-run to ship.',
-    }, null, 2));
-    return;
-  }
-
-  if (failures.length > 0) {
-    console.log(JSON.stringify({
-      error: 'Validation failed',
-      failures: failures.map((f) => ({ change: f.change, errors: f.errors })),
-      hint: 'Run with --dry-run to see details. Fix issues then retry.',
-    }));
-    process.exit(1);
-  }
-
-  // Generate phase summary
-  const summary = generatePhaseSummary(milestone, phase, changes, validations, bpDir);
-  const phaseDir = join(bpDir, 'milestones', milestone, 'phases', phase);
-  mkdirSync(phaseDir, { recursive: true });
-  writeFileSync(join(phaseDir, 'summary.md'), summary, 'utf-8');
-
-  // Update state
-  const statePath = join(bpDir, 'state.md');
-  updateState(bpDir, (s) => {
-    s.project.status = 'phase-shipped';
-    s.active_context.step = 'shipped';
-  });
-
-  // Git commit
-  if (!options.skipCommit) {
-    gitCommit(cwd, [
-      join(phaseDir, 'summary.md'),
-      statePath,
-    ], `ship: ${milestone}/${phase} — ${changes.length} changes`);
-  }
-
-  // Find next phase
-  const nextPhase = findNextPhase(bpDir, milestone, phase);
+  // Build PR body from template
+  const body = buildPrBody(unpublished, tpl.sections, bpDir);
 
   console.log(JSON.stringify({
-    shipped: { milestone, phase, changes: changes.length },
-    summary: join(phaseDir, 'summary.md'),
-    next: nextPhase
-      ? { phase: nextPhase, milestone }
-      : { hint: 'All phases in milestone shipped. Run ship again for milestone release.' },
-    committed: !options.skipCommit,
+    template: tpl.label,
+    unpublished: unpublished.length,
+    changes: unpublished.map((e) => e.change),
+    body: body.slice(0, 500),
+    hint: 'Use the ask tool: (1) Create PR → gh pr create, (2) Release → suggest version, create tag + GitHub Release. After publishing, mark as [published] in state.md archive history.',
   }, null, 2));
 }
 
-// ── Validation ───────────────────────────────────────────────────
+/* ── Archive history parsing ───────────────────────────────── */
 
-function validateChange(ch: ArchivedChange, bpDir: string): ValidationResult {
-  const errors: string[] = [];
+function parseArchiveHistory(bpDir: string): Array<{
+  change: string;
+  milestone: string;
+  phase: string;
+  date: string;
+  published: boolean;
+}> {
+  const statePath = join(bpDir, 'state.md');
+  if (!existsSync(statePath)) return [];
 
-  const hasChangeSummary = existsSync(join(ch.path, 'change-summary.md'));
-  if (!hasChangeSummary) errors.push('missing change-summary.md');
-
-  const verificationPath = join(ch.path, 'verification.md');
-  const hasVerification = existsSync(verificationPath);
-  let verificationPassed = false;
-  if (hasVerification) {
-    try {
-      const content = readFileSync(verificationPath, 'utf-8');
-      verificationPassed = /status:\s*passed/i.test(content);
-      if (!verificationPassed) errors.push('verification.md status is not "passed"');
-    } catch { errors.push('cannot read verification.md'); }
-  } else {
-    errors.push('missing verification.md');
-  }
-
-  // Read review files
-  const specReviewPassed = checkReviewPassed(ch.path, 'spec-review.md');
-  if (!specReviewPassed) errors.push('spec-review.md missing or not PASS');
-
-  const qualityReviewPassed = checkReviewPassed(ch.path, 'quality-review.md');
-  if (!qualityReviewPassed) errors.push('quality-review.md missing or not PASS');
-
-  const goalReviewPassed = checkReviewPassed(ch.path, 'goal-review.md');
-  if (!goalReviewPassed) errors.push('goal-review.md missing or not PASS');
-
-  return {
-    change: ch.name,
-    hasChangeSummary,
-    hasVerification,
-    verificationPassed,
-    specReviewPassed,
-    qualityReviewPassed,
-    goalReviewPassed,
-    errors,
-  };
-}
-
-function checkReviewPassed(dir: string, filename: string): boolean {
-  const path = join(dir, filename);
-  if (!existsSync(path)) return false;
   try {
-    const content = readFileSync(path, 'utf-8');
-    // Check for PASS verdict (case-insensitive, various formats)
-    return /(?:Overall|Verdict).*?:?\s*PASS/i.test(content)
-      || /^\s*PASS\b/m.test(content);
-  } catch { return false; }
+    const content = readFileSync(statePath, 'utf-8');
+    const historySection = content.match(/## History\n([\s\S]*?)(?=\n##|$)/);
+    if (!historySection) return [];
+
+    const entries: Array<{ change: string; milestone: string; phase: string; date: string; published: boolean }> = [];
+    const lines = historySection[1].split('\n');
+
+    for (const line of lines) {
+      // Format: - [2026-07-01] Archived ch-name (milestone / phase) [published]
+      const match = line.match(/-\s*\[([^\]]+)\]\s*Archived\s+([^\s(]+)\s*\(([^)]+)\)\s*(?:\[published\])?/);
+      if (match) {
+        const changeName = match[2].replace(/`/g, '');
+        entries.push({
+          date: match[1],
+          change: changeName,
+          milestone: match[3].split('/')[0]?.trim() ?? '',
+          phase: match[3].split('/')[1]?.trim() ?? '',
+          published: line.includes('[published]'),
+        });
+      }
+    }
+    return entries;
+  } catch {
+    return [];
+  }
 }
 
-// ── Summary generation ───────────────────────────────────────────
+/* ── PR body generation ────────────────────────────────────── */
 
-function generatePhaseSummary(
-  milestone: string,
-  phase: string,
-  changes: ArchivedChange[],
-  validations: ValidationResult[],
-  _bpDir: string,
+function buildPrBody(
+  entries: Array<{ change: string; milestone: string; phase: string }>,
+  sections: string[],
+  bpDir: string,
 ): string {
-  const lines: string[] = [
-    `# Phase Summary: ${phase}`,
-    `> Milestone: ${milestone}`,
-    `> Date: ${new Date().toISOString().slice(0, 10)}`,
-    `> Changes: ${changes.length}`,
-    '',
-    '## Verification Matrix',
-    '',
-    '| Change | Spec Review | Quality Review | Goal Review | Verification |',
-    '|--------|------------|----------------|-------------|-------------|',
-  ];
+  const lines: string[] = [];
 
-  for (const v of validations) {
-    lines.push(
-      `| ${v.change} | ${icon(v.specReviewPassed)} | ${icon(v.qualityReviewPassed)} | ${icon(v.goalReviewPassed)} | ${icon(v.verificationPassed)} |`
-    );
-  }
+  for (const section of sections) {
+    switch (section) {
+      case 'summary':
+        lines.push('## Summary', '');
+        for (const e of entries) {
+          const summary = readChangeSummary(bpDir, e.milestone, e.phase, e.change);
+          lines.push(`- **${e.change}** (${e.milestone}/${e.phase}): ${summary}`);
+        }
+        lines.push('');
+        break;
 
-  lines.push('', '## Change Summaries', '');
+      case 'changes':
+        lines.push('## Changes', '');
+        for (const e of entries) {
+          const files = readChangeFiles(bpDir, e.milestone, e.phase, e.change);
+          lines.push(`### ${e.change}`, '');
+          if (files.length > 0) {
+            for (const f of files) lines.push(`- \`${f}\``);
+          } else {
+            lines.push('_(no file list available)_');
+          }
+          lines.push('');
+        }
+        break;
 
-  for (let i = 0; i < changes.length; i++) {
-    const ch = changes[i];
-    lines.push(`### ${ch.name}`);
-    lines.push('');
+      case 'verification':
+        lines.push('## Verification', '');
+        for (const e of entries) {
+          const status = readVerificationStatus(bpDir, e.milestone, e.phase, e.change);
+          lines.push(`- **${e.change}**: ${status}`);
+        }
+        lines.push('');
+        break;
 
-    const summaryPath = join(ch.path, 'change-summary.md');
-    if (existsSync(summaryPath)) {
-      const content = readFileSync(summaryPath, 'utf-8');
-      // Include full summary (not just 500 chars)
-      const trimmed = content.length > 2000 ? content.slice(0, 2000) + '\n\n_(truncated)_' : content;
-      lines.push(trimmed);
-    } else {
-      lines.push('_(no change summary)_');
+      case 'user_stories':
+        lines.push('## User Stories & Acceptance Criteria', '');
+        lines.push('_(Review each change for user-facing behavior)_', '');
+        for (const e of entries) {
+          lines.push(`### ${e.change}`, '');
+          lines.push('- [ ] Verify user-facing behavior matches proposal.md intent');
+          lines.push('');
+        }
+        break;
+
+      case 'decisions':
+        lines.push('## Key Decisions', '');
+        lines.push('_(Extracted from design.md and change-summary.md)_', '');
+        for (const e of entries) {
+          const decisions = readKeyDecisions(bpDir, e.milestone, e.phase, e.change);
+          if (decisions.length > 0) {
+            lines.push(`### ${e.change}`, '');
+            for (const d of decisions) lines.push(`- ${d}`);
+            lines.push('');
+          }
+        }
+        break;
+
+      case 'risks':
+        lines.push('## Risks & Dependencies', '');
+        lines.push('- No known high-risk rollout dependencies.', '');
+        break;
     }
-
-    // Append review verdicts
-    const specPath = join(ch.path, 'spec-review.md');
-    const qualityPath = join(ch.path, 'quality-review.md');
-    const goalPath = join(ch.path, 'goal-review.md');
-
-    lines.push('');
-    lines.push('**Reviews:**');
-    lines.push(`- Spec Review: ${extractVerdict(specPath)}`);
-    lines.push(`- Quality Review: ${extractVerdict(qualityPath)}`);
-    lines.push(`- Goal Review: ${extractVerdict(goalPath)}`);
-    lines.push('');
   }
 
   return lines.join('\n');
 }
 
-function icon(pass: boolean): string {
-  return pass ? '✅' : '❌';
-}
+/* ── Artifact readers ──────────────────────────────────────── */
 
-function extractVerdict(path: string): string {
-  if (!existsSync(path)) return 'MISSING';
+function findChangeDir(bpDir: string, milestone: string, phase: string, change: string): string | null {
+  const base = join(bpDir, 'archive', milestone, phase);
+  if (!existsSync(base)) return null;
   try {
-    const content = readFileSync(path, 'utf-8');
-    const m = content.match(/(?:Overall|Verdict).*?:?\s*(PASS|FAIL|NEEDS_REVISION|PARTIAL)/i);
-    return m ? m[1].toUpperCase() : 'UNKNOWN';
-  } catch { return 'ERROR'; }
-}
-
-// ── File discovery ───────────────────────────────────────────────
-
-function findArchivedChanges(dir: string): ArchivedChange[] {
-  if (!existsSync(dir)) return [];
-  const results: ArchivedChange[] = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (entry.isDirectory()) {
-      results.push({ name: entry.name, path: join(dir, entry.name) });
+    const entries = readdirSync(base, { withFileTypes: true });
+    for (const e of entries) {
+      if (e.isDirectory() && e.name.endsWith(change)) {
+        return join(base, e.name);
+      }
     }
-  }
-  return results;
-}
-
-// ── Phase navigation ─────────────────────────────────────────────
-
-function findNextPhase(bpDir: string, milestoneId: string, currentPhase: string): string | null {
-  const roadmapPath = join(bpDir, 'roadmap.md');
-  if (!existsSync(roadmapPath)) return null;
-
-  try {
-    const content = readFileSync(roadmapPath, 'utf-8');
-
-    // Find the section for this milestone
-    const milestoneSection = new RegExp(
-      `##\\s+${escapeRegex(milestoneId)}[\\s\\S]*?(?=##\\s+M\\d|$)`, 'i'
-    );
-    const msMatch = content.match(milestoneSection);
-    if (!msMatch) return null;
-
-    // Extract phases in order from within this milestone section only
-    const phases = (msMatch[0].match(/ph\.\d+-\w+/g) ?? []) as string[];
-    const idx = phases.indexOf(currentPhase);
-    if (idx >= 0 && idx < phases.length - 1) {
-      return phases[idx + 1];
-    }
-  } catch { /* roadmap not parseable */ }
-
+  } catch { /* not found */ }
   return null;
 }
 
-function escapeRegex(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function readChangeSummary(bpDir: string, milestone: string, phase: string, change: string): string {
+  const dir = findChangeDir(bpDir, milestone, phase, change);
+  const path = dir ? join(dir, 'change-summary.md') : '';
+  if (!path || !existsSync(path)) return '(summary unavailable)';
+  try {
+    const content = readFileSync(path, 'utf-8');
+    const intent = content.match(/## Intent\n+([^\n#]+)/);
+    return intent ? intent[1].trim().slice(0, 120) : 'see change-summary.md';
+  } catch {
+    return '(summary unavailable)';
+  }
 }
 
-// ── Git operations ───────────────────────────────────────────────
-
-function gitCommit(cwd: string, files: string[], message: string): void {
+function readChangeFiles(bpDir: string, milestone: string, phase: string, change: string): string[] {
+  const dir = findChangeDir(bpDir, milestone, phase, change);
+  const path = dir ? join(dir, 'change-summary.md') : '';
+  if (!path || !existsSync(path)) return [];
   try {
-    // Stage files
-    for (const f of files) {
-      if (existsSync(join(cwd, f))) {
-        execSync(`git add "${f}"`, { cwd, stdio: 'pipe' });
-      }
-    }
-    // Commit
-    execSync(`git commit -m "${message}"`, { cwd, stdio: 'pipe' });
-  } catch (err: any) {
-    // Non-fatal: state is already saved, user can commit manually
-    const stderr = err.stderr?.toString() ?? '';
-    if (stderr.includes('nothing to commit')) return; // No changes — ok
-    console.error(`Warning: git commit failed: ${stderr.slice(0, 200)}`);
+    const content = readFileSync(path, 'utf-8');
+    const files: string[] = [];
+    const fileMatches = content.matchAll(/^\|\s*`([^`]+)`\s*\|/gm);
+    for (const m of fileMatches) files.push(m[1]);
+    return files;
+  } catch {
+    return [];
   }
+}
+
+function readVerificationStatus(bpDir: string, milestone: string, phase: string, change: string): string {
+  const dir = findChangeDir(bpDir, milestone, phase, change);
+  const path = dir ? join(dir, 'verification.md') : '';
+  if (!path || !existsSync(path)) return '❓ No verification.md';
+  try {
+    const content = readFileSync(path, 'utf-8');
+    return /status:\s*passed/i.test(content) ? '✅ Passed' : '⚠️ See verification.md';
+  } catch {
+    return '❓ No verification.md';
+  }
+}
+
+function readKeyDecisions(bpDir: string, milestone: string, phase: string, change: string): string[] {
+  const dir = findChangeDir(bpDir, milestone, phase, change);
+  if (!dir) return [];
+  const paths = [
+    join(dir, 'design.md'),
+    join(dir, 'change-summary.md'),
+  ];
+  for (const p of paths) {
+    try {
+      const content = readFileSync(p, 'utf-8');
+      const section = content.match(/## Key Decisions\n+([\s\S]*?)(?=\n##|$)/i);
+      if (section) {
+        return (section[1].match(/^-\s+(.+)/gm) ?? []).map((s) => s.replace(/^-\s+/, ''));
+      }
+    } catch { continue; }
+  }
+  return [];
 }

@@ -4,58 +4,72 @@ import type { SkillTemplate, CommandTemplate } from '../types.js';
 const instructions = ORCHESTRATOR_RULE + `## Input
 
 ### Parameters
-- **No parameters**: auto-detect ship context from \`bp state\`
+- **No parameters**: auto-detects unpublished changes from archive history
 
 ### Prerequisites
-- Phase ship: all phase changes archived
-- Milestone ship: all phases shipped
+- All phase changes archived
 - Git remote configured (for PR creation)
+- \`gh\` CLI authenticated
 
 ## Steps
 
-### Step 1: Get context
-Run \`bp context ship\` — outputs state info. Determine ship context (phase or milestone).
-
-### Step 2: Dry-run first
-Always preview before executing:
-\`\`\`bash
-bp ship --dry-run
-\`\`\`
-
-Review the output — dry-run validates:
-- All changes have change-summary.md
-- All verification.md status: passed
-- All three reviews (spec/quality/goal) PASS
-- If any FAIL, fix before proceeding
-
-### Step 3: Ship phase
+### Step 1: Get context + check unpublished changes
 Run \`bp ship\` — the CLI:
-1. Validates all archived changes (dry-run checks above)
-2. Generates \`summary.md\` with verification matrix + full change summaries + review verdicts
-3. Updates state.md: phase-shipped
-4. Auto-commits (\`git add\` + \`git commit\`)
-5. Outputs next phase hint
+1. Reads \`state.md\` archive history for entries NOT marked \`[published]\`
+2. Builds a PR body from the configured release template (\`bp/project.yml → release.template\`)
+3. Outputs the unpublished changes count, change names, and body preview
 
-### Step 4: Advance
-After shipping:
-- **More phases in milestone**: run \`bp state set-phase <next-phase-id>\` then \`bp continue\`
-- **All phases shipped**: run \`bp ship\` again — milestone ship creates version bump + git tag
-- **Last milestone**: project complete
+Template options (set in \`bp/project.yml → release.template\`):
+- **standard**: Summary + Changes + Verification
+- **detailed**: + User Stories + Key Decisions + Risks
+- **minimal**: Summary + Changes only
+
+### Step 2: Ask — PR or Release?
+Use the \`ask\` tool with two options:
+1. **Create PR** — generate PR on GitHub with the template body
+2. **Create Release** — tag a version + create GitHub Release
+
+### Step 3: If PR
+1. Write the PR body to a temp file
+2. Create PR via \`gh pr create\`:
+   \`\`\`bash
+   gh pr create --title "Phase: <phase-name>" --body-file <tmp-file> --base main
+   \`\`\`
+3. After PR created, mark changes as published in \`state.md\` archive history:
+   - Append \`[published]\` to each entry in the \`## History\` section
+
+### Step 4: If Release
+1. Read current version from \`package.json\` (or \`bp/project.yml\`)
+2. Suggest version bump with \`ask\` tool:
+   - **patch** (e.g. 0.4.1 → 0.4.2): bug fixes only
+   - **minor** (e.g. 0.4.1 → 0.5.0): new features, backward compatible (recommended)
+   - **major** (e.g. 0.4.1 → 1.0.0): breaking changes
+3. Update \`package.json\` version
+4. Create git tag + commit: \`git tag -a v<version> -m "v<version>" && git push --tags\`
+5. Create GitHub Release: \`gh release create v<version> --title "v<version>" --notes "<body>"\`
+6. Mark changes as published in \`state.md\` archive history
+
+### Step 5: Mark published
+For each change that was shipped, edit \`bp/state.md\` → \`## History\` section:
+- Change \`[2026-07-01] Archived change-name (M1 / ph.1)\`
+- To \`[2026-07-01] Archived change-name (M1 / ph.1) [published]\`
 
 ## Output
-- PR on GitHub (phase ship)
-- Release tag (milestone ship)
-- Updated \`state.md\` and \`project.md\`
+- GitHub PR (if PR chosen)
+- Git tag + GitHub Release (if Release chosen)
+- Updated \`state.md\` with \`[published]\` markers
 
 ## Guardrails
-- Always \`--dry-run\` first; never ship without validation
-- All changes must be archived with reviews PASS + verification passed
-- CLI auto-commits — no manual \`git add\` needed`;
+- Always check \`state.md\` history for unpublished changes before shipping
+- Release template is configured in \`bp/project.yml\` — do not override without asking
+- Version bump: recommend minor for feature releases, patch for fixes
+- After publishing, mark changes \`[published]\` immediately — never leave them unmarked
+- \`gh\` CLI must be authenticated before creating PRs or releases`;
 
 export function getShipSkillTemplate(): SkillTemplate {
   return {
     name: 'bp-ship',
-    description: 'Ship — dry-run first, then create PR or release tag',
+    description: 'Ship — create PR or Release from unpublished changes, with configurable PR body template',
     instructions,
   };
 }
@@ -63,9 +77,9 @@ export function getShipSkillTemplate(): SkillTemplate {
 export function getShipCommandTemplate(): CommandTemplate {
   return {
     name: 'SpecWF: Ship',
-    description: 'Ship — dry-run first, then create PR or release tag',
+    description: 'Ship — create PR or Release from unpublished changes, with configurable PR body template',
     category: 'Workflow',
-    tags: ['bp', 'ship', 'release', 'pr'],
+    tags: ['bp', 'ship', 'release', 'pr', 'publish'],
     content: instructions,
   };
 }
