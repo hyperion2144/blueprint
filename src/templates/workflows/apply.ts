@@ -58,7 +58,7 @@ After ALL tasks pass verification:
 **If FULL — you MUST dispatch the executor sub-agent. Do NOT implement type:behavior tasks yourself:**
 
 1. Run \`bp dispatch executor --change <change-name>\` — outputs the sub-agent tool and its parameters.
-2. Call the tool it specifies, with \`assignment\` set to:
+2. Call the tool it specifies. Set the sub-agent's prompt to:
    - Change: <change-name> (path from Step 0)
    - Task: implement all tasks in tasks.md following TDD protocol (RED→GREEN→REFACTOR)
    - Read: design.md, delta-specs

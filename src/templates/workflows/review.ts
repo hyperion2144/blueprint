@@ -38,9 +38,9 @@ First, check if this change produced any code:
 **If FULL — dispatch parallel review sub-agents:**
 
 1. Run \`bp dispatch reviewer --change <change-name>\` — outputs the sub-agent tool and its parameters.
-2. Call the tool it specifies 3 times in parallel (spec-review, quality-review, goal-review), each with \`assignment\` set to its role instructions below.
+2. Call the tool it specifies 3 times in parallel (spec-review, quality-review, goal-review). Set each sub-agent's prompt to:
 
-\`assignment\` per role:
+Per role:
 - **spec-review**: Read delta-specs from specs/; cross-reference against implementation. Output spec-review.md with PASS/FAIL per SHALL/MUST + file:line evidence. If spec.md is empty template, FAIL immediately.
 - **quality-review**: Audit code for bugs, security, conventions, AI mistakes. Output quality-review.md with BLOCKER/MAJOR/MINOR/INFO.
 - **goal-review**: Read proposal.md must_haves; verify each against implementation. Output goal-review.md with ACHIEVED/PARTIAL/NOT_ACHIEVED.

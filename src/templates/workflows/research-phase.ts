@@ -12,7 +12,7 @@ Run \`bp context research-phase\` — outputs state and file manifest. Read all 
 
 ### Step 2: Dispatch phase researcher
 1. Run \`bp dispatch phase-researcher\` — outputs the sub-agent tool and its parameters.
-2. Call the tool it specifies, with \`assignment\` set to:
+2. Call the tool it specifies. Set the sub-agent's prompt to:
    - Task: research implementation paths for this phase
    - Read: context.md, related specs/, conventions/
    - Output: research.md with recommended paths and TDD implications

@@ -41,7 +41,7 @@ If a change name was provided: use it directly. If not: run \`bp state\`, list p
 **If FULL — you MUST dispatch the planner sub-agent. Do NOT write design/tasks/specs yourself:**
 
 1. Run \`bp dispatch planner --change <change-name>\` — outputs the sub-agent tool to call and its parameters.
-2. Call the tool it specifies, with the \`assignment\` parameter set to:
+2. Call the tool it specifies. Set the sub-agent's prompt to:
    - Task: produce design.md, tasks.md (boxes UNCHECKED), specs/<domain>/spec.md
    - Read: proposal.md, context.md, specs/, conventions/
    - Output: design.md, tasks.md, specs/<domain>/spec.md

@@ -12,7 +12,7 @@ Run \`bp context research\` — outputs state and file manifest. Read all listed
 
 ### Step 2: Dispatch research sub-agents
 1. Run \`bp dispatch researcher\` — outputs the sub-agent tool and its parameters.
-2. Call the tool it specifies 3 times in parallel (stack, architecture, pitfalls), each with \`assignment\` set to:
+2. Call the tool it specifies 3 times in parallel (stack, architecture, pitfalls). Set each sub-agent's prompt to:
    - Read requirements.md + project.yml; fetch template with \`bp template research-<dir>\`
    - Output: research/<stack|architecture|pitfalls>.md
 
