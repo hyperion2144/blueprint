@@ -44,7 +44,12 @@ Before advancing, verify:
 - [ ] No purely sequential changes (merge them into one)
 - [ ] Every change has a directory with proposal.md template
 
-### Step 5: Advance
+### Step 5: Commit
+\`\`\`bash
+bp commit "docs(split): create change proposals for <phase-id>" --files "bp/milestones/<mid>/phases/<pid>/changes/" --scope docs --record
+\`\`\`
+
+### Step 6: Advance
 Run \`bp continue\` to proceed to change planning.
 
 ## Output

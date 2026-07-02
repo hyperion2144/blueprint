@@ -27,7 +27,12 @@ After all sub-agents complete, verify:
 - \`research/pitfalls.md\` exists with risk assessment
 - Write \`research/summary.md\` synthesizing all findings into one recommendation
 
-### Step 4: Advance
+### Step 4: Commit
+\`\`\`bash
+bp commit "docs(research): complete technical research" --files "bp/research/stack.md,bp/research/architecture.md,bp/research/pitfalls.md,bp/research/summary.md" --scope research --record
+\`\`\`
+
+### Step 5: Advance
 Run \`bp continue\` to proceed to roadmap definition.
 
 ## Output

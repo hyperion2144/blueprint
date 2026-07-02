@@ -104,10 +104,15 @@ Do this for every milestone-phase pair defined in the roadmap. Without these dir
 - All requirements.md scope covered by milestones and phases
 - Phase dependencies form a DAG (no cycles)
 - Each phase has a concrete, verifiable deliverable (not "design complete" — must be executable)
-- Phase count per milestone: determine by what's needed to reach the milestone goal (typically 1-4 for small projects, 3-5 for larger ones)
+- Phase count per milestone: determine by what's needed (typically 1-4 for small, 2-5 for medium, 3-6 for large)
 - First phase is always the thinnest possible end-to-end path
 
-### Step 6: Advance
+### Step 6: Commit
+\`\`\`bash
+bp commit "docs(roadmap): define milestones and phases" --files "bp/roadmap.md" --scope roadmap --record
+\`\`\`
+
+### Step 7: Advance
 Activate the first milestone and its first phase, then advance:
 \`\`\`bash
 bp state set-milestone <first-milestone-id>

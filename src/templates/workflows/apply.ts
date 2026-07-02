@@ -35,7 +35,11 @@ For each task in \`tasks.md\` (in wave order):
 1. Implement the change
 2. Verify: run applicable checks (\`tsc --noEmit\` / \`vitest run\`)
 3. Mark that task \`[x]\` — only AFTER verification passes
-4. Commit with format: \`config|docs|refactor|chore(<scope>): <description>\`
+4. Commit with \`bp commit\` and \`--task <task-id>\` to record hash:
+   \`\`\`bash
+   bp commit "config(scope): description" --files "path/to/file1,path/to/file2" --scope scope --task task-1.1
+   \`\`\`
+   The CLI writes \`<!-- commit: <hash> -->\` next to the task in \`tasks.md\`. If \`commitDocs: false\` in project.yml, doc files are auto-skipped.
 
 After ALL tasks pass verification:
 - Append \`## Completion\` section to \`tasks.md\` summarizing results
@@ -60,17 +64,19 @@ After execution:
 Run \`bp template change-summary --dir <change-dir>\`, fill with actual details. Do NOT skip.
 
 ### Step 6: Pre-advance checklist
-- [ ] All tasks done and marked [x]
+- [ ] All tasks done and marked \`[x]\` each with \`<!-- commit: <hash> -->\` recorded
 - [ ] Type check passes
 - [ ] All tests pass
 - [ ] Change summary filled
-- [ ] tasks.md fully checked
+- [ ] \`tasks.md\` fully checked
+- [ ] All commits use \`bp commit\` (not raw \`git commit\`)
 
 ### Step 7: Advance
 Run \`bp continue\` to proceed to review.
 
 ## Guardrails
-- LIGHTWEIGHT: implement task-by-task, mark \\\`[x]\\\` after verify — never all at once
+- LIGHTWEIGHT: implement task-by-task, mark \`[x]\` after verify — never all at once
+- LIGHTWEIGHT: every task commit MUST use \`bp commit --task <id>\` to record hash in \`tasks.md\`
 - FULL: MUST dispatch executor sub-agent; RED→GREEN→REFACTOR enforced
 - Summary mandatory: no advance without filled change-summary.md`;
 

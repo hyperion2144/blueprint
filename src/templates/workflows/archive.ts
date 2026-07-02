@@ -30,8 +30,13 @@ This single CLI command handles: delta-spec merge, code cognition backfill, dire
 
 **Do NOT write the change back into \`state.md\`** — the removal is the intended archival behavior.
 
-### Step 4: Advance
-Run \\\`bp continue\\\` — if all phase changes are archived, routes to ship-phase.
+### Step 4: Commit
+\`\`\`bash
+bp commit "docs(archive): archive <change-name>" --files "bp/archive/<mid>/<pid>/<change-dir>/" --scope docs --record
+\`\`\`
+
+### Step 5: Advance
+Run \`bp continue\` — if all phase changes are archived, routes to ship-phase.
 
 ## Guardrails
 - Run \`bp archive bp/changes/<name>\` — no sub-agent needed

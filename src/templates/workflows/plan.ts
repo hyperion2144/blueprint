@@ -54,7 +54,12 @@ Check produced files:
 - All must_haves from proposal.md covered
 - No contradictions with context.md
 
-### Step 5: Advance
+### Step 5: Commit
+\`\`\`bash
+bp commit "docs(design): plan for <change-name>" --files "bp/.../<change-name>/design.md,bp/.../<change-name>/tasks.md,bp/.../<change-name>/specs/" --scope docs --record
+\`\`\`
+
+### Step 6: Advance
 Run \`bp continue\` to proceed to the apply phase.
 
 ## Output

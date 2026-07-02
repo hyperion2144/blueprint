@@ -99,25 +99,47 @@ Your core responsibility is to implement code according to tasks.md, strictly fo
 
 ### Step 2: Execute by type
 
-**All tasks: commit after each wave.** Run \`bp commit "<message>" --scope <scope> --files <changed-files>\` after completing a wave.
+**All tasks: commit after each task using \`bp commit\`.**
 
-The CLI records the commit hash — add it as a comment next to the task in \`tasks.md\`:
-\`\`\`markdown
-- [x] task-1 [type:behavior] implement engine <!-- commit: abc1234 -->
+\`\`\`bash
+bp commit "feat(core): implement move validation" --files "src/core/move.ts,tests/unit/move.test.ts" --scope core --task task-1.3
 \`\`\`
+
+\`--task <id>\` records the commit hash as \`<!-- commit: <hash> -->\` next to the task in \`tasks.md\` — no manual annotation needed.
+\`--files\` specifies exactly which files to stage (never use \`git add -A\`). Doc files are auto-skipped when \`commitDocs: false\`.
+
+**Per-type commit patterns:**
 
 **type:behavior → TDD three-step protocol**
 1. **RED**: Write a failing test — test must be runnable and fail on assertion
-   Commit: \`test(<scope>): RED - <description>\`
+   \`\`\`bash
+   bp commit "test(<scope>): RED - <description>" --files "tests/unit/<name>.test.ts" --scope <scope> --task <task-id>
+   \`\`\`
 2. **GREEN**: Write minimal implementation to pass the test — only what's needed
-   Commit: \`feat(<scope>): GREEN - <description>\`
+   \`\`\`bash
+   bp commit "feat(<scope>): GREEN - <description>" --files "src/<path>.ts,tests/unit/<name>.test.ts" --scope <scope> --task <task-id>
+   \`\`\`
 3. **REFACTOR**: Improve code quality without changing behavior
-   Commit: \`refactor(<scope>): REFACTOR - <description>\`
+   \`\`\`bash
+   bp commit "refactor(<scope>): REFACTOR - <description>" --files "src/<path>.ts" --scope <scope> --task <task-id>
+   \`\`\`
 
-**type:config** — direct implementation, single commit: \`config(<scope>): <description>\`
-**type:refactor** — verify tests pass first, then refactor: \`refactor(<scope>): <description>\`
-**type:docs** — documentation update: \`docs(<scope>): <description>\`
-**type:scaffolding** — skeleton code: \`chore(<scope>): <description>\`
+**type:config** — direct implementation, single commit:
+\`\`\`bash
+bp commit "config(<scope>): <description>" --files "path/to/file1,path/to/file2" --scope <scope> --task <task-id>
+\`\`\`
+**type:refactor** — verify tests pass first, then refactor:
+\`\`\`bash
+bp commit "refactor(<scope>): <description>" --files "path/to/file.ts" --scope <scope> --task <task-id>
+\`\`\`
+**type:docs** — documentation update:
+\`\`\`bash
+bp commit "docs(<scope>): <description>" --files "bp/path/to/doc.md" --scope docs --task <task-id>
+\`\`\`
+**type:scaffolding** — skeleton code:
+\`\`\`bash
+bp commit "chore(<scope>): <description>" --files "path/to/new/file.ts" --scope <scope> --task <task-id>
+\`\`\`
 
 ### Step 3: Per-task verification
 - Run related tests, confirm no regressions

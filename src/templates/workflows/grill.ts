@@ -36,7 +36,12 @@ After each consensus point, write it to \`bp/requirements.md\` immediately — d
 ### Step 4: Confirm consensus
 Review requirements.md with the user. Ensure no ambiguity remains. Mark unresolved items as \`[TODO: decide]\`.
 
-### Step 5: Advance
+### Step 5: Commit
+\`\`\`bash
+bp commit "docs: complete requirements" --files "bp/requirements.md" --scope docs --record
+\`\`\`
+
+### Step 6: Advance
 Run \`bp continue\` to proceed to the research phase.
 
 ## Output

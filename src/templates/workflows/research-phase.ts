@@ -30,7 +30,12 @@ Ensure the directory exists:
 mkdir -p bp/milestones/<milestone-id>/phases/<phase-id>
 \`\`\`
 
-### Step 4: Advance
+### Step 4: Commit
+\`\`\`bash
+bp commit "docs(phase): write research.md for <phase-id>" --files "bp/milestones/<mid>/phases/<pid>/research.md" --scope docs --record
+\`\`\`
+
+### Step 5: Advance
 Run \`bp continue\` to proceed to the split phase.
 
 ## Output

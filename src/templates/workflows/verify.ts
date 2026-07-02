@@ -37,11 +37,16 @@ Get template: \`bp template verification\`, fill with results.
 - Status: \`passed\` if all checks pass, \`gaps_found\` if any fail, \`human_needed\` if ambiguous
 
 ### Step 3: Handle results
-- \\\`passed\\\` → advance to archive
-- \\\`gaps_found\\\` → route back to apply (reapply) or plan (replan)
-- \\\`human_needed\\\` → surface to user with specific questions
+- \`passed\` → advance to archive
+- \`gaps_found\` → route back to apply (reapply) or plan (replan)
+- \`human_needed\` → surface to user with specific questions
 
-### Step 4: Advance
+### Step 4: Commit
+\`\`\`bash
+bp commit "docs(verify): verification complete for <change-name>" --files "bp/.../<change-name>/verification.md" --scope docs --record
+\`\`\`
+
+### Step 5: Advance
 Run \\\`bp continue\\\` to proceed to archive (if passed).
 
 ## Guardrails

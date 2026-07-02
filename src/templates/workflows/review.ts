@@ -55,7 +55,12 @@ After all three complete, check each report:
 - Architecture-level issues → pause and ask user
 - No BLOCKERs → advance
 
-### Step 5: Advance
+### Step 5: Commit
+\`\`\`bash
+bp commit "docs(review): triple review for <change-name>" --files "bp/.../<change-name>/spec-review.md,bp/.../<change-name>/quality-review.md,bp/.../<change-name>/goal-review.md" --scope docs --record
+\`\`\`
+
+### Step 6: Advance
 Run \`bp continue\` to proceed to verify.
 
 ## Guardrails
