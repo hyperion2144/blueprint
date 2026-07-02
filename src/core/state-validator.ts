@@ -213,7 +213,7 @@ export function validateStepAdvance(
   for (const check of criteria.checks) {
     // Phase context: prefix path with the phase ref (milestones/<mid>/phases/<pid>/)
     // Non-phase context: use bare path relative to bp/
-    const resolvedPath = (ref && contextType !== 'project' && contextType !== 'milestone' && !check.path.startsWith('changes/'))
+    const resolvedPath = (ref && contextType !== 'project' && contextType !== 'milestone')
       ? join(bpDir, ref, check.path)
       : join(bpDir, check.path);
     const error = checkExitCondition(bpDir, check, resolvedPath);
