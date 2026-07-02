@@ -5,7 +5,7 @@ const instructions = `## Input
 ### Parameters
 - **\`<message>\`** (required) — conventional commit message (e.g. "feat: add undo stack")
 - \`--files <list>\` — comma-separated file paths to stage (e.g. "src/core/move.ts,tests/unit/move.test.ts")
-- \`--scope <scope>\` — commit scope (e.g. "core", "cli", "test")
+- \`--scope <scope>\` — commit scope. See \`bp/conventions/coding.md\` for standard list (core, cli, test, docs, config, render, input, level, shell). Omit if unsure.
 - \`--task <id>\` — task ID to record hash against in tasks.md (e.g. "task-1.3")
 - \`--tasks-path <path>\` — explicit path to tasks.md (auto-detected if omitted)
 - \`--record\` — also append commit to state.md history

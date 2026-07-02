@@ -33,6 +33,21 @@
 
 - Commit messages: Conventional Commits
 - Branch strategy: none (develop on main unless configured for phase/milestone branches)
+- **Commit scopes** (used with \`bp commit --scope <scope>\`):
+
+| Scope | When to use |
+|-------|-----------|
+| \`core\` | Business logic, state machine, game rules, domain types |
+| \`cli\` | CLI commands, options, output formatting |
+| \`test\` | Test files, test infrastructure, test utilities |
+| \`docs\` | Documentation, bp/ planning files, specs, summaries |
+| \`config\` | project.yml, tsconfig, build config, CI/CD |
+| \`render\` | Canvas, UI, visual output, animation |
+| \`input\` | Keyboard, touch, event handling |
+| \`level\` | Level data, level loader, level validation |
+| \`shell\` | Game loop, orchestrator, main entry, wiring |
+
+- If unsure, pick the closest or omit \`--scope\` entirely (Conventional Commits allows scopeless commits).
 
 ## Injection Rule
 
