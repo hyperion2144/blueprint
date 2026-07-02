@@ -20,6 +20,14 @@ Run \`bp state\` to get \`milestone\` and \`phase\`. Construct the change base p
 bp/milestones/<milestone>/phases/<phase>/changes/<change-name>/
 \`\`\`
 
+### Step 0: Read context — MUST read before designing
+Before any design work, read these to ensure alignment with prior decisions:
+- \`bp/requirements.md\` — project requirements, constraints, success criteria
+- \`bp/roadmap.md\` — this phase's goal, scope, and deliverables (find your phase section)
+- \`bp/milestones/<mid>/phases/<pid>/research.md\` — implementation research and recommendations
+- \`bp/milestones/<mid>/phases/<pid>/context.md\` — locked decisions from discuss phase
+- Never design in isolation — your design must trace back to requirements and research.
+
 ### Step 1: Classify change
 Read \`proposal.md\`. Read \`tasks.md\` if it exists. Classify:
 - **Lightweight**: all tasks are type: config | docs | refactor | scaffolding — no type:behavior
@@ -43,7 +51,8 @@ If a change name was provided: use it directly. If not: run \`bp state\`, list p
 1. Run \`bp dispatch planner --change <change-name>\` — outputs the sub-agent tool to call and its parameters.
 2. Call the tool it specifies. Set the sub-agent's prompt to:
    - Task: produce design.md, tasks.md (boxes UNCHECKED), specs/<domain>/spec.md
-   - Read: proposal.md, context.md, specs/, conventions/
+   - Read: requirements.md, roadmap.md (this phase), research.md, context.md, proposal.md, specs/, conventions/
+   - Design must reference specific requirements and research decisions — not generic
    - Output: design.md, tasks.md, specs/<domain>/spec.md
 
 ### Step 4: Verify output

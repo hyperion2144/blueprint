@@ -61,7 +61,7 @@ After ALL tasks pass verification:
 2. Call the tool it specifies. Set the sub-agent's prompt to:
    - Change: <change-name> (path from Step 0)
    - Task: implement all tasks in tasks.md following TDD protocol (RED→GREEN→REFACTOR)
-   - Read: design.md, delta-specs
+   - Read: requirements.md, roadmap.md (this phase), research.md, design.md, delta-specs
    - Output: code, tests, tasks.md (boxes checked after each task passes)
    - Commit each task with \`bp commit --task <id> --tasks-path ...\`
 
