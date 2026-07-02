@@ -35,11 +35,22 @@ For each task in \`tasks.md\` (in wave order):
 1. Implement the change
 2. Verify: run applicable checks (\`tsc --noEmit\` / \`vitest run\`)
 3. Mark that task \`[x]\` — only AFTER verification passes
-4. Commit with \`bp commit\` and \`--task <task-id>\` to record hash:
+4. Commit with \`bp commit\` using the task ID from \`tasks.md\`:
    \`\`\`bash
-   bp commit "config(scope): description" --files "path/to/file1,path/to/file2" --scope scope --task task-1.1
+   # Read tasks.md first — task IDs are the labels like "task-1.1", "task-2.3"
+   # The tasks.md path is under the change directory:
+   #   bp/milestones/<mid>/phases/<pid>/changes/<name>/tasks.md
+   #   or bp/changes/<name>/tasks.md (adhoc)
+
+   bp commit "feat(core): implement move validation" \\
+     --files "src/core/move.ts,tests/unit/move.test.ts" \\
+     --scope core \\
+     --task task-1.3 \\
+     --tasks-path "bp/milestones/<mid>/phases/<pid>/changes/<name>/tasks.md"
    \`\`\`
-   The CLI writes \`<!-- commit: <hash> -->\` next to the task in \`tasks.md\`. If \`commitDocs: false\` in project.yml, doc files are auto-skipped.
+   \`--task <id>\` writes \`<!-- commit: <hash> -->\` next to that task in \`tasks.md\`.
+   \`--tasks-path\` tells the CLI which \`tasks.md\` to update.
+   If \`commitDocs: false\` in project.yml, doc files are auto-skipped.
 
 After ALL tasks pass verification:
 - Append \`## Completion\` section to \`tasks.md\` summarizing results

@@ -102,11 +102,21 @@ Your core responsibility is to implement code according to tasks.md, strictly fo
 **All tasks: commit after each task using \`bp commit\`.**
 
 \`\`\`bash
-bp commit "feat(core): implement move validation" --files "src/core/move.ts,tests/unit/move.test.ts" --scope core --task task-1.3
+# Task IDs come from tasks.md (e.g. "task-1.1", "task-2.3").
+# Always pass --tasks-path to tell the CLI which tasks.md to update.
+# The path is under the change directory passed by the orchestrator.
+
+bp commit "feat(core): implement move validation" \\
+  --files "src/core/move.ts,tests/unit/move.test.ts" \\
+  --scope core \\
+  --task task-1.3 \\
+  --tasks-path "bp/milestones/<mid>/phases/<pid>/changes/<name>/tasks.md"
 \`\`\`
 
-\`--task <id>\` records the commit hash as \`<!-- commit: <hash> -->\` next to the task in \`tasks.md\` — no manual annotation needed.
-\`--files\` specifies exactly which files to stage (never use \`git add -A\`). Doc files are auto-skipped when \`commitDocs: false\`.
+\`--task <id>\` writes \`<!-- commit: <hash> -->\` next to that task in \`tasks.md\` — no manual annotation needed.
+\`--tasks-path\` is required — the CLI needs to know which \`tasks.md\` to update.
+\`--files\` specifies exactly which files to stage (never use \`git add -A\`).
+Doc files are auto-skipped when \`commitDocs: false\` in project.yml.
 
 **Per-type commit patterns:**
 
