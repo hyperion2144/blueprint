@@ -22,6 +22,7 @@ export function register(program: any): void {
     .command('change <name>')
     .description('Advance a specific change')
     .option('--auto', 'Autonomous mode')
+    .option('--command <cmd>', 'Specify command: replan | reapply (for loopback)')
     .action(continueChangeHandler);
 
   cmd.action(continueHandler);
@@ -240,34 +241,34 @@ function continueHandler(options?: { auto?: boolean }): void {
   formatContinueResult(result, isAuto);
 }
 
-function continueChangeHandler(name: string, options?: { auto?: boolean }): void {
+function continueChangeHandler(name: string, options?: { auto?: boolean; command?: string }): void {
   const isAuto = options?.auto ?? false;
   const bpDir = join(process.cwd(), 'bp');
   const cwd = process.cwd();
   const state = loadState(bpDir);
 
-  // Validate exit conditions before advancing
-  const change = state.changes.find((c: any) => c.name === name) || state.adhoc.find((c: any) => c.name === name);
-  if (change) {
-    const ctxType = state.changes.includes(change) ? 'change' : 'adhoc';
-    // Phase change: ref = milestones/<mid>/phases/<pid>/changes/<name>
-    // Adhoc change: ref = changes/<name>
-    const ref = ctxType === 'change' && state.project.current_milestone && state.project.current_phase
-      ? `milestones/${state.project.current_milestone}/phases/${state.project.current_phase}/changes/${name}`
-      : `changes/${name}`;
-    const validation = validateStepAdvance(ctxType, change.status, ref, cwd);
-    if (!validation.valid) {
-      const note = isAuto ? 'AUTO mode' : 'MUST read instructions below, check ---END--- marker exists.';
-      console.log([
-        '# bp continue — blocked',
-        'error: exit conditions not met',
-        `note: ${note}`,
-        `step: ${change.status}`,
-        `type: ${ctxType}`,
-        `reasons: ${validation.errors.join('; ')}`,
-        `hint: Complete the current step first. Run \`bp template ${change.status}\` if you need the step instructions.`,
-      ].join('\n'));
-      return;
+  // Validate exit conditions before advancing (skip for loopback commands)
+  if (!options?.command) {
+    const changeEntry = state.changes.find((c: any) => c.name === name) || state.adhoc.find((c: any) => c.name === name);
+    if (changeEntry) {
+      const ctxType = state.changes.includes(changeEntry) ? 'change' : 'adhoc';
+      const ref = ctxType === 'change' && state.project.current_milestone && state.project.current_phase
+        ? 'milestones/' + state.project.current_milestone + '/phases/' + state.project.current_phase + '/changes/' + name
+        : 'changes/' + name;
+      const validation = validateStepAdvance(ctxType, changeEntry.status, ref, cwd);
+      if (!validation.valid) {
+        const note = isAuto ? 'AUTO mode' : 'MUST read instructions below, check ---END--- marker exists.';
+        console.log([
+          '# bp continue — blocked',
+          'error: exit conditions not met',
+          'note: ' + note,
+          'step: ' + changeEntry.status,
+          'type: ' + ctxType,
+          'reasons: ' + validation.errors.join('; '),
+          'hint: Complete the current step first. Run bp template ' + changeEntry.status + ' if you need the step instructions.',
+        ].join('\n'));
+        return;
+      }
     }
   }
 
@@ -280,9 +281,10 @@ function continueChangeHandler(name: string, options?: { auto?: boolean }): void
     return;
   }
 
-  if (result.nextCommand) {
+  const command = options?.command || result.nextCommand;
+  if (command) {
     const state = loadState(bpDir);
-    const transition = getTransition(result.currentStep, result.nextCommand);
+    const transition = getTransition(result.currentStep, command);
 
     if (transition) {
       const shortStatus = transition.to.replace(/^(change|adhoc)-/, '') as ChangeStatus;

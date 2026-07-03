@@ -28,12 +28,17 @@ Run checks first — do NOT write verification.md yet:
 
 **All checks passed:**
 1. Get template: \`bp template verification\`
-2. Write \`verification.md\` to the change directory (it will be archived together with the change)
+2. Write \`verification.md\` to the change directory
 3. Status: \`passed\`
+4. Continue through the workflow
 
 **Any check failed:**
-- Write verification.md with \`gaps_found\`, route back to apply (reapply) or plan (replan)
-- Do NOT archive — stop here
+1. Write verification.md with \`gaps_found\`, listing what failed
+2. Route back using loopback commands:
+   - \`bp continue change <name> --command reapply\` — re-implement (goes back to apply)
+   - \`bp continue change <name> --command replan\` — re-design (goes back to plan)
+   - \`bp continue change <name> --command fix\` — quick fix (goes back to apply)
+3. Do NOT archive — stop here
 
 ### Step 4: Execute archival
 Run \`bp archive <change-dir>\`. The CLI handles: delta-spec merge, directory move to archive/, state.md update.
