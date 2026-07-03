@@ -2,8 +2,8 @@ import { join } from 'node:path';
 import { existsSync } from 'node:fs';
 import { z } from 'zod';
 import { readYamlDoc, writeYamlDoc } from '../parser/yaml.js';
-import { PROFILE_MODEL_MAP } from '../types/config.js';
-import type { ProjectConfig, Profile, ModelMap } from '../types/index.js';
+import { PROFILE_MODEL_MAP, TIER_TO_PROFILE } from '../types/config.js';
+import type { ProjectConfig, Profile, ModelMap, ModelTier } from '../types/index.js';
 import { Document } from 'yaml';
 
 const CONFIG_FILE = 'project.yml';
@@ -44,6 +44,8 @@ const ProjectConfigSchema = z.object({
     inject: z.boolean().optional().default(true),
   }).optional().default({ inject: true }),
   models: z.record(z.string(), z.string()).optional().default({}),
+  modelProfile: z.enum(['budget', 'balanced', 'quality']).optional(),
+  agentModels: z.record(z.string(), z.string()).optional().default({}),
 });
 
 /** project.yml 路径 */
@@ -74,6 +76,10 @@ export function saveConfig(bpDir: string, config: ProjectConfig): void {
   if (config.review) doc.set('review', config.review);
   if (config.change) doc.set('change', config.change);
   if (config.git) doc.set('git', config.git);
+  if (config.release) doc.set('release', config.release);
+  if (config.spec) doc.set('spec', config.spec);
+  if (config.modelProfile) doc.set('modelProfile', config.modelProfile);
+  if (config.agentModels) doc.set('agentModels', config.agentModels);
   if (config.conventions) doc.set('conventions', config.conventions);
   if (config.models) doc.set('models', config.models);
   writeYamlDoc(configPath(bpDir), doc);
@@ -86,9 +92,8 @@ export function updateConfig(bpDir: string, updater: (config: ProjectConfig) => 
   saveConfig(bpDir, config);
 }
 
-/** 解析模型映射：profile 默认 + 用户覆盖 */
+/** 解析模型映射：modelProfile 优先，否则 profile */
 export function resolveModels(config: ProjectConfig): ModelMap {
-  const profile = config.profile as Profile;
-  const defaults = PROFILE_MODEL_MAP[profile];
-  return { ...defaults, ...config.models };
+  const profile = (config.modelProfile ? TIER_TO_PROFILE[config.modelProfile] : config.profile) as Profile;
+  return { ...PROFILE_MODEL_MAP[profile], ...config.models };
 }

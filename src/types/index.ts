@@ -5,7 +5,9 @@
 export type {
   Profile,
   ModelRole,
+  ModelTier,
   ModelMap,
+  AgentModelMap,
   WorkflowToggles,
   ReviewConfig,
   ChangeConfig,

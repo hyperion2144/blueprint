@@ -93,11 +93,23 @@ const AGENT_TO_MODEL_ROLE: Record<string, ModelRole> = {
   // Brownfield/analysis agents not in profile map → fall back to 'default'
 };
 
-/** Resolve agent model from profile defaults + user overrides */
+/**
+ * Resolve agent model from project config.
+ * Priority: agentModels[role] (per-agent override) > models[modelRole] (per-role) > tier/profile default > pi/default
+ */
 export function resolveAgentModel(role: string, config: ProjectConfig): string {
+  // 1. Per-agent override (highest priority)
+  if (config.agentModels && config.agentModels[role]) {
+    return config.agentModels[role];
+  }
+  // 2. Per-role override
   const modelRole = AGENT_TO_MODEL_ROLE[role];
-  if (!modelRole) return 'pi/default';
-  return resolveModels(config)[modelRole] ?? 'pi/default';
+  if (modelRole) {
+    const roleModel = resolveModels(config)[modelRole];
+    if (roleModel) return roleModel;
+  }
+  // 3. Fallback
+  return 'pi/default';
 }
 
 /** Resolve agent thinking level */

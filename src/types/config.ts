@@ -18,6 +18,19 @@ export type ModelRole =
 /** 模型映射 — profile 自动填充默认，用户可按角色覆盖 */
 export type ModelMap = Partial<Record<ModelRole, string>>;
 
+/** 模型档次 — 影响 PROFILE_MODEL_MAP 的默认选择 */
+export type ModelTier = 'budget' | 'balanced' | 'quality';
+
+/** 子代理级别模型覆盖 — agentName → model */
+export type AgentModelMap = Record<string, string>;
+
+/** Tier → Profile 映射 */
+export const TIER_TO_PROFILE: Record<ModelTier, Profile> = {
+  budget: 'lite',
+  balanced: 'standard',
+  quality: 'strict',
+};
+
 /** 工作流 toggles（absent = enabled 模式，缺失默认 true） */
 export interface WorkflowToggles {
   research?: boolean;
@@ -77,6 +90,8 @@ export interface ProjectConfig {
   git: GitConfig;
   release: ReleaseConfig;
   spec: SpecConfig;
+  modelProfile?: ModelTier;
+  agentModels?: AgentModelMap;
   conventions: {
     inject: boolean;
   };

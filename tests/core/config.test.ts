@@ -74,20 +74,21 @@ describe('resolveModels', () => {
   it('standard profile 返回默认模型映射', () => {
     const config = loadConfig(tmpDir);
     const models = resolveModels(config);
-    expect(models.research).toBe('pi/slow');
-    expect(models.execute).toBe('pi/default');
-    expect(models.archive).toBe('pi/default');
+    expect(models.research).toBe('pi/default');
+    expect(models.plan).toBe('pi/default');
+    expect(models.execute).toBe('pi/task');
+    expect(models.archive).toBe('pi/task');
   });
 
   it('用户 models 覆盖 profile 默认', () => {
     updateConfig(tmpDir, (config) => {
-      config.models = { execute: 'custom-model' };
+      config.models = { execute: 'pi/default' };
     });
     const config2 = loadConfig(tmpDir);
     const models = resolveModels(config2);
-    expect(models.execute).toBe('custom-model');
+    expect(models.execute).toBe('pi/default');
     // 其他角色保持 profile 默认
-    expect(models.research).toBe('pi/slow');
+    expect(models.research).toBe('pi/default');
   });
 
   it('strict profile 全部使用 slow 模型', () => {
@@ -96,7 +97,7 @@ describe('resolveModels', () => {
     });
     const config = loadConfig(tmpDir);
     const models = resolveModels(config);
-    expect(models.research).toBe('pi/slow');
+    expect(models.research).toBe('pi/default');
     expect(models.plan).toBe('pi/slow');
     expect(models.execute).toBe('pi/slow');
     expect(models.review).toBe('pi/slow');
