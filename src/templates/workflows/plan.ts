@@ -33,8 +33,13 @@ ${RESOLVE_PATHS}${READ_CONTEXT}${CLASSIFY_CHANGE}${CHANGE_NAME_RESOLVE('planning
 
 1. Run \`bp dispatch planner --change <change-name>\` — outputs the sub-agent tool to call and its parameters.
 2. Call the tool it specifies. Set the sub-agent's prompt to:
-   - Task: produce design.md, tasks.md (boxes UNCHECKED), specs/<domain>/spec.md
-   - <domain> = directory name under bp/specs/ (e.g. cli, core). NOT the phase name. First, run \`ls bp/specs/\` to list existing domains. If this change touches a new domain, create it: \`mkdir -p bp/specs/<new-domain>\`
+   - Task: produce design.md, tasks.md (boxes UNCHECKED), delta-specs
+   - Delta-specs go UNDER the change's \`specs/\` directory, organized by **business domain**:
+     \`changes/<name>/specs/<domain>/spec.md\`
+   - One subdirectory per affected domain. One change can affect multiple domains.
+   - First, run \`ls bp/specs/\` to list existing domains. Use those names. If this change needs a new domain, create \`mkdir -p bp/specs/<new-domain>\` first.
+   - Domain = business domain (e.g. order-processing, user-auth), NOT technical layer (frontend, database)
+   - Archive merges each by matching directory name: \`changes/<name>/specs/<domain>/\` → \`bp/specs/<domain>/\`
    - Read: requirements.md, roadmap.md (this phase), research.md, context.md, proposal.md, bp/specs/<domain>/spec.md (global spec for affected domain — domain = directory under bp/specs/), bp/conventions/coding-standards.md, specs/, conventions/
    - Design must reference specific requirements and research decisions — not generic
    - Delta-specs must use \`## ADDED Requirements\` / \`## MODIFIED Requirements\` / \`## REMOVED Requirements\` sections

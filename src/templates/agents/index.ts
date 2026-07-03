@@ -88,7 +88,11 @@ A domain is a logical grouping of related behaviors — one spec.md per domain. 
 
 - design.md — technical design with architecture, data flow, alternatives
 - tasks.md — implementation checklist with TDD annotations
-- specs/<domain>/spec.md — delta behavioral contracts
+- specs/<domain>/spec.md — delta-spec per affected business domain
+  Stored under the CHANGE directory: \`changes/<name>/specs/<domain>/spec.md\`
+  One subdirectory per domain. Multi-domain changes → multiple subdirectories.
+  Domain = business domain (order-processing), NOT technical layer (database).
+  Archive matches by directory name: \`specs/<domain>/\` → \`bp/specs/<domain>/\`
 
 ## Verification Criteria
 
