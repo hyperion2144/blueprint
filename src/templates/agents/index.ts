@@ -11,6 +11,8 @@ const AGENT_CONSTRAINTS = `## Core Constraints
 - Artifacts in bp/ directory
 - Use bash for bp CLI; respect project.yml and conventions/
 - All output in English
+- NEVER run bp continue or bp state set-* — only the orchestrator advances the project
+- ONLY do your assigned task — do not touch unrelated files or steps
 
 `;
 
@@ -18,6 +20,8 @@ const AGENT_CONSTRAINTS = `## Core Constraints
 const READONLY_CONSTRAINTS = `## Core Constraints
 
 - Read-only analysis — never modify source code
+- NEVER run bp continue or bp state set-* — only the orchestrator advances the project
+- ONLY do your assigned task — do not touch unrelated files or steps
 - All output in English
 
 `;
