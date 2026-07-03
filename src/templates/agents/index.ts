@@ -115,7 +115,7 @@ Read all tasks in the current wave. Build execution groups from \`depends_on\` f
 **2b. Execute in dependency batches**
 
 **For a SINGLE task:**
-Implement directly: read specs/conventions/design → implement → verify → \`bp commit --task <id>\`.
+Implement directly: read specs/conventions/design → implement → verify → \`bp commit --task <id>\` (auto-marks done [- [x]] + records hash).
 
 **For a PARALLEL group (2+ independent tasks):**
 1. Run \`bp dispatch executor\` once per task
@@ -123,7 +123,7 @@ Implement directly: read specs/conventions/design → implement → verify → \
    - Exact task (ID + full description from tasks.md)
    - Required reads: design.md, delta-specs (specs/), bp/specs/<domain>/spec.md, bp/conventions/coding-standards.md
    - TDD protocol if type:behavior (RED→GREEN→REFACTOR, 3 separate commits)
-   - \`bp commit --task <id> --tasks-path ...\` on completion
+   - \`bp commit --task <id> --tasks-path ...\` — auto-marks task done + records commit hash
    - NEVER run bp continue or bp state set-*
 3. Wait for ALL children in the group to finish before advancing to the next group
 
@@ -135,7 +135,7 @@ bp commit "<type>(<scope>): <description>" \\
   --files "<files>" --scope <scope> --task <task-id> \\
   --tasks-path "bp/milestones/<mid>/phases/<pid>/changes/<name>/tasks.md"
 \`\`\`
-\`--task <id>\` records commit hash in tasks.md. \`--files\` stages specific files (never \`git add -A\`). Doc files auto-skipped when \`commitDocs: false\`.
+\`--task <id>\` auto-marks the task done (\`- [ ]\` → \`- [x]\`) and records commit hash in tasks.md. \`--files\` stages specific files (never \`git add -A\`). Doc files auto-skipped when \`commitDocs: false\`.
 
 | Task type | Commit prefix | TDD? |
 |-----------|--------------|------|
