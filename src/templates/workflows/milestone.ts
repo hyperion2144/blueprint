@@ -3,55 +3,52 @@ import type { SkillTemplate, CommandTemplate } from '../types';
 const instructions = `## Input
 
 ### Parameters
-- **No parameters**: operate on the currently active milestone from \`bp state\`
-- **\`<milestone-id>\`**: switch to a specific milestone
+- **\\\`<milestone-id>\\\`** (optional) — the milestone to switch to. If not provided, read from \\\`bp state\\\`.
 
 ### Prerequisites
-- \`bp/roadmap.md\` must exist with defined milestones
+- \\\`bp/roadmap.md\\\` must exist with defined milestones and phases
+- All changes in the current milestone must be archived before switching
 
 ## Steps
 
 ### Step 1: Get context
-Run \`bp context milestone\` — outputs state and roadmap file paths. Read all listed files.
+Run \\\`bp state\\\` — read current milestone and phase.
+Run \\\`bp context roadmap\\\` — read roadmap.md.
 
-### Step 2: Select milestone
-If a milestone ID was provided: run \`bp state set-milestone <id>\`.
-If no ID: run \`bp state\` to see the current milestone. To switch, use \`bp state set-milestone <id>\`.
+### Step 2: Check current milestone
+Run \\\`bp state\\\`. If the current milestone has all phases shipped, continue. If not, ask: "Current milestone still has in-progress phases. Archive milestone anyway? (yes/no)"
 
-### Step 3: Select phase (optional)
-If you need to jump to a specific phase within the milestone: run \`bp state set-phase <id>\`.
+### Step 3: Archive current milestone
+Run \\\`bp milestone archive <current-milestone-id>\\\`. The CLI:
 
-### Step 4: Advance
-Run \`bp continue\` to proceed to the discuss phase for the active milestone/phase.
+1. Copies \\\`bp/milestones/<id>/\\\` → \\\`bp/archive/milestones/<id>/\\\`
+2. Removes the original milestone directory
+3. Records [date] Archived milestone <id> in \\\`bp/state.md\\\` ## History section
+4. Updates state to milestone-shipped
 
-## When to use milestone vs continue
+### Step 4: Switch to new milestone
+Run \\\`bp state set-milestone <new-id>\\\`. This resets the active context to \\\`milestone-active\\\`.
 
-| Situation | Command |
-|-----------|---------|
-| Just finished roadmap, want to start first milestone | \`bp state set-milestone <id>\` → \`bp state set-phase <phase-id>\` → \`bp continue\` |
-| Currently in a milestone, want to advance | \`bp continue\` |
-| Want to switch to a different milestone | \`bp state set-milestone <id>\` |
-| Want to jump to a specific phase | \`bp state set-phase <id>\` |
-
-## Output
-- Updated state.md with new active milestone/phase
+### Step 5: Advance
+Run \\\`bp continue\\\` — routes to \\\`/bp:grill\\\` for the new milestone. Do NOT set a phase — the new milestone hasn't been split into phases yet.
 
 ## Guardrails
-- Switching milestones archives the current one if not yet shipped
-- Phase transitions within a milestone do not trigger archival
-- After switching, always run \`bp continue\` to get the next step's instructions`;
+- Always archive the PREVIOUS milestone before switching to a new one
+- Do NOT set a phase after switching — the new milestone needs grill first
+- If \\\`bp milestone archive\\\` errors (archive already exists), report to user and stop
+- Ensure all changes in the current milestone are archived before switching`;
 
 export function getMilestoneSkillTemplate(): SkillTemplate {
   return {
     name: 'bp-milestone',
-    description: 'Milestone management — switch/create milestones, set current phase',
+    description: 'Milestone management — archive old milestone, switch to new, route to grill',
     instructions,
   };
 }
 
 export function getMilestoneCommandTemplate(): CommandTemplate {
   return {
-    description: 'Milestone management — switch/create milestones, set current phase',
+    description: 'Milestone management — archive old milestone, switch to new, route to grill',
     category: 'Planning',
     tags: ['bp', 'milestone', 'planning'],
     content: instructions,

@@ -14,6 +14,7 @@ import { register as registerTemplate } from './commands/bp-template.js';
 import { register as registerChange } from './commands/bp-change.js';
 import { register as registerDispatch } from './commands/bp-dispatch.js';
 import { register as registerShip } from './commands/bp-ship.js';
+import { register as registerMilestone } from './commands/bp-milestone.js';
 import { register as registerCommit } from './commands/bp-commit.js';
 import { register as registerAudit } from './commands/bp-audit.js';
 
@@ -39,6 +40,7 @@ registerTemplate(program);
 registerChange(program);
 registerDispatch(program);
 registerShip(program);
+registerMilestone(program);
 registerCommit(program);
 registerAudit(program);
 

@@ -132,7 +132,7 @@ function setMilestone(id: string) {
   updateState(bpDir, (state) => {
     state.project.current_milestone = id;
     state.project.current_phase = null;
-    // active_context.step unchanged — state machine advances via bp continue
+    state.active_context = { type: 'milestone', ref: null, step: 'active' };
   });
   console.log(JSON.stringify({ ok: true, milestone: id }));
 }
