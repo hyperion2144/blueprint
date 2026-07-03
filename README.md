@@ -1,10 +1,6 @@
 # Blueprint — Spec-Driven Development Workflow
 
-Blueprint is an independent TypeScript CLI package that provides a spec-driven development workflow for AI coding agents. It combines core capabilities from three projects:
-
-- **OpenSpec** (MIT) — CLI architecture, change structure, delta-spec merge mechanism
-- **GSD Core** (MIT) — milestone/phase hierarchy, fresh-context sub-agent parallel execution
-- **Trellis** (AGPL-3.0, concept reference only) — spec auto-injection, code cognition backfill
+Blueprint is a spec-driven development CLI for AI coding agents. Write behavioral specs once, let agents implement against them across the full project lifecycle.
 
 ## Why
 
@@ -12,39 +8,43 @@ AI coding agents are powerful but unpredictable — requirements exist only in c
 
 ## Core Principles
 
-1. **Dual nested loops** — Phase loop (discuss→research→split→change loop→ship) ⊃ Change loop (plan→apply→review→verify→archive)
-2. **CLI as single source of truth** — all interaction through CLI; agents orchestrate, don't implement
-3. **Fresh-context sub-agents** — heavy work (research/apply/review/verify/archive) runs in fresh context to prevent context rot
-4. **Dual spec backfill** — delta-spec forward merge + code cognition backward extraction
+1. **Dual nested loops** — Phase loop (discuss→research-phase→split→change loop→ship) ⊃ Change loop (plan→apply→review→archive)
+2. **CLI as single source of truth** — all interaction through `bp` commands; agents orchestrate, don't implement
+3. **Fresh-context sub-agents** — heavy work (research/plan/apply/review) runs in fresh context to prevent context rot
+4. **Delta-spec mechanism** — change-level behavioral contracts merged into global specs on archive
 5. **TDD enforced** — type:behavior tasks follow RED→GREEN→REFACTOR
-6. **Single source templates** — commands and skills generated from the same TypeScript modules; all content in English
+6. **Tech stack templates** — init with domain-organized specs and conventions per stack
 
 ## Entity Hierarchy
 
 ```
-Project → Milestone (persistent, defaults to v1) → Phase → Change
+Project → Milestone → Phase → Change
 ```
 
-- **Milestone** = release cycle (shippable increment)
-- **Phase** = work unit (goes through discuss/research/split/ship)
-- **Change** = change unit (goes through plan/apply/review/verify/archive)
-- **Adhoc Change** = independent change outside milestone/phase (same change cycle)
+- **Milestone** = release cycle ("M1-core", "M2-expansion")
+- **Phase** = work unit within a milestone ("ph.1-board-engine")
+- **Change** = implementation unit (goes through plan→apply→review→archive)
+- **Adhoc Change** = independent change outside milestone/phase
 
 ## CLI Commands
 
-| Command | Scope | Description |
-|---------|-------|-------------|
-| `Blueprint init` | Project | Initialize Blueprint project structure |
-| `Blueprint update` | Project | Regenerate platform files (commands, agents, skills) |
-| `Blueprint continue` | Project/Phase | Advance project or phase to next step |
-| `Blueprint continue change <name>` | Change | Advance a specific change to next step |
-| `Blueprint change new <name>` | Change | Create an adhoc change |
-| `Blueprint state` | All | View current state and pending work |
-| `Blueprint config` | Project | View/modify configuration |
-| `Blueprint context <step>` | All | Output file manifest for a step |
-| `Blueprint template <type>` | All | Generate artifact template |
-| `Blueprint list` | All | List milestones/phases/changes/archive |
-| `Blueprint archive <change>` | Change | Archive a completed change |
+| Command | Description |
+|---------|-------------|
+| `bp init` | Initialize project structure with tech stack specs |
+| `bp update` | Regenerate platform files (commands, agents, hook) |
+| `bp continue` | Auto-advance project to next step |
+| `bp continue change <name>` | Advance a specific change |
+| `bp change new <name>` | Create a new change |
+| `bp state` | View current state and pending work |
+| `bp config [list\|set]` | View/modify configuration |
+| `bp context <step>` | Output file manifest for a step |
+| `bp template <type>` | Generate artifact template |
+| `bp list` | List milestones/phases/changes/archive |
+| `bp archive <change>` | Archive a completed change |
+| `bp commit <msg>` | Commit with conventional format, auto-mark tasks |
+| `bp dispatch <role>` | Output sub-agent dispatch instructions |
+| `bp ship` | Create PR or Release from unpublished changes |
+| `bp audit` | Human UAT verification |
 
 ## Workflow
 
@@ -53,63 +53,60 @@ Project → Milestone (persistent, defaults to v1) → Phase → Change
 init → grill → research → roadmap → discuss → research-phase → split → [change cycle] → ship
 ```
 
-Advance with: `Blueprint continue`
+Advance with: `bp continue`
 
 ### Change-level flow
 ```
-plan → apply → review → verify → archive
+proposal → plan → apply → review → archive
 ```
 
-Advance with: `Blueprint continue change <name>`
+Advance with: `bp continue change <name>`
 
-### Adhoc change flow
+### Adhoc change
 ```
-Blueprint change new <name> → plan → apply → review → verify → archive
+bp change new <name> → proposal → plan → apply → review → archive
 ```
 
-Advance with: `Blueprint continue change <name>`
+### Autonomous loop
+```
+bp:loop — auto-advance through all steps without user input
+```
 
 ## Template Architecture
 
-Commands (`.omp/commands/`) and skills (`.omp/skills/`) are generated from a single TypeScript source per workflow step. Templates live in `src/templates/`:
+Commands (`.omp/commands/`) and agents (`.omp/agents/`) are generated from TypeScript source. Templates live in `src/templates/`:
 
 ```
 src/templates/
-├── types.ts              — SkillTemplate, CommandTemplate, ArtifactTemplate, AgentPromptTemplate
-├── workflows/
-│   ├── registry.ts       — 16-step registry with direct imports
-│   ├── init.ts … continue.ts
-├── artifacts/index.ts    — 11 output document templates
-└── agents/index.ts       — 9 agent system prompts
+├── types.ts                  — Template interfaces
+├── workflows/                — 19 step workflow definitions
+├── artifacts/index.ts        — Output document templates
+├── agents/index.ts           — 7 agent system prompts
+└── spec-stacks/              — Tech stack spec templates
 ```
 
-Run `Blueprint update` to regenerate all 40 platform files from the TypeScript source.
+Run `bp update` to regenerate all 27 platform files from source.
 
 ## Configuration
 
 Key settings in `bp/project.yml`:
 
-- `profile`: workflow strictness (`lite` / `standard` / `strict`)
-- `platform`: target platform (`omp` / `claude-code`)
-- `workflow.tdd`: enforce TDD for type:behavior tasks
-- `workflow.triple_review`: parallel spec/quality/goal reviews
-- `review.gate`: review gate mode (`all-pass` / `severity` / `report-only`)
+| Key | Description | Default |
+|-----|-------------|---------|
+| `profile` | Workflow strictness | `standard` |
+| `platform` | Target platform | `omp` |
+| `spec.stack` | Tech stack spec template | `generic` |
+| `workflow.tdd` | Enforce TDD for behavioral tasks | `true` |
+| `workflow.commitDocs` | Auto-commit doc files with code | `false` |
+| `release.template` | PR body template | `standard` |
+| `review.gate` | Review gate mode | `all-pass` |
 
 ## Tech Stack
 
 - Language: TypeScript
 - Runtime: Node.js ≥ 20
 - Test: Vitest
-- Target platforms: OMP (primary), Claude Code (planned)
-
-## Version
-
-- **Current**: v0.3.0 — English templates, inline continue instructions, sub-agent dispatch clarity
-- **Next**: m2-claude-code — Claude Code platform support
-
-## Bootstrapping
-
-Blueprint was built using its own workflow. See `bp/state.md` for the complete build history and all design decisions.
+- Target platform: OMP
 
 ## License
 
