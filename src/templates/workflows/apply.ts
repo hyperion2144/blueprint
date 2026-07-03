@@ -74,7 +74,7 @@ export function getApplySkillTemplate(): SkillTemplate {
 
 export function getApplyCommandTemplate(): CommandTemplate {
   return {
-    name: 'SpecWF: Apply',
+    name: 'BP: Apply',
     description: 'Code implementation — dispatch executor sub-agent for TDD RED→GREEN→REFACTOR',
     category: 'Workflow',
     tags: ['bp', 'apply', 'implementation', 'tdd', 'sub-agent'],

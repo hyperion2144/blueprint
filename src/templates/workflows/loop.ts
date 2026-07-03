@@ -84,7 +84,7 @@ export function getLoopSkillTemplate(): SkillTemplate {
 
 export function getLoopCommandTemplate(): CommandTemplate {
   return {
-    name: 'SpecWF: Loop',
+    name: 'BP: Loop',
     description: 'Autonomous loop — auto-advance through all steps, AI fills all decisions without asking',
     category: 'Workflow',
     tags: ['bp', 'loop', 'auto', 'autonomous'],

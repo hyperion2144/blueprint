@@ -50,7 +50,7 @@ export function getVerifySkillTemplate(): SkillTemplate {
 
 export function getVerifyCommandTemplate(): CommandTemplate {
   return {
-    name: 'SpecWF: Verify',
+    name: 'BP: Verify',
     description: 'Test verification — run checks, write verification.md, route loopback',
     category: 'Workflow',
     tags: ['bp', 'verify', 'testing', 'verification'],

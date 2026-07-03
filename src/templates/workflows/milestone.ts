@@ -51,7 +51,7 @@ export function getMilestoneSkillTemplate(): SkillTemplate {
 
 export function getMilestoneCommandTemplate(): CommandTemplate {
   return {
-    name: 'SpecWF: Milestone',
+    name: 'BP: Milestone',
     description: 'Milestone management — switch/create milestones, set current phase',
     category: 'Planning',
     tags: ['bp', 'milestone', 'planning'],

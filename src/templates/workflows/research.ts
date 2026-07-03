@@ -54,7 +54,7 @@ export function getResearchSkillTemplate(): SkillTemplate {
 
 export function getResearchCommandTemplate(): CommandTemplate {
   return {
-    name: 'SpecWF: Research',
+    name: 'BP: Research',
     description: 'Project-level technical research — dispatch researcher sub-agents in parallel',
     category: 'Discovery',
     tags: ['bp', 'research', 'architecture', 'tech-stack', 'sub-agent'],

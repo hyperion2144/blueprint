@@ -75,7 +75,7 @@ export function getShipSkillTemplate(): SkillTemplate {
 
 export function getShipCommandTemplate(): CommandTemplate {
   return {
-    name: 'SpecWF: Ship',
+    name: 'BP: Ship',
     description: 'Ship — create PR or Release from unpublished changes, with configurable PR body template',
     category: 'Workflow',
     tags: ['bp', 'ship', 'release', 'pr', 'publish'],

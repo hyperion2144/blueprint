@@ -83,7 +83,7 @@ export function getGrillSkillTemplate(): SkillTemplate {
 
 export function getGrillCommandTemplate(): CommandTemplate {
   return {
-    name: 'SpecWF: Grill',
+    name: 'BP: Grill',
     description: 'Requirements exploration + conventions confirmation — one question at a time',
     category: 'Discovery',
     tags: ['bp', 'grill', 'requirements', 'conventions', 'discovery'],

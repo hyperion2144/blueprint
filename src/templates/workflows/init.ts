@@ -41,7 +41,7 @@ export function getInitSkillTemplate(): SkillTemplate {
 
 export function getInitCommandTemplate(): CommandTemplate {
   return {
-    name: 'SpecWF: Init',
+    name: 'BP: Init',
     description: 'Brownfield scan — analyze existing codebase and extract initial specs',
     category: 'Setup',
     tags: ['bp', 'init', 'brownfield', 'codebase'],

@@ -97,7 +97,7 @@ export function getCommitSkillTemplate(): SkillTemplate {
 
 export function getCommitCommandTemplate(): CommandTemplate {
   return {
-    name: 'SpecWF: Commit',
+    name: 'BP: Commit',
     description: 'Commit changes — conventional commits + hash recording to tasks.md',
     category: 'Workflow',
     tags: ['bp', 'commit', 'git', 'conventional-commits', 'hash'],
