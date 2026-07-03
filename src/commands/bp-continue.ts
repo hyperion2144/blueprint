@@ -3,7 +3,7 @@
  */
 
 import { join, basename } from 'node:path';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { determineNextStep, determineChangeNextStep, STEP_TO_WORKFLOW } from '../core/continue.js';
 import { loadState, updateState } from '../core/state-file.js';
 import { validateStepAdvance } from '../core/state-validator.js';
@@ -315,21 +315,26 @@ function continueChangeHandler(name: string, options?: { auto?: boolean }): void
 
 function findNextPhase(bpDir: string, milestoneId: string | null, currentPhase: string): string | null {
   if (!milestoneId) return null;
-  const roadmapPath = join(bpDir, 'roadmap.md');
-  if (!existsSync(roadmapPath)) return null;
+
+  const phasesDir = join(bpDir, 'milestones', milestoneId, 'phases');
+  if (!existsSync(phasesDir)) return null;
+
   try {
-    const content = readFileSync(roadmapPath, 'utf-8');
-    // Find phases within the current milestone section
-    const escaped = milestoneId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const re = new RegExp('##\\s+' + escaped + '[\\s\\S]*?(?=##\\s+M\\d|$)', 'i');
-    const msMatch = content.match(re);
-    if (!msMatch) return null;
-    const phases = (msMatch[0].match(/ph\.\d+-[\w-]+/g) ?? []) as string[];
-    // Match by prefix: currentPhase='ph.4' should match 'ph.4-api' in roadmap
-    const idx = phases.findIndex((p) => p === currentPhase || p.startsWith(currentPhase + '-'));
-    if (idx >= 0 && idx < phases.length - 1) {
-      return phases[idx + 1];
+    const dirs = readdirSync(phasesDir, { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .map((d) => d.name)
+      .filter((name) => /^ph\.\d+/.test(name))
+      .sort((a, b) => {
+        const aNum = parseInt(a.match(/ph\.(\d+)/)?.[1] ?? '0');
+        const bNum = parseInt(b.match(/ph\.(\d+)/)?.[1] ?? '0');
+        return aNum - bNum;
+      });
+
+    const idx = dirs.findIndex((d) => d === currentPhase);
+    if (idx >= 0 && idx < dirs.length - 1) {
+      return dirs[idx + 1];
     }
-  } catch { /* roadmap not parseable */ }
+  } catch { /* ignore */ }
+
   return null;
 }
