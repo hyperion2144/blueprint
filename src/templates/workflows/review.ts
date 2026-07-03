@@ -27,15 +27,14 @@ First, check if this change produced any code:
   - Quick scan for obvious issues → write reviews with PASS if clean
   - All three review files required even if light — never leave a blank review
 
-**If FULL — dispatch parallel review sub-agents:**
+**If FULL — dispatch review sub-agent:**
 
 1. Run \`bp dispatch reviewer --change <change-name>\` — outputs the sub-agent tool and its parameters.
-2. Call the tool it specifies 3 times in parallel (spec-review, quality-review, goal-review). Set each sub-agent's prompt to:
-
-Per role:
-- **spec-review**: Read delta-specs from specs/ AND global specs (\`bp/specs/<domain>/spec.md\`). Cross-reference against implementation. Verify delta-spec ADDED/MODIFIED/REMOVED headers match global spec headers. Output spec-review.md with PASS/FAIL per SHALL/MUST + file:line evidence. Flag SPEC_DRIFT: implementation deviates from spec without SPEC_MISMATCH annotation. If spec.md is empty template, FAIL immediately.
-- **quality-review**: Audit code for bugs, security, conventions, AI mistakes. Output quality-review.md with BLOCKER/MAJOR/MINOR/INFO.
-- **goal-review**: Read proposal.md must_haves; verify each against implementation. Output goal-review.md with ACHIEVED/PARTIAL/NOT_ACHIEVED.
+2. Call the tool it specifies **once**. Set the sub-agent's prompt to:
+   - Run all three reviews sequentially: spec-review → quality-review → goal-review
+   - Read: delta-specs from specs/, global specs from bp/specs/<domain>/spec.md, proposal.md, design.md, tasks.md
+   - Output: spec-review.md, quality-review.md, goal-review.md in the change directory
+   - Each review file: overall verdict + numbered findings with file:line references
 
 ### Step 3: Aggregate results
 After all three complete, check each report:
@@ -51,7 +50,7 @@ After all three complete, check each report:
 ${COMMIT_ADVANCE('docs', 'triple review for <change-name>')}
 
 ## Guardrails
-- FULL: dispatch 3 reviewer sub-agents in parallel (spec/quality/goal)
+- FULL: dispatch 1 reviewer sub-agent (executes all three reviews sequentially)
 - LIGHTWEIGHT: quick checklist — no sub-agents needed
 - Review gate config in project.yml \`review.gate\`
 - Findings: BLOCKER (must fix), FLAG (should fix), NOTE (info)`;
