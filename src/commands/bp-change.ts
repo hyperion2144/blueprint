@@ -68,14 +68,6 @@ function newChange(name: string, options: { dir: string; full?: boolean; intent?
       writeFileSync(join(changeDir, filename), content, 'utf-8');
     }
 
-    // Create delta-spec template
-    const specsDir = join(changeDir, 'specs', name);
-    mkdirSync(specsDir, { recursive: true });
-    writeFileSync(join(specsDir, 'spec.md'),
-      `# ${name} — Delta Spec\n\n## ADDED Requirements\n\n### Requirement: <name>\n\nThe system SHALL <behavior>.\n\n#### Scenario: <name>\n- **GIVEN** <precondition>\n- **WHEN** <trigger>\n- **THEN** <expected outcome>\n`,
-      'utf-8'
-    );
-
     console.log(`✓ Created change: ${changeDir}`);
 
     const changeEntry = { name, status: 'proposal' as const, depends_on: [] as string[] };
