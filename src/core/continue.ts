@@ -188,7 +188,7 @@ export const STEP_TO_WORKFLOW: Record<string, WorkflowStep> = {
   planning: 'plan',
   proposal: 'adhoc',
   applying: 'apply',
-  reviewing: 'archive',
+  reviewing: 'review',
   archiving: 'archive',
   // Other
   'research-phase': 'research-phase',
