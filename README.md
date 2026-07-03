@@ -108,6 +108,55 @@ Key settings in `bp/project.yml`:
 - Test: Vitest
 - Target platform: OMP
 
+## Install
+
+```bash
+npm install -g @hyperion2144/blueprint
+```
+
+## Usage
+
+Start a new project:
+```bash
+mkdir my-project && cd my-project
+bp init          # interactive wizard: profile, tech stack, conventions
+```
+
+Browse existing codebase:
+```bash
+cd existing-project
+bp init --brownfield   # auto-detects tech stack, bootstraps specs
+```
+
+## Recommended Loop
+
+After init, follow this cycle until project ships:
+
+```bash
+# 1. Start: let BP auto-advance to current step
+bp continue          # → routes to grill, discuss, plan, etc.
+
+# 2. Fill artifacts: follow the step instructions
+#    (grill fills requirements, plan fills design+tasks, etc.)
+
+# 3. Commit completed work
+bp commit "feat(scope): description" --files "..." --scope <scope> --record
+
+# 4. Go to step 1
+```
+
+For autonomous execution:
+```bash
+/bp:loop    # slash command — auto-advance through all steps, AI decides everything
+```
+
+Typical change flow (after roadmap + split):
+
+```bash
+bp continue                    # → auto-routes to first change
+bp continue change my-feature  # → proposal → plan → apply → review → archive
+```
+
 ## License
 
 MIT
