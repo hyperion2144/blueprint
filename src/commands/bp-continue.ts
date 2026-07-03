@@ -324,7 +324,7 @@ function findNextPhase(bpDir: string, milestoneId: string | null, currentPhase: 
     const re = new RegExp('##\\s+' + escaped + '[\\s\\S]*?(?=##\\s+M\\d|$)', 'i');
     const msMatch = content.match(re);
     if (!msMatch) return null;
-    const phases = (msMatch[0].match(/ph\.\d+(-\w+)?/g) ?? []) as string[];
+    const phases = (msMatch[0].match(/ph\.\d+(-[\w-]+)?/g) ?? []) as string[];
     // Match by prefix: currentPhase='ph.4' should match 'ph.4-api' in roadmap
     const idx = phases.findIndex((p) => p === currentPhase || p.startsWith(currentPhase + '-'));
     if (idx >= 0 && idx < phases.length - 1) {
