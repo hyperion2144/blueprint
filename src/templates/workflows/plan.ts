@@ -14,6 +14,13 @@ const instructions = ORCHESTRATOR_RULE + `## Input
 
 ${RESOLVE_PATHS}${READ_CONTEXT}${CLASSIFY_CHANGE}${CHANGE_NAME_RESOLVE('planning', 'plan')}### Step 3: Execute design
 
+**Domain guidance for planner sub-agent:**
+- A domain is a logical group of related behaviors (think "chapter" of specs)
+- Group by what behaviors relate to, NOT implementation layers
+- Use existing \`bp/specs/\` domains; create new ones only when behavior doesn't fit
+- Domain name = kebab-case (e.g. \`cli\`, \`user-auth\`, \`data-export\`)
+- 3-15 Requirements per domain
+
 **If LIGHTWEIGHT:**
 
 1. Run \`bp template design\`, fill approach (1-2 paragraphs), write \`design.md\`

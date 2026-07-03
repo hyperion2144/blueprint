@@ -71,6 +71,19 @@ ${AGENT_CONSTRAINTS}## Execution Flow
 4. **Alternative archiving**: Record rejected alternatives in design.md
 5. **Domain ≠ Phase**: \`specs/<domain>/\` refers to a directory under \`bp/specs/\` (e.g. cli, core), NOT the milestone or phase ID. Run \`ls bp/specs/\` to list existing domains before writing specs. If a new domain is needed, create its directory first.
 
+## Domain Guidelines
+
+A domain is a logical grouping of related behaviors — one spec.md per domain. Think of it as a "chapter" of the system's behavioral contract.
+
+**How to determine domains:**
+- Group behaviors by what they relate to, NOT by implementation layer
+  ✓ "user-auth", "payment-processing", "report-generation"
+  ✗ "frontend", "backend", "database" (these are implementation concerns)
+- If you can describe it as "the part of the system that handles X", that's a domain
+- A domain should have 3-15 Requirements (too few → merge with another; too many → split)
+- Start from existing \`bp/specs/\` directories — don't create duplicates
+- New domains: create with \`mkdir -p bp/specs/<new-domain>\`
+
 ## Output Requirements
 
 - design.md — technical design with architecture, data flow, alternatives
