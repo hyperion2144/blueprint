@@ -7,6 +7,7 @@
 
 import { join } from 'node:path';
 import { loadConfig } from '../core/config.js';
+import { loadState } from '../core/state-file.js';
 
 interface DispatchFormat {
   tool: string;
@@ -67,7 +68,18 @@ function dispatchHandler(role: string, options: { change?: string; dir: string }
     }
 
     if (changeName) {
-      lines.push(`  context: Change ${changeName} at bp/changes/${changeName}/`);
+      const state = loadState(bpDir);
+      // Find the change in state to determine actual path
+      const change = state.changes.find((c) => c.name === changeName);
+      const adhoc = state.adhoc.find((c) => c.name === changeName);
+      const actualChange = change || adhoc;
+      if (actualChange) {
+        const isPhaseChange = state.changes.includes(actualChange);
+        const path = isPhaseChange && state.project.current_milestone && state.project.current_phase
+          ? 'bp/milestones/' + state.project.current_milestone + '/phases/' + state.project.current_phase + '/changes/' + changeName + '/'
+          : 'bp/changes/' + changeName + '/';
+        lines.push('  context: Change ' + changeName + ' at ' + path);
+      }
     }
 
     lines.push('');
