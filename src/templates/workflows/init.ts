@@ -1,67 +1,41 @@
 import type { SkillTemplate, CommandTemplate } from '../types';
 
 const instructions = `## Input
-- No prior state required (user has already run \`bp init\`)
-- \`bp/state.md\` and \`bp/project.yml\` must exist
+- User has already run \`bp init\`. All project settings (profile, spec stack, platform, release template) are configured.
+- \`bp/state.md\` and \`bp/project.yml\` exist and are fully configured.
 
 ## Steps
 
-### Step 1: Read current config
-Run \`bp config list\` — outputs the full project configuration as JSON. Read it to understand what's already set.
+### Step 1: Check project type
+Run \`bp config list\` — read the \`spec.stack\` field. If \`generic\`, this is a greenfield project with no detected codebase.
 
-### Step 2: Configure project
-Use the \`ask\` tool to guide the user through key settings. For each confirmed choice, run \`bp config set <key> <value>\` — never edit \`bp/project.yml\` directly.
+**Greenfield (no existing code):**
+- "This is a greenfield project. All settings are configured. Let's start building."
+- Skip to Step 3.
 
-**Configure in this order:**
+**Brownfield (existing code detected):**
+Continue to Step 2.
 
-1. **Workflow profile** — run \`bp config list\`, check \`profile\` field. If not set or user wants to change:
-   \`\`\`
-   "Which workflow strictness level?"
-   - standard (recommended): TDD enforced, triple review mandatory
-   - lite: skip TDD verification for non-behavioral changes
-   - strict: extra validation gates enabled
-   \`\`\`
-   Run \`bp config set profile <choice>\`.
+### Step 2: Brownfield scan
+1. Run \`bp config list\` to confirm \`spec.stack\` matches the actual codebase (not \`generic\`). If it's still \`generic\`, the CLI auto-detection may have failed — report this to the user, then advance anyway.
+2. Read \`bp/codebase/stack.md\` and \`bp/codebase/architecture.md\` (created by init CLI scan).
+3. Read \`bp/specs/<domain>/spec.md\` — these are the initial spec skeletons from the tech stack template.
+4. Dispatch \`bp-codebase-mapper\` and \`bp-spec-bootstrapper\` sub-agents:
+   - \`bp-codebase-mapper\`: deep-analyze the existing code (modules, patterns, tech debt)
+   - \`bp-spec-bootstrapper\`: extract behavioral contracts from existing code into \`bp/specs/<domain>/spec.md\`
 
-2. **Spec stack** — check \`spec.stack\` field in config output. If \`generic\`:
-   \`\`\`
-   "Which tech stack best describes this project?"
-   - TypeScript CLI / React Web App / Python API / Rust CLI / Go Service / Generic
-   \`\`\`
-   Run \`bp config set spec.stack <choice-id>\`.
-
-3. **Release template** — check \`release.template\`:
-   \`\`\`
-   "Which PR/release body template?"
-   - standard (recommended): Summary + Changes + Verification
-   - detailed: + User Stories + Key Decisions + Risks
-   - minimal: Summary + Changes only
-   \`\`\`
-   Run \`bp config set release.template <choice>\`.
-
-4. **Brownfield scan** — run \`bp config list\`, check if project has existing code (package.json, src/, etc.):
-   - If brownfield: "This looks like an existing project. I'll run a quick scan to detect the tech stack and set up specs."
-     Run \\\`bp config set conventions.inject true\\\` to enable spec injection.
-   - The scan results are in \`bp/codebase/\`. Dispatch \`bp-codebase-mapper\` and \`bp-spec-bootstrapper\` sub-agents to analyze the codebase and extract initial specs.
-
-### Step 3: Review final config
-Run \`bp config list\` again. Show the user a summary of key settings. Ask: "Everything look good?"
-- If yes → advance
-- If no → go back to Step 2
-
-### Step 4: Advance
-Run \`bp continue\`. The output tells you what to do next.
+### Step 3: Advance
+Run \`bp continue\`. The output routes to grill (for requirements exploration).
 
 ## Guardrails
-- NEVER edit \`bp/project.yml\` directly — always use \`bp config set <key> <value>\`
-- Use \`bp config list\` to read current state before making changes
-- Skip prompts the user has already answered (check existing config values)
-- If \`bp continue\` outputs grill steps, follow them without preamble`;
+- NEVER re-ask configuration questions — the init CLI already handled profile, spec stack, platform, release template
+- NEVER run \`bp init\` or \`bp update\` — user did this already
+- If greenfield: advance immediately, no questions needed`;
 
 export function getInitSkillTemplate(): SkillTemplate {
   return {
     name: 'bp-init',
-    description: 'Project configuration — detect tech stack, set workflow profile, configure conventions',
+    description: 'Brownfield scan — analyze existing codebase and extract initial specs',
     instructions,
   };
 }
@@ -69,9 +43,9 @@ export function getInitSkillTemplate(): SkillTemplate {
 export function getInitCommandTemplate(): CommandTemplate {
   return {
     name: 'SpecWF: Init',
-    description: 'Project configuration — detect tech stack, set workflow profile, configure conventions',
+    description: 'Brownfield scan — analyze existing codebase and extract initial specs',
     category: 'Setup',
-    tags: ['bp', 'init', 'setup', 'config'],
+    tags: ['bp', 'init', 'brownfield', 'codebase'],
     content: instructions,
   };
 }
