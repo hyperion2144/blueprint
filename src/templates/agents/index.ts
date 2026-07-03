@@ -100,7 +100,8 @@ ${AGENT_CONSTRAINTS}## Execution Flow
 ### Step 1: Read task list
 - Read tasks.md for current wave task list and order
 - Read design.md for technical approach
-- Read delta-specs for specification constraints
+- Read delta-specs from \`specs/\` (change-level) AND global specs from \`bp/specs/<domain>/spec.md\`
+- Read \`bp/conventions/coding-standards.md\` for coding conventions
 
 ### Step 2: Execute by type
 

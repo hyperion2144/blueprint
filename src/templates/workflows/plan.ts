@@ -27,7 +27,7 @@ ${RESOLVE_PATHS}${READ_CONTEXT}${CLASSIFY_CHANGE}${CHANGE_NAME_RESOLVE('planning
 1. Run \`bp dispatch planner --change <change-name>\` — outputs the sub-agent tool to call and its parameters.
 2. Call the tool it specifies. Set the sub-agent's prompt to:
    - Task: produce design.md, tasks.md (boxes UNCHECKED), specs/<domain>/spec.md
-   - Read: requirements.md, roadmap.md (this phase), research.md, context.md, proposal.md, \`bp/specs/<domain>/spec.md\` (global specs), specs/, conventions/
+   - Read: requirements.md, roadmap.md (this phase), research.md, context.md, proposal.md, bp/specs/<domain>/spec.md (global specs), bp/conventions/coding-standards.md, specs/, conventions/
    - Design must reference specific requirements and research decisions — not generic
    - Delta-specs must use \`## ADDED Requirements\` / \`## MODIFIED Requirements\` / \`## REMOVED Requirements\` sections
    - Each delta-spec Requirement must reference the global spec it modifies (if any)
