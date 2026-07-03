@@ -102,8 +102,8 @@ export function resolveAgentModel(role: string, config: ProjectConfig): string {
 
 /** Resolve agent thinking level */
 export function resolveThinkingLevel(role: string): string {
-  const highThinkingRoles = ['planner', 'researcher', 'reviewer'];
-  return highThinkingRoles.includes(role) ? 'high' : 'medium';
+  const xhighThinkingRoles = ['planner', 'researcher', 'reviewer'];
+  return xhighThinkingRoles.includes(role) ? 'xhigh' : 'high';
 }
 
 /** Generate a single agent file */
