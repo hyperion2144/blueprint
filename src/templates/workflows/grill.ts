@@ -14,6 +14,24 @@ const instructions = `## Input
 ### Step 1: Get context
 Run \`bp context grill\` — outputs state and requirements.md path. Read requirements.md.
 
+### Step 1b: Detect milestone state
+Check \`bp/requirements.md\` content. If it already has requirements (not empty template):
+- This is a NEW milestone — the previous milestone's requirements are complete
+- Archive old requirements:
+  \`\`\`bash
+  # Move current requirements to archive
+  cp bp/requirements.md bp/archive/requirements-m<prev-number>.md
+  # Reset requirements.md for the new milestone
+  echo "# Requirements: <new-milestone-id>" > bp/requirements.md
+  echo "" >> bp/requirements.md
+  echo "## Scope" >> bp/requirements.md
+  echo "" >> bp/requirements.md
+  echo "(New milestone — fill in requirements below)" >> bp/requirements.md
+  \`\`\`
+- Proceed to Step 2 to discuss the NEW milestone's requirements
+
+**First time (empty template):** Continue to Step 2 normally.
+
 ### Step 2: Get the idea
 If the user provided an idea in the prompt, use it. If not, use the \`ask\` tool to get it:
 - One question: "What are you building? Describe the idea in a few sentences."

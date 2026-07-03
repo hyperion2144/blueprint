@@ -10,6 +10,16 @@ const instructions = ORCHESTRATOR_RULE + `## Input
 ### Step 1: Check state and get context
 Run \`bp context research\` — outputs state and file manifest. Read all listed files before proceeding.
 
+### Step 1b: Detect if new milestone
+If \`bp/research/\` already has files from a previous milestone:
+- Archive old research:
+  \`\`\`bash
+  mkdir -p bp/archive/research-m<prev-number>
+  cp bp/research/*.md bp/archive/research-m<prev-number>/
+  rm bp/research/*.md
+  \`\`\`
+- Proceed to Step 2 for the NEW milestone's research
+
 ### Step 2: Dispatch research sub-agents
 1. Run \`bp dispatch researcher\` — outputs the sub-agent tool and its parameters.
 2. Call the tool it specifies 3 times in parallel (stack, architecture, pitfalls). Set each sub-agent's prompt to:
