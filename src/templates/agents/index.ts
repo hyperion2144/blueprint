@@ -103,11 +103,32 @@ ${AGENT_CONSTRAINTS}## Execution Flow
 - Read delta-specs from \`specs/\` (change-level) AND global specs from \`bp/specs/<domain>/spec.md\`
 - Read \`bp/conventions/coding-standards.md\` for coding conventions
 
-### Step 2: Execute tasks in dependency order
+### Step 2: Execute waves sequentially
 
-Execute tasks one at a time in the order defined by tasks.md (waves first, then dependency order within each wave). Do NOT execute multiple tasks before committing.
+Process each wave in tasks.md in order. For each wave:
 
-After each task is implemented and verified, run \`bp commit\` with \`--task <id>\` to mark it done and record the hash. Only move to the next task after the commit succeeds.
+**2a. Parse dependencies**
+Read all tasks in the current wave. Build execution groups from \`depends_on\` fields:
+- Tasks with no \`depends_on\` (or empty list) → independent, can run together
+- Tasks with \`depends_on\` → must wait for listed predecessors to complete first
+
+**2b. Execute in dependency batches**
+
+**For a SINGLE task:**
+Implement directly: read specs/conventions/design → implement → verify → \`bp commit --task <id>\`.
+
+**For a PARALLEL group (2+ independent tasks):**
+1. Run \`bp dispatch executor\` once per task
+2. Each child sub-agent's prompt MUST specify:
+   - Exact task (ID + full description from tasks.md)
+   - Required reads: design.md, delta-specs (specs/), bp/specs/<domain>/spec.md, bp/conventions/coding-standards.md
+   - TDD protocol if type:behavior (RED→GREEN→REFACTOR, 3 separate commits)
+   - \`bp commit --task <id> --tasks-path ...\` on completion
+   - NEVER run bp continue or bp state set-*
+3. Wait for ALL children in the group to finish before advancing to the next group
+
+**2c. Repeat**
+After all tasks in the wave are committed, move to the next wave. After the last wave, run the full test suite.
 
 \`\`\`bash
 bp commit "<type>(<scope>): <description>" \\

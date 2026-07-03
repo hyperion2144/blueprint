@@ -43,7 +43,8 @@ After ALL tasks pass verification:
    - Read delta-specs BEFORE implementing — each task must satisfy its referenced Requirements
    - If implementation reveals a spec is wrong, annotate as SPEC_MISMATCH (don't silently deviate)
    - Output: code, tests, tasks.md (boxes checked after each task passes)
-   - Commit each task with \`bp commit --task <id> --tasks-path ...\`
+   - The executor analyzes depends_on in tasks.md: independent tasks run in parallel (spawned child executors), dependent tasks run sequentially
+   - Each task: bp commit --task <id> --tasks-path ... after completion
 
 ### Step 4: Verify output and completion report
 After execution:
