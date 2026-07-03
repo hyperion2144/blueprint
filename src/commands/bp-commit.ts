@@ -9,7 +9,7 @@
 
 import { join, basename } from 'node:path';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { execSync } from 'node:child_process';
+import { execSync, execFileSync } from 'node:child_process';
 import { loadConfig } from '../core/config.js';
 import { loadState, saveState } from '../core/state-file.js';
 
@@ -98,7 +98,7 @@ function commitHandler(
   // ── Stage files ────────────────────────────────────────────────
   if (codeFiles.length > 0) {
     try {
-      execSync(`git add ${codeFiles.join(' ')}`, { cwd });
+      execFileSync('git', ['add', ...codeFiles], { cwd });
     } catch {
       console.log(JSON.stringify({ error: 'git add failed' }));
       return;
@@ -106,13 +106,15 @@ function commitHandler(
   }
 
   // ── Build commit message ───────────────────────────────────────
-  const scope = options.scope ? `(${options.scope})` : '';
-  const fullMessage = `${message}${scope}`.trim();
+  const scopeStr = options.scope ? '(' + options.scope + ')' : '';
+  const fullMessage = (message + scopeStr).trim();
 
-  // ── Commit ─────────────────────────────────────────────────────
+  // ── Commit (write message to temp file to avoid shell injection) ──
+  const msgFile = join(cwd, '.git', 'COMMIT_EDITMSG_TMP');
+  writeFileSync(msgFile, fullMessage, 'utf-8');
   try {
     const amendFlag = options.amend ? '--amend --no-edit' : '';
-    execSync(`git commit ${amendFlag} -m "${fullMessage.replace(/"/g, '\\"')}"`, {
+    execSync('git commit ' + amendFlag + ' -F "' + msgFile + '"', {
       cwd,
       encoding: 'utf-8',
       stdio: 'pipe',
