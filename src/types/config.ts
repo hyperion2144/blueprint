@@ -11,9 +11,7 @@ export type ModelRole =
   | 'research'
   | 'plan'
   | 'execute'
-  | 'review'
-  | 'verify'
-  | 'archive';
+  | 'review';
 
 /** 模型映射 — profile 自动填充默认，用户可按角色覆盖 */
 export type ModelMap = Partial<Record<ModelRole, string>>;
@@ -105,23 +103,17 @@ export const PROFILE_MODEL_MAP: Record<Profile, ModelMap> = {
     plan: 'pi/task',
     execute: 'pi/task',
     review: 'pi/task',
-    verify: 'pi/task',
-    archive: 'pi/task',
   },
   standard: {
-    research: 'pi/default',
-    plan: 'pi/default',
-    execute: 'pi/task',
-    review: 'pi/default',
-    verify: 'pi/task',
-    archive: 'pi/task',
+    research: 'pi/task',
+    plan: 'pi/plan',
+    execute: 'pi/plan',
+    review: 'pi/plan',
   },
   strict: {
     research: 'pi/default',
     plan: 'pi/slow',
     execute: 'pi/slow',
     review: 'pi/slow',
-    verify: 'pi/default',
-    archive: 'pi/default',
   },
 };
