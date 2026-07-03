@@ -3,6 +3,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { updateState } from '../core/state-file.js';
 import { createAdhocChangeDir } from '../core/file-tree.js';
 import { ARTIFACT_TEMPLATES } from '../templates/artifacts/index.js';
+import { getProposalCommandTemplate } from '../templates/workflows/proposal.js';
 
 export function register(program: any): void {
   const cmd = program
@@ -45,7 +46,6 @@ function newChange(name: string, options: { dir: string; full?: boolean; intent?
     writeFileSync(join(changeDir, 'proposal.md'), content, 'utf-8');
 
     console.log(`✓ Created change: ${changeDir} (full cycle)`);
-    console.log(`  proposal.md — fill in, then plan → apply → review → archive`);
 
     const changeEntry = { name, status: 'proposal' as const, depends_on: [] as string[] };
     updateState(bpDir, (state) => {
@@ -77,14 +77,6 @@ function newChange(name: string, options: { dir: string; full?: boolean; intent?
     );
 
     console.log(`✓ Created change: ${changeDir}`);
-    console.log(`  Status: proposal`);
-    console.log('');
-    console.log('  Step 1: Run `bp template proposal` to get the template.');
-    console.log('  Step 2: Fill intent, scope, approach, and must-haves.');
-    console.log('  Step 3: Write filled content to proposal.md.');
-    console.log('  Step 4: Run `bp continue change ${name}` to advance to planning.');
-    console.log('');
-    console.log('  (design.md and tasks.md will be handled in the planning step — focus on proposal first.)');
 
     const changeEntry = { name, status: 'proposal' as const, depends_on: [] as string[] };
     updateState(bpDir, (state) => {
@@ -95,5 +87,6 @@ function newChange(name: string, options: { dir: string; full?: boolean; intent?
 
   console.log(`✓ state.md updated`);
   console.log('');
-  console.log(`→ Fill proposal.md first, then \`bp continue change ${name}\` to proceed.`);
+  const proposalContent = getProposalCommandTemplate().content;
+  console.log(proposalContent);
 }

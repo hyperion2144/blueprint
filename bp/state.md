@@ -130,6 +130,15 @@ adhoc:
   - name: update-conventions
     status: archived
     depends_on: []
+  - name: test-prop
+    status: proposal
+    depends_on: []
+  - name: test-clean
+    status: proposal
+    depends_on: []
+  - name: final-test
+    status: proposal
+    depends_on: []
 ---
 
 # specwf — 状态机

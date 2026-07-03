@@ -37,6 +37,7 @@ export const STEP_DEFS: CommandDef[] = [
   { step: 'audit', name: 'bp:audit', description: 'Human UAT verification — generate uat.md, interactive testing, adhoc fixes', usesAgent: true, agents: [] },
   { step: 'auto', name: 'bp:auto', description: 'Fully autonomous mode — auto-advance through all steps, AI fills all decisions', usesAgent: false, agents: [] },
   { step: 'commit', name: 'bp:commit', description: 'Commit changes — conventional commits + hash recording to tasks.md', usesAgent: false, agents: [] },
+  { step: 'proposal', name: 'bp:proposal', description: 'Fill change proposal — intent, scope, approach, must-haves, non-goals', usesAgent: false, agents: [] },
 ];
 
 /** Generate a single slash command file content from the TypeScript template */

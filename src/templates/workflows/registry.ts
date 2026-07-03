@@ -21,6 +21,7 @@ import { getShipSkillTemplate, getShipCommandTemplate } from './ship';
 import { getContinueSkillTemplate, getContinueCommandTemplate } from './continue';
 import { getAuditSkillTemplate, getAuditCommandTemplate } from './audit';
 import { getAutoSkillTemplate, getAutoCommandTemplate } from './auto';
+import { getProposalSkillTemplate, getProposalCommandTemplate } from './proposal';
 import { getCommitSkillTemplate, getCommitCommandTemplate } from './commit';
 
 import type { SkillTemplate, CommandTemplate } from '../types';
@@ -30,7 +31,7 @@ export const ALL_WORKFLOW_STEPS = [
   'init', 'grill', 'research', 'roadmap', 'milestone',
   'discuss', 'research-phase', 'split', 'adhoc',
   'plan', 'apply', 'review', 'archive',
-  'ship', 'continue', 'audit', 'auto', 'commit',
+  'proposal', 'ship', 'continue', 'audit', 'auto', 'commit',
 ] as const;
 
 export type WorkflowStep = (typeof ALL_WORKFLOW_STEPS)[number];
@@ -57,5 +58,6 @@ export const WORKFLOW_REGISTRY: Record<WorkflowStep, {
   continue:  { skill: getContinueSkillTemplate,  command: getContinueCommandTemplate },
   audit:     { skill: getAuditSkillTemplate,     command: getAuditCommandTemplate },
   auto:      { skill: getAutoSkillTemplate,      command: getAutoCommandTemplate },
+  proposal:  { skill: getProposalSkillTemplate,  command: getProposalCommandTemplate },
   commit:    { skill: getCommitSkillTemplate,    command: getCommitCommandTemplate },
 };

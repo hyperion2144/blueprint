@@ -42,11 +42,12 @@ function skillDescription(step: string): string {
     audit: 'Human UAT verification — generate uat.md, interactive testing, create adhoc fixes',
     auto: 'Fully autonomous mode — auto-advance all steps, AI fills all decisions without asking',
     commit: 'Commit changes — conventional commits + hash recording to tasks.md',
+    proposal: 'Fill change proposal — intent, scope, approach, must-haves, non-goals',
   };
   return map[step] ?? '';
 }
 
-const STEPS = ['init', 'grill', 'research', 'roadmap', 'milestone', 'discuss', 'research-phase', 'split', 'adhoc', 'plan', 'apply', 'review', 'archive', 'ship', 'continue', 'audit', 'auto', 'commit'] as const;
+const STEPS = ['init', 'grill', 'research', 'roadmap', 'milestone', 'discuss', 'research-phase', 'split', 'adhoc', 'plan', 'apply', 'review', 'archive', 'proposal', 'ship', 'continue', 'audit', 'auto', 'commit'] as const;
 
 export const SKILL_DEFS: SkillDef[] = STEPS.map((step) => ({
   step,
