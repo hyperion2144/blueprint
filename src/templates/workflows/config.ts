@@ -44,20 +44,21 @@ Options: \`balanced\` (recommended), \`budget\`, \`quality\`, or **custom per-ag
 \`\`\`
 bp config set modelProfile <choice>
 \`\`\`
-Model tier sets the default model for all agents. You can override individual agents below.
+Model tier sets the default model for all 7 agents. You can override individual agents below.
 
-##### Per-role overrides
-For each role (research, plan, execute, review), ask if they want a different model:
+##### Profile-default overrides
+Override the default model for an agent derived from the tier:
 \`\`\`
-bp config set models.<role> <model>
+bp config set models.<agent> <model>
 \`\`\`
+Where \`<agent>\` is one of: \`researcher\`, \`planner\`, \`executor\`, \`reviewer\`, \`phase-researcher\`, \`codebase-mapper\`, \`spec-bootstrapper\`.
 
 ##### Per-agent overrides
 For each agent (researcher, planner, executor, reviewer, phase-researcher, codebase-mapper, spec-bootstrapper), ask if custom model:
 \`\`\`
 bp config set agentModels.<agent> <model>
 \`\`\`
-This overrides both the tier preset AND per-role config for this agent.
+This is the highest-priority override — it beats both the tier preset and \`models.*\`.
 
 #### 3c. Workflow toggles
 For each toggle, ask true/false:
