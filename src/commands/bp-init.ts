@@ -64,7 +64,7 @@ async function initHandler(options: {
     version: 1,
     platform,
     profile,
-    context: wizard.context,
+    context: wizard.context + (isBrownfield ? ' [BROWNFIELD]' : ''),
     workflow: { commitDocs: wizard.commitDocs },
     review: {},
     change: {},

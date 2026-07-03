@@ -7,20 +7,19 @@ const instructions = `## Input
 ## Steps
 
 ### Step 1: Check project type
-Run \`bp config list\` — read the \`spec.stack\` field. If \`generic\`, this is a greenfield project with no detected codebase.
+Run \`bp config list\` — read the \`context\` field. If it contains \`[BROWNFIELD]\`, this is an existing project.
 
-**Greenfield (no existing code):**
+**Greenfield (no \`[BROWNFIELD]\` tag):**
 - "This is a greenfield project. All settings are configured. Let's start building."
 - Skip to Step 3.
 
-**Brownfield (existing code detected):**
+**Brownfield (\`[BROWNFIELD]\` tag present):**
 Continue to Step 2.
 
 ### Step 2: Brownfield scan
-1. Run \`bp config list\` to confirm \`spec.stack\` matches the actual codebase (not \`generic\`). If it's still \`generic\`, the CLI auto-detection may have failed — report this to the user, then advance anyway.
-2. Read \`bp/codebase/stack.md\` and \`bp/codebase/architecture.md\` (created by init CLI scan).
-3. Read \`bp/specs/<domain>/spec.md\` — these are the initial spec skeletons from the tech stack template.
-4. Dispatch \`bp-codebase-mapper\` and \`bp-spec-bootstrapper\` sub-agents:
+1. Read \`bp/codebase/stack.md\` and \`bp/codebase/architecture.md\` (created by init CLI scan).
+2. Read \`bp/specs/<domain>/spec.md\` — these are the initial spec skeletons from the tech stack template.
+3. Dispatch \`bp-codebase-mapper\` and \`bp-spec-bootstrapper\` sub-agents:
    - \`bp-codebase-mapper\`: deep-analyze the existing code (modules, patterns, tech debt)
    - \`bp-spec-bootstrapper\`: extract behavioral contracts from existing code into \`bp/specs/<domain>/spec.md\`
 
