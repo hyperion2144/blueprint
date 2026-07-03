@@ -125,6 +125,7 @@ Implement directly: read specs/conventions/design → implement → verify → \
    - TDD protocol if type:behavior (RED→GREEN→REFACTOR, 3 separate commits)
    - \`bp commit --task <id> --tasks-path ...\` — auto-marks task done + records commit hash
    - NEVER run bp continue or bp state set-*
+   - Do NOT touch the ## Verification section — parent executor handles that
 3. Wait for ALL children in the group to finish before advancing to the next group
 
 **2c. Repeat**
@@ -151,7 +152,8 @@ bp commit "<type>(<scope>): <description>" \\
 
 ### Step 4: Wave completion
 - Confirm all wave tasks complete
-- Run full test suite
+- Run full test suite (\`tsc --noEmit\`, \`vitest run\`)
+- **Mark verification items done**: after each check passes, edit tasks.md — replace \`- [ ]\` with \`- [x]\` for the corresponding item in the \`## Verification\` section (tsc, vitest, acceptance, lint, type check)
 
 ## Deviation Rules
 
