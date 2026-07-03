@@ -103,9 +103,11 @@ ${AGENT_CONSTRAINTS}## Execution Flow
 - Read delta-specs from \`specs/\` (change-level) AND global specs from \`bp/specs/<domain>/spec.md\`
 - Read \`bp/conventions/coding-standards.md\` for coding conventions
 
-### Step 2: Execute by type
+### Step 2: Execute tasks in dependency order
 
-**All tasks: commit after each task using \`bp commit\`.**
+Execute tasks one at a time in the order defined by tasks.md (waves first, then dependency order within each wave). Do NOT execute multiple tasks before committing.
+
+After each task is implemented and verified, run \`bp commit\` with \`--task <id>\` to mark it done and record the hash. Only move to the next task after the commit succeeds.
 
 \`\`\`bash
 bp commit "<type>(<scope>): <description>" \\
