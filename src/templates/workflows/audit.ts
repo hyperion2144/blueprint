@@ -100,7 +100,7 @@ export function getAuditSkillTemplate(): SkillTemplate {
 
 export function getAuditCommandTemplate(): CommandTemplate {
   return {
-    name: 'BP: Audit',
+    name: 'SpecWF: Audit',
     description: 'Human UAT verification — read artifacts, write real tests, create adhoc fixes',
     category: 'Workflow',
     tags: ['bp', 'audit', 'uat', 'verification', 'human', 'adhoc'],

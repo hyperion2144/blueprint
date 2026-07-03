@@ -72,7 +72,7 @@ export function getSplitSkillTemplate(): SkillTemplate {
 
 export function getSplitCommandTemplate(): CommandTemplate {
   return {
-    name: 'BP: Split',
+    name: 'SpecWF: Split',
     description: 'Change splitting — dependency graph + N changes with validation',
     category: 'Planning',
     tags: ['bp', 'split', 'changes', 'dependency-graph'],

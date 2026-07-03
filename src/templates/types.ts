@@ -19,7 +19,7 @@ export interface SkillTemplate {
 }
 
 export interface CommandTemplate {
-  /** Command display name (e.g., 'BP: Plan') */
+  /** Command display name (e.g., 'SpecWF: Plan') */
   name: string;
   /** One-line description */
   description: string;

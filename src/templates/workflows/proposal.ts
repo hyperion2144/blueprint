@@ -50,7 +50,7 @@ export function getProposalSkillTemplate(): SkillTemplate {
 
 export function getProposalCommandTemplate(): CommandTemplate {
   return {
-    name: 'BP: Proposal',
+    name: 'SpecWF: Proposal',
     description: 'Fill change proposal — intent, scope, approach, must-haves, non-goals',
     category: 'Workflow',
     tags: ['bp', 'proposal', 'change'],

@@ -65,7 +65,7 @@ export function getReviewSkillTemplate(): SkillTemplate {
 
 export function getReviewCommandTemplate(): CommandTemplate {
   return {
-    name: 'BP: Review',
+    name: 'SpecWF: Review',
     description: 'Triple review — spec/quality/goal (parallel sub-agents for Full changes)',
     category: 'Workflow',
     tags: ['bp', 'review', 'quality', 'specs', 'sub-agent'],

@@ -86,7 +86,7 @@ export function getArchiveSkillTemplate(): SkillTemplate {
 
 export function getArchiveCommandTemplate(): CommandTemplate {
   return {
-    name: 'BP: Archive',
+    name: 'SpecWF: Archive',
     description: 'Verify & archive — run checks, write results, archive, commit',
     category: 'Workflow',
     tags: ['bp', 'archive', 'verify', 'specs', 'merge'],

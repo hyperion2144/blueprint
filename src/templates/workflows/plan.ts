@@ -68,7 +68,7 @@ export function getPlanSkillTemplate(): SkillTemplate {
 
 export function getPlanCommandTemplate(): CommandTemplate {
   return {
-    name: 'BP: Plan',
+    name: 'SpecWF: Plan',
     description: 'Change design — dispatch planner sub-agent for design + tasks + delta-specs',
     category: 'Planning',
     tags: ['bp', 'plan', 'design', 'tasks', 'specs', 'sub-agent'],
