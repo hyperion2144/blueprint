@@ -69,6 +69,7 @@ ${AGENT_CONSTRAINTS}## Execution Flow
 2. **Spec gap fill**: Annotate missing specs as SPEC_GAP_FILL
 3. **Task granularity**: behavior task ≤ 50 lines, refactor task ≤ 200 lines changed
 4. **Alternative archiving**: Record rejected alternatives in design.md
+5. **Domain ≠ Phase**: \`specs/<domain>/\` refers to a directory under \`bp/specs/\` (e.g. cli, core), NOT the milestone or phase ID. Run \`ls bp/specs/\` to list existing domains before writing specs. If a new domain is needed, create its directory first.
 
 ## Output Requirements
 
@@ -328,7 +329,7 @@ ${READONLY_CONSTRAINTS}## Execution Flow
 
 ### Step 3: Output specs/<domain>/spec.md
 - Get template: \`bp template global-spec\` (one per domain)
-- Update existing spec.md files in \`bp/specs/<domain>/\` — replace skeleton with extracted content
+- Update existing spec.md files in \`bp/specs/<domain>/\` — \`<domain>\` is the directory name under \`bp/specs/\`, NOT the milestone/phase ID. Replace skeleton with extracted content.
 - Mark all entries as BOOTSTRAPPED with source file:line references
 - Low-confidence entries flagged for human review
 - Each Requirement header SHALL be unique within the spec (no duplicates)`;

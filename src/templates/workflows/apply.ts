@@ -39,7 +39,7 @@ After ALL tasks pass verification:
 2. Call the tool it specifies. Set the sub-agent's prompt to:
    - Change: <change-name> (path from Step 0)
    - Task: implement all tasks in tasks.md following TDD protocol (RED→GREEN→REFACTOR)
-   - Read: requirements.md, roadmap.md (this phase), research.md, design.md, delta-specs, bp/specs/<domain>/spec.md (global specs), bp/conventions/coding-standards.md
+   - Read: requirements.md, roadmap.md (this phase), research.md, design.md, delta-specs, bp/specs/<domain>/spec.md (global spec — domain = directory under bp/specs/), bp/conventions/coding-standards.md
    - Read delta-specs BEFORE implementing — each task must satisfy its referenced Requirements
    - If implementation reveals a spec is wrong, annotate as SPEC_MISMATCH (don't silently deviate)
    - Output: code, tests, tasks.md (boxes checked after each task passes)

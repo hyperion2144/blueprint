@@ -40,7 +40,7 @@ Run \`bp archive <change-dir>\`. The CLI handles: delta-spec merge, directory mo
 verification.md is moved to archive together with the change.
 
 ### Step 5: Verify merge result
-Check the global spec \`bp/specs/<domain>/spec.md\`:
+Check the global spec \`bp/specs/<domain>/spec.md\` (<domain> = directory under \`bp/specs/\`):
 - ADDED Requirements from delta are present
 - REMOVED Requirements from delta are gone
 - No duplicate \`### Requirement: xxx\` headers

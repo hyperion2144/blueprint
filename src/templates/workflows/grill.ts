@@ -34,7 +34,7 @@ Stop only when all decisions are resolved — no ambiguity remains.
 After each consensus point, write it to \`bp/requirements.md\` immediately — do not batch at the end.
 
 ### Step 4b: Write initial global spec skeleton
-Based on requirements, update \`bp/specs/<domain>/spec.md\` for the primary domain.
+Based on requirements, update \`bp/specs/<domain>/spec.md\` for the primary domain (\`<domain>\` = directory under \`bp/specs/\`, not the phase name).
 Write 2-5 high-level Requirements that capture the core behavioral contract using \`### Requirement:\` + \`#### Scenario: GIVEN/WHEN/THEN\` format.
 These are INITIAL specs — plan phase will refine them into delta-specs.
 
