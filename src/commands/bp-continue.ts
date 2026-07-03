@@ -2,7 +2,7 @@
  * bp continue — auto-advance to next step (compact JSON output + inline instructions)
  */
 
-import { join } from 'node:path';
+import { join, basename } from 'node:path';
 import { existsSync, readFileSync } from 'node:fs';
 import { determineNextStep, determineChangeNextStep, STEP_TO_WORKFLOW } from '../core/continue.js';
 import { loadState, updateState } from '../core/state-file.js';
@@ -88,15 +88,22 @@ function continueHandler(options?: { auto?: boolean }): void {
 
   const state = loadState(bpDir);
 
-  // Change/adhoc context: bp continue (no args) normally does NOT advance — use bp continue change <name>
-  // Exception: archived changes trigger next-change → phase-ready auto-advance
+  // Change/adhoc context with active ref: auto-route to that change
   if ((state.active_context.type === 'change' || state.active_context.type === 'adhoc') && state.active_context.step !== 'archived') {
-    const pending = state.changes.concat(state.adhoc).filter((c: any) => c.status !== 'archived').map((c: any) => ({
-      type: state.changes.includes(c) ? 'change' : 'adhoc',
-      name: c.name,
-      status: c.status,
-    }));
-
+    const ref = state.active_context.ref;
+    if (ref) {
+      // Extract change name from ref path
+      // Phase: milestones/<mid>/phases/<pid>/changes/<name> → <name>
+      // Adhoc: changes/<name> → <name>
+      const name = basename(ref);
+      if (name) {
+        continueChangeHandler(name, options);
+        return;
+      }
+    }
+    // Fallback: no ref — show hint
+    const pending = state.changes.concat(state.adhoc).filter((c: any) => c.status !== 'archived');
+    const list = pending.map((c: any) => `${c.name}[${c.status}]`).join(', ');
     if (pending.length === 1) {
       console.log([
         '# bp continue — hint',
@@ -104,55 +111,26 @@ function continueHandler(options?: { auto?: boolean }): void {
         `pending: ${pending[0].name}[${pending[0].status}]`,
       ].join('\n'));
     } else if (pending.length > 1) {
-      const list = pending.map((p: any) => `${p.name}[${p.status}]`).join(', ');
       console.log([
         '# bp continue — hint',
         'hint: Multiple changes pending. Pick one and run \`bp continue change <name>\`.',
         `pending: ${list}`,
       ].join('\n'));
-    } else {
-      console.log([
-        '# bp continue — hint',
-        'hint: No pending changes. Create one with \`bp change new <name>\`.',
-        'pending: none',
-      ].join('\n'));
     }
     return;
   }
 
-  // Phase context with pending changes: guide to change-level advancement
+  // Phase context with pending changes: auto-route to first pending change
   if ((state.active_context.type === 'phase' && (state.changes.some((c: any) => c.status !== 'archived') || state.adhoc.some((c: any) => c.status !== 'archived')))) {
-    // Check if this phase still needs discuss — don't block on stale pending changes
     const phaseRef = state.active_context.ref;
     const ctxPath = phaseRef ? join(bpDir, phaseRef, 'context.md') : null;
     if (ctxPath && existsSync(ctxPath)) {
-      // Phase has started — show pending changes hint
-      const pending = state.changes.concat(state.adhoc).filter((c: any) => c.status !== 'archived').map((c: any) => ({
-        type: state.changes.includes(c) ? 'change' : 'adhoc',
-        name: c.name,
-        status: c.status,
-      }));
-      if (pending.length === 1) {
-        console.log([
-          '# bp continue — hint',
-          `hint: Phase has 1 pending change. Run: \`bp continue change ${pending[0].name}\``,
-          `phase: ${state.project.current_phase}`,
-          `milestone: ${state.project.current_milestone}`,
-          `step: ${state.active_context.step}`,
-          `pending: ${pending[0].name}[${pending[0].status}]`,
-        ].join('\n'));
-      } else {
-        const list = pending.map((p: any) => `${p.name}[${p.status}]`).join(', ');
-        console.log([
-          '# bp continue — hint',
-          `hint: Phase has ${pending.length} pending changes. Pick one and run \`bp continue change <name>\`.`,
-          `phase: ${state.project.current_phase}`,
-          `milestone: ${state.project.current_milestone}`,
-          `step: ${state.active_context.step}`,
-          `pending: ${list}`,
-        ].join('\n'));
+      // Phase has started — auto-route to first pending change
+      const pending = state.changes.concat(state.adhoc).filter((c: any) => c.status !== 'archived');
+      if (pending.length > 0) {
+        continueChangeHandler(pending[0].name, options);
+        return;
       }
-      return;
     }
     // New phase without context.md — fall through to normal continue
   }
