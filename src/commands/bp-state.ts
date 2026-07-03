@@ -5,7 +5,6 @@
 import { join } from 'node:path';
 import { readFileSync, existsSync } from 'node:fs';
 import { loadState, updateState } from '../core/state-file.js';
-import { archiveMilestoneDir } from '../core/file-tree.js';
 
 export function register(program: any): void {
   const cmd = program
@@ -131,11 +130,6 @@ function showState() {
 function setMilestone(id: string) {
   const bpDir = findBlueprintDir();
   updateState(bpDir, (state) => {
-    // Archive current milestone if exists and not shipped
-    const current = state.project.current_milestone;
-    if (current && state.project.status !== 'milestone-shipped') {
-      archiveMilestoneDir(bpDir, current);
-    }
     state.project.current_milestone = id;
     state.project.current_phase = null;
     // active_context.step unchanged — state machine advances via bp continue
