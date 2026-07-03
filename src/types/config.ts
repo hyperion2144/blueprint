@@ -6,15 +6,8 @@
 /** 工作流严格度 */
 export type Profile = 'lite' | 'standard' | 'strict';
 
-/** 模型角色 — 映射到 OMP modelRoles */
-export type ModelRole =
-  | 'research'
-  | 'plan'
-  | 'execute'
-  | 'review';
-
-/** 模型映射 — profile 自动填充默认，用户可按角色覆盖 */
-export type ModelMap = Partial<Record<ModelRole, string>>;
+/** 模型映射 — key 是子代理名（researcher/planner/executor/reviewer/phase-researcher/codebase-mapper/spec-bootstrapper） */
+export type ModelMap = Record<string, string>;
 
 /** 模型档次 — 影响 PROFILE_MODEL_MAP 的默认选择 */
 export type ModelTier = 'budget' | 'balanced' | 'quality';
@@ -96,24 +89,33 @@ export interface ProjectConfig {
   models: ModelMap;
 }
 
-/** profile → 模型角色映射表 */
+/** profile → 子代理模型映射表（7 个 key 全列） */
 export const PROFILE_MODEL_MAP: Record<Profile, ModelMap> = {
   lite: {
-    research: 'pi/task',
-    plan: 'pi/task',
-    execute: 'pi/task',
-    review: 'pi/task',
+    researcher: 'pi/task',
+    planner: 'pi/task',
+    executor: 'pi/task',
+    reviewer: 'pi/task',
+    'phase-researcher': 'pi/task',
+    'codebase-mapper': 'pi/task',
+    'spec-bootstrapper': 'pi/task',
   },
   standard: {
-    research: 'pi/task',
-    plan: 'pi/plan',
-    execute: 'pi/plan',
-    review: 'pi/plan',
+    researcher: 'pi/task',
+    planner: 'pi/plan',
+    executor: 'pi/plan',
+    reviewer: 'pi/plan',
+    'phase-researcher': 'pi/task',
+    'codebase-mapper': 'pi/task',
+    'spec-bootstrapper': 'pi/task',
   },
   strict: {
-    research: 'pi/default',
-    plan: 'pi/slow',
-    execute: 'pi/slow',
-    review: 'pi/slow',
+    researcher: 'pi/default',
+    planner: 'pi/slow',
+    executor: 'pi/slow',
+    reviewer: 'pi/slow',
+    'phase-researcher': 'pi/default',
+    'codebase-mapper': 'pi/default',
+    'spec-bootstrapper': 'pi/default',
   },
 };

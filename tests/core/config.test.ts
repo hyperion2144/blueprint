@@ -71,35 +71,54 @@ describe('saveConfig + 保留注释', () => {
 });
 
 describe('resolveModels', () => {
-  it('standard profile 返回默认模型映射', () => {
+  it('standard profile 默认映射（7 agent 完整）', () => {
     const config = loadConfig(tmpDir);
     const models = resolveModels(config);
-    expect(models.research).toBe('pi/default');
-    expect(models.plan).toBe('pi/default');
-    expect(models.execute).toBe('pi/task');
-    expect(models.archive).toBe('pi/task');
+    expect(models.researcher).toBe('pi/task');
+    expect(models.planner).toBe('pi/plan');
+    expect(models.executor).toBe('pi/plan');
+    expect(models.reviewer).toBe('pi/plan');
+    expect(models['phase-researcher']).toBe('pi/task');
+    expect(models['codebase-mapper']).toBe('pi/task');
+    expect(models['spec-bootstrapper']).toBe('pi/task');
   });
 
   it('用户 models 覆盖 profile 默认', () => {
     updateConfig(tmpDir, (config) => {
-      config.models = { execute: 'pi/default' };
+      config.models = { executor: 'pi/default' };
     });
     const config2 = loadConfig(tmpDir);
     const models = resolveModels(config2);
-    expect(models.execute).toBe('pi/default');
+    expect(models.executor).toBe('pi/default');
     // 其他角色保持 profile 默认
-    expect(models.research).toBe('pi/default');
+    expect(models.researcher).toBe('pi/task');
   });
 
-  it('strict profile 全部使用 slow 模型', () => {
+  it('strict profile 默认映射', () => {
     updateConfig(tmpDir, (config) => {
       config.profile = 'strict';
     });
     const config = loadConfig(tmpDir);
     const models = resolveModels(config);
-    expect(models.research).toBe('pi/default');
-    expect(models.plan).toBe('pi/slow');
-    expect(models.execute).toBe('pi/slow');
-    expect(models.review).toBe('pi/slow');
+    expect(models.researcher).toBe('pi/default');
+    expect(models.planner).toBe('pi/slow');
+    expect(models.executor).toBe('pi/slow');
+    expect(models.reviewer).toBe('pi/slow');
+    expect(models['phase-researcher']).toBe('pi/default');
+  });
+
+  it('lite profile 全部 agent 为 pi/task', () => {
+    updateConfig(tmpDir, (config) => {
+      config.profile = 'lite';
+    });
+    const config = loadConfig(tmpDir);
+    const models = resolveModels(config);
+    expect(models.researcher).toBe('pi/task');
+    expect(models.planner).toBe('pi/task');
+    expect(models.executor).toBe('pi/task');
+    expect(models.reviewer).toBe('pi/task');
+    expect(models['phase-researcher']).toBe('pi/task');
+    expect(models['codebase-mapper']).toBe('pi/task');
+    expect(models['spec-bootstrapper']).toBe('pi/task');
   });
 });

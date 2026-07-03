@@ -10,7 +10,6 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { resolveModels } from '../../core/config.js';
 import type { ProjectConfig } from '../../types/index.js';
-import type { ModelRole } from '../../types/index.js';
 import { AGENT_PROMPTS } from '../../templates/agents/index.js';
 
 export interface AgentDef {
@@ -83,30 +82,19 @@ export const AGENT_DEFS: AgentDef[] = [
  * Agent file generation
  * ================================================================ */
 
-/** Map agent role name → ModelRole key in profile defaults */
-const AGENT_TO_MODEL_ROLE: Record<string, ModelRole> = {
-  researcher: 'research',
-  'phase-researcher': 'research',
-  planner: 'plan',
-  executor: 'execute',
-  reviewer: 'review',
-  // Brownfield/analysis agents not in profile map → fall back to 'default'
-};
-
 /**
  * Resolve agent model from project config.
- * Priority: agentModels[role] (per-agent override) > models[modelRole] (per-role) > tier/profile default > pi/default
+ * Priority: agentModels[role] (per-agent override) > models[role] (resolved from profile/tier) > pi/default
  */
 export function resolveAgentModel(role: string, config: ProjectConfig): string {
   // 1. Per-agent override (highest priority)
   if (config.agentModels && config.agentModels[role]) {
     return config.agentModels[role];
   }
-  // 2. Per-role override
-  const modelRole = AGENT_TO_MODEL_ROLE[role];
-  if (modelRole) {
-    const roleModel = resolveModels(config)[modelRole];
-    if (roleModel) return roleModel;
+  // 2. Resolved from profile or tier defaults
+  const resolved = resolveModels(config);
+  if (resolved[role]) {
+    return resolved[role];
   }
   // 3. Fallback
   return 'pi/default';
