@@ -130,34 +130,50 @@ bp init --brownfield   # auto-detects tech stack, bootstraps specs
 
 ## Recommended Loop
 
-After `bp init`, tell your agent:
+```mermaid
+flowchart TD
+    A[/bp:init/] --> B{Greenfield?}
+    B -->|Yes| C[/bp:grill/]
+    B -->|Brownfield| C
+    C --> D[/bp:research/]
+    D --> E[/bp:roadmap/]
+    E --> F[Phase Loop]
+    F --> G[/bp:discuss/]
+    G --> H[/bp:research-phase/]
+    H --> I[/bp:split/]
+    I --> J[/bp:proposal &lt;name&gt;/]
+    J --> K[/bp:plan/]
+    K --> L[/bp:apply/]
+    L --> M[/bp:review/]
+    M --> N[/bp:archive/]
+    N --> O{More changes?}
+    O -->|Yes| J
+    O -->|No| P{More phases?}
+    P -->|Yes| G
+    P -->|No| Q[/bp:ship/]
+    Q --> R[Done]
 
-```
-/bp:continue          # auto-advances to current step, outputs instructions
-# Agent follows instructions, fills artifacts, commits work
-/bp:continue          # repeats until all phases shipped
+    F -.->|Switch milestone| S[/bp:state set-milestone/]
+    S -.-> E
+
+    L -.->|Debug| T[/bp:audit/]
+    M -.->|Debug| T
 ```
 
-Typical change flow:
+### Step by step
 
-```
-/bp:proposal <name>   # fill proposal.md
-/bp:continue change <name>  # → plan → apply → review → archive
-```
+1. **`/bp:init`** — project setup, tech stack selection, spec bootstrap
+2. **Reach consensus** — `/bp:grill` → `/bp:research` → `/bp:roadmap`
+3. **Phase loop** — `/bp:discuss` → `/bp:research-phase` → `/bp:split`
+4. **Change loop** — `/bp:proposal` → `/bp:plan` → `/bp:apply` → `/bp:review` → `/bp:archive`
+5. **All done** — `/bp:ship`
 
-Autonomous mode — agent decides everything, no questions:
+### Tips
 
-```
-/bp:loop              # auto-advance through ALL steps without user input
-```
-
-Utility commands:
-
-```
-/bp:state             # view current state
-/bp:commit <msg>      # commit with task marking
-/bp:ship              # create PR or release
-```
+- **Continue shorthand**: most steps auto-advance with `/bp:continue`
+- **Auto mode**: `/bp:loop` for unattended execution
+- **Switch milestone**: `/bp:state set-milestone <id>` then `/bp:continue`
+- **Debug**: `/bp:audit` at any point to verify deliverables
 
 ## License
 
