@@ -1,4 +1,4 @@
-import { CLASSIFY_CHANGE, CHANGE_NAME_RESOLVE, COMMIT_ADVANCE } from './shared.js';
+import { CLASSIFY_CHANGE, CHANGE_NAME_RESOLVE } from './shared.js';
 import type { SkillTemplate, CommandTemplate } from '../types.js';
 
 const instructions = `## Input
@@ -14,75 +14,71 @@ const instructions = `## Input
 
 ${CLASSIFY_CHANGE}${CHANGE_NAME_RESOLVE('reviewing', 'archive')}### Step 2: Run verification checks
 
-Run all these checks yourself — no sub-agent needed:
+Run checks first — do NOT write verification.md yet:
 
-**All changes (lightweight + full):**
+**All changes:**
 - Run \`npx tsc --noEmit\` — must pass
 - Run \`npx vitest run\` — must pass
 
 **Full changes additionally:**
-- Verify each delta-spec SHALL/MUST has a passing test (grep specs/ for requirements, match against tests)
+- Verify each delta-spec SHALL/MUST has a passing test
 - Verify TDD commit integrity: RED→GREEN→REFACTOR sequence for each type:behavior task
 
-**Write verification.md:**
-Get template: \`bp template verification\`, fill with results.
-- Status: \`passed\` if all checks pass, \`gaps_found\` if any fail, \`human_needed\` if ambiguous
+### Step 3: Write verification.md + route
 
-### Step 3: Handle verification results
-- \`passed\` → proceed to archival (Step 4)
-- \`gaps_found\` → route back to apply (reapply) or plan (replan) — do NOT archive
-- \`human_needed\` → surface to user with specific questions
+**All checks passed:**
+1. Get template: \`bp template verification\`
+2. Write \`verification.md\` to the change directory (it will be archived together with the change)
+3. Status: \`passed\`
+
+**Any check failed:**
+- Write verification.md with \`gaps_found\`, route back to apply (reapply) or plan (replan)
+- Do NOT archive — stop here
 
 ### Step 4: Execute archival
-Run \`bp archive bp/changes/<change-name>\` (or \`bp archive bp/milestones/<mid>/phases/<pid>/changes/<name>\` for phase changes).
+Run \`bp archive <change-dir>\`. The CLI handles: delta-spec merge, directory move to archive/, state.md update.
+verification.md is moved to archive together with the change.
 
-This single CLI command handles: delta-spec merge, code cognition backfill, directory move to archive/, state.md update.
+### Step 5: Verify merge result
+Check the global spec \`bp/specs/<domain>/spec.md\`:
+- ADDED Requirements from delta are present
+- REMOVED Requirements from delta are gone
+- No duplicate \`### Requirement: xxx\` headers
 
-### Step 5: Understand what the CLI did (do NOT undo this)
-\`bp archive\` has already updated \`state.md\` — the change is intentionally removed from the active list. This is correct, not a bug:
+### Step 6: Commit + check if last change
+Run \`bp state\`, check the \`pending\` list.
 
-1. **Change removed from \`changes[]\` / \`adhoc[]\`** — it's no longer pending, this is expected
-2. **Phase changes get a history entry** in \`## History\` section: \`[date] Archived ch-name (milestone / phase)\`
-3. **\`active_context\` auto-reset** to the next pending change, or to project level if none remain
-4. **Change directory moved** to \`bp/archive/<milestone>/<phase>/<change>/\` (phase) or \`bp/archive/changes/<date>-<name>/\` (adhoc)
+**If more pending changes remain:**
+\`\`\`bash
+bp commit "docs(archive): archive <change-name>" \\
+  --files "bp/archive/<milestone>/<phase>/<change>/" \\
+  --scope docs --record
+\`\`\`
 
-**Do NOT write the change back into \`state.md\`** — the removal is the intended archival behavior.
+**If this was the LAST change in the phase:**
+1. Write phase summary: \`bp template summary\` → \`bp/milestones/<mid>/phases/<pid>/summary.md\`
+2. Commit archive + summary:
+\`\`\`bash
+bp commit "docs(archive): archive <change-name>, phase complete" \\
+  --files "bp/archive/<milestone>/<phase>/<change>/,bp/milestones/<mid>/phases/<pid>/summary.md" \\
+  --scope docs --record
+\`\`\`
 
-After \`bp archive\` merges delta-specs into global specs:
-- Verify merged global spec has no duplicate Requirement headers
-- Verify all ADDED Requirements from delta exist in merged spec
-- Verify all REMOVED Requirements from delta are gone from merged spec
-
-${COMMIT_ADVANCE('docs', 'verify + archive <change-name>')}
-
-### Step 7: Check if last change — generate phase summary
-Run \`bp state\` and check the \`pending\` list. If no more pending changes remain in this phase:
-1. Get the summary template: \`bp template summary\`
-2. Collect all archived changes from \`bp/archive/<milestone>/<phase>/\`
-3. Write \`bp/milestones/<mid>/phases/<pid>/summary.md\` containing:
-   - Verification matrix (all changes with spec/quality/goal review status)
-   - Each change's key deliverables and decisions from change-summary.md
-   - Review verdicts
-4. Commit the summary:
-   \`\`\`bash
-   bp commit "docs(summary): phase complete for <phase-id>" --files "bp/milestones/<mid>/phases/<pid>/summary.md" --scope docs --record
-   \`\`\`
-
-### Step 8: Advance
-Run \`bp continue\` — if all phase changes are archived, routes to ship-phase.
+### Step 7: Advance
+Run \`bp continue\` — routes to next change or ship-phase.
 
 ## Guardrails
-- No sub-agent — run checks yourself, then archive
-- Full changes: verify delta-spec SHALL/MUST coverage and TDD commit integrity before archival
-- Test suite must pass completely — never archive a failing change
-- Delta-spec merge must resolve conflicts, not overwrite
-- Archived changes are never deleted
-- **Last change in phase**: write summary.md before advancing — this is the handoff artifact for the next phase`;
+- No sub-agent — run checks yourself
+- Verify FIRST, then write verification.md — if verification fails, do NOT archive
+- verification.md goes IN the change directory, archived together with the change
+- Commit --files points to \`bp/archive/\` directory (the archived location)
+- Last change in phase: must write summary.md before advancing
+- Test suite must pass completely — never archive a failing change`;
 
 export function getArchiveSkillTemplate(): SkillTemplate {
   return {
     name: 'bp-archive',
-    description: 'Verify & archive — run checks, then delta-spec merge + directory move + state update',
+    description: 'Verify & archive — run checks, write results, archive, commit',
     instructions,
   };
 }
@@ -90,7 +86,7 @@ export function getArchiveSkillTemplate(): SkillTemplate {
 export function getArchiveCommandTemplate(): CommandTemplate {
   return {
     name: 'SpecWF: Archive',
-    description: 'Verify & archive — run checks, then delta-spec merge + directory move + state update',
+    description: 'Verify & archive — run checks, write results, archive, commit',
     category: 'Workflow',
     tags: ['bp', 'archive', 'verify', 'specs', 'merge'],
     content: instructions,
