@@ -44,6 +44,7 @@ Check the global spec \`bp/specs/<domain>/spec.md\` (<domain> = directory under 
 - ADDED Requirements from delta are present
 - REMOVED Requirements from delta are gone
 - No duplicate \`### Requirement: xxx\` headers
+- If the CLI warned about a skipped domain, the delta-spec directory name didn't match any domain in \`bp/specs/\` — fix the domain name in the change's \`specs/\` directory and re-archive
 
 ### Step 6: Commit + check if last change
 Run \`bp state\`, check the \`pending\` list.

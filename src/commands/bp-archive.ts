@@ -3,7 +3,7 @@
  */
 
 import { join, basename } from 'node:path';
-import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync, copyFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { loadState, updateState } from '../core/state-file.js';
 import { mergeAndWrite } from '../core/delta-merge.js';
@@ -122,16 +122,29 @@ function archiveHandler(changePath: string) {
 /** 合并 delta-specs 到全局 specs/ */
 function mergeDeltaSpecs(deltaDir: string, bpDir: string): void {
   const entries = readdirSync(deltaDir, { withFileTypes: true });
+  const globalSpecsDir = join(bpDir, 'specs');
+  const existingDomains = existsSync(globalSpecsDir)
+    ? readdirSync(globalSpecsDir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name)
+    : [];
+
   for (const entry of entries) {
     if (!entry.isDirectory()) continue;
 
-    const deltaSpecPath = join(deltaDir, entry.name, 'spec.md');
-    const liveSpecPath = join(bpDir, 'specs', entry.name, 'spec.md');
+    const domain = entry.name;
+    const deltaSpecPath = join(deltaDir, domain, 'spec.md');
+    const liveSpecPath = join(globalSpecsDir, domain, 'spec.md');
 
     if (!existsSync(deltaSpecPath)) continue;
 
+    // Validate: domain must exist in bp/specs/ (prevent phase names becoming domains)
+    if (!existingDomains.includes(domain)) {
+      console.warn('Skipping delta-spec merge: domain "' + domain + '" does not exist in bp/specs/');
+      continue;
+    }
+
     if (!existsSync(liveSpecPath)) {
-      mkdirSync(join(bpDir, 'specs', entry.name), { recursive: true });
+      // Domain exists but spec.md might be missing synchronize error case
+      console.warn('Domain "' + domain + '" exists but spec.md is missing, copying delta.');
       copyFileSync(deltaSpecPath, liveSpecPath);
       continue;
     }
@@ -139,9 +152,9 @@ function mergeDeltaSpecs(deltaDir: string, bpDir: string): void {
     const result = mergeAndWrite(liveSpecPath, deltaSpecPath);
 
     if (result.type === 'conflict') {
-      console.warn(`⚠ Merge conflict: ${entry.name}/spec.md`);
+      console.warn('Merge conflict: ' + domain + '/spec.md');
       for (const c of result.conflicts) {
-        console.warn(`   Section: ${c.section}`);
+        console.warn('   Section: ' + c.section);
       }
     }
   }
