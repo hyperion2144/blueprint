@@ -218,7 +218,9 @@ function recordTaskHash(
       const existingLine = match[1];
       // Remove existing commit annotation if any
       const cleaned = existingLine.replace(/<!-- commit: [a-f0-9]+ -->/g, '').trimEnd();
-      const annotated = `${cleaned} <!-- commit: ${hash} -->`;
+      // Mark task done if not already (match both - [ ] and - [x])
+      const checked = cleaned.replace('- [ ]', '- [x]');
+      const annotated = `${checked} <!-- commit: ${hash} -->`;
       content = content.replace(existingLine, annotated);
       writeFileSync(tasksPath, content, 'utf-8');
       return { task: taskId, hash, path: tasksPath };
