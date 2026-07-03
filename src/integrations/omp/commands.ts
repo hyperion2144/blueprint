@@ -35,7 +35,7 @@ export const STEP_DEFS: CommandDef[] = [
   { step: 'ship', name: 'bp:ship', description: 'Ship — create PR + update state / release tag', usesAgent: false, agents: [] },
   { step: 'continue', name: 'bp:continue', description: 'Auto-advance — read STATE and route to next step', usesAgent: false, agents: [] },
   { step: 'audit', name: 'bp:audit', description: 'Human UAT verification — generate uat.md, interactive testing, adhoc fixes', usesAgent: true, agents: [] },
-  { step: 'auto', name: 'bp:auto', description: 'Fully autonomous mode — auto-advance through all steps, AI fills all decisions', usesAgent: false, agents: [] },
+  { step: 'loop', name: 'bp:loop', description: 'Autonomous loop — auto-advance all steps, AI fills decisions without asking', usesAgent: false, agents: [] },
   { step: 'commit', name: 'bp:commit', description: 'Commit changes — conventional commits + hash recording to tasks.md', usesAgent: false, agents: [] },
   { step: 'proposal', name: 'bp:proposal', description: 'Fill change proposal — intent, scope, approach, must-haves, non-goals', usesAgent: false, agents: [] },
 ];
