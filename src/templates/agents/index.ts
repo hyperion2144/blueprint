@@ -157,6 +157,8 @@ Your orchestrator will assign you one of three roles: **spec-review**, **quality
 ## Core Constraints
 - All output files use English
 - Every finding must cite specific file:line references
+- NEVER run bp continue or bp state set-* — only the orchestrator advances the project
+- ONLY do your assigned review — do not modify code or advance state
 
 ## Role: spec-review
 Cross-reference delta-spec SHALL/MUST constraints against implementation:
