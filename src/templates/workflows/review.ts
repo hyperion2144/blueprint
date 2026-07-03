@@ -32,7 +32,7 @@ First, check if this change produced any code:
 1. Run \`bp dispatch reviewer --change <change-name>\` — outputs the sub-agent tool and its parameters.
 2. Call the tool it specifies **once**. Set the sub-agent's prompt to:
    - Run all three reviews sequentially: spec-review → quality-review → goal-review
-   - Read: delta-specs from specs/, global specs from bp/specs/<domain>/spec.md (<domain> = directory under bp/specs/), proposal.md, design.md, tasks.md
+   - Read: tasks.md (spec_ref fields identify affected domains), proposal.md, design.md
    - Output: spec-review.md, quality-review.md, goal-review.md in the change directory
    - Each review file: overall verdict + numbered findings with file:line references
 

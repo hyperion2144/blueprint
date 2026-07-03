@@ -56,6 +56,9 @@ ${AGENT_CONSTRAINTS}## Execution Flow
 - Use tracer-bullet vertical slice principle
 - First wave is typically an end-to-end skeleton
 - Annotate each task's type and dependencies
+- **spec_ref required**: every \`type:behavior\` task MUST have a \`spec_ref\` field
+  pointing to the delta-spec in the change's specs/ directory (e.g. \`specs/cli/spec.md\`)
+  This field tells the executor and reviewer exactly which domain specs to load.
 
 ### Step 4: Pre-write delta-specs
 - Get template: \`bp template spec\` (one per domain)
@@ -118,7 +121,10 @@ ${AGENT_CONSTRAINTS}## Execution Flow
 ### Step 1: Read task list
 - Read tasks.md for current wave task list and order
 - Read design.md for technical approach
-- Read delta-specs from \`specs/\` (change-level) AND global specs from \`bp/specs/<domain>/spec.md\`
+- **For each task, read its \`spec_ref\` to find the affected domain**:
+  - Load delta-spec from the change's \`specs/<domain>/spec.md\`
+  - Load global spec from \`bp/specs/<domain>/spec.md\`
+  - If \`spec_ref\` is missing on a \`type:behavior\` task, flag it and use \`bp/specs/\` to find the matching domain
 - Read \`bp/conventions/coding-standards.md\` for coding conventions
 
 ### Step 2: Execute waves sequentially
@@ -205,6 +211,13 @@ Execute all three reviews sequentially on the same change: **spec-review → qua
 - ONLY do your assigned review — do not modify code or advance state
 
 ## Execution Flow
+
+### Step 0: Identify affected domains
+Read \`tasks.md\` — collect all \`spec_ref\` fields from \`type:behavior\` tasks.
+These tell you exactly which domains to review. Don't scan all of \`bp/specs/\` —
+only review the domains listed in \`spec_ref\`. Each reference points to both:
+- Delta-spec: \`specs/<domain>/spec.md\` (what this change intends to modify)
+- Global spec: \`bp/specs/<domain>/spec.md\` (the existing behavioral contract)
 
 ### Review 1: Spec Review
 Cross-reference delta-spec SHALL/MUST constraints against implementation:
