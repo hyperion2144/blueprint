@@ -482,38 +482,35 @@ export const CHANGE_SUMMARY_TEMPLATE = `# Change Summary: {{name}}
 
 export const REQUIREMENTS_TEMPLATE = `# Requirements: {{name}}
 
-> Project requirements — populated during the grill phase through structured user interview. Captures functional requirements, non-functional constraints, and success criteria.
+> Populated during grill phase. New milestones append to the top, completed milestones remain as history.
+> Format: \`## M<number>-<name> [CURRENT | COMPLETED]\` — one section per milestone.
 
 ---
 
-## Functional Requirements
+## {{milestone-id}} [CURRENT]
 
-### FR-1: {{requirement-title}}
+### Functional Requirements
+
+#### FR-1: {{requirement-title}}
 - **Description**: {{what the system should do}}
 - **Priority**: {{critical | high | medium | low}}
 - **Acceptance criteria**: {{how to verify}}
 
-### FR-2: {{requirement-title}}
+#### FR-2: {{requirement-title}}
 - **Description**: {{what the system should do}}
 - **Priority**: {{critical | high | medium | low}}
 - **Acceptance criteria**: {{how to verify}}
 
----
+### Non-Functional Requirements
 
-## Non-Functional Requirements
-
-### NFR-1: {{category (performance, security, usability, etc.)}}
+#### NFR-1: {{category (performance, security, usability, etc.)}}
 - **Description**: {{constraint or quality attribute}}
 
----
-
-## Constraints
+### Constraints
 - {{constraint-1}}
 - {{constraint-2}}
 
----
-
-## Success Criteria
+### Success Criteria
 - [ ] {{criterion-1}}
 - [ ] {{criterion-2}}
 `;

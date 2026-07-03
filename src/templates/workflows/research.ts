@@ -11,14 +11,14 @@ const instructions = ORCHESTRATOR_RULE + `## Input
 Run \`bp context research\` — outputs state and file manifest. Read all listed files before proceeding.
 
 ### Step 1b: Detect if new milestone
-If \`bp/research/\` already has files from a previous milestone:
-- Archive old research:
-  \`\`\`bash
-  mkdir -p bp/archive/research-m<prev-number>
-  cp bp/research/*.md bp/archive/research-m<prev-number>/
-  rm bp/research/*.md
-  \`\`\`
+Run \`bp state\` to check current milestone ID. If \`bp/research/\` already has subdirectories (e.g. \`m1-core/\`):
+- This is a new milestone — previous research is already complete
+- Create new research directory: \`mkdir -p bp/research/<new-milestone-id>\`
+- Write research output to \`bp/research/<new-milestone-id>/<file>.md\`
+- Keep existing \`bp/research/m<prev-num>-*/\` directories intact (they serve as project history)
 - Proceed to Step 2 for the NEW milestone's research
+
+**First time (no subdirectories):** Write research to \`bp/research/\` directly.
 
 ### Step 2: Dispatch research sub-agents
 1. Run \`bp dispatch researcher\` — outputs the sub-agent tool and its parameters.
