@@ -19,8 +19,8 @@ export interface SkillTemplate {
 }
 
 export interface CommandTemplate {
-  /** Command display name (e.g., 'SpecWF: Plan') */
-  name: string;
+  /** Command display name */
+  name?: string;
   /** One-line description */
   description: string;
   /** Grouping category (e.g., 'Workflow') */

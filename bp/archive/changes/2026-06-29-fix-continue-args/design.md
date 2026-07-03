@@ -4,10 +4,10 @@
 
 ## 背景与目标
 
-`specwf continue` 只读 `active_context` 推断下一步，无法查询特定 change/milestone/phase 的状态。
+`blueprint continue` 只读 `active_context` 推断下一步，无法查询特定 change/milestone/phase 的状态。
 
 本设计目标：
-- `specwf continue change <name>` — 查询 change/adhoc 的状态并输出下一步
+- `blueprint continue change <name>` — 查询 change/adhoc 的状态并输出下一步
 - 无参数调用行为不变（向后兼容）
 - milestone / phase 参数暂不实现（scope 控制）
 
@@ -18,9 +18,9 @@
 ### 架构图
 
 ```text
-specwf continue change <name>
+blueprint continue change <name>
   → continueHandler(name)
-    → determineChangeNextStep(specwfDir, name)
+    → determineChangeNextStep(blueprintDir, name)
       → loadState()
       → state.changes.find(name)
         ├─ 匹配 → status = "change-" + change.status
@@ -45,9 +45,9 @@ interface ContinueOptions {
 
 ### 数据流
 
-1. 用户在终端输入 `specwf continue change fix-ship-command`
+1. 用户在终端输入 `blueprint continue change fix-ship-command`
 2. commander 解析参数 → `continueHandler('change', 'fix-ship-command')`
-3. `loadState(specwfDir)` 读取 state.md
+3. `loadState(blueprintDir)` 读取 state.md
 4. 在 `state.changes` 中查找 `fix-ship-command` → 未找到
 5. 在 `state.adhoc` 中查找 `fix-ship-command` → 找到，status = `proposal`
 6. 构造状态键: `${contextType}-${status}` = `adhoc-proposal`
@@ -59,11 +59,11 @@ interface ContinueOptions {
 ```typescript
 // src/core/continue.ts — 新增函数
 function determineChangeNextStep(
-  specwfDir: string,
+  blueprintDir: string,
   changeName: string,
 ): ContinueResult | { error: string }
 
-// src/commands/specwf-continue.ts — 修改
+// src/commands/blueprint-continue.ts — 修改
 // 注册子命令: continue change <name>
 // 无参数: 调用原来的 determineNextStep
 // 有参数: 调用 determineChangeNextStep
@@ -75,7 +75,7 @@ function determineChangeNextStep(
 
 | 文件路径 | 内容描述 | 操作 |
 |---------|---------|------|
-| `src/commands/specwf-continue.ts` | 添加子命令解析（change 子命令） | 修改 |
+| `src/commands/blueprint-continue.ts` | 添加子命令解析（change 子命令） | 修改 |
 | `src/core/continue.ts` | 新增 `determineChangeNextStep` 函数 | 修改 |
 
 ---
@@ -88,7 +88,7 @@ function determineChangeNextStep(
 - 无参数调用行为不变
 
 ### 集成测试
-- `specwf continue change fix-ship-command` → 输出 proposal 状态的下一步（plan）
+- `blueprint continue change fix-ship-command` → 输出 proposal 状态的下一步（plan）
 
 ### TDD 任务
 - `determineChangeNextStep` 的单元测试走 RED→GREEN→REFACTOR

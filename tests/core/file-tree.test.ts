@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdirSync, rmSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { createSpecwfStructure, isInitialized, createMilestoneDir, createPhaseDir, createChangeDir, createAdhocChangeDir, listMilestones, listPhases, listChanges, listAdhocChanges, listArchived } from '../../src/core/file-tree.js';
+import { createBlueprintStructure, isInitialized, createMilestoneDir, createPhaseDir, createChangeDir, createAdhocChangeDir, listMilestones, listPhases, listChanges, listAdhocChanges, listArchived } from '../../src/core/file-tree.js';
 
 const tmpDir = join(process.cwd(), 'tests/tmp-filetree');
 
@@ -13,9 +13,9 @@ afterEach(() => {
   rmSync(tmpDir, { recursive: true, force: true });
 });
 
-describe('createSpecwfStructure', () => {
+describe('createBlueprintStructure', () => {
   it('创建完整目录骨架', () => {
-    createSpecwfStructure(tmpDir);
+    createBlueprintStructure(tmpDir);
     expect(existsSync(join(tmpDir, 'specs'))).toBe(true);
     expect(existsSync(join(tmpDir, 'conventions'))).toBe(true);
     expect(existsSync(join(tmpDir, 'milestones'))).toBe(true);

@@ -13,9 +13,9 @@
 
 | 测试名 | 类型 | 结果 | 说明 |
 |--------|------|------|------|
-| `specwf continue`（无参数） | e2e | ✅ 通过 | 输出 milestone-shipped，行为不变 |
-| `specwf continue change fix-ship-command` | e2e | ✅ 通过 | 输出 adhoc-proposal → plan |
-| `specwf continue change nonexistent` | e2e | ✅ 通过 | 输出错误信息 + 可用 change 列表 |
+| `blueprint continue`（无参数） | e2e | ✅ 通过 | 输出 milestone-shipped，行为不变 |
+| `blueprint continue change fix-ship-command` | e2e | ✅ 通过 | 输出 adhoc-proposal → plan |
+| `blueprint continue change nonexistent` | e2e | ✅ 通过 | 输出错误信息 + 可用 change 列表 |
 
 ## 需求覆盖检查
 
@@ -29,10 +29,10 @@
 
 | 目标项 | 达成状态 | 证据 |
 |--------|----------|------|
-| `specwf continue change fix-ship-command` 显示 plan 作为下一步 | ✅ 达成 | E2E 验证 |
-| `specwf continue` 无参数行为不变 | ✅ 达成 | E2E 验证 |
+| `blueprint continue change fix-ship-command` 显示 plan 作为下一步 | ✅ 达成 | E2E 验证 |
+| `blueprint continue` 无参数行为不变 | ✅ 达成 | E2E 验证 |
 | 不存在的 change 输出明确错误 | ✅ 达成 | E2E 验证 |
 
 ---
 
-*Verification 报告由 specwf verify 阶段自动生成。*
+*Verification 报告由 blueprint verify 阶段自动生成。*

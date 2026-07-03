@@ -2,7 +2,7 @@
 
 ## 目标
 
-实现 OMP agent 定义文件生成器，从 project.yml 读取配置，生成 .omp/agents/specwf-<role>.md（6 个 agent）。
+实现 OMP agent 定义文件生成器，从 project.yml 读取配置，生成 .omp/agents/blueprint-<role>.md（6 个 agent）。
 
 ## 实现要点
 

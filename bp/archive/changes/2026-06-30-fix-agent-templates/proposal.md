@@ -10,7 +10,7 @@
 1. 为所有输出文档提供可填写的模板文件
 2. 每个 agent 的说明中标注使用哪个模板、如何获取
 3. 新增 codebase-mapper 和 spec-bootstrapper 两个 agent
-4. 模板文件通过 `specwf template` 命令可获取
+4. 模板文件通过 `blueprint template` 命令可获取
 
 ---
 
@@ -26,18 +26,18 @@
 - `src/public/templates/specs/spec.md` — 行为契约模板（BOOTSTRAPPED）
 
 **新 agent 定义（2 个）**：
-- `specwf-codebase-mapper` — 存量代码分析 agent
-- `specwf-spec-bootstrapper` — 规格启动 agent
+- `blueprint-codebase-mapper` — 存量代码分析 agent
+- `blueprint-spec-bootstrapper` — 规格启动 agent
 
 **已有 agent 更新（6 个）**：
 - 每个 agent 的 `## 产物要求` 标注对应模板文件和获取方式
-- 获取方式：通过 `specwf template <type>` 命令读取模板
+- 获取方式：通过 `blueprint template <type>` 命令读取模板
 
 **CLI 更新**：
-- `src/commands/specwf-template.ts` 注册新模板类型
+- `src/commands/blueprint-template.ts` 注册新模板类型
 
 **对 agent 行为的要求**：
-- agent 在产出文件时，先执行 `specwf template <type>` 获取模板内容
+- agent 在产出文件时，先执行 `blueprint template <type>` 获取模板内容
 - 或者读取 `templates/` 目录下的模板文件
 - 模板中的 `{{placeholder}}` 替换为实际内容
 
@@ -52,18 +52,18 @@
 ```
 ## 产物要求
 
-使用以下模板文件。所有模板可通过 `specwf template <type>` 获取，
+使用以下模板文件。所有模板可通过 `blueprint template <type>` 获取，
 或在目录中直接读取 `templates/codebase/<name>.md`。
 
 ### stack.md（模板: codebase/stack）
-- 使用 `specwf template codebase-stack` 获取模板
+- 使用 `blueprint template codebase-stack` 获取模板
 - 或读取 `templates/codebase/stack.md`
 - 替换模板中的 `[占位符]` 为实际内容
 ```
 
 ### 模板注册
 
-`specwf template <type>` 扩展新类型：
+`blueprint template <type>` 扩展新类型：
 - `codebase-stack` / `codebase-architecture` / `codebase-conventions` / `codebase-pitfalls`
 - `spec-bootstrap`
 

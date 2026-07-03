@@ -6,8 +6,8 @@ list + template 命令（列出里程碑/变更 + 从模板文件生成产物）
 
 ## 产出文件
 
-- `src/commands/specwf-list.ts`
-- `src/commands/specwf-template.ts`
+- `src/commands/blueprint-list.ts`
+- `src/commands/blueprint-template.ts`
 
 ## 验证
 

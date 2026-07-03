@@ -7,7 +7,7 @@ import { mkdirSync, existsSync, writeFileSync, readFileSync, readdirSync, statSy
 import { join, basename } from 'node:path';
 
 /** bp/ 目录骨架的子目录 */
-const SPECWF_DIRS = [
+const BP_DIRS = [
   'specs',
   'conventions',
   'research',
@@ -18,9 +18,9 @@ const SPECWF_DIRS = [
 ];
 
 /** 创建 bp/ 目录骨架 */
-export function createSpecwfStructure(bpDir: string): void {
+export function createBlueprintStructure(bpDir: string): void {
   mkdirSync(bpDir, { recursive: true });
-  for (const dir of SPECWF_DIRS) {
+  for (const dir of BP_DIRS) {
     mkdirSync(join(bpDir, dir), { recursive: true });
   }
 }

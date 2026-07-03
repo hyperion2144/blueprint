@@ -2,35 +2,35 @@
 
 ## 目标
 
-实现 9 个 CLI 子命令，用户在终端通过 `specwf <cmd>` 完整操作 specwf。
+实现 9 个 CLI 子命令，用户在终端通过 `blueprint <cmd>` 完整操作 blueprint。
 
 ## 命令清单与实现方案
 
 | 命令 | 核心逻辑 | 依赖 |
 |---|---|---|
-| `specwf init` | @clack/prompts 向导 → file-tree.createSpecwfStructure → 写入 project.yml/state.md → 调用 update | file-tree + config + generators |
-| `specwf update` | loadConfig → generateAll → 写入 .omp/commands/*.md + .omp/agents/*.md | config + generators |
-| `specwf config [set]` | config + list 模式：loadConfig → 格式化输出；config set：updateConfig | config |
-| `specwf state` | loadState → 格式化输出 frontmatter + body | state-file |
-| `specwf context <step>` | generateContext → formatContextTerminal → console.log | spec-injector + state-file |
-| `specwf continue` | determineNextStep → 格式化输出当前位置 + 下一步 | continue + state-file |
-| `specwf archive <change>` | 校验 change 存在 → mergeAndWrite → extractFromGitDiff → writeExtractionToSpec → file-tree.archiveChangeDir → updateState | delta-merge + code-extract + file-tree + state-file |
-| `specwf list` | 遍历 milestones/phases/changes → 格式化树形输出 | file-tree |
-| `specwf template <type>` | 复制模板文件到目标目录 | file-tree |
+| `blueprint init` | @clack/prompts 向导 → file-tree.createSpecwfStructure → 写入 project.yml/state.md → 调用 update | file-tree + config + generators |
+| `blueprint update` | loadConfig → generateAll → 写入 .omp/commands/*.md + .omp/agents/*.md | config + generators |
+| `blueprint config [set]` | config + list 模式：loadConfig → 格式化输出；config set：updateConfig | config |
+| `blueprint state` | loadState → 格式化输出 frontmatter + body | state-file |
+| `blueprint context <step>` | generateContext → formatContextTerminal → console.log | spec-injector + state-file |
+| `blueprint continue` | determineNextStep → 格式化输出当前位置 + 下一步 | continue + state-file |
+| `blueprint archive <change>` | 校验 change 存在 → mergeAndWrite → extractFromGitDiff → writeExtractionToSpec → file-tree.archiveChangeDir → updateState | delta-merge + code-extract + file-tree + state-file |
+| `blueprint list` | 遍历 milestones/phases/changes → 格式化树形输出 | file-tree |
+| `blueprint template <type>` | 复制模板文件到目标目录 | file-tree |
 
 ## 文件结构
 
 ```
 src/commands/
-├── specwf-init.ts       # specwf init
-├── specwf-update.ts     # specwf update
-├── specwf-config.ts     # specwf config / config set
-├── specwf-state.ts      # specwf state
-├── specwf-context.ts    # specwf context <step>
-├── specwf-continue.ts   # specwf continue
-├── specwf-archive.ts    # specwf archive <change>
-├── specwf-list.ts       # specwf list
-├── specwf-template.ts   # specwf template <type>
+├── blueprint-init.ts       # blueprint init
+├── blueprint-update.ts     # blueprint update
+├── blueprint-config.ts     # blueprint config / config set
+├── blueprint-state.ts      # blueprint state
+├── blueprint-context.ts    # blueprint context <step>
+├── blueprint-continue.ts   # blueprint continue
+├── blueprint-archive.ts    # blueprint archive <change>
+├── blueprint-list.ts       # blueprint list
+├── blueprint-template.ts   # blueprint template <type>
 src/prompts/
 ├── init-wizard.ts       # init 交互向导（@clack/prompts）
 ```

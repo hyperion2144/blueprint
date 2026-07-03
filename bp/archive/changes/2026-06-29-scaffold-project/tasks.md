@@ -7,10 +7,10 @@
 - [ ] 1.4 创建 vitest.config.ts
 
 ## 2. CLI 入口
-- [ ] 2.1 创建 bin/specwf.js（shebang 入口）
+- [ ] 2.1 创建 bin/blueprint.js（shebang 入口）
 - [ ] 2.2 创建 src/cli.ts（commander + --version）
 
 ## 3. 验证
 - [ ] 3.1 npm install 成功
 - [ ] 3.2 npm run build 成功（dist/cli.js + .d.ts）
-- [ ] 3.3 node bin/specwf.js --version 打印版本号
+- [ ] 3.3 node bin/blueprint.js --version 打印版本号

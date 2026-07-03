@@ -13,9 +13,9 @@
 
 | 测试 | 结果 | 说明 |
 |------|------|------|
-| `specwf state set-milestone m2-claude-code` | ✅ | 显示 milestone-active，next: /specwf:grill |
-| `specwf state` | ✅ | 状态: milestone-active, 类型: milestone, 步骤: active |
-| `specwf continue` | ✅ | 推荐下一步: grill, Slash 命令: /specwf:grill |
+| `blueprint state set-milestone m2-claude-code` | ✅ | 显示 milestone-active，next: /blueprint:grill |
+| `blueprint state` | ✅ | 状态: milestone-active, 类型: milestone, 步骤: active |
+| `blueprint continue` | ✅ | 推荐下一步: grill, Slash 命令: /blueprint:grill |
 
 ## 需求覆盖
 

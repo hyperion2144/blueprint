@@ -1,8 +1,8 @@
-<!-- BOOTSTRAPPED — extracted from src/types/state.ts, src/core/state-machine.ts, src/core/state-file.ts, src/core/state-validator.ts, src/core/continue.ts, src/commands/specwf-continue.ts -->
+<!-- BOOTSTRAPPED — extracted from src/types/state.ts, src/core/state-machine.ts, src/core/state-file.ts, src/core/state-validator.ts, src/core/continue.ts, src/commands/blueprint-continue.ts -->
 
 ## Purpose
 
-Manage the specwf state machine — state reading/writing, transition validation, exit-condition checking, and auto-advance routing. State is stored in `specwf/state.md` with YAML frontmatter.
+Manage the blueprint state machine — state reading/writing, transition validation, exit-condition checking, and auto-advance routing. State is stored in `blueprint/state.md` with YAML frontmatter.
 
 ### Requirement: State File Schema
 
@@ -24,7 +24,7 @@ The state file SHALL contain:
 
 ### Requirement: State File Path
 
-The system SHALL locate `state.md` at `specwf/state.md`.
+The system SHALL locate `state.md` at `blueprint/state.md`.
 
 - **Source:** `src/core/state-file.ts:38-40` `statePath()`  
 - **Confidence:** HIGH
@@ -134,7 +134,7 @@ The system SHALL determine the next step based on current `active_context` state
 #### Scenario: Project auto-advance from initialized
 - **GIVEN** `active_context.type: "project"`, step `"init"`, project status `"initialized"`
 - **WHEN** `determineNextStep()` is called
-- **THEN** `nextCommand` SHALL be `"grill"` with `slashCommand: "/specwf:grill"`
+- **THEN** `nextCommand` SHALL be `"grill"` with `slashCommand: "/blueprint:grill"`
 
 #### Scenario: Change auto-advance from planning
 - **GIVEN** `active_context.type: "change"`, change status `"planning"`
@@ -153,7 +153,7 @@ The system SHALL determine the next step based on current `active_context` state
 
 ### Requirement: Step Info Table
 
-The system SHALL maintain a `STEP_INFO` lookup table mapping each workflow command to its description and artifact list for display in `specwf continue` output.
+The system SHALL maintain a `STEP_INFO` lookup table mapping each workflow command to its description and artifact list for display in `blueprint continue` output.
 
 - **Source:** `src/core/continue.ts:67-153` `STEP_INFO`  
 - **Confidence:** HIGH

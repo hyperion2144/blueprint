@@ -13,8 +13,8 @@
 
 | 测试 | 结果 |
 |------|------|
-| `specwf template phase-research` 输出模板 | ✅ |
-| `specwf update` 生成 9 个 agent | ✅ |
+| `blueprint template phase-research` 输出模板 | ✅ |
+| `blueprint update` 生成 9 个 agent | ✅ |
 | research-phase command 引用 phase-researcher | ✅ |
 | AGENT_DEFS 含 phase-researcher | ✅ |
 
@@ -22,6 +22,6 @@
 
 | agent | 方向 | 模板 |
 |-------|------|------|
-| `specwf-researcher` | 项目技术选型 | codebase/* |
-| `specwf-codebase-mapper` | 存量代码分析 | codebase/* |
-| `specwf-phase-researcher` | 阶段实现方案 | research/phase-research.md |
+| `blueprint-researcher` | 项目技术选型 | codebase/* |
+| `blueprint-codebase-mapper` | 存量代码分析 | codebase/* |
+| `blueprint-phase-researcher` | 阶段实现方案 | research/phase-research.md |

@@ -3,7 +3,7 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import type { Command } from 'commander';
 import { saveConfig } from '../core/config.js';
 import type { ProjectConfig, SpecConfig } from '../types/index.js';
-import { createSpecwfStructure, isInitialized } from '../core/file-tree.js';
+import { createBlueprintStructure, isInitialized } from '../core/file-tree.js';
 import { saveState } from '../core/state-file.js';
 import { runInitWizard } from '../prompts/init-wizard.js';
 import { detectProjectInfo, runBrownfieldInit } from '../core/brownfield.js';
@@ -57,7 +57,7 @@ async function initHandler(options: {
     stack = getSpecStack(specStackId);
   }
 
-  createSpecwfStructure(bpDir);
+  createBlueprintStructure(bpDir);
   console.log('✓ bp/ directory structure created');
 
   const config: ProjectConfig = {

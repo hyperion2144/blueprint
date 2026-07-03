@@ -7,44 +7,44 @@
 ## Change 产出明细
 
 ### change: implement-init
-- **描述**: init 命令（创建 specwf/ 骨架 + project.yml + state.md）
+- **描述**: init 命令（创建 blueprint/ 骨架 + project.yml + state.md）
 - **产出文件**:
-  - `src/commands/specwf-init.ts` — init 命令（createSpecwfStructure + saveConfig + saveState）
-- **验证**: 空目录 init → 生成 specwf/ 含 project.yml + state.md + 7 个子目录
+  - `src/commands/blueprint-init.ts` — init 命令（createSpecwfStructure + saveConfig + saveState）
+- **验证**: 空目录 init → 生成 blueprint/ 含 project.yml + state.md + 7 个子目录
 
 ### change: implement-update
 - **描述**: update 命令（调度生成器 → 写入平台文件）
 - **产出文件**:
-  - `src/commands/specwf-update.ts` — update 命令（loadConfig → generateAll → writeGeneratedFiles）
+  - `src/commands/blueprint-update.ts` — update 命令（loadConfig → generateAll → writeGeneratedFiles）
   - `src/commands/_utils.ts` — writeGeneratedFiles 工具函数
   - `src/generators/index.ts` — generateAll 调度入口
-- **验证**: specwf update → 生成 34 个平台文件
+- **验证**: blueprint update → 生成 34 个平台文件
 
 ### change: implement-config-state
 - **描述**: config + state 命令
 - **产出文件**:
-  - `src/commands/specwf-config.ts` — config / config set 命令（loadConfig → 格式化输出 + updateConfig）
-  - `src/commands/specwf-state.ts` — state 命令（loadState → 格式化输出）
+  - `src/commands/blueprint-config.ts` — config / config set 命令（loadConfig → 格式化输出 + updateConfig）
+  - `src/commands/blueprint-state.ts` — state 命令（loadState → 格式化输出）
 - **验证**: config 输出 JSON 配置；state 输出当前状态
 
 ### change: implement-context-continue
 - **描述**: context + continue 命令
 - **产出文件**:
-  - `src/commands/specwf-context.ts` — context <step> 命令（generateContext → formatContextTerminal）
-  - `src/commands/specwf-continue.ts` — continue 命令（determineNextStep → 格式化输出）
+  - `src/commands/blueprint-context.ts` — context <step> 命令（generateContext → formatContextTerminal）
+  - `src/commands/blueprint-continue.ts` — continue 命令（determineNextStep → 格式化输出）
 - **验证**: context plan 输出文件清单；continue 输出下一步 slash command
 
 ### change: implement-archive
 - **描述**: archive 命令（delta-spec 合并 + 代码认知提取 + 归档）
 - **产出文件**:
-  - `src/commands/specwf-archive.ts` — archive <change> 命令（mergeDeltaSpecs + extractFromGitDiff + writeExtractionToSpec + archiveChangeDir + updateState）
+  - `src/commands/blueprint-archive.ts` — archive <change> 命令（mergeDeltaSpecs + extractFromGitDiff + writeExtractionToSpec + archiveChangeDir + updateState）
 - **验证**: archive test-archive → delta-specs 合并成功，Login 合并到 Logout 旁
 
 ### change: implement-list-template
 - **描述**: list + template 命令
 - **产出文件**:
-  - `src/commands/specwf-list.ts` — list 命令（listMilestones + listPhases + listChanges + listAdhocChanges + listArchived）
-  - `src/commands/specwf-template.ts` — template <type> 命令（从 src/public/templates/artifacts/ 读取模板文件 + 替换 {{name}}/{{date}}）
+  - `src/commands/blueprint-list.ts` — list 命令（listMilestones + listPhases + listChanges + listAdhocChanges + listArchived）
+  - `src/commands/blueprint-template.ts` — template <type> 命令（从 src/public/templates/artifacts/ 读取模板文件 + 替换 {{name}}/{{date}}）
 - **验证**: list 输出 milestone/phase 树；template proposal 从模板文件生成
 
 ### change: fix-generator-architecture
@@ -54,7 +54,7 @@
   - `src/generators/omp-agents.ts` (重写) — 读模板文件 + 替换变量（从 832 行降到 141 行）
   - `src/generators/skills.ts` (重写) — 读模板文件 + 替换变量（从 1741 行降到 92 行）
   - `src/generators/index.ts` (重写) — 调度三个生成器
-  - `src/commands/specwf-template.ts` (重写) — 从模板文件读取
+  - `src/commands/blueprint-template.ts` (重写) — 从模板文件读取
   - `tsup.config.ts` (更新) — publicDir 复制模板到 dist/
   - `src/public/templates/artifacts/proposal.md` — 124 行（含填写指引 + 格式要求 + 检查清单）
   - `src/public/templates/artifacts/design.md` — 224 行（含架构图 + 数据结构 + 接口 + 测试策略 + 备选方案 + 风险）
@@ -77,12 +77,12 @@
 | tsc --noEmit | ✅ | 0 errors |
 | vitest run | ✅ | 71/71 通过 |
 | npm run build | ✅ | dist/cli.js (50.02KB) |
-| specwf --help | ✅ | 显示 9 个命令 |
-| specwf init | ✅ | 创建完整 specwf/ 结构 |
-| specwf update | ✅ | 生成 34 个平台文件 |
-| specwf state | ✅ | 读取自身状态 |
-| specwf continue | ✅ | 输出下一步 slash command |
-| specwf archive | ✅ | delta-spec 合并 + 归档 |
-| specwf template | ✅ | 从模板文件生成产物 |
+| blueprint --help | ✅ | 显示 9 个命令 |
+| blueprint init | ✅ | 创建完整 blueprint/ 结构 |
+| blueprint update | ✅ | 生成 34 个平台文件 |
+| blueprint state | ✅ | 读取自身状态 |
+| blueprint continue | ✅ | 输出下一步 slash command |
+| blueprint archive | ✅ | delta-spec 合并 + 归档 |
+| blueprint template | ✅ | 从模板文件生成产物 |
 | 生成器代码行数 | ✅ | 390 行（从 4516 行降下来） |
 | 产物模板行数 | ✅ | 1562 行（从 ~200 行扩充） |

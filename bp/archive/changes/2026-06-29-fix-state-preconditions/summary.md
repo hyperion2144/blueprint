@@ -21,8 +21,8 @@
 |------|------|------|
 | `src/core/state-validator.ts` | 新增 | 退出条件定义 + `validateStepAdvance()` 校验函数 |
 | `src/core/continue.ts` | 修改 | 新增 `STEP_INFO` 步骤信息表（描述/产出物/文件参考），`determineChangeNextStep` 和 `determineNextStep` 返回 `nextStepInfo` |
-| `src/commands/specwf-state.ts` | 修改 | `setStep` 在 `updateState` 前调用 `validateStepAdvance`，校验不通过时输出错误并不修改状态 |
-| `src/commands/specwf-continue.ts` | 修改 | `formatContinueResult` 输出增强：显示步骤描述、产出物列表、command 文件参考 |
+| `src/commands/blueprint-state.ts` | 修改 | `setStep` 在 `updateState` 前调用 `validateStepAdvance`，校验不通过时输出错误并不修改状态 |
+| `src/commands/blueprint-continue.ts` | 修改 | `formatContinueResult` 输出增强：显示步骤描述、产出物列表、command 文件参考 |
 | `package.json` | 修改 | 增加 `prepare` 脚本，`npm install` 后自动执行 `npm run build` |
 
 ## 关键决策

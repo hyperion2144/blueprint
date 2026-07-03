@@ -38,7 +38,7 @@
 
 #### 注释保留：yaml Document API
 
-`yaml` 2.x 的 `Document` API 是 specwf 必须的特性。`project.yml` 包含大量注释（配置说明、profile 说明等），修改配置写入时必须保留这些注释。
+`yaml` 2.x 的 `Document` API 是 blueprint 必须的特性。`project.yml` 包含大量注释（配置说明、profile 说明等），修改配置写入时必须保留这些注释。
 
 ```typescript
 import YAML from 'yaml';
@@ -103,8 +103,8 @@ export function loadProjectConfig(path: string): ProjectConfig {
 | 场景 | 推荐库 | 原因 |
 |------|--------|------|
 | `project.yml` 读 + 写（保留注释） | `yaml` + Document API | 注释保留 + 便捷修改 |
-| `.specwf.yaml` 读（change 元数据） | `yaml` + parse() + Zod | 类型安全，无需写回 |
-| `specwf config set` 写回 | `yaml` + Document API | 修改后写回保留注释 |
+| `.blueprint.yaml` 读（change 元数据） | `yaml` + parse() + Zod | 类型安全，无需写回 |
+| `blueprint config set` 写回 | `yaml` + Document API | 修改后写回保留注释 |
 | agent 定义 YAML frontmatter | `gray-matter`（见下节） | 天然分离 frontmatter + body |
 | 高性能批量解析 | `js-yaml`（需评估） | 目前无此场景 |
 
@@ -176,7 +176,7 @@ export function writeYamlWithComments(path: string, data: unknown, templatePath?
 
 ### 2.2 使用场景分析
 
-specwf 需要 frontmatter 解析的三个场景：
+blueprint 需要 frontmatter 解析的三个场景：
 
 #### 场景 A：解析 agent 定义文件（`.omp/agents/*.md`）
 
@@ -185,7 +185,7 @@ specwf 需要 frontmatter 解析的三个场景：
 ```yaml
 ---
 type: agent
-name: specwf-planner
+name: blueprint-planner
 model: slow
 thinking: high
 tools:
@@ -195,21 +195,21 @@ tools:
 ---
 # 系统提示
 
-你是一个 specwf planner...
+你是一个 blueprint planner...
 ```
 
-#### 场景 B：解析 `.specwf.yaml`（change 元数据）
+#### 场景 B：解析 `.blueprint.yaml`（change 元数据）
 
-实际上 `.specwf.yaml` 是纯 YAML 文件，**不是** frontmatter + body 格式。用 `yaml` 库直接解析。
+实际上 `.blueprint.yaml` 是纯 YAML 文件，**不是** frontmatter + body 格式。用 `yaml` 库直接解析。
 
 #### 场景 C：生成带 frontmatter 的文件
 
-`specwf init` 和 `specwf template` 需要**写**带 frontmatter 的文件。例如 `state.md`：
+`blueprint init` 和 `blueprint template` 需要**写**带 frontmatter 的文件。例如 `state.md`：
 
 ```markdown
 ---
 project:
-  name: specwf
+  name: blueprint
   status: initialized
 ---
 # State
@@ -235,13 +235,13 @@ import matter from 'gray-matter';
 
 // 解析
 const parsed = matter(agentFileContent);
-// parsed.data: { type: 'agent', name: 'specwf-planner', ... }
+// parsed.data: { type: 'agent', name: 'blueprint-planner', ... }
 // parsed.content: Markdown body（系统提示）
 // parsed.orig: 原始字符串
 
 // 生成
 const output = matter.stringify(body, {
-  project: { name: 'specwf', status: 'initialized' },
+  project: { name: 'blueprint', status: 'initialized' },
   active_context: { type: 'project', ref: null, step: 'init' },
 });
 
@@ -306,9 +306,9 @@ OpenSpec 的官方 remediation plan 分三阶段：
 2. **Phase 1**：加 `sync` 命令，用 diff3 做 per-requirement 3-way merge
 3. **Phase 2**：扩展 delta 语言到 scenario 级，用 stable identifier 做细粒度合并
 
-### 3.2 specwf 的合并算法设计
+### 3.2 blueprint 的合并算法设计
 
-specwf 需要更强的合并机制，原因是：
+blueprint 需要更强的合并机制，原因是：
 - **嵌套结构**：spec 是 `## Purpose / ### Requirement / #### Scenario` 的四级层级结构
 - **并发 change**：依赖图允许并行 change，archive 顺序可能不同于创建顺序
 - **确定性回灌**：双重回灌（delta 合并 + 代码认知提取）需要非破坏性的合并
@@ -490,7 +490,7 @@ function mergePreservingOrder(base: string, delta: string): string {
 每个 change 在创建时保存其 base 的 spec 哈希：
 
 ```typescript
-// .specwf.yaml 或 changes/<name>/meta.json
+// .blueprint.yaml 或 changes/<name>/meta.json
 interface ChangeMeta {
   id: string;
   baseFingerprints: Record<string, string>;  // 路径 → SHA-256 of the requirement content at fork time
@@ -654,7 +654,7 @@ type ActiveStep =
 
 | 上下文 | 当前状态 | 触发命令 | 目标状态 | 输出物 |
 |--------|---------|---------|---------|--------|
-| project | - | `init` | `initialized` | specwf/ 目录结构、project.yml |
+| project | - | `init` | `initialized` | blueprint/ 目录结构、project.yml |
 | project | `initialized` | `grill` | `requirements-defined` | requirements.md |
 | project | `requirements-defined` | `research` | `researched` | research/summary.md, research/stack.md |
 | project | `researched` | `roadmap` | `roadmap-defined` | roadmap.md |
@@ -675,7 +675,7 @@ type ActiveStep =
 
 ### 4.3 状态恢复逻辑（continue 命令）
 
-`/specwf:continue` 的状态机推进逻辑：
+`/blueprint:continue` 的状态机推进逻辑：
 
 ```
 
@@ -733,7 +733,7 @@ function determineNextStep(state: StateFile): string | null {
 # state.md 的 YAML frontmatter + Markdown body
 ---
 project:
-  name: specwf
+  name: blueprint
   status: researched                 # 项目层状态
   current_milestone: v1              # 可选，当前 milestone
   current_phase: bootstrap-core       # 可选，当前 phase
@@ -848,7 +848,7 @@ function validateTransition(from: State, to: string): boolean {
 ```mermaid
 flowchart TD
     subgraph 输入层["输入层"]
-        YAML_FILES["project.yml<br/>.specwf.yaml"]
+        YAML_FILES["project.yml<br/>.blueprint.yaml"]
         MD_FILES["*.md agent 定义<br/>state.md<br/>specs/*.md"]
         CONFIG["project.yml<br/>profile/workflow 配置"]
     end
@@ -893,7 +893,7 @@ flowchart TD
 ```mermaid
 flowchart TD
     subgraph 读取
-        META["<change>/.specwf.yaml<br/>base fingerprints"]
+        META["<change>/.blueprint.yaml<br/>base fingerprints"]
         DELTA["<change>/specs/**/spec.md<br/>delta-spec content"]
         LIVE["specs/**/spec.md<br/>live spec content"]
     end
@@ -934,7 +934,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    START["/specwf:continue"]
+    START["/blueprint:continue"]
     READ["读 state.md<br/>gray-matter parse"]
     DETERMINE["确定当前上下文<br/>project/milestone/phase/change"]
     LOOKUP["查状态转移表<br/>valid next step"]
@@ -988,5 +988,5 @@ src/
 
 4. **状态机轻量化**：不引入状态机库，纯数据驱动。状态和转移表定义为 `const` 对象，转移验证为纯函数。
 
-5. **`yaml` Document API 只用于写保留注释的文件**：`project.yml` 和 `state.md` 需要写回保留注释；`.specwf.yaml` 只读不需要。
+5. **`yaml` Document API 只用于写保留注释的文件**：`project.yml` 和 `state.md` 需要写回保留注释；`.blueprint.yaml` 只读不需要。
 

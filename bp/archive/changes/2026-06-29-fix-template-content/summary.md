@@ -31,7 +31,7 @@ commands/ 和 skills/ 下的模板文件（adhoc.md、continue.md、ship.md、sk
 
 ## 关键决策
 
-- **adhoc 引用 continue change <name>** — adhoc 模板中的「推进」和「查看状态」均使用 `specwf continue change <change-name>`，与 `fix-continue-args` 实现的子命令保持一致
+- **adhoc 引用 continue change <name>** — adhoc 模板中的「推进」和「查看状态」均使用 `blueprint continue change <change-name>`，与 `fix-continue-args` 实现的子命令保持一致
 - **ship 模板分 Phase / Milestone 两段** — Phase ship 侧重 PR 创建（scope 概述、change 列表、变更统计、checklist），Milestone ship 侧重 release（版本号、release notes、breaking changes、测试汇总）
 - **continue skill 状态机表格化** — 将隐式的状态迁移逻辑显式写成表格（项目层 → Phase → 临时 change），包含对应的 slash command 和 subagent，与 `src/types/state.ts` 同步
 - **无模板以外的文件修改** — scope 严格限定在模板内容充实，不改动核心逻辑或 CLI 命令
@@ -49,4 +49,4 @@ commands/ 和 skills/ 下的模板文件（adhoc.md、continue.md、ship.md、sk
 | continue 模板说明 change 子命令 | ✅ |
 | ship 模板包含 PR/release 内容要求 | ✅ |
 | continue skill 状态机与代码一致 | ✅ |
-| `specwf update` regenerate | ✅ 38 个平台文件 |
+| `blueprint update` regenerate | ✅ 38 个平台文件 |

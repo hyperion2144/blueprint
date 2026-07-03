@@ -11,6 +11,6 @@ npm 发布配置完善 + README.md 编写。
 
 ## 验证
 
-- [x] npm pack --dry-run → specwf-0.1.0.tgz 成功
+- [x] npm pack --dry-run → blueprint-0.1.0.tgz 成功
 - [x] tsc --noEmit 通过
 - [x] vitest 79/79 通过

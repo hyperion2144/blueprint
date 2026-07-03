@@ -28,7 +28,7 @@
 - [ ] 5.4 src/generators/index.ts — 调度三个生成器
 
 ## 6. 更新 template 命令
-- [ ] 6.1 src/commands/specwf-template.ts — 从 src/templates/artifacts/ 读取模板
+- [ ] 6.1 src/commands/blueprint-template.ts — 从 src/templates/artifacts/ 读取模板
 
 ## 7. 更新 tsup 配置
 - [ ] 7.1 tsup.config.ts — publicDir 复制模板到 dist/
@@ -36,6 +36,6 @@
 ## 8. 验证
 - [ ] 8.1 tsc --noEmit 通过
 - [ ] 8.2 vitest run 通过
-- [ ] 8.3 specwf update 生成文件 — 格式遵循 OMP 文档规范
-- [ ] 8.4 specwf template proposal — 从模板文件生成
+- [ ] 8.3 blueprint update 生成文件 — 格式遵循 OMP 文档规范
+- [ ] 8.4 blueprint template proposal — 从模板文件生成
 - [ ] 8.5 生成器代码总行数 < 300

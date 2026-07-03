@@ -13,7 +13,7 @@
 
 | 测试 | 结果 |
 |------|------|
-| specwf continue 输出含描述/产出物/文件参考 | ✅ |
+| blueprint continue 输出含描述/产出物/文件参考 | ✅ |
 | set-step 在 requirements.md 不存在时拦截 | ✅ |
 | set-step 在 requirements.md 存在时通过 | ✅ |
 | continue change fix-state-preconditions 显示 appled → review | ✅ |

@@ -9,7 +9,7 @@
 本设计目标：
 - `saveState` 写入时保留现有 body，只更新 frontmatter
 - 修改覆盖所有调用路径（change new、archive、set-milestone/set-phase/set-step）
-- `specwf init` 创建新文件场景正常生成默认 body
+- `blueprint init` 创建新文件场景正常生成默认 body
 
 ---
 
@@ -43,14 +43,14 @@ updateState() → loadState() → updater(frontmatter)
 2. 需要写回 state.md
 3. `saveState()` 先尝试 `readFrontmatterFile()` 读取现有文件
 4. **文件存在** → 提取 `content`（现有 body）→ 传入 `stringifyFrontmatter`
-5. **文件不存在**（`specwf init` 等新文件场景）→ `readFrontmatterFile` 抛异常 → fallback 到 `generateStateBody()` 生成默认 body
+5. **文件不存在**（`blueprint init` 等新文件场景）→ `readFrontmatterFile` 抛异常 → fallback 到 `generateStateBody()` 生成默认 body
 6. `stringifyFrontmatter(frontmatter, body)` 组合 frontmatter + body → 写入文件
 
 ### 接口设计
 
 ```typescript
 // 修改 saveState 函数 — 签名不变，行为变更
-function saveState(specwfDir: string, state: StateFile): void
+function saveState(blueprintDir: string, state: StateFile): void
 
 // 新增的内部逻辑
 // - 尝试读取现有 body（readFrontmatterFile）

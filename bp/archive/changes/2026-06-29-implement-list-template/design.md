@@ -2,9 +2,9 @@
 
 ## 目标
 
-实现 `specwf list`（列出里程碑/阶段/变更）和 `specwf template <type>`（生成模板文件）命令。
+实现 `blueprint list`（列出里程碑/阶段/变更）和 `blueprint template <type>`（生成模板文件）命令。
 
 ## 文件
 
-- src/commands/specwf-list.ts
-- src/commands/specwf-template.ts
+- src/commands/blueprint-list.ts
+- src/commands/blueprint-template.ts

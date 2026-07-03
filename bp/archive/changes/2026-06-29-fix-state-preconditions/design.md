@@ -18,18 +18,18 @@
 ### 架构图
 
 ```text
-specwf state set-step <step>
-  → validateTransition(currentStatus, nextStep, specwfDir)
+blueprint state set-step <step>
+  → validateTransition(currentStatus, nextStep, blueprintDir)
     → 查规则表匹配 (from, to)
     → 逐条检查前置条件
     ├─ 全部通过 → updateState() → 状态推进
     └─ 有失败 → 输出错误列表，不修改状态
 
-specwf state set-milestone <id>
+blueprint state set-milestone <id>
   → 检查 roadmap.md 中该 milestone 已定义
   → 失败则报错
 
-specwf state set-phase <id>
+blueprint state set-phase <id>
   → 检查 roadmap.md 中该 phase 已定义
   → 检查前置 milestone/phases 已完成
   → 失败则报错
@@ -46,7 +46,7 @@ interface ValidationRule {
 
 interface Check {
   type: 'file-exists' | 'file-not-template' | 'dir-not-empty' | 'content-contains';
-  path: string;           // 相对 specwf 目录的路径
+  path: string;           // 相对 blueprint 目录的路径
   description: string;    // 校验说明（用于错误消息）
   expected?: string[];    // content-contains 的期望内容
 }
@@ -77,7 +77,7 @@ interface Check {
 function validateTransition(
   currentStatus: string,
   nextStep: string,
-  specwfDir: string,
+  blueprintDir: string,
 ): { valid: boolean; errors: string[] }
 ```
 
@@ -86,7 +86,7 @@ function validateTransition(
 | 文件 | 操作 | 说明 |
 |------|------|------|
 | `src/core/state-validator.ts` | 创建 | 校验规则表 + validateTransition 函数 |
-| `src/commands/specwf-state.ts` | 修改 | set-step/set-milestone/set-phase 集成校验 |
+| `src/commands/blueprint-state.ts` | 修改 | set-step/set-milestone/set-phase 集成校验 |
 | `src/public/templates/commands/*.md` | 修改 | 所有 command "下一步"增加 CLI 推进指引 |
 
 ---
@@ -99,8 +99,8 @@ function validateTransition(
 - 文件为模板空壳场景（含 `{{`）
 
 ### 集成测试
-- `specwf state set-step discuss` 当 requirements.md 不存在时报错
-- `specwf state set-step discuss` 当 requirements.md 正常时通过
+- `blueprint state set-step discuss` 当 requirements.md 不存在时报错
+- `blueprint state set-step discuss` 当 requirements.md 正常时通过
 
 ---
 

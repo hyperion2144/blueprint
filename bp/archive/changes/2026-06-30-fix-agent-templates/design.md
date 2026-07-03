@@ -23,14 +23,14 @@
 | `src/public/templates/agents/reviewer.md` | 修改（产物要求加模板引用） |
 | `src/public/templates/agents/verifier.md` | 修改（产物要求加模板引用） |
 | `src/public/templates/agents/archiver.md` | 修改（产物要求加模板引用） |
-| `src/commands/specwf-template.ts` | 修改（注册新模板类型） |
+| `src/commands/blueprint-template.ts` | 修改（注册新模板类型） |
 | `src/generators/omp-agents.ts` | 修改（AGENT_DEFS 加 2 个） |
 
 ## 模板获取机制
 
 agent 通过以下方式获取模板内容：
 ```
-specwf template <type>
+blueprint template <type>
 ```
 
 输出到 stdout，子代理 pipe 到文件后填充。

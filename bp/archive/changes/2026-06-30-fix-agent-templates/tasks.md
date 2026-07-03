@@ -16,11 +16,11 @@
 - [ ] task-7: 创建 spec-bootstrapper agent 定义
 - [ ] task-8: 更新 6 个已有 agent 的产物要求加模板引用
 - [ ] task-9: 更新 omp-agents.ts 的 AGENT_DEFS 加 2 个
-- [ ] task-10: 更新 specwf-template.ts 注册新模板类型
+- [ ] task-10: 更新 blueprint-template.ts 注册新模板类型
 
 ## 验证
 
 - [ ] vitest run 通过
-- [ ] `specwf template codebase-stack` 输出模板
-- [ ] `specwf template spec-bootstrap` 输出模板
-- [ ] `specwf update` 生成新 agent 文件
+- [ ] `blueprint template codebase-stack` 输出模板
+- [ ] `blueprint template spec-bootstrap` 输出模板
+- [ ] `blueprint update` 生成新 agent 文件

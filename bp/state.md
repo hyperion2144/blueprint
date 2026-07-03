@@ -70,7 +70,7 @@ changes:
     status: archived
     depends_on: []
 adhoc:
-  - name: bootstrap-specwf
+  - name: bootstrap-blueprint
     status: archived
     depends_on: []
   - name: fix-ship-command
@@ -141,7 +141,7 @@ adhoc:
     depends_on: []
 ---
 
-# specwf — 状态机
+# blueprint — 状态机
 
 ## 当前位置
 
@@ -213,26 +213,26 @@ planned → applying → applied → reviewing → verifying → archived
 
 | ID | 描述 | 状态 | 关联 Phase |
 |----|------|------|-----------|
-| bootstrap-specwf | 用 specwf 自身工作流自举项目结构 | archived | 全流程验证 |
+| bootstrap-blueprint | 用 blueprint 自身工作流自举项目结构 | archived | 全流程验证 |
 | fix-ship-command | 修复 ship 输出内容太薄 | proposal | m1-core |
-| fix-continue-args | `specwf continue` 支持 change 子命令 | archived | m1-core |
+| fix-continue-args | `blueprint continue` 支持 change 子命令 | archived | m1-core |
 | fix-state-overwrite | `saveState` 写入时覆盖 body | archived | m1-core |
 | fix-state-tracking | 归档时未更新 adhoc 状态 | archived | m1-core |
 
 ## 历史
 
-- **2026-06-29** — init: 创建 specwf 项目结构
+- **2026-06-29** — init: 创建 blueprint 项目结构
 - **2026-06-29** — research: 技术栈选型完成
 - **2026-06-29** — roadmap: m1-core × 6 Phase × 21 Change 拆分完成
 - **2026-06-29** — Phase 1~6 陆续 shipped
 - **2026-06-29** — m1-core 全部 Change archived（17/17）
 - **2026-06-29** — milestone shipped: m1-core v0.1.0
-- **2026-06-29** — 仓库创建: https://github.com/hyperion2144/specwf
+- **2026-06-29** — 仓库创建: https://github.com/hyperion2144/blueprint
 - **2026-06-29** — adhoc changes 创建: fix-ship-command, fix-continue-args, fix-state-overwrite
 - **2026-06-29** — v0.2.1 released: 状态校验 + continue 输出增强 + 多项修复
 - **2026-06-29** — fix-state-overwrite archived: `saveState` 写入时保留现有 body
-- **2026-06-29** — fix-state-tracking archived: `specwf archive` 同时检查 state.adhoc
-- **2026-06-29** — fix-continue-args archived: `specwf continue change <name>` 查询 change 的下一步
+- **2026-06-29** — fix-state-tracking archived: `blueprint archive` 同时检查 state.adhoc
+- **2026-06-29** — fix-continue-args archived: `blueprint continue change <name>` 查询 change 的下一步
 
 ## 状态变更检查清单
 
@@ -243,4 +243,4 @@ planned → applying → applied → reviewing → verifying → archived
 
 ---
 
-*state.md 由 specwf 自动管理。不要手动编辑 frontmatter 的缩进和层级结构。*
+*state.md 由 blueprint 自动管理。不要手动编辑 frontmatter 的缩进和层级结构。*

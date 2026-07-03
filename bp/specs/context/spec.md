@@ -1,4 +1,4 @@
-<!-- BOOTSTRAPPED — extracted from src/core/spec-injector.ts, src/commands/specwf-context.ts, src/commands/specwf-update.ts -->
+<!-- BOOTSTRAPPED — extracted from src/core/spec-injector.ts, src/commands/blueprint-context.ts, src/commands/blueprint-update.ts -->
 
 ## Purpose
 
@@ -25,7 +25,7 @@ The system SHALL inject different file sets based on step classification:
 #### Scenario: Project step gets all specs
 - **GIVEN** step is `grill` (project step)
 - **WHEN** `generateContext(dir, "grill")` is called
-- **THEN** `result.specs` SHALL contain all spec files from `specwf/specs/`
+- **THEN** `result.specs` SHALL contain all spec files from `blueprint/specs/`
 - **AND** `result.changeArtifacts` SHALL be empty
 
 #### Scenario: Change step gets change artifacts
@@ -65,30 +65,30 @@ The system SHALL always include `requirements.md` if it exists, regardless of st
 - **Confidence:** HIGH
 
 #### Scenario: Requirements file absent
-- **GIVEN** `specwf/requirements.md` does not exist
+- **GIVEN** `blueprint/requirements.md` does not exist
 - **WHEN** `generateContext()` is called
 - **THEN** no requirements entry SHALL be added
 
 ### Requirement: Context CLI Output
 
-The `specwf context <step>` command SHALL output JSON containing project info, current state, pending changes, specs, conventions, artifacts, and requirements.
+The `blueprint context <step>` command SHALL output JSON containing project info, current state, pending changes, specs, conventions, artifacts, and requirements.
 
-- **Source:** `src/commands/specwf-context.ts:16-46` `contextHandler()`  
+- **Source:** `src/commands/blueprint-context.ts:16-46` `contextHandler()`  
 - **Confidence:** HIGH
 
 #### Scenario: Context JSON output
 - **GIVEN** a project with pending changes
-- **WHEN** `specwf context plan` is invoked
+- **WHEN** `blueprint context plan` is invoked
 - **THEN** JSON with `project`, `status`, `milestone`, `phase`, `context`, `pending`, `specs`, `conventions`, `artifacts`, `requirements` SHALL be printed
 
 ### Requirement: Platform File Generation
 
 The system SHALL generate platform files from TypeScript templates:
 
-- `.omp/commands/specwf-<step>.md` — 16 slash commands  
-- `.omp/agents/specwf-<role>.md` — 8 agent definitions  
-- `.omp/skills/specwf-<step>/SKILL.md` — 16 skill workflow guides  
-- `.omp/hooks/pre/specwf.ts` — OMP hook for auto-injection  
+- `.omp/commands/blueprint-<step>.md` — 16 slash commands  
+- `.omp/agents/blueprint-<role>.md` — 8 agent definitions  
+- `.omp/skills/blueprint-<step>/SKILL.md` — 16 skill workflow guides  
+- `.omp/hooks/pre/blueprint.ts` — OMP hook for auto-injection  
 
 - **Source:** `src/generators/index.ts`, `src/generators/omp-commands.ts`, `src/generators/omp-agents.ts`, `src/generators/skills.ts`  
 - **Confidence:** HIGH
@@ -105,16 +105,16 @@ The system SHALL generate platform files from TypeScript templates:
 
 ### Requirement: Update Command
 
-The `specwf update` command SHALL regenerate all platform files from the current configuration, including deploying the OMP hook to `.omp/hooks/pre/specwf.ts`.
+The `blueprint update` command SHALL regenerate all platform files from the current configuration, including deploying the OMP hook to `.omp/hooks/pre/blueprint.ts`.
 
-- **Source:** `src/commands/specwf-update.ts:81-97` `updateHandler()`  
+- **Source:** `src/commands/blueprint-update.ts:81-97` `updateHandler()`  
 - **Confidence:** HIGH
 
 #### Scenario: Update with hook deployment
-- **GIVEN** `specwf update --dir specwf` is invoked
+- **GIVEN** `blueprint update --dir blueprint` is invoked
 - **WHEN** the handler executes
 - **THEN** all generated files SHALL be written
-- **AND** `.omp/hooks/pre/specwf.ts` SHALL be created/updated
+- **AND** `.omp/hooks/pre/blueprint.ts` SHALL be created/updated
 
 ### Requirement: Agent Tool Sets
 
@@ -135,12 +135,12 @@ The system SHALL define agent tool sets by role, with the executor having the wi
 
 ### Requirement: Dispatch Format
 
-The `specwf dispatch <role>` command SHALL output platform-specific sub-agent dispatch instructions, with `--change` option to pass a change name.
+The `blueprint dispatch <role>` command SHALL output platform-specific sub-agent dispatch instructions, with `--change` option to pass a change name.
 
-- **Source:** `src/commands/specwf-dispatch.ts`  
+- **Source:** `src/commands/blueprint-dispatch.ts`  
 - **Confidence:** HIGH
 
 #### Scenario: Dispatch with change
-- **GIVEN** `specwf dispatch executor --change login-flow` is invoked
+- **GIVEN** `blueprint dispatch executor --change login-flow` is invoked
 - **WHEN** the handler executes
-- **THEN** output SHALL include `agent: specwf-executor` and `Change: login-flow`
+- **THEN** output SHALL include `agent: blueprint-executor` and `Change: login-flow`

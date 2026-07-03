@@ -110,7 +110,6 @@ export function getDiscussSkillTemplate(): SkillTemplate {
 
 export function getDiscussCommandTemplate(): CommandTemplate {
   return {
-    name: 'SpecWF: Discuss',
     description: 'Phase discussion — capture implementation decisions with D1/D2 format',
     category: 'Planning',
     tags: ['bp', 'discuss', 'context', 'decisions'],

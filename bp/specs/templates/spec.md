@@ -19,21 +19,21 @@
 
 ### SHALL use English for all template content
 
-- SHALL every generated command file (`.omp/commands/specwf-*.md`): contain only English prose (no Chinese characters).
+- SHALL every generated command file (`.omp/commands/blueprint-*.md`): contain only English prose (no Chinese characters).
   - GIVEN a regenerated command file
   - WHEN scanned for CJK Unicode range (U+4E00–U+9FFF)
   - THEN zero matches found
-- SHALL every generated skill file (`.omp/skills/specwf-*/SKILL.md`): contain only English prose.
-- SHALL every generated agent file (`.omp/agents/specwf-*.md`): contain only English prose.
+- SHALL every generated skill file (`.omp/skills/blueprint-*/SKILL.md`): contain only English prose.
+- SHALL every generated agent file (`.omp/agents/blueprint-*.md`): contain only English prose.
 - SHALL every output artifact template (proposal, design, tasks, etc.): contain only English prose.
 
-### SHALL `specwf continue` output inline instructions
+### SHALL `blueprint continue` output inline instructions
 
-- SHALL `specwf continue`: the output includes the full `instructions` text of the next workflow step, not just a file path reference.
+- SHALL `blueprint continue`: the output includes the full `instructions` text of the next workflow step, not just a file path reference.
   - GIVEN current state routes to `plan` step
-  - WHEN `specwf continue` is executed
+  - WHEN `blueprint continue` is executed
   - THEN stdout contains the complete plan workflow instructions (Input, Steps, Output sections)
-  - AND no file path reference like `.omp/commands/specwf-plan.md` appears as the primary action
+  - AND no file path reference like `.omp/commands/blueprint-plan.md` appears as the primary action
 
 ### SHALL templates be TypeScript modules, not markdown files
 
@@ -42,30 +42,30 @@
 - SHALL all agent prompts: defined as TypeScript constants in `src/templates/agents/index.ts`.
 - SHALL `src/public/templates/` directory: not exist after this change.
 
-### SHALL `specwf template` read from TS registry
+### SHALL `blueprint template` read from TS registry
 
-- SHALL `specwf template <type>`: resolve template content from the in-memory TypeScript template registry, not from disk files.
-  - GIVEN `specwf template proposal --name test`
+- SHALL `blueprint template <type>`: resolve template content from the in-memory TypeScript template registry, not from disk files.
+  - GIVEN `blueprint template proposal --name test`
   - WHEN executed
   - THEN a `proposal.md` is created with English content matching the artifact template definition
   - AND no `readFileSync` call accesses `src/public/templates/`
 
-### SHALL `specwf update` regenerate correctly
+### SHALL `blueprint update` regenerate correctly
 
-- SHALL `specwf update`: produce output files identical to the current format (frontmatter + body) but with English content and Input/Steps/Output structure.
-  - GIVEN a clean specwf project
-  - WHEN `specwf update` is executed
-  - THEN all `.omp/commands/specwf-*.md` files exist with English content
-  - AND all `.omp/skills/specwf-*/SKILL.md` files exist with English content
-  - AND all `.omp/agents/specwf-*.md` files exist with English content
+- SHALL `blueprint update`: produce output files identical to the current format (frontmatter + body) but with English content and Input/Steps/Output structure.
+  - GIVEN a clean blueprint project
+  - WHEN `blueprint update` is executed
+  - THEN all `.omp/commands/blueprint-*.md` files exist with English content
+  - AND all `.omp/skills/blueprint-*/SKILL.md` files exist with English content
+  - AND all `.omp/agents/blueprint-*.md` files exist with English content
 
 ## MUST
 
 ### MUST preserve existing file paths
 
-- MUST all generated files: written to the same paths as before (`.omp/commands/specwf-<step>.md`, `.omp/skills/specwf-<step>/SKILL.md`, `.omp/agents/specwf-<role>.md`).
+- MUST all generated files: written to the same paths as before (`.omp/commands/blueprint-<step>.md`, `.omp/skills/blueprint-<step>/SKILL.md`, `.omp/agents/blueprint-<role>.md`).
   - GIVEN the refactored generator
-  - WHEN `specwf update` runs
+  - WHEN `blueprint update` runs
   - THEN output files land at the same paths as before the refactor
 
 ### MUST preserve frontmatter format
@@ -76,7 +76,7 @@
 
 ### MUST pass existing integration tests
 
-- MUST all existing tests in `tests/`: pass after `specwf update` regeneration.
+- MUST all existing tests in `tests/`: pass after `blueprint update` regeneration.
   - GIVEN the refactored codebase
   - WHEN `npm test` is executed
   - THEN all test suites pass
@@ -89,28 +89,28 @@
 
 - 新增: function readYamlDoc(path) {
 - 新增: function writeYamlDoc(path, doc) {
-- 新增: function configPath(specwfDir) {
-- 新增: function loadConfig(specwfDir) {
-- 新增: function saveConfig(specwfDir, config) {
-- 新增: function updateConfig(specwfDir, updater) {
+- 新增: function configPath(blueprintDir) {
+- 新增: function loadConfig(blueprintDir) {
+- 新增: function saveConfig(blueprintDir, config) {
+- 新增: function updateConfig(blueprintDir, updater) {
 - 新增: function resolveModels(config) {
-- 新增: function createSpecwfStructure(specwfDir) {
-- 新增: function isInitialized(specwfDir) {
-- 新增: function createAdhocChangeDir(specwfDir, changeName) {
-- 新增: function archiveChangeDir(specwfDir, changeDir) {
-- 新增: function archiveMilestoneDir(specwfDir, milestoneId) {
-- 新增: function listMilestones(specwfDir) {
-- 新增: function listPhases(specwfDir, milestoneId) {
-- 新增: function listChanges(specwfDir, milestoneId, phaseId) {
-- 新增: function listAdhocChanges(specwfDir) {
-- 新增: function listArchived(specwfDir) {
+- 新增: function createSpecwfStructure(blueprintDir) {
+- 新增: function isInitialized(blueprintDir) {
+- 新增: function createAdhocChangeDir(blueprintDir, changeName) {
+- 新增: function archiveChangeDir(blueprintDir, changeDir) {
+- 新增: function archiveMilestoneDir(blueprintDir, milestoneId) {
+- 新增: function listMilestones(blueprintDir) {
+- 新增: function listPhases(blueprintDir, milestoneId) {
+- 新增: function listChanges(blueprintDir, milestoneId, phaseId) {
+- 新增: function listAdhocChanges(blueprintDir) {
+- 新增: function listArchived(blueprintDir) {
 - 新增: function parseFrontmatter(content) {
 - 新增: function stringifyFrontmatter(data, body) {
 - 新增: function readFrontmatterFile(path) {
-- 新增: function statePath(specwfDir) {
-- 新增: function loadState(specwfDir) {
-- 新增: function saveState(specwfDir, state) {
-- 新增: function updateState(specwfDir, updater) {
+- 新增: function statePath(blueprintDir) {
+- 新增: function loadState(blueprintDir) {
+- 新增: function saveState(blueprintDir, state) {
+- 新增: function updateState(blueprintDir, updater) {
 - 新增: function generateStateBody(state) {
 - 新增: function formatContext(state) {
 - 新增: async function runInitWizard(defaults) {
@@ -119,8 +119,8 @@
 - 新增: function buildStackSection(info) {
 - 新增: function buildStructureSection(rootDir) {
 - 新增: function detectConventions(rootDir) {
-- 新增: function bootstrapSpecs(rootDir, specwfDir) {
-- 新增: async function runBrownfieldInit(rootDir, specwfDir, info) {
+- 新增: function bootstrapSpecs(rootDir, blueprintDir) {
+- 新增: async function runBrownfieldInit(rootDir, blueprintDir, info) {
 - 新增: function getInitSkillTemplate() {
 - 新增: function getInitCommandTemplate() {
 - 新增: function getGrillSkillTemplate() {
@@ -196,20 +196,20 @@
 - 新增: function isProjectStep(step) {
 - 新增: function isPhaseStep(step) {
 - 新增: function isChangeStep(step) {
-- 新增: function generateContext(specwfDir, step) {
+- 新增: function generateContext(blueprintDir, step) {
 - 新增: function readContent(absPath) {
-- 新增: function withContent(specwfDir) {
-- 新增: function getAllSpecs(specwfDir) {
-- 新增: function getRelatedSpecs(specwfDir, state) {
-- 新增: function getAllConventions(specwfDir) {
-- 新增: function getChangeArtifacts(specwfDir, state) {
+- 新增: function withContent(blueprintDir) {
+- 新增: function getAllSpecs(blueprintDir) {
+- 新增: function getRelatedSpecs(blueprintDir, state) {
+- 新增: function getAllConventions(blueprintDir) {
+- 新增: function getChangeArtifacts(blueprintDir, state) {
 - 新增: function listSpecFiles(dir, prefix) {
 - 新增: function register5(program2) {
 - 新增: function contextHandler(step) {
 - 新增: function getTransition(from, command) {
 - 新增: function getNextSteps(from) {
-- 新增: function determineNextStep(specwfDir) {
-- 新增: function determineChangeNextStep(specwfDir, changeName) {
+- 新增: function determineNextStep(blueprintDir) {
+- 新增: function determineChangeNextStep(blueprintDir, changeName) {
 - 新增: function getStepInfo(command) {
 - 新增: function determineFromChangeStatus(name, statusKey, type) {
 - 新增: function listAvailableChanges(state) {
@@ -218,8 +218,8 @@
 - 新增: function formatContext2(state) {
 - 新增: function generateHint(state) {
 - 新增: function isTemplateFile(filePath) {
-- 新增: function findChangeDir(specwfDir) {
-- 新增: function checkExitCondition(specwfDir, check, resolvedPath) {
+- 新增: function findChangeDir(blueprintDir) {
+- 新增: function checkExitCondition(blueprintDir, check, resolvedPath) {
 - 新增: function validateStepAdvance(contextType, contextStep, ref, cwd) {
 - 新增: function register6(program2) {
 - 新增: function formatContinueResult(result) {
@@ -245,7 +245,7 @@
 - 新增: function generateAutoExtractedSection(extraction) {
 - 新增: function register7(program2) {
 - 新增: function archiveHandler(changePath) {
-- 新增: function mergeDeltaSpecs(deltaDir, specwfDir) {
+- 新增: function mergeDeltaSpecs(deltaDir, blueprintDir) {
 - 新增: function register8(program2) {
 - 新增: function listHandler(options) {
 - Format: "MUST <condition>" or "SHALL <condition>"
@@ -255,7 +255,7 @@
 - 新增: function register10(program2) {
 - 新增: function newChange(name, options) {
 - The system SHALL <behavior>.
-- 新增: function archiveMilestoneDir(specwfDir, milestoneId) {
+- 新增: function archiveMilestoneDir(blueprintDir, milestoneId) {
 - 新增: function getInitSkillTemplate() {
 - 新增: function getInitCommandTemplate() {
 - 新增: function getGrillSkillTemplate() {
@@ -317,11 +317,11 @@
 - 新增: function register(program2) {
 - 新增: async function initHandler(options) {
 - 新增: function isTemplateFile(filePath) {
-- 新增: function findChangeDir(specwfDir) {
-- 新增: function checkExitCondition(specwfDir, check, resolvedPath) {
+- 新增: function findChangeDir(blueprintDir) {
+- 新增: function checkExitCondition(blueprintDir, check, resolvedPath) {
 - 新增: function validateStepAdvance(contextType, contextStep, ref, cwd) {
 - 新增: function getTransition(from, command) {
-- 新增: function determineChangeNextStep(specwfDir, changeName) {
+- 新增: function determineChangeNextStep(blueprintDir, changeName) {
 - 新增: function getStepInfo(command) {
 - 新增: function determineFromChangeStatus(name, statusKey, type) {
 - 新增: function listAvailableChanges(state) {
@@ -335,13 +335,13 @@
 - `# ${name} — Delta Spec\n\n## ADDED Requirements\n\n### Requirement: <name>\n\nThe system SHALL <behavior>.\n\n#### Scenario: <name>\n- **GIVEN** <precondition>\n- **WHEN** <trigger>\n- **THEN** <expected outcome>\n`,
 - 新增: function contextHandler(step: string) {
 - 新增: function readContent(absPath: string): string | undefined {
-- 新增: function withContent(specwfDir: string): (ref: FileRef) => FileRef {
+- 新增: function withContent(blueprintDir: string): (ref: FileRef) => FileRef {
 - 新增: export function generateSlashCommand(def: CommandDef, _config: ProjectConfig): string {
 - 新增: export function generateAllSkills(_config: ProjectConfig): { path: string; content: string }[] {
 
 ### Detected Constraints
 
-- 约束: if (existsSync(configPath(specwfDir))) {
+- 约束: if (existsSync(configPath(blueprintDir))) {
 - 约束: if (config.workflow) doc.set("workflow", config.workflow);
 - 约束: if (config.review) doc.set("review", config.review);
 - 约束: if (config.change) doc.set("change", config.change);
@@ -371,9 +371,9 @@
 - 约束: if (entry.isDirectory() && !entry.name.startsWith("_")) {
 - 约束: if (specs.length === 0) {
 - 约束: if (dir) mkdirSync3(dir, { recursive: true });
-- 约束: if (isInitialized(specwfDir)) {
+- 约束: if (isInitialized(blueprintDir)) {
 - 约束: if (isBrownfield) {
-- 约束: if (!existsSync(join(cwd, "specwf", "state.md"))) return;
+- 约束: if (!existsSync(join(cwd, "blueprint", "state.md"))) return;
 - 约束: if (data.specs?.length) {
 - 约束: if (spec.content) lines.push(\`\\n### \${spec.path}\\n\${spec.content.slice(0, 4096)}\`);
 - 约束: if (data.conventions?.length) {
@@ -381,7 +381,7 @@
 - 约束: if (event.isError || event.toolName !== "bash") return;
 - 约束: if (!isCheck) return;
 - 约束: if (m && parseInt(m[1]) !== 0) {
-- 约束: if (!existsSync(join(cwd, "specwf", "state.md"))) return;
+- 约束: if (!existsSync(join(cwd, "blueprint", "state.md"))) return;
 - 约束: if (cmd?.parent?.args?.length > 1) return;
 - 约束: if (!target[parts[i]]) target[parts[i]] = {};
 - 约束: if (value === "true") return true;
@@ -393,7 +393,7 @@
 - 约束: if (msMatches) {
 - 约束: if (roadmap) output.roadmap = roadmap;
 - 约束: if (current && state.project.status !== "milestone-shipped") {
-- 约束: if (existsSync7(join10(specwfDir, "requirements.md"))) {
+- 约束: if (existsSync7(join10(blueprintDir, "requirements.md"))) {
 - 约束: if (isProjectStep(step)) {
 - 约束: if (allSpecs.length === 0) return [];
 - 约束: if (!existsSync7(convDir)) return [];
@@ -480,7 +480,7 @@
 - 约束: if (options.full) {
 - 约束: if (!existsSync2(sourceDir)) {
 - 约束: if (pkg2.dependencies?.next) info.framework = "next.js";
-- 约束: if (isInitialized(specwfDir)) {
+- 约束: if (isInitialized(blueprintDir)) {
 - 约束: if (isBrownfield) {
 - 约束: if (!existsSync6(changesDir)) return [];
 - 约束: if (check.path.endsWith("/") || check.description.includes("\u7684 ")) {
@@ -494,7 +494,7 @@
 - 约束: if (pendingAdhoc.length > 0) {
 - 约束: if (prevMilestone && prevMilestone !== id && currentState.project.status !== "milestone-shipped") {
 - 约束: if (!result.valid) {
-- 约束: if (existsSync7(join11(specwfDir, "requirements.md"))) {
+- 约束: if (existsSync7(join11(blueprintDir, "requirements.md"))) {
 - 约束: if (!existsSync7(convDir)) return [];
 - 约束: if (!existsSync7(changeDir)) return [];
 - 约束: if (existsSync7(fullPath)) {
@@ -540,7 +540,7 @@
 - 约束: if (current && state.project.status !== 'milestone-shipped') {
 - 约束: if (!template) {
 - 约束: if (fullDir !== targetDir) {
-- 约束: if (!existsSync(join(cwd, "specwf", "state.md"))) return;
+- 约束: if (!existsSync(join(cwd, "blueprint", "state.md"))) return;
 - 约束: if (data.specs?.length) {
 - 约束: if (spec.content) lines.push(\`\\n### \${spec.path}\\n\${spec.content.slice(0, 4096)}\`);
 - 约束: if (data.conventions?.length) {
@@ -548,7 +548,7 @@
 - 约束: if (event.isError || event.toolName !== "bash") return;
 - 约束: if (!isCheck) return;
 - 约束: if (m && parseInt(m[1]) !== 0) {
-- 约束: if (!existsSync(join(cwd, "specwf", "state.md"))) return;
+- 约束: if (!existsSync(join(cwd, "blueprint", "state.md"))) return;
 - 约束: if (!info) return undefined;
 - 约束: if (wfStep && WORKFLOW_REGISTRY[wfStep]) {
 

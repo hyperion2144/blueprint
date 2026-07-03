@@ -1,20 +1,20 @@
-<!-- BOOTSTRAPPED — extracted from src/core/config.ts, src/types/config.ts, src/commands/specwf-config.ts -->
+<!-- BOOTSTRAPPED — extracted from src/core/config.ts, src/types/config.ts, src/commands/blueprint-config.ts -->
 
 ## Purpose
 
-Manage the `specwf/project.yml` configuration file — the single source of truth for project profile, workflow toggles, model mappings, and platform settings. Configuration is read/written via YAML with comment preservation.
+Manage the `blueprint/project.yml` configuration file — the single source of truth for project profile, workflow toggles, model mappings, and platform settings. Configuration is read/written via YAML with comment preservation.
 
 ### Requirement: Config File Path
 
-The system SHALL locate `project.yml` at `specwf/project.yml` relative to the specwf directory.
+The system SHALL locate `project.yml` at `blueprint/project.yml` relative to the blueprint directory.
 
-- **Source:** `src/core/config.ts:44-46` `configPath()` joins `specwfDir` + `project.yml`  
+- **Source:** `src/core/config.ts:44-46` `configPath()` joins `blueprintDir` + `project.yml`  
 - **Confidence:** HIGH
 
 #### Scenario: Config path resolution
-- **GIVEN** a specwf directory at `/project/specwf`
-- **WHEN** `configPath("/project/specwf")` is called
-- **THEN** the path SHALL be `/project/specwf/project.yml`
+- **GIVEN** a blueprint directory at `/project/blueprint`
+- **WHEN** `configPath("/project/blueprint")` is called
+- **THEN** the path SHALL be `/project/blueprint/project.yml`
 
 ### Requirement: Config Schema Validation
 
@@ -71,7 +71,7 @@ The system SHALL provide `updateConfig()` that loads, applies an updater functio
 - **Confidence:** HIGH
 
 #### Scenario: Dot-path key update
-- **GIVEN** `specwf config set workflow.research false` is invoked
+- **GIVEN** `blueprint config set workflow.research false` is invoked
 - **WHEN** the CLI handler resolves `workflow.research` via dot-path traversal
 - **THEN** `config.workflow.research` SHALL be set to `false` and saved
 
@@ -96,5 +96,5 @@ The system SHALL resolve agent models by merging profile defaults with user over
 
 The CLI `config set` command SHALL parse string values into typed values: `"true"/"false"` → boolean, digits-only → number, `"null"` → null, otherwise → string.
 
-- **Source:** `src/commands/specwf-config.ts:59-65` `parseTypedValue()`  
+- **Source:** `src/commands/blueprint-config.ts:59-65` `parseTypedValue()`  
 - **Confidence:** HIGH

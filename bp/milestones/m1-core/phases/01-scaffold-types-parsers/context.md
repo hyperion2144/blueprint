@@ -17,7 +17,7 @@
 
 **影响**: 
 - dependencies 列表移除 js-yaml + @types/js-yaml，替换为 yaml
-- 使用场景：project.yml 读写用 Document API 保留注释；.specwf.yaml 只读用 parse() + zod
+- 使用场景：project.yml 读写用 Document API 保留注释；.blueprint.yaml 只读用 parse() + zod
 
 ### D2: 构建工具 — tsup ^8
 
@@ -35,9 +35,9 @@
 **决策**: 采用 stack.md 设计的结构，微调——parser 独立为顶层目录。
 
 ```
-specwf-cli/
+blueprint-cli/
 ├── bin/
-│   └── specwf.js              # shebang 入口，import ../dist/cli.js
+│   └── blueprint.js              # shebang 入口，import ../dist/cli.js
 ├── src/
 │   ├── cli.ts                 # commander 主入口（Phase 5 填充，Phase 1 仅 --version）
 │   ├── types/
@@ -224,7 +224,7 @@ export interface ProjectConfig {
 
 roadmap.md 预估 3 个 change，确认如下：
 
-1. **scaffold-project** — package.json + tsconfig + tsup + vitest 配置 + bin/specwf.js + src/cli.ts（仅 --version）
+1. **scaffold-project** — package.json + tsconfig + tsup + vitest 配置 + bin/blueprint.js + src/cli.ts（仅 --version）
 2. **define-types** — src/types/ 下 4 个文件（project / state / spec / config）
 3. **implement-parsers** — src/parser/ 下 4 个文件 + tests/parser/ 下 4 个测试
 

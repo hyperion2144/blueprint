@@ -1,4 +1,4 @@
-# Codebase Conventions: specwf
+# Codebase Conventions: blueprint
 
 Conventions observed from source code patterns. Supplements `conventions/coding.md` with empirical evidence.
 
@@ -30,7 +30,7 @@ Conventions observed from source code patterns. Supplements `conventions/coding.
 ## File Naming
 
 - **kebab-case** — all `.ts` files: `state-machine.ts`, `spec-injector.ts`, `heading-tree.ts`
-- **`specwf-` prefix for commands** — `specwf-init.ts`, `specwf-archive.ts`
+- **`blueprint-` prefix for commands** — `blueprint-init.ts`, `blueprint-archive.ts`
 - **`_utils.ts`** — underscore prefix for internal shared modules within a directory
 
 ## Directory Conventions
@@ -42,7 +42,7 @@ Conventions observed from source code patterns. Supplements `conventions/coding.
 
 ## Error Handling
 
-- **`try {…} catch {…}` with empty catch** — non-critical failures (generator errors, git operations) are silently swallowed (e.g., `specwf-init.ts:89-91`)
+- **`try {…} catch {…}` with empty catch** — non-critical failures (generator errors, git operations) are silently swallowed (e.g., `blueprint-init.ts:89-91`)
 - **`process.exit(1)` on critical failures** — init command exits on duplicate initialization
 - **`console.error()` + `process.exit(1)`** — standard error reporting pattern for CLI
 

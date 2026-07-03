@@ -49,14 +49,14 @@ src/templates/
 
 ```markdown
 ---
-name: specwf:<step>
+name: blueprint:<step>
 description: <一句话描述>
 ---
 
 <body — prompt 模板，支持 $1 $ARGUMENTS 参数替换>
 ```
 
-- 文件路径：`.omp/commands/specwf-<step>.md`
+- 文件路径：`.omp/commands/blueprint-<step>.md`
 - frontmatter：`name` + `description`（native 级别 parse 错误是 fatal）
 - body：prompt 模板，支持 `$1`/`$2`/`$ARGUMENTS`/`$@` 占位符
 - 非递归扫描 `*.md`
@@ -65,7 +65,7 @@ description: <一句话描述>
 
 ```markdown
 ---
-name: specwf-<role>
+name: blueprint-<role>
 description: <角色描述>
 tools:
   - read
@@ -79,7 +79,7 @@ spawns: "*"
 <systemPrompt — agent 系统提示>
 ```
 
-- 文件路径：`.omp/agents/specwf-<role>.md`
+- 文件路径：`.omp/agents/blueprint-<role>.md`
 - frontmatter 必填：`name` + `description`
 - frontmatter 可选：`tools`(CSV/array, yield 自动追加) / `model` / `thinkingLevel` / `spawns` / `output` / `blocking` / `autoloadSkills` / `readSummarize`
 - `spawns` 缺省但 `tools` 含 `task` 时自动 `*`
@@ -89,18 +89,18 @@ spawns: "*"
 
 ```markdown
 ---
-name: specwf-<step>
+name: blueprint-<step>
 description: <一句话描述>
 ---
 
 <skill body — 工作流指引文档>
 ```
 
-- 目录路径：`skills/specwf-<step>/SKILL.md`（一级目录，非递归）
+- 目录路径：`skills/blueprint-<step>/SKILL.md`（一级目录，非递归）
 - frontmatter：`name`（默认目录名）+ `description`（native 级别必填）
 - 可选：`globs` / `alwaysApply` / `hide` / `disableModelInvocation`
-- 模型通过 `read skill://specwf-<step>` 按需加载
-- `/skill:specwf-<step>` 可交互触发
+- 模型通过 `read skill://blueprint-<step>` 按需加载
+- `/skill:blueprint-<step>` 可交互触发
 
 ### 3. 生成器代码架构（~50 行/文件）
 
@@ -113,7 +113,7 @@ description: <一句话描述>
 
 ### 4. 产物模板体系
 
-`specwf template <type>` 命令从 `src/templates/artifacts/` 读取模板文件，写入目标目录。
+`blueprint template <type>` 命令从 `src/templates/artifacts/` 读取模板文件，写入目标目录。
 
 支持的模板类型：
 - `proposal` — change proposal
@@ -148,7 +148,7 @@ export default defineConfig({
 
 1. tsc --noEmit 通过
 2. vitest run 通过
-3. `specwf update` 生成的命令/agent/skill 文件格式严格遵循 OMP 文档规范
-4. `specwf template proposal` 生成的文件内容来自模板文件，不是代码里拼的
+3. `blueprint update` 生成的命令/agent/skill 文件格式严格遵循 OMP 文档规范
+4. `blueprint template proposal` 生成的文件内容来自模板文件，不是代码里拼的
 5. 生成器代码总行数 < 300（模板内容全在 .md 文件里）
 6. 每个 change 都有独立的 plan → apply → review → verify → archive

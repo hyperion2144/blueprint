@@ -2,7 +2,7 @@
 
 ## 目标
 
-定义 specwf CLI 所有 TypeScript 类型，覆盖 4 层实体、状态机、配置、spec 结构。
+定义 blueprint CLI 所有 TypeScript 类型，覆盖 4 层实体、状态机、配置、spec 结构。
 
 ## 文件清单
 

@@ -3,9 +3,9 @@
 ## implement-config
 
 文件: src/core/config.ts
-- loadConfig(specwfDir) — 读 project.yml + zod 验证
-- saveConfig(specwfDir, config) — 写回保留注释
-- updateConfig(specwfDir, updater) — 修改+写回
+- loadConfig(blueprintDir) — 读 project.yml + zod 验证
+- saveConfig(blueprintDir, config) — 写回保留注释
+- updateConfig(blueprintDir, updater) — 修改+写回
 - resolveModels(config) — profile 默认 + 用户覆盖
 
 ## implement-state

@@ -15,14 +15,14 @@
 | 测试名 | 类型 | 结果 | 说明 |
 |--------|------|------|------|
 | init → 添加 body → change new | e2e | ✅ 通过 | 临时目录 E2E：init 创建，追加自定义 body，change new 后 body 保留，adhoc entry 写入 frontmatter |
-| archive 调用路径 | e2e | ✅ 通过 | `specwf archive` 也通过 `updateState` → `saveState`，同一条路径 |
+| archive 调用路径 | e2e | ✅ 通过 | `blueprint archive` 也通过 `updateState` → `saveState`，同一条路径 |
 
 ## 需求覆盖检查
 
 | 需求 ID | 需求描述 | 覆盖状态 | 证据 |
 |---------|----------|----------|------|
 | REQ-01 | `saveState` 写入时保留现有 body，只更新 frontmatter | ✅ 已覆盖 | `saveState` 首行尝试 `readFrontmatterFile` 读取现有 body |
-| REQ-02 | 新文件场景（`specwf init`）正常生成默认 body | ✅ 已覆盖 | try/catch fallback 到 `generateStateBody` |
+| REQ-02 | 新文件场景（`blueprint init`）正常生成默认 body | ✅ 已覆盖 | try/catch fallback 到 `generateStateBody` |
 | REQ-03 | 所有调用路径（change new/archive/set 命令）行为一致 | ✅ 已覆盖 | 修改在 `saveState` 层面，所有调用者自动受益 |
 
 ## 决策覆盖检查
@@ -37,10 +37,10 @@
 
 | 目标项 | 达成状态 | 证据 |
 |--------|----------|------|
-| `specwf change new <name>` 后 state.md body 不变 | ✅ 达成 | E2E 验证：自定义 body 写入后 change new，body 内容完整保留 |
-| `specwf archive` 后 state.md body 保留 | ✅ 达成 | 共享 `saveState` 路径，无需单独验证 |
-| `specwf state set-milestone/set-phase/set-step` 后 body 保留 | ✅ 达成 | 共享 `updateState` → `saveState` 路径 |
-| `specwf init` 创建新 state.md 时 body 正常生成 | ✅ 达成 | fallback 到 `generateStateBody` |
+| `blueprint change new <name>` 后 state.md body 不变 | ✅ 达成 | E2E 验证：自定义 body 写入后 change new，body 内容完整保留 |
+| `blueprint archive` 后 state.md body 保留 | ✅ 达成 | 共享 `saveState` 路径，无需单独验证 |
+| `blueprint state set-milestone/set-phase/set-step` 后 body 保留 | ✅ 达成 | 共享 `updateState` → `saveState` 路径 |
+| `blueprint init` 创建新 state.md 时 body 正常生成 | ✅ 达成 | fallback 到 `generateStateBody` |
 | 现有 79 tests 全部通过 | ✅ 达成 | vitest 79/79 |
 
 ## 根因诊断
@@ -57,4 +57,4 @@
 
 ---
 
-*Verification 报告由 specwf verify 阶段自动生成。每次验证结果覆盖前次。*
+*Verification 报告由 blueprint verify 阶段自动生成。每次验证结果覆盖前次。*

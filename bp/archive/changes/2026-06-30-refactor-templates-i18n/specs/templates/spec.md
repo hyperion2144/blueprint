@@ -19,21 +19,21 @@
 
 ### SHALL use English for all template content
 
-- SHALL every generated command file (`.omp/commands/specwf-*.md`): contain only English prose (no Chinese characters).
+- SHALL every generated command file (`.omp/commands/blueprint-*.md`): contain only English prose (no Chinese characters).
   - GIVEN a regenerated command file
   - WHEN scanned for CJK Unicode range (U+4E00–U+9FFF)
   - THEN zero matches found
-- SHALL every generated skill file (`.omp/skills/specwf-*/SKILL.md`): contain only English prose.
-- SHALL every generated agent file (`.omp/agents/specwf-*.md`): contain only English prose.
+- SHALL every generated skill file (`.omp/skills/blueprint-*/SKILL.md`): contain only English prose.
+- SHALL every generated agent file (`.omp/agents/blueprint-*.md`): contain only English prose.
 - SHALL every output artifact template (proposal, design, tasks, etc.): contain only English prose.
 
-### SHALL `specwf continue` output inline instructions
+### SHALL `blueprint continue` output inline instructions
 
-- SHALL `specwf continue`: the output includes the full `instructions` text of the next workflow step, not just a file path reference.
+- SHALL `blueprint continue`: the output includes the full `instructions` text of the next workflow step, not just a file path reference.
   - GIVEN current state routes to `plan` step
-  - WHEN `specwf continue` is executed
+  - WHEN `blueprint continue` is executed
   - THEN stdout contains the complete plan workflow instructions (Input, Steps, Output sections)
-  - AND no file path reference like `.omp/commands/specwf-plan.md` appears as the primary action
+  - AND no file path reference like `.omp/commands/blueprint-plan.md` appears as the primary action
 
 ### SHALL templates be TypeScript modules, not markdown files
 
@@ -42,30 +42,30 @@
 - SHALL all agent prompts: defined as TypeScript constants in `src/templates/agents/index.ts`.
 - SHALL `src/public/templates/` directory: not exist after this change.
 
-### SHALL `specwf template` read from TS registry
+### SHALL `blueprint template` read from TS registry
 
-- SHALL `specwf template <type>`: resolve template content from the in-memory TypeScript template registry, not from disk files.
-  - GIVEN `specwf template proposal --name test`
+- SHALL `blueprint template <type>`: resolve template content from the in-memory TypeScript template registry, not from disk files.
+  - GIVEN `blueprint template proposal --name test`
   - WHEN executed
   - THEN a `proposal.md` is created with English content matching the artifact template definition
   - AND no `readFileSync` call accesses `src/public/templates/`
 
-### SHALL `specwf update` regenerate correctly
+### SHALL `blueprint update` regenerate correctly
 
-- SHALL `specwf update`: produce output files identical to the current format (frontmatter + body) but with English content and Input/Steps/Output structure.
-  - GIVEN a clean specwf project
-  - WHEN `specwf update` is executed
-  - THEN all `.omp/commands/specwf-*.md` files exist with English content
-  - AND all `.omp/skills/specwf-*/SKILL.md` files exist with English content
-  - AND all `.omp/agents/specwf-*.md` files exist with English content
+- SHALL `blueprint update`: produce output files identical to the current format (frontmatter + body) but with English content and Input/Steps/Output structure.
+  - GIVEN a clean blueprint project
+  - WHEN `blueprint update` is executed
+  - THEN all `.omp/commands/blueprint-*.md` files exist with English content
+  - AND all `.omp/skills/blueprint-*/SKILL.md` files exist with English content
+  - AND all `.omp/agents/blueprint-*.md` files exist with English content
 
 ## MUST
 
 ### MUST preserve existing file paths
 
-- MUST all generated files: written to the same paths as before (`.omp/commands/specwf-<step>.md`, `.omp/skills/specwf-<step>/SKILL.md`, `.omp/agents/specwf-<role>.md`).
+- MUST all generated files: written to the same paths as before (`.omp/commands/blueprint-<step>.md`, `.omp/skills/blueprint-<step>/SKILL.md`, `.omp/agents/blueprint-<role>.md`).
   - GIVEN the refactored generator
-  - WHEN `specwf update` runs
+  - WHEN `blueprint update` runs
   - THEN output files land at the same paths as before the refactor
 
 ### MUST preserve frontmatter format
@@ -76,7 +76,7 @@
 
 ### MUST pass existing integration tests
 
-- MUST all existing tests in `tests/`: pass after `specwf update` regeneration.
+- MUST all existing tests in `tests/`: pass after `blueprint update` regeneration.
   - GIVEN the refactored codebase
   - WHEN `npm test` is executed
   - THEN all test suites pass

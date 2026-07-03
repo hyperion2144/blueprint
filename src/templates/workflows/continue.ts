@@ -101,7 +101,6 @@ export function getContinueSkillTemplate(): SkillTemplate {
 
 export function getContinueCommandTemplate(): CommandTemplate {
   return {
-    name: 'SpecWF: Continue',
     description: 'Auto-advance — project-level or change-level, present pending work, route to next step',
     category: 'Workflow',
     tags: ['bp', 'continue', 'state-machine'],

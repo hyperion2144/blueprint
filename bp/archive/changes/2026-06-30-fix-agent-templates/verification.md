@@ -14,12 +14,12 @@
 | 测试 | 结果 |
 |------|------|
 | .omp/agents/ 有 8 个 agent | ✅ |
-| specwf template codebase-stack 可用 | ✅ |
-| specwf template codebase-architecture 可用 | ✅ |
-| specwf template codebase-conventions 可用 | ✅ |
-| specwf template codebase-pitfalls 可用 | ✅ |
-| specwf template spec-bootstrap 可用 | ✅ |
-| specwf update 生成 40 个文件 | ✅ |
+| blueprint template codebase-stack 可用 | ✅ |
+| blueprint template codebase-architecture 可用 | ✅ |
+| blueprint template codebase-conventions 可用 | ✅ |
+| blueprint template codebase-pitfalls 可用 | ✅ |
+| blueprint template spec-bootstrap 可用 | ✅ |
+| blueprint update 生成 40 个文件 | ✅ |
 | 新 agent 模版文件存在 | ✅ |
 
 ## 文件清单
@@ -38,5 +38,5 @@
 ### 更新
 - 6 个已有 agent 的产物要求加模板引用
 - omp-agents.ts: AGENT_DEFS +2, thinkingLevel +2
-- specwf-template.ts: 支持 codebase/specs 模板
+- blueprint-template.ts: 支持 codebase/specs 模板
 - 测试: e2e.test.ts agent 计数 6→8

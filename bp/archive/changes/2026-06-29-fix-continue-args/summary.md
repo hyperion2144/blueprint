@@ -7,16 +7,16 @@
 
 ## Intent
 
-`specwf continue` 原来只读 `active_context` 推断下一步，无法查询特定 change 的状态。
+`blueprint continue` 原来只读 `active_context` 推断下一步，无法查询特定 change 的状态。
 adhoc change 创建后 status 为 `proposal`，但 continue 只看 milestone 层状态（shipped），永远看不到 adhoc 的下一步。
-本变更让 `specwf continue change <name>` 能搜索 changes/adhoc 数组并输出正确下一步。
+本变更让 `blueprint continue change <name>` 能搜索 changes/adhoc 数组并输出正确下一步。
 
 ## 产出文件
 
 | 文件 | 操作 | 说明 |
 |------|------|------|
 | src/core/continue.ts | 修改 | 新增 `determineChangeNextStep` 函数 |
-| src/commands/specwf-continue.ts | 修改 | 注册 `continue change <name>` 子命令 |
+| src/commands/blueprint-continue.ts | 修改 | 注册 `continue change <name>` 子命令 |
 
 ## 关键决策
 
@@ -32,6 +32,6 @@ adhoc change 创建后 status 为 `proposal`，但 continue 只看 milestone 层
 | tsc --noEmit | ✅ 0 errors |
 | vitest run | ✅ 79/79 passed |
 | npm run build | ✅ 64.85KB dist |
-| `specwf continue`（无参数） | ✅ milestone-shipped，行为不变 |
-| `specwf continue change fix-ship-command` | ✅ adhoc-proposal → plan |
-| `specwf continue change nonexistent` | ✅ 错误信息 + 可用 change 列表 |
+| `blueprint continue`（无参数） | ✅ milestone-shipped，行为不变 |
+| `blueprint continue change fix-ship-command` | ✅ adhoc-proposal → plan |
+| `blueprint continue change nonexistent` | ✅ 错误信息 + 可用 change 列表 |

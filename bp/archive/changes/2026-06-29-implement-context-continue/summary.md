@@ -6,8 +6,8 @@ context + continue 命令（上下文注入 + 自动推进）
 
 ## 产出文件
 
-- `src/commands/specwf-context.ts`
-- `src/commands/specwf-continue.ts`
+- `src/commands/blueprint-context.ts`
+- `src/commands/blueprint-continue.ts`
 
 ## 验证
 

@@ -13,9 +13,9 @@
   - `tsconfig.json` — TypeScript 严格模式 ES2022
   - `tsup.config.ts` — ESM 构建 + dts + shebang
   - `vitest.config.ts` — 测试配置
-  - `bin/specwf.js` — CLI 入口
+  - `bin/blueprint.js` — CLI 入口
   - `src/cli.ts` — commander 主入口（--version）
-- **验证**: build 成功，specwf --version 输出 0.1.0
+- **验证**: build 成功，blueprint --version 输出 0.1.0
 
 ### change: define-types
 - **描述**: TypeScript 类型定义（4 层实体 + 状态机 + spec + config）
@@ -45,6 +45,6 @@
 | 验证项 | 结果 | 证据 |
 |---|---|---|
 | npm run build | ✅ | dist/cli.js + dist/cli.d.ts |
-| specwf --version | ✅ | 0.1.0 |
+| blueprint --version | ✅ | 0.1.0 |
 | tsc --noEmit | ✅ | 0 errors |
 | vitest run | ✅ | 24/24 通过 |

@@ -1,47 +1,47 @@
-<!-- BOOTSTRAPPED — extracted from src/commands/specwf-init.ts, src/core/brownfield.ts, src/prompts/init-wizard.ts -->
+<!-- BOOTSTRAPPED — extracted from src/commands/blueprint-init.ts, src/core/brownfield.ts, src/prompts/init-wizard.ts -->
 
 ## Purpose
 
-Initialize or reinitialize a specwf project. Supports greenfield initialization with interactive wizard and brownfield mode for existing codebases.
+Initialize or reinitialize a blueprint project. Supports greenfield initialization with interactive wizard and brownfield mode for existing codebases.
 
 ### Requirement: Initialization Guard
 
-The system SHALL refuse to initialize if `specwf/state.md` already exists, exiting with code 1.
+The system SHALL refuse to initialize if `blueprint/state.md` already exists, exiting with code 1.
 
-- **Source:** `src/commands/specwf-init.ts:32-35` `initHandler()`  
+- **Source:** `src/commands/blueprint-init.ts:32-35` `initHandler()`  
 - **Confidence:** HIGH
 
 #### Scenario: Double init rejected
-- **GIVEN** `specwf/state.md` already exists
-- **WHEN** `specwf init` is run
+- **GIVEN** `blueprint/state.md` already exists
+- **WHEN** `blueprint init` is run
 - **THEN** the command SHALL print an error and exit with code 1
 
 ### Requirement: Profile Selection
 
 The system SHALL accept `--profile` option with values `lite`, `standard` (default), or `strict`.
 
-- **Source:** `src/commands/specwf-init.ts:15`  
+- **Source:** `src/commands/blueprint-init.ts:15`  
 - **Confidence:** HIGH
 
 ### Requirement: Brownfield Mode
 
 The system SHALL accept `--brownfield` flag to enable brownfield initialization, triggering `detectProjectInfo()` and `runBrownfieldInit()`.
 
-- **Source:** `src/commands/specwf-init.ts:16`, `src/commands/specwf-init.ts:76-79`  
+- **Source:** `src/commands/blueprint-init.ts:16`, `src/commands/blueprint-init.ts:76-79`  
 - **Confidence:** HIGH
 
 #### Scenario: Brownfield init with --yes
-- **GIVEN** `specwf init --brownfield --yes --profile lite` is invoked
+- **GIVEN** `blueprint init --brownfield --yes --profile lite` is invoked
 - **WHEN** the handler executes
-- **THEN** the system SHALL create the specwf skeleton
+- **THEN** the system SHALL create the blueprint skeleton
 - **AND** `detectProjectInfo()` SHALL scan the project root
-- **AND** `runBrownfieldInit()` SHALL generate codebase report files in `specwf/codebase/`
+- **AND** `runBrownfieldInit()` SHALL generate codebase report files in `blueprint/codebase/`
 
 ### Requirement: Skip Confirmation
 
 The system SHALL accept `--yes` flag to skip the interactive wizard and use defaults (`profile: standard`, `platform: ["omp"]`, `brownfield: false`).
 
-- **Source:** `src/commands/specwf-init.ts:17`, `src/prompts/init-wizard.ts:11-13`  
+- **Source:** `src/commands/blueprint-init.ts:17`, `src/prompts/init-wizard.ts:11-13`  
 - **Confidence:** HIGH
 
 ### Requirement: Wizard Fallback
@@ -59,24 +59,24 @@ The system SHALL gracefully fall back to defaults if `@clack/prompts` is not ins
 ### Requirement: Init Artifacts
 
 The system SHALL create the following during initialization:
-- `specwf/` directory skeleton  
-- `specwf/project.yml` with version 1, selected profile, and default git config (`branching: "none"`, `create_tag: true`)  
-- `specwf/state.md` with `status: "initialized"` and `active_context.step: "init"`  
+- `blueprint/` directory skeleton  
+- `blueprint/project.yml` with version 1, selected profile, and default git config (`branching: "none"`, `create_tag: true`)  
+- `blueprint/state.md` with `status: "initialized"` and `active_context.step: "init"`  
 
-- **Source:** `src/commands/specwf-init.ts:42-74`  
+- **Source:** `src/commands/blueprint-init.ts:42-74`  
 - **Confidence:** HIGH
 
 ### Requirement: Post-Init Platform Generation
 
 The system SHALL automatically generate platform files (commands, agents, skills) after initialization and report the count.
 
-- **Source:** `src/commands/specwf-init.ts:84-91`  
+- **Source:** `src/commands/blueprint-init.ts:84-91`  
 - **Confidence:** HIGH
 
 #### Scenario: Platform generation failure non-fatal
 - **GIVEN** platform file generation throws an error
 - **WHEN** init handler catches it
-- **THEN** a warning SHALL be printed suggesting `specwf update` retry
+- **THEN** a warning SHALL be printed suggesting `blueprint update` retry
 - **AND** initialization SHALL still complete successfully
 
 ### Requirement: Default Init State
@@ -90,14 +90,14 @@ The system SHALL initialize `state.md` with:
 - `changes`: `[]`  
 - `adhoc`: `[]`  
 
-- **Source:** `src/commands/specwf-init.ts:59-73`  
+- **Source:** `src/commands/blueprint-init.ts:59-73`  
 - **Confidence:** HIGH
 
 ### Requirement: Brownfield Probes Platform Files
 
 In brownfield mode, the system SHALL NOT generate platform files that could enable conflicting integrations. [INFERENCE — the init code runs `generateAll` in a try-catch block and the brownfield mode creates codebase reports but the domain detection is separate]
 
-- **Source:** `src/commands/specwf-init.ts:76-79`  
+- **Source:** `src/commands/blueprint-init.ts:76-79`  
 - **Confidence:** LOW
 
 ### Requirement: Project Info Detection

@@ -15,13 +15,13 @@ project.yml 读写 + state.md 读写 + 状态机引擎 + continue 逻辑。
 
 ```typescript
 // 读 + 验证
-export function loadConfig(specwfDir: string): ProjectConfig;
+export function loadConfig(blueprintDir: string): ProjectConfig;
 
 // 写回（保留注释）
-export function saveConfig(specwfDir: string, config: ProjectConfig): void;
+export function saveConfig(blueprintDir: string, config: ProjectConfig): void;
 
 // 修改单个字段并写回
-export function updateConfig(specwfDir: string, updater: (config: ProjectConfig) => void): void;
+export function updateConfig(blueprintDir: string, updater: (config: ProjectConfig) => void): void;
 
 // 获取 profile 默认模型映射
 export function resolveModels(config: ProjectConfig): ModelMap;
@@ -34,9 +34,9 @@ resolveModels: 先取 PROFILE_MODEL_MAP[profile]，再用 config.models 覆盖�
 使用 gray-matter 解析 frontmatter + zod 验证。
 
 ```typescript
-export function loadState(specwfDir: string): StateFile;
-export function saveState(specwfDir: string, state: StateFile): void;
-export function updateState(specwfDir: string, updater: (state: StateFile) => void): void;
+export function loadState(blueprintDir: string): StateFile;
+export function saveState(blueprintDir: string, state: StateFile): void;
+export function updateState(blueprintDir: string, updater: (state: StateFile) => void): void;
 ```
 
 saveState 需要同时更新 frontmatter + Markdown body（当前位置 + 历史）。
@@ -69,7 +69,7 @@ export interface ContinueResult {
   context: string;  // 当前位置描述
 }
 
-export function determineNextStep(specwfDir: string): ContinueResult;
+export function determineNextStep(blueprintDir: string): ContinueResult;
 ```
 
 ## Change 拆分

@@ -1,4 +1,4 @@
-<!-- BOOTSTRAPPED — extracted from src/commands/specwf-archive.ts, src/core/code-extract.ts, src/core/delta-merge.ts -->
+<!-- BOOTSTRAPPED — extracted from src/commands/blueprint-archive.ts, src/core/code-extract.ts, src/core/delta-merge.ts -->
 
 ## Purpose
 
@@ -6,39 +6,39 @@ Archive completed changes — merge delta-specs into global specs, extract code 
 
 ### Requirement: Archive Command Input
 
-The system SHALL accept `specwf archive <change-path>` where `change-path` is relative to the project root.
+The system SHALL accept `blueprint archive <change-path>` where `change-path` is relative to the project root.
 
-- **Source:** `src/commands/specwf-archive.ts:14-18` `archive` command registration  
+- **Source:** `src/commands/blueprint-archive.ts:14-18` `archive` command registration  
 - **Confidence:** HIGH
 
 #### Scenario: Change path resolution
-- **GIVEN** a change at `specwf/changes/login-flow/`
-- **WHEN** `specwf archive specwf/changes/login-flow` is invoked
-- **THEN** the change SHALL be looked up at `<cwd>/specwf/changes/login-flow`
+- **GIVEN** a change at `blueprint/changes/login-flow/`
+- **WHEN** `blueprint archive blueprint/changes/login-flow` is invoked
+- **THEN** the change SHALL be looked up at `<cwd>/blueprint/changes/login-flow`
 
 ### Requirement: Missing Change Error
 
 The system SHALL exit with an error if the specified change directory does not exist.
 
-- **Source:** `src/commands/specwf-archive.ts:25-28`  
+- **Source:** `src/commands/blueprint-archive.ts:25-28`  
 - **Confidence:** HIGH
 
 #### Scenario: Change directory missing
-- **GIVEN** `specwf/changes/nonexistent/` does not exist
-- **WHEN** `specwf archive specwf/changes/nonexistent` is invoked
+- **GIVEN** `blueprint/changes/nonexistent/` does not exist
+- **WHEN** `blueprint archive blueprint/changes/nonexistent` is invoked
 - **THEN** an error message SHALL be printed and the process exited
 
 ### Requirement: Delta-Spec Merging during Archive
 
-The system SHALL merge all delta-specs from `changes/<name>/specs/` into the global `specwf/specs/` directory during archive.
+The system SHALL merge all delta-specs from `changes/<name>/specs/` into the global `blueprint/specs/` directory during archive.
 
-- **Source:** `src/commands/specwf-archive.ts:105-130` `mergeDeltaSpecs()`  
+- **Source:** `src/commands/blueprint-archive.ts:105-130` `mergeDeltaSpecs()`  
 - **Confidence:** HIGH
 
 #### Scenario: Delta spec creates new global spec
-- **GIVEN** `changes/login-flow/specs/auth/spec.md` exists but `specwf/specs/auth/spec.md` does not
+- **GIVEN** `changes/login-flow/specs/auth/spec.md` exists but `blueprint/specs/auth/spec.md` does not
 - **WHEN** archive handler executes delta merge
-- **THEN** the delta spec SHALL be written as `specwf/specs/auth/spec.md`
+- **THEN** the delta spec SHALL be written as `blueprint/specs/auth/spec.md`
 
 #### Scenario: Delta spec merges into existing global spec
 - **GIVEN** both delta and global specs exist for domain `auth`
@@ -54,26 +54,26 @@ The system SHALL merge all delta-specs from `changes/<name>/specs/` into the glo
 
 The system SHALL warn if `change-summary.md` does not exist in the change directory, but SHALL NOT block archiving.
 
-- **Source:** `src/commands/specwf-archive.ts:38-41`  
+- **Source:** `src/commands/blueprint-archive.ts:38-41`  
 - **Confidence:** HIGH
 
 #### Scenario: Missing summary
 - **GIVEN** `change-summary.md` does not exist in change directory
 - **WHEN** archive handler executes
-- **THEN** a warning SHALL be printed suggesting `specwf template change-summary`
+- **THEN** a warning SHALL be printed suggesting `blueprint template change-summary`
 - **AND** archiving SHALL continue
 
 ### Requirement: Code Cognition Extraction
 
 The system SHALL extract behavior and constraint keywords from git diffs and write them into spec files as `AUTO-EXTRACTED` sections.
 
-- **Source:** `src/commands/specwf-archive.ts:44-53`, `src/core/code-extract.ts:136-155` `writeExtractionToSpec()`  
+- **Source:** `src/commands/blueprint-archive.ts:44-53`, `src/core/code-extract.ts:136-155` `writeExtractionToSpec()`  
 - **Confidence:** MEDIUM
 
 #### Scenario: Successful extraction
 - **GIVEN** git diff is available and delta-specs define domains
 - **WHEN** archive handler executes code extraction
-- **THEN** extracted behaviors and constraints SHALL be written to `specwf/specs/<domain>/spec.md`
+- **THEN** extracted behaviors and constraints SHALL be written to `blueprint/specs/<domain>/spec.md`
 - **AND** the extraction SHALL be wrapped in `<!-- AUTO-EXTRACTED -->` markers
 
 #### Scenario: No git diff available
@@ -90,19 +90,19 @@ The system SHALL extract behavior and constraint keywords from git diffs and wri
 
 The system SHALL move the change directory from `changes/<name>/` to `archive/changes/<name>-<timestamp>/` using `archiveChangeDir()`.
 
-- **Source:** `src/commands/specwf-archive.ts:56-57`  
+- **Source:** `src/commands/blueprint-archive.ts:56-57`  
 - **Confidence:** HIGH
 
 #### Scenario: Change archived with timestamp
-- **GIVEN** change `specwf/changes/login-flow/`
+- **GIVEN** change `blueprint/changes/login-flow/`
 - **WHEN** `archiveChangeDir(dir, fullChangePath)` is called
-- **THEN** the directory SHALL be moved to `specwf/archive/changes/login-flow-<timestamp>/`
+- **THEN** the directory SHALL be moved to `blueprint/archive/changes/login-flow-<timestamp>/`
 
 ### Requirement: Git RM of Archived Path
 
 The system SHALL attempt `git rm -r` of the old change path, treating failures as non-critical.
 
-- **Source:** `src/commands/specwf-archive.ts:60-64`  
+- **Source:** `src/commands/blueprint-archive.ts:60-64`  
 - **Confidence:** HIGH
 
 #### Scenario: Git rm fails gracefully
@@ -116,7 +116,7 @@ The system SHALL update `state.md` after archiving:
 - Move the change from active changes to a completed record  
 - Transition the change status from `archiving` to `archived`  
 
-- **Source:** `src/commands/specwf-archive.ts:67-98`  
+- **Source:** `src/commands/blueprint-archive.ts:67-98`  
 - **Confidence:** HIGH
 
 #### Scenario: Phase change archived
@@ -131,7 +131,7 @@ The system SHALL update `state.md` after archiving:
 
 ### Requirement: State Transition via Continue
 
-The system SHALL use `specwf continue` to advance state from `change-archiving` to `change-archived` via the `archive-done` command.
+The system SHALL use `blueprint continue` to advance state from `change-archiving` to `change-archived` via the `archive-done` command.
 
 - **Source:** `src/types/state.ts:68` `{ from: 'change-archiving', command: 'archive-done', to: 'change-archived' }`  
 - **Confidence:** HIGH

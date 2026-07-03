@@ -14,7 +14,7 @@
 
 - [ ] task-1: [type:refactor] archive 命令同时搜索 state.changes 和 state.adhoc
   - **description**: `archiveHandler` 中的 `updateState` 回调，先查 `state.changes`，未匹配则查 `state.adhoc`。匹配后设置 status = 'archived'
-  - **files**: `src/commands/specwf-archive.ts`
+  - **files**: `src/commands/blueprint-archive.ts`
   - **acceptance**: archive adhoc change 后 state.adhoc 状态变更为 archived；archive 普通 change 行为不变；79 tests 全部通过
 
 ---

@@ -17,7 +17,7 @@
 - **产出文件**:
   - `src/prompts/init-wizard.ts` — 交互式配置向导（profile/platform/brownfield 选择）
   - `src/core/brownfield.ts` — 存量项目扫描（detectProjectInfo + generateCodebaseReport + bootstrapSpecs + runBrownfieldInit）
-  - `src/commands/specwf-init.ts` (更新) — 集成 --brownfield flag + 交互向导
+  - `src/commands/blueprint-init.ts` (更新) — 集成 --brownfield flag + 交互向导
 - **验证**: tsc + vitest 通过
 
 ### change: npm-publish-config
@@ -25,7 +25,7 @@
 - **产出文件**:
   - `package.json` (更新) — keywords/repository/exports 字段
   - `README.md` — 安装/快速开始/工作流/命令/配置（1450 bytes）
-- **验证**: `npm pack --dry-run` 成功 → specwf-0.1.0.tgz
+- **验证**: `npm pack --dry-run` 成功 → blueprint-0.1.0.tgz
 
 ## v1 差距补齐验收
 
@@ -44,6 +44,6 @@
 | tsc --noEmit | ✅ |
 | vitest run | ✅ 79/79 通过（13 测试文件） |
 | npm run build | ✅ dist/cli.js 56.92KB |
-| npm pack --dry-run | ✅ specwf-0.1.0.tgz |
-| specwf --help | ✅ 显示 9 个命令 |
+| npm pack --dry-run | ✅ blueprint-0.1.0.tgz |
+| blueprint --help | ✅ 显示 9 个命令 |
 | 归档 change 数 | ✅ 18 个 |

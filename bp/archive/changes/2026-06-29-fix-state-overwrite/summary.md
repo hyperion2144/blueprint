@@ -9,7 +9,7 @@
 
 `saveState()` 每次写入 state.md 时均调用 `generateStateBody()` 生成全新 Markdown body，覆盖用户在 body 中编写的变更列表、历史记录、检查清单等详细内容。所有调用 `updateState`/`saveState` 的命令（change new、archive、set-milestone、set-phase、set-step）均受影响。
 
-修复：写入前先通过 `readFrontmatterFile()` 读取现有 body，存在则保留，不存在（新文件场景，如 `specwf init`）才回退到 `generateStateBody()` 生成默认 body。
+修复：写入前先通过 `readFrontmatterFile()` 读取现有 body，存在则保留，不存在（新文件场景，如 `blueprint init`）才回退到 `generateStateBody()` 生成默认 body。
 
 ## 产出文件
 

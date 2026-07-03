@@ -12,7 +12,7 @@
 | 文件 | 操作 | 说明 |
 |------|------|------|
 | src/core/file-tree.ts | 修改 | archiveChangeDir→archive/changes/、listArchived→archive/changes/ |
-| src/commands/specwf-archive.ts | 修改 | 归档后自动 git rm 旧路径 |
+| src/commands/blueprint-archive.ts | 修改 | 归档后自动 git rm 旧路径 |
 | tests/integration/e2e.test.ts | 修改 | archive 断言路径更新 |
 
 ## 关键决策

@@ -14,14 +14,14 @@
 
 ## Naming
 
-- Source files: kebab-case (`specwf-init.ts`)
+- Source files: kebab-case (`blueprint-init.ts`)
 - **Markdown files: lowercase** (`project.md`, `requirements.md`, `state.md`, `roadmap.md`)
   - No uppercase filenames (no `PROJECT.md`, `README.md` except root)
   - Cross-references use lowercase: `see [state.md](state.md)`
 - Functions/variables: camelCase
 - Classes/types/interfaces: PascalCase
 - Constants: UPPER_SNAKE_CASE
-- CLI commands: kebab-case (`specwf init`, `specwf update`)
+- CLI commands: kebab-case (`blueprint init`, `blueprint update`)
 
 ## Testing
 
@@ -51,4 +51,4 @@
 
 ## Injection Rule
 
-This file is auto-injected by `specwf context` into all step agent contexts.
+This file is auto-injected by `blueprint context` into all step agent contexts.

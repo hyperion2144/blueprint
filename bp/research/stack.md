@@ -1,4 +1,4 @@
-# specwf 技术栈调研报告
+# blueprint 技术栈调研报告
 
 > 调研时间: 2026-06-29
 > 调研方向: CLI 框架 + 构建工具 + 项目结构 + npm 发布
@@ -35,7 +35,7 @@
 
 | 框架 | 嵌套深度 | 子命令模式 | 适用性评估 |
 |---|---|---|---|
-| commander | 任意深度 | `.command('init')` 链式 | **非常适合** — specwf 的 9 个一级子命令 + 可选子子命令 |
+| commander | 任意深度 | `.command('init')` 链式 | **非常适合** — blueprint 的 9 个一级子命令 + 可选子子命令 |
 | yargs | 任意深度 | `.command('init <arg>')` 声明式 | 适合，但 API 较 verbose |
 | @clack/prompts | N/A | N/A | 不适用 |
 | clipanion | 任意深度 | class `@Command.Path('init')` 装饰器 | 适合（Yarn 方案），class 模式较重 |
@@ -59,14 +59,14 @@
 |---|---|---|---|
 | commander | 无内置 | 需搭配 clack 或 enquirer | **按需搭配 @clack/prompts** |
 | yargs | 无内置 | 同上 | 同上 |
-| @clack/prompts | **原生** | text/password/confirm/select/multiselect/spinner/path/date | **specwf init 交互向导的最佳选择** |
+| @clack/prompts | **原生** | text/password/confirm/select/multiselect/spinner/path/date | **blueprint init 交互向导的最佳选择** |
 | clipanion | 无内置 | 需搭配 clack | 同上 |
 | cac | 无内置 | 需搭配 clack | 同上 |
 | 自解析 | 无 | 同上 | 同上 |
 
 #### 文件监听
 
-所有框架均不内置文件监听功能。specwf 的 `--watch` 模式可通过 chokidar 或 Node `fs.watch` 实现。
+所有框架均不内置文件监听功能。blueprint 的 `--watch` 模式可通过 chokidar 或 Node `fs.watch` 实现。
 
 #### 维护活跃度
 
@@ -79,9 +79,9 @@
 | cac | 较慢 (v6.7.14 于 2025-11) | 低 | 中 | **中** — 个人维护 |
 | 自解析 | N/A | N/A | N/A | 自己维护，无外部风险 |
 
-### 1.3 与 specwf 需求匹配分析
+### 1.3 与 blueprint 需求匹配分析
 
-specwf CLI 需要：
+blueprint CLI 需要：
 
 | 需求 | 优先级 | commander | yargs | clipanion | cac |
 |---|---|---|---|---|---|
@@ -97,19 +97,19 @@ specwf CLI 需要：
 
 ```
 CLI 核心框架: commander v14（+ Node 20 兼容）或 v15（ESM-only）
-交互式 Prompt: @clack/prompts（仅 specwf init 命令中按需引入）
+交互式 Prompt: @clack/prompts（仅 blueprint init 命令中按需引入）
 ```
 
 **理由：**
 
-1. **commander 是最安全的选择** — 无可争议的最流行 TypeScript CLI 框架，社区最大、文档最全、维护最活跃。specwf 的 9 个一级子命令映射到 commander 的 `.command()` 链式调用非常自然。
+1. **commander 是最安全的选择** — 无可争议的最流行 TypeScript CLI 框架，社区最大、文档最全、维护最活跃。blueprint 的 9 个一级子命令映射到 commander 的 `.command()` 链式调用非常自然。
 
 2. **v14 vs v15 的版本选择：**
-   - **若保持 Node ≥ 20 要求**：使用 commander v14。v14 安全更新持续到 2027 年 5 月，完全满足 specwf 的开发周期。同时保留 v14 的 CJS 兼容能力，方便消费方逐步迁移 ESM。
-   - **若升级到 Node ≥ 22**：使用 commander v15（ESM-only），享受最新特性。specwf 约定使用 ESM（`"type": "module"`），v15 天然契合。
+   - **若保持 Node ≥ 20 要求**：使用 commander v14。v14 安全更新持续到 2027 年 5 月，完全满足 blueprint 的开发周期。同时保留 v14 的 CJS 兼容能力，方便消费方逐步迁移 ESM。
+   - **若升级到 Node ≥ 22**：使用 commander v15（ESM-only），享受最新特性。blueprint 约定使用 ESM（`"type": "module"`），v15 天然契合。
    - **建议方案**：起始使用 commander v14，`package.json` 中限定 `"commander": "^14"`，Node 要求保持 `>=20`。当稳定版本发布后，再规划迁移到 v15。
 
-3. **@clack/prompts 用作 init 交互** — 不是替代 commander，而是补充。`specwf init` 需要交互式引导项目配置（profile 选择、platform 配置、context 录入），clack 提供 text/select/confirm/spinner 等组件。按需引入，不影响主 CLI 体积：
+3. **@clack/prompts 用作 init 交互** — 不是替代 commander，而是补充。`blueprint init` 需要交互式引导项目配置（profile 选择、platform 配置、context 录入），clack 提供 text/select/confirm/spinner 等组件。按需引入，不影响主 CLI 体积：
    ```typescript
    // src/commands/init.ts
    import * as p from '@clack/prompts'
@@ -123,13 +123,13 @@ CLI 核心框架: commander v14（+ Node 20 兼容）或 v15（ESM-only）
    })
    ```
 
-4. **不选 clipanion 的理由：** class 装饰器模式 + 面向对象风格与 specwf 的简洁函数式风格不匹配。虽有强类型安全优势，但项目复杂度不足以发挥。
+4. **不选 clipanion 的理由：** class 装饰器模式 + 面向对象风格与 blueprint 的简洁函数式风格不匹配。虽有强类型安全优势，但项目复杂度不足以发挥。
 
 5. **不选 cac 的理由：** 功能 subset 太少（无自动 help 生成、无 typescript 友好校验），需要额外轮子。
 
 6. **不选 yargs 的理由：** 生态停滞，v17 后几乎无更新。包体约 40KB（gzip），是 commander 的两倍。
 
-7. **不选自解析的理由：** specwf 有 9+ 个命令 + 位置参数 + 选项校验，手写 argv 解析的维护成本远高于直接引入稳定依赖。
+7. **不选自解析的理由：** blueprint 有 9+ 个命令 + 位置参数 + 选项校验，手写 argv 解析的维护成本远高于直接引入稳定依赖。
 
 ### 1.5 其他依赖
 
@@ -174,8 +174,8 @@ CLI 核心框架: commander v14（+ Node 20 兼容）或 v15（ESM-only）
 
 **理由：**
 
-1. **tsup 零配置即可满足 specwf 的所有需求**：
-   - ESM 输出（`format: ['esm']`）— specwf 是 ESM-only 包
+1. **tsup 零配置即可满足 blueprint 的所有需求**：
+   - ESM 输出（`format: ['esm']`）— blueprint 是 ESM-only 包
    - 类型声明生成（`dts: true`）
    - 打包为单文件 CLI
    - stub 模式支持开发热更
@@ -185,7 +185,7 @@ CLI 核心框架: commander v14（+ Node 20 兼容）或 v15（ESM-only）
 
 3. **tsc 保留作类型检查** — 在 `scripts` 中使用 `tsc --noEmit` 单独做类型校验。`tsup` 的 `dts` 负责生成发布用 `.d.ts`，tsc 负责开发期的类型安全。
 
-4. **无需 CJS 输出** — specwf 约定 ESM（`"type": "module"`），target 设定为 `ES2022`。不必为 CJS 兼容增加复杂度。
+4. **无需 CJS 输出** — blueprint 约定 ESM（`"type": "module"`），target 设定为 `ES2022`。不必为 CJS 兼容增加复杂度。
 
 ### 2.4 tsup 配置示例
 
@@ -215,7 +215,7 @@ export default defineConfig({
 ### 3.1 目录树设计
 
 ```
-specwf/
+blueprint/
 ├── package.json                 # npm 包配置
 ├── tsconfig.json                # TypeScript 配置
 ├── tsup.config.ts               # 构建配置
@@ -224,21 +224,21 @@ specwf/
 ├── README.md
 │
 ├── bin/                         # CLI 入口（编译后产物）
-│   └── specwf.js                # 编译后的入口文件（shebang + 执行）
+│   └── blueprint.js                # 编译后的入口文件（shebang + 执行）
 │
 ├── src/                         # 源代码
 │   ├── cli.ts                   # CLI 入口：创建 commander program，注册命令
 │   │
 │   ├── commands/                # 子命令实现，每命令一文件
-│   │   ├── specwf-init.ts       # specwf init
-│   │   ├── specwf-update.ts     # specwf update
-│   │   ├── specwf-config.ts     # specwf config / config set
-│   │   ├── specwf-state.ts      # specwf state
-│   │   ├── specwf-context.ts    # specwf context <step>
-│   │   ├── specwf-continue.ts   # specwf continue
-│   │   ├── specwf-archive.ts    # specwf archive <change>
-│   │   ├── specwf-list.ts       # specwf list
-│   │   └── specwf-template.ts   # specwf template <type>
+│   │   ├── blueprint-init.ts       # blueprint init
+│   │   ├── blueprint-update.ts     # blueprint update
+│   │   ├── blueprint-config.ts     # blueprint config / config set
+│   │   ├── blueprint-state.ts      # blueprint state
+│   │   ├── blueprint-context.ts    # blueprint context <step>
+│   │   ├── blueprint-continue.ts   # blueprint continue
+│   │   ├── blueprint-archive.ts    # blueprint archive <change>
+│   │   ├── blueprint-list.ts       # blueprint list
+│   │   └── blueprint-template.ts   # blueprint template <type>
 │   │
 │   ├── lib/                     # 核心逻辑
 │   │   ├── project.ts           # Project 模型（读取/更新 project.yml）
@@ -249,7 +249,7 @@ specwf/
 │   │   ├── code-extract.ts      # 代码认知提取（archive 时回灌）
 │   │   ├── generator.ts         # 平台文件生成（slash commands / skills / agents）
 │   │   ├── template.ts          # 模板渲染引擎
-│   │   ├── file-tree.ts         # 产物目录树操作（specwf/ 下的骨架管理）
+│   │   ├── file-tree.ts         # 产物目录树操作（blueprint/ 下的骨架管理）
 │   │   └── config.ts            # project.yml 解析与校验
 │   │
 │   ├── types/                   # TypeScript 类型定义
@@ -265,7 +265,7 @@ specwf/
 │   ├── templates/               # 内置模板资源
 │   │   ├── project.yml          # 新项目 project.yml 模板
 │   │   ├── state.md             # 初始 state.md
-│   │   ├── change.specwf.yaml   # change 元数据模板
+│   │   ├── change.blueprint.yaml   # change 元数据模板
 │   │   └── proposal.md          # change proposal 模板
 │   │
 │   ├── platforms/               # 多平台文件生成
@@ -278,7 +278,7 @@ specwf/
 │   │
 │   └── utils/                   # 通用工具函数
 │       ├── logger.ts            # 日志输出（consola 封装）
-│       ├── path.ts              # 路径工具（specwf 根目录定位）
+│       ├── path.ts              # 路径工具（blueprint 根目录定位）
 │       ├── id.ts                # ID 生成（nanoid）
 │       └── fs.ts                # 文件系统工具
 │
@@ -294,13 +294,13 @@ specwf/
 
 ### 3.2 目录设计原则
 
-1. **`src/commands/` 每命令一文件** — 与 `specwf <subcommand>` 一一对应。命名 `specwf-{cmd}.ts` 使其在文件排序中自然归组，且见名知所属。
+1. **`src/commands/` 每命令一文件** — 与 `blueprint <subcommand>` 一一对应。命名 `blueprint-{cmd}.ts` 使其在文件排序中自然归组，且见名知所属。
 
 2. **`src/lib/` 为核心业务逻辑** — 不与 CLI 框架耦合。理论上可以直接被其他模块（如 slash command 的 prompt）调用。每个模块单一职责。
 
 3. **`src/types/` 独立目录** — 类型定义集中管理，避免循环引用，方便 LSP 导航。发布时 `dist/` 包含 `.d.ts` 供消费方使用 API 类型。
 
-4. **`src/prompts/` 独立于 `commands/`** — 交互式 prompt 逻辑独立，避免 init 命令文件膨胀。只有在 `specwf init` 中按需导入。
+4. **`src/prompts/` 独立于 `commands/`** — 交互式 prompt 逻辑独立，避免 init 命令文件膨胀。只有在 `blueprint init` 中按需导入。
 
 5. **`src/templates/` 为静态资源** — 编译时通过 tsup 的 `--publicDir` 或内联方式打包进 CLI 二进制。
 
@@ -308,15 +308,15 @@ specwf/
 
 ### 3.3 与 OpenSpec 的对照
 
-| OpenSpec | specwf | 说明 |
+| OpenSpec | blueprint | 说明 |
 |---|---|---|
-| `bin/openspec.js` | `bin/specwf.js` | CLI 入口（编译后） |
+| `bin/openspec.js` | `bin/blueprint.js` | CLI 入口（编译后） |
 | `src/cli/` | `src/commands/` | 命令定义 |
 | `src/core/` | `src/lib/` | 核心业务逻辑 |
 | `src/utils/` | `src/utils/` | 工具函数 |
 | N/A | `src/types/` | 类型定义（独立目录提高 LSP 体验） |
-| N/A | `src/prompts/` | 交互式 prompt（specwf 特有需求） |
-| N/A | `src/templates/` | 内置模板（生成 specwf/ 目录用） |
+| N/A | `src/prompts/` | 交互式 prompt（blueprint 特有需求） |
+| N/A | `src/templates/` | 内置模板（生成 blueprint/ 目录用） |
 | N/A | `src/platforms/` | 多平台文件生成 |
 
 ---
@@ -327,12 +327,12 @@ specwf/
 
 ```jsonc
 {
-  "name": "specwf",
+  "name": "blueprint",
   "version": "0.1.0",
   "description": "规格驱动开发工作流 — AI agent 的生产力工具",
   "type": "module",                          // ESM 优先
   "bin": {
-    "specwf": "./dist/cli.js"               // CLI 入口
+    "blueprint": "./dist/cli.js"               // CLI 入口
   },
   "files": [
     "dist/",
@@ -394,7 +394,7 @@ specwf/
 
 1. **`bin` 字段** — 只指向 `dist/cli.js`。编译后的 CLI 文件中通过 tsup `banner` 注入 `#!/usr/bin/env node` shebang。npm 自动 chmod +x。
 
-2. **`files` 字段** — 白名单模式。只发布 `dist/` 目录 + 文档。不包含 `src/`、`tests/`、`tsconfig.json` 等开发文件。敏感地，`./specwf/` 产物目录（在用户项目中生成）**不**属于 npm 包内内容。
+2. **`files` 字段** — 白名单模式。只发布 `dist/` 目录 + 文档。不包含 `src/`、`tests/`、`tsconfig.json` 等开发文件。敏感地，`./blueprint/` 产物目录（在用户项目中生成）**不**属于 npm 包内内容。
 
 3. **`engines.node`** — `>=20`。与 coding 约定一致。如果采用 commander v15（需 Node 22），则调整为 `>=22`。
 
@@ -456,4 +456,4 @@ specwf/
 
 ---
 
-*本文件由 specwf 技术调研子代理自动生成，是 specwf 项目技术栈的权威参考。*
+*本文件由 blueprint 技术调研子代理自动生成，是 blueprint 项目技术栈的权威参考。*

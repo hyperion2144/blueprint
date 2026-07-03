@@ -74,7 +74,6 @@ export function getRoadmapSkillTemplate(): SkillTemplate {
 
 export function getRoadmapCommandTemplate(): CommandTemplate {
   return {
-    name: 'SpecWF: Roadmap',
     description: 'Roadmap definition — split project into Milestones x Phases with structured format',
     category: 'Planning',
     tags: ['bp', 'roadmap', 'planning', 'milestones'],

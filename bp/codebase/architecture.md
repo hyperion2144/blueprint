@@ -1,8 +1,8 @@
-# Architecture: specwf
+# Architecture: blueprint
 
 ## Overview
 
-specwf is a **spec-driven development workflow CLI** for AI coding agents. It manages a state machine over a 4-layer entity hierarchy (Project → Milestone → Phase → Change) and generates platform-specific agent files (slash commands, agent definitions, skills).
+blueprint is a **spec-driven development workflow CLI** for AI coding agents. It manages a state machine over a 4-layer entity hierarchy (Project → Milestone → Phase → Change) and generates platform-specific agent files (slash commands, agent definitions, skills).
 
 The architecture follows a **layered, bottom-up dependency graph**:
 
@@ -45,7 +45,7 @@ No layer depends on a higher layer. `src/cli.ts` is the composition root.
 | `spec-injector.ts` | Context injection engine — reads state.md to determine scope (project/phase/change), outputs file manifest with paths and line ranges |
 | `delta-merge.ts` | Delta-spec merge engine — heading-tree three-way merge with SHA-256 content fingerprinting and conflict detection |
 | `code-extract.ts` | Code cognition extraction — parses `git diff` for behavioral changes, writes AUTO-EXTRACTED sections to spec files |
-| `file-tree.ts` | Directory operations — creates `specwf/` skeleton, manages milestone/phase/change/archive directories |
+| `file-tree.ts` | Directory operations — creates `blueprint/` skeleton, manages milestone/phase/change/archive directories |
 | `brownfield.ts` | Brownfield init — detects project type (JS/TS/Rust/Go/Cargo), generates codebase report, bootstraps specs from source |
 
 ### Layer 4a: `src/commands/` — CLI command handlers (depends on core/ + generators/ + prompts/)
@@ -54,17 +54,17 @@ Each command file exports a `register(program)` function. 11 commands total:
 
 | File | CLI Command | Key Dependencies |
 |------|-------------|------------------|
-| `specwf-init.ts` | `specwf init` | `core/config`, `core/file-tree`, `core/state-file`, `core/brownfield`, `prompts/init-wizard`, `generators/index` |
-| `specwf-update.ts` | `specwf update` | `core/config`, `generators/index` |
-| `specwf-config.ts` | `specwf config` | `core/config` |
-| `specwf-state.ts` | `specwf state` | `core/state-file` |
-| `specwf-context.ts` | `specwf context <step>` | `core/spec-injector` |
-| `specwf-continue.ts` | `specwf continue` | `core/continue` |
-| `specwf-archive.ts` | `specwf archive <change>` | `core/delta-merge`, `core/code-extract`, `core/file-tree`, `core/state-file` |
-| `specwf-list.ts` | `specwf list` | `core/file-tree` |
-| `specwf-template.ts` | `specwf template <id>` | `templates/artifacts` |
-| `specwf-change.ts` | `specwf change` | State + file-tree operations |
-| `specwf-dispatch.ts` | `specwf dispatch` | Agent dispatch |
+| `blueprint-init.ts` | `blueprint init` | `core/config`, `core/file-tree`, `core/state-file`, `core/brownfield`, `prompts/init-wizard`, `generators/index` |
+| `blueprint-update.ts` | `blueprint update` | `core/config`, `generators/index` |
+| `blueprint-config.ts` | `blueprint config` | `core/config` |
+| `blueprint-state.ts` | `blueprint state` | `core/state-file` |
+| `blueprint-context.ts` | `blueprint context <step>` | `core/spec-injector` |
+| `blueprint-continue.ts` | `blueprint continue` | `core/continue` |
+| `blueprint-archive.ts` | `blueprint archive <change>` | `core/delta-merge`, `core/code-extract`, `core/file-tree`, `core/state-file` |
+| `blueprint-list.ts` | `blueprint list` | `core/file-tree` |
+| `blueprint-template.ts` | `blueprint template <id>` | `templates/artifacts` |
+| `blueprint-change.ts` | `blueprint change` | State + file-tree operations |
+| `blueprint-dispatch.ts` | `blueprint dispatch` | Agent dispatch |
 | `_utils.ts` | (shared) | `writeGeneratedFiles()` |
 
 ### Layer 4b: `src/generators/` + `src/integrations/` — Platform file generation
@@ -111,7 +111,7 @@ Project
   └── adhoc/ (temporary changes, no milestone/phase binding)
 ```
 
-Archived changes move to `specwf/archive/changes/<name>/`.
+Archived changes move to `blueprint/archive/changes/<name>/`.
 
 ## State Machine
 
@@ -130,24 +130,24 @@ Adhoc:         adhoc-proposal → change-planning → ... → adhoc-archived
 
 The `state.md` file tracks: project status, active context (entity type + step), all changes with statuses and dependency arrays, and adhoc changes.
 
-## Data Flow: `specwf archive`
+## Data Flow: `blueprint archive`
 
 ```
-1. User runs: specwf archive <change-path>
-2. archiveHandler() in specwf-archive.ts:
+1. User runs: blueprint archive <change-path>
+2. archiveHandler() in blueprint-archive.ts:
    a. Finds delta-specs in <change>/specs/
    b. mergeDeltaSpecs() → mergeAndWrite() → heading-tree merge with fingerprint check
    c. extractFromGitDiff() → keyword extraction from git diff → writeExtractionToSpec()
-   d. archiveChangeDir() → moves directory to specwf/archive/changes/
+   d. archiveChangeDir() → moves directory to blueprint/archive/changes/
    e. updateState() → sets change status to "archived" in state.md
 ```
 
-## Data Flow: `specwf context`
+## Data Flow: `blueprint context`
 
 ```
-1. Agent runs: specwf context <step>
-2. contextHandler() in specwf-context.ts:
-   a. Calls generateContext(specwfDir, step)
+1. Agent runs: blueprint context <step>
+2. contextHandler() in blueprint-context.ts:
+   a. Calls generateContext(blueprintDir, step)
    b. spec-injector.ts reads state.md to determine scope (project/phase/change)
    c. Returns ContextResult with file refs (path + line ranges + optional content)
    d. Terminal output: "Load the following files:" formatted as bullet list
@@ -157,5 +157,5 @@ The `state.md` file tracks: project status, active context (entity type + step),
 ## Integration Points
 
 - **OMP:** `.omp/commands/` (slash commands), `.omp/agents/` (agent definitions), `.omp/skills/` (skill guides), `.omp/hooks/`
-- **specwf conventions injection:** `conventions/coding.md` is auto-injected by `specwf context` into all step agent contexts
+- **blueprint conventions injection:** `conventions/coding.md` is auto-injected by `blueprint context` into all step agent contexts
 - **Agent delegation:** Step definitions specify whether a step uses sub-agents and which roles to spawn

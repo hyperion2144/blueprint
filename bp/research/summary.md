@@ -46,7 +46,7 @@
 
 **CLI 输出文件路径列表 + 行范围**（详见 [pitfalls.md](pitfalls.md) §4）：
 
-- `specwf context <step>` 读取 state.md 确定当前作用域
+- `blueprint context <step>` 读取 state.md 确定当前作用域
 - 按步骤类型（project/phase/change）确定注入范围
 - 输出格式与 read 工具的选择器语法兼容（`requirements.md:44-67`）
 
@@ -56,13 +56,13 @@
 
 | 文件类型 | 路径 | 来源 | 详见 |
 |---|---|---|---|
-| Slash commands | `.omp/commands/specwf-*.md` | 步骤定义表 → frontmatter + prompt body | [pitfalls.md](pitfalls.md) §1 |
-| Agent 定义 | `.omp/agents/specwf-*.md` | 6 个角色定义 + project.yml models 配置 | [pitfalls.md](pitfalls.md) §2 |
-| Skills | `skills/specwf-*/SKILL.md` | 步骤工作流指引 | [pitfalls.md](pitfalls.md) §3 |
+| Slash commands | `.omp/commands/blueprint-*.md` | 步骤定义表 → frontmatter + prompt body | [pitfalls.md](pitfalls.md) §1 |
+| Agent 定义 | `.omp/agents/blueprint-*.md` | 6 个角色定义 + project.yml models 配置 | [pitfalls.md](pitfalls.md) §2 |
+| Skills | `skills/blueprint-*/SKILL.md` | 步骤工作流指引 | [pitfalls.md](pitfalls.md) §3 |
 
 ### 生成器架构
 
-`specwf update` 命令的核心流程：
+`blueprint update` 命令的核心流程：
 1. 读取 project.yml（platform / profile / models / workflow）
 2. 内置步骤定义表 → 生成 slash command 文件
 3. 内置 agent 定义表 + models 配置 → 生成 agent 文件
@@ -80,9 +80,9 @@
 ## 项目目录结构
 
 ```
-specwf-cli/
+blueprint-cli/
 ├── bin/
-│   └── specwf.js                    # 入口（shebang）
+│   └── blueprint.js                    # 入口（shebang）
 ├── src/
 │   ├── cli/
 │   │   ├── index.ts                 # commander 主入口
@@ -103,7 +103,7 @@ specwf-cli/
 │   └── templates/                   # 内置模板
 │       ├── project.yml              # 新项目配置模板
 │       ├── state.md                 # 初始 state.md
-│       ├── change.specwf.yaml       # change 元数据模板
+│       ├── change.blueprint.yaml       # change 元数据模板
 │       └── proposal.md              # change proposal 模板
 ├── tests/                           # 与源文件同目录的 *.test.ts
 ├── package.json

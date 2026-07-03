@@ -2,7 +2,7 @@
 
 ## 描述
 
-为所有 agent 输出文档提供可填写的模板文件，agent 通过 `specwf template <type>` 获取模板；
+为所有 agent 输出文档提供可填写的模板文件，agent 通过 `blueprint template <type>` 获取模板；
 新增 codebase-mapper 和 spec-bootstrapper 两个 agent；所有现有 agent 说明中标注模板引用。
 
 ## 产出文件
@@ -23,7 +23,7 @@
 - `agents/reviewer.md` — 产物要求加模板引用
 - `agents/verifier.md` — 产物要求加模板引用
 - `agents/archiver.md` — 产物要求加模板引用
-- `commands/specwf-template.ts` — 注册 codebase/specs 新模板类型
+- `commands/blueprint-template.ts` — 注册 codebase/specs 新模板类型
 - `generators/omp-agents.ts` — AGENT_DEFS +2, thinkingLevel +2
 
 ### 测试相关
@@ -31,7 +31,7 @@
 
 ## 关键决策
 
-- agent 通过 `specwf template <type>` 命令获取模板内容（或直接读 `templates/` 目录文件）
+- agent 通过 `blueprint template <type>` 命令获取模板内容（或直接读 `templates/` 目录文件）
 - 模板中的 `{{placeholder}}` 替换为实际内容
 - 新增模板类型映射：`codebase-stack` / `codebase-architecture` / `codebase-conventions` / `codebase-pitfalls` / `spec-bootstrap`
 
@@ -40,10 +40,10 @@
 - [x] vitest run 通过（79/79，1.2s）
 - [x] npm run build 通过（76KB）
 - [x] `.omp/agents/` 有 8 个 agent 文件
-- [x] `specwf template codebase-stack` 可输出模板
-- [x] `specwf template codebase-architecture` 可输出模板
-- [x] `specwf template codebase-conventions` 可输出模板
-- [x] `specwf template codebase-pitfalls` 可输出模板
-- [x] `specwf template spec-bootstrap` 可输出模板
-- [x] `specwf update` 生成 40 个文件
+- [x] `blueprint template codebase-stack` 可输出模板
+- [x] `blueprint template codebase-architecture` 可输出模板
+- [x] `blueprint template codebase-conventions` 可输出模板
+- [x] `blueprint template codebase-pitfalls` 可输出模板
+- [x] `blueprint template spec-bootstrap` 可输出模板
+- [x] `blueprint update` 生成 40 个文件
 - [x] 新 agent 模板文件存在

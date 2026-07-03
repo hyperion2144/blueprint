@@ -5,7 +5,7 @@
 
 ## Phase 目标
 
-所有 9 个 CLI 子命令可用，用户能通过命令行完整操作 specwf。Phase 5 是 CLI 对用户的第一接触面。
+所有 9 个 CLI 子命令可用，用户能通过命令行完整操作 blueprint。Phase 5 是 CLI 对用户的第一接触面。
 
 ## 已实现（Phase 1-4）
 
@@ -26,15 +26,15 @@
 
 | 命令 | 依赖的 core 模块 | 复杂度 |
 |---|---|---|
-| `specwf init` | file-tree + config + generators | 高（交互式向导 + 创建骨架 + 调用 update） |
-| `specwf update` | config + generators | 中（读配置 → 调度生成器 → 写文件） |
-| `specwf config` | config | 低（读 + 写 project.yml） |
-| `specwf state` | state-file | 低（读 state.md → 格式化输出） |
-| `specwf context <step>` | spec-injector + state-file | 中（读状态 → 注入 → 输出文件清单） |
-| `specwf continue` | continue + state-file | 中（读状态 → 确定下一步 → 输出） |
-| `specwf archive <change>` | delta-merge + code-extract + file-tree | 高（合并 → 提取 → 移动 → 更新状态） |
-| `specwf list` | file-tree | 低（遍历目录 → 格式化输出） |
-| `specwf template <type>` | file-tree | 低（复制内置模板到目标目录） |
+| `blueprint init` | file-tree + config + generators | 高（交互式向导 + 创建骨架 + 调用 update） |
+| `blueprint update` | config + generators | 中（读配置 → 调度生成器 → 写文件） |
+| `blueprint config` | config | 低（读 + 写 project.yml） |
+| `blueprint state` | state-file | 低（读 state.md → 格式化输出） |
+| `blueprint context <step>` | spec-injector + state-file | 中（读状态 → 注入 → 输出文件清单） |
+| `blueprint continue` | continue + state-file | 中（读状态 → 确定下一步 → 输出） |
+| `blueprint archive <change>` | delta-merge + code-extract + file-tree | 高（合并 → 提取 → 移动 → 更新状态） |
+| `blueprint list` | file-tree | 低（遍历目录 → 格式化输出） |
+| `blueprint template <type>` | file-tree | 低（复制内置模板到目标目录） |
 
 ### 实现决策
 

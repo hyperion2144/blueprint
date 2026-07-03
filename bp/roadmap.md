@@ -2,15 +2,15 @@
 
 ## Milestone m1-core — CLI 核心可用
 
-**目标**: specwf CLI 可初始化项目、管理状态、生成平台文件、推进流程。完成后用户能在真实项目中使用 specwf 的完整工作流。
+**目标**: blueprint CLI 可初始化项目、管理状态、生成平台文件、推进流程。完成后用户能在真实项目中使用 blueprint 的完整工作流。
 
 **验收标准**:
-- `specwf init` 能初始化项目目录结构
-- `specwf update` 能生成 OMP 平台文件（commands + agents + skills）
-- `specwf state` / `specwf continue` 能读取状态并推进
-- `specwf context <step>` 能输出上下文清单
-- `specwf archive <change>` 能执行 delta-spec 合并 + 代码认知回灌
-- `specwf config` / `specwf list` / `specwf template` 辅助命令可用
+- `blueprint init` 能初始化项目目录结构
+- `blueprint update` 能生成 OMP 平台文件（commands + agents + skills）
+- `blueprint state` / `blueprint continue` 能读取状态并推进
+- `blueprint context <step>` 能输出上下文清单
+- `blueprint archive <change>` 能执行 delta-spec 合并 + 代码认知回灌
+- `blueprint config` / `blueprint list` / `blueprint template` 辅助命令可用
 - 全部通过 vitest 测试
 
 ---
@@ -43,11 +43,11 @@ graph LR
 - `src/parser/frontmatter.ts` — gray-matter 封装（解析 + 生成）
 - `src/parser/heading-tree.ts` — Markdown heading tree 解析器
 - `src/parser/spec-parser.ts` — spec 结构化解析（## Purpose / ### Requirement / #### Scenario）
-- `bin/specwf.js` — 入口 shebang（空 commander，仅 `--version`）
+- `bin/blueprint.js` — 入口 shebang（空 commander，仅 `--version`）
 
 **验收**:
 - `npm run build` 成功输出 ESM + dts
-- `npx specwf --version` 打印版本号
+- `npx blueprint --version` 打印版本号
 - 解析层单元测试通过（yaml 读写 + frontmatter 解析 + heading tree 构建 + spec 解析）
 
 **Change 拆分预估**:
@@ -92,13 +92,13 @@ graph LR
 - `src/core/delta-merge.ts` — delta-spec 合并引擎（heading tree 三向合并 + SHA-256 fingerprint 冲突检测）
 - `src/core/fingerprint.ts` — base fingerprint 计算与校验
 - `src/core/code-extract.ts` — 代码认知提取（从 git diff 提取行为/约束 → 回灌 specs/）
-- `src/core/file-tree.ts` — 产物目录树操作（specwf/ 骨架创建/遍历）
+- `src/core/file-tree.ts` — 产物目录树操作（blueprint/ 骨架创建/遍历）
 
 **验收**:
 - `specInjector.run(step, state)` 输出正确的文件清单
 - delta-merge：给定 base + delta，正确合并；冲突时标记 CONFLICT
 - code-extract：给定 git diff，提取行为变化
-- file-tree：能创建完整的 specwf/ 目录骨架
+- file-tree：能创建完整的 blueprint/ 目录骨架
 
 **Change 拆分预估**:
 - `implement-spec-injector` — context 注入引擎
@@ -109,20 +109,20 @@ graph LR
 
 ### Phase 4: 平台生成器
 
-**目标**: `specwf update` 能为 OMP 生成 slash commands + agent 定义 + skills。
+**目标**: `blueprint update` 能为 OMP 生成 slash commands + agent 定义 + skills。
 
 **依赖**: Phase 2（config 读取 platform/profile/models）+ Phase 3（file-tree）
 
 **范围**:
-- `src/generators/omp-commands.ts` — 生成 `.omp/commands/specwf-*.md`（14 个 slash command）
-- `src/generators/omp-agents.ts` — 生成 `.omp/agents/specwf-*.md`（6 个 agent 定义）
-- `src/generators/skills.ts` — 生成 `skills/specwf-*/SKILL.md`（14 个 skill）
+- `src/generators/omp-commands.ts` — 生成 `.omp/commands/blueprint-*.md`（14 个 slash command）
+- `src/generators/omp-agents.ts` — 生成 `.omp/agents/blueprint-*.md`（6 个 agent 定义）
+- `src/generators/skills.ts` — 生成 `skills/blueprint-*/SKILL.md`（14 个 skill）
 - `src/generators/index.ts` — 生成器入口（读 project.yml → 调度各生成器 → 输出文件）
 - 内置步骤定义表（14 个步骤的 frontmatter + prompt body 模板）
 - 内置 agent 定义表（6 个角色的 frontmatter + systemPrompt 模板）
 
 **验收**:
-- `specwf update` 在测试目录生成所有平台文件
+- `blueprint update` 在测试目录生成所有平台文件
 - 生成的命令文件 frontmatter 格式正确
 - agent 文件的 model 字段正确填充（从 project.yml models → profile 映射 → OMP 角色名）
 - 重复运行 update 幂等（文件 hash 一致）
@@ -137,32 +137,32 @@ graph LR
 
 ### Phase 5: CLI 命令层
 
-**目标**: 所有 CLI 子命令可用，用户能通过命令行完整操作 specwf。
+**目标**: 所有 CLI 子命令可用，用户能通过命令行完整操作 blueprint。
 
 **依赖**: Phase 3（引擎）+ Phase 4（生成器）
 
 **范围**:
-- `src/commands/init.ts` — specwf init（交互式向导 → 创建 specwf/ 骨架 → 调 update 生成平台文件）
-- `src/commands/update.ts` — specwf update（调度生成器）
-- `src/commands/config.ts` — specwf config / config set（读写 project.yml）
-- `src/commands/state.ts` — specwf state（读 state.md → 格式化输出）
-- `src/commands/context.ts` — specwf context <step>（调 spec-injector → 输出文件清单）
-- `src/commands/continue.ts` — specwf continue（调 continue 逻辑 → 输出下一步命令）
-- `src/commands/archive.ts` — specwf archive <change>（调 delta-merge + code-extract → 归档）
-- `src/commands/list.ts` — specwf list（遍历 milestones/phases/changes）
-- `src/commands/template.ts` — specwf template <type>（生成模板文件）
+- `src/commands/init.ts` — blueprint init（交互式向导 → 创建 blueprint/ 骨架 → 调 update 生成平台文件）
+- `src/commands/update.ts` — blueprint update（调度生成器）
+- `src/commands/config.ts` — blueprint config / config set（读写 project.yml）
+- `src/commands/state.ts` — blueprint state（读 state.md → 格式化输出）
+- `src/commands/context.ts` — blueprint context <step>（调 spec-injector → 输出文件清单）
+- `src/commands/continue.ts` — blueprint continue（调 continue 逻辑 → 输出下一步命令）
+- `src/commands/archive.ts` — blueprint archive <change>（调 delta-merge + code-extract → 归档）
+- `src/commands/list.ts` — blueprint list（遍历 milestones/phases/changes）
+- `src/commands/template.ts` — blueprint template <type>（生成模板文件）
 - `src/prompts/init-wizard.ts` — init 交互向导（@clack/prompts）
 - `src/cli.ts` — commander 主入口，注册所有子命令
 
 **验收**:
-- `specwf init` 在空目录创建完整 specwf/ 结构 + 平台文件
-- `specwf config set profile strict` 正确修改 project.yml
-- `specwf state` 输出当前状态
-- `specwf context plan` 输出 plan 步骤的上下文文件清单
-- `specwf continue` 输出下一步 slash command
-- `specwf archive <change>` 执行合并 + 回灌 + 移动到 archive/
-- `specwf list` 列出所有 milestone/phase/change
-- `specwf template proposal` 生成 proposal 模板
+- `blueprint init` 在空目录创建完整 blueprint/ 结构 + 平台文件
+- `blueprint config set profile strict` 正确修改 project.yml
+- `blueprint state` 输出当前状态
+- `blueprint context plan` 输出 plan 步骤的上下文文件清单
+- `blueprint continue` 输出下一步 slash command
+- `blueprint archive <change>` 执行合并 + 回灌 + 移动到 archive/
+- `blueprint list` 列出所有 milestone/phase/change
+- `blueprint template proposal` 生成 proposal 模板
 
 **Change 拆分预估**:
 - `implement-init` — init 命令 + 交互向导
@@ -176,14 +176,14 @@ graph LR
 
 ### Phase 6: 集成验证 + 模板完善
 
-**目标**: 端到端验证 specwf 自身能用 specwf 流程工作，模板完善。
+**目标**: 端到端验证 blueprint 自身能用 blueprint 流程工作，模板完善。
 
 **依赖**: Phase 5（所有命令可用）
 
 **范围**:
 - 集成测试：init → 创建 change → plan → archive 完整流程
-- 模板文件完善（project.yml / state.md / proposal.md / .specwf.yaml 模板）
-- `specwf init --brownfield` 存量项目模式（codebase mapping + spec bootstrap 调度）
+- 模板文件完善（project.yml / state.md / proposal.md / .blueprint.yaml 模板）
+- `blueprint init --brownfield` 存量项目模式（codebase mapping + spec bootstrap 调度）
 - npm 发布配置（bin / engines / files / exports 最终确认）
 - README.md 编写
 
@@ -224,7 +224,7 @@ graph LR
 
 ### m3-workflow-automation — 工作流自动化增强
 
-- grill-me 集成（`/specwf:grill` 完整实现）
+- grill-me 集成（`/blueprint:grill` 完整实现）
 - 依赖图并行执行调度器
 - 三重 review batch 调度
 - verify 回环自动路由

@@ -2,11 +2,11 @@
 
 ## 描述
 
-init 命令（创建 specwf/ 骨架 + project.yml + state.md）
+init 命令（创建 blueprint/ 骨架 + project.yml + state.md）
 
 ## 产出文件
 
-- `src/commands/specwf-init.ts`
+- `src/commands/blueprint-init.ts`
 
 ## 验证
 

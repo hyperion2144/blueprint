@@ -55,7 +55,6 @@ export function getResearchPhaseSkillTemplate(): SkillTemplate {
 
 export function getResearchPhaseCommandTemplate(): CommandTemplate {
   return {
-    name: 'SpecWF: Research Phase',
     description: 'Phase research — dispatch phase-researcher sub-agent',
     category: 'Discovery',
     tags: ['bp', 'research-phase', 'implementation', 'sub-agent'],

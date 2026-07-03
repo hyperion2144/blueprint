@@ -4,7 +4,7 @@
 
 ## Intent
 
-command 中关于子代理的描述太简略（一行"子代理: specwf-planner"），模型不知道如何派发、给什么提示词。
+command 中关于子代理的描述太简略（一行"子代理: blueprint-planner"），模型不知道如何派发、给什么提示词。
 
 ## 产出文件
 

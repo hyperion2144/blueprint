@@ -21,7 +21,7 @@
 
 | 需求 ID | 需求描述 | 覆盖状态 | 证据 |
 |---------|----------|----------|------|
-| REQ-01 | `specwf archive` 同时搜索 `state.changes` 和 `state.adhoc` | ✅ 已覆盖 | `specwf-archive.ts:56-64` |
+| REQ-01 | `blueprint archive` 同时搜索 `state.changes` 和 `state.adhoc` | ✅ 已覆盖 | `blueprint-archive.ts:56-64` |
 | REQ-02 | adhoc change archive 后 status 变为 `archived` | ✅ 已覆盖 | 临时目录 E2E 确认 |
 | REQ-03 | 普通 change archive 行为不变 | ✅ 已覆盖 | changes.find 优先，return 后不执行 adhoc 逻辑 |
 
@@ -52,4 +52,4 @@
 
 ---
 
-*Verification 报告由 specwf verify 阶段自动生成。*
+*Verification 报告由 blueprint verify 阶段自动生成。*

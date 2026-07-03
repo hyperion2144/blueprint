@@ -16,9 +16,9 @@
 ## Wave 1: 修复 saveState body 覆盖
 
 - [ ] task-1: [type:refactor] saveState 写入时保留现有 body
-  - **description**: `saveState()` 在 `stringifyFrontmatter` 前，先通过 `readFrontmatterFile()` 读取现有文件 body。文件存在时使用现有 body；不存在时（新文件场景，如 `specwf init`）回退到 `generateStateBody()` 生成默认 body
+  - **description**: `saveState()` 在 `stringifyFrontmatter` 前，先通过 `readFrontmatterFile()` 读取现有文件 body。文件存在时使用现有 body；不存在时（新文件场景，如 `blueprint init`）回退到 `generateStateBody()` 生成默认 body
   - **files**: `src/core/state-file.ts`
-  - **acceptance**: `specwf change new <name>` 后 state.md body 不变；`specwf init` 创建新文件时 body 正常生成；79 tests 全部通过
+  - **acceptance**: `blueprint change new <name>` 后 state.md body 不变；`blueprint init` 创建新文件时 body 正常生成；79 tests 全部通过
   - ***RED 测试***: 不适用（refactor，无外部行为变更）
 
 ---

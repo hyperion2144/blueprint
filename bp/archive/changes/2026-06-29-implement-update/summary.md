@@ -6,7 +6,7 @@ update 命令（调度生成器 → 写入平台文件）
 
 ## 产出文件
 
-- `src/commands/specwf-update.ts`
+- `src/commands/blueprint-update.ts`
 - `src/commands/_utils.ts`
 - `src/generators/index.ts`
 

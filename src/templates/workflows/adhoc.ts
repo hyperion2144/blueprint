@@ -50,7 +50,6 @@ export function getAdhocSkillTemplate(): SkillTemplate {
 
 export function getAdhocCommandTemplate(): CommandTemplate {
   return {
-    name: 'SpecWF: Adhoc',
     description: 'Create adhoc change — independent change unrelated to milestone/phase',
     category: 'Workflow',
     tags: ['bp', 'adhoc', 'change'],

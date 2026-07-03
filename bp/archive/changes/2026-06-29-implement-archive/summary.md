@@ -6,7 +6,7 @@ archive 命令（delta-spec 合并 + 代码认知提取 + 归档）
 
 ## 产出文件
 
-- `src/commands/specwf-archive.ts`
+- `src/commands/blueprint-archive.ts`
 
 ## 验证
 

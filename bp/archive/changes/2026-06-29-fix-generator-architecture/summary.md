@@ -10,7 +10,7 @@
 - `src/generators/omp-agents.ts (重写)`
 - `src/generators/skills.ts (重写)`
 - `src/generators/index.ts (重写)`
-- `src/commands/specwf-template.ts (重写)`
+- `src/commands/blueprint-template.ts (重写)`
 - `tsup.config.ts (更新)`
 - `src/public/templates/commands/*.md (14 个)`
 - `src/public/templates/agents/*.md (6 个)`

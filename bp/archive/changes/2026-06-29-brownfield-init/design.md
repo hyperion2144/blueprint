@@ -2,11 +2,11 @@
 
 ## 目标
 
-实现 `specwf init --brownfield` 存量项目模式 + @clack/prompts 交互向导。
+实现 `blueprint init --brownfield` 存量项目模式 + @clack/prompts 交互向导。
 
 ## 存量项目模式
 
-`specwf init --brownfield` 时：
+`blueprint init --brownfield` 时：
 1. 检测项目类型（package.json / Cargo.toml / go.mod 等）
 2. codebase mapping — 扫描现有代码，产出 research/codebase/ 下技术现状文档
 3. spec bootstrap — 从代码提取初始行为契约到 specs/
@@ -24,6 +24,6 @@
 
 | 文件 | 内容 |
 |---|---|
-| src/commands/specwf-init.ts (更新) | 添加 --brownfield + 交互向导 |
+| src/commands/blueprint-init.ts (更新) | 添加 --brownfield + 交互向导 |
 | src/prompts/init-wizard.ts | @clack/prompts 交互向导 |
 | src/core/brownfield.ts | 存量项目扫描逻辑 |

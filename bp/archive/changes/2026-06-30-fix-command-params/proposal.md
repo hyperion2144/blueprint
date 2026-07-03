@@ -8,8 +8,8 @@
 
 本变更为：
 1. command 模板标注所需参数（change/phase/milestone）
-2. 参数不传时，agent 通过 `specwf state` 查可用项
-3. `specwf state` 输出待处理的 change、adhoc、流程进度
+2. 参数不传时，agent 通过 `blueprint state` 查可用项
+3. `blueprint state` 输出待处理的 change、adhoc、流程进度
 4. 多选时让 agent 问用户选哪个
 
 ---
@@ -30,7 +30,7 @@
 | split | phase <name> | 同上 |
 | ship | phase / milestone | 查可 ship 的项 |
 
-### specwf state 增强
+### blueprint state 增强
 
 输出后增加待处理列表：
 - 当前 milestone 中未完成的 phase

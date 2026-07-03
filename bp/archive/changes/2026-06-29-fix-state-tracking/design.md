@@ -4,10 +4,10 @@
 
 ## 背景与目标
 
-`specwf archive` 归档时只更新 `state.changes` 的状态，adhoc change 存在 `state.adhoc` 中，因此归档后状态仍为 `proposal`。
+`blueprint archive` 归档时只更新 `state.changes` 的状态，adhoc change 存在 `state.adhoc` 中，因此归档后状态仍为 `proposal`。
 
 本设计目标：
-- `specwf archive` 同时搜索 `state.changes` 和 `state.adhoc`
+- `blueprint archive` 同时搜索 `state.changes` 和 `state.adhoc`
 - 不改变其他命令行为
 
 ---
@@ -30,9 +30,9 @@ archiveHandler() → updateState(updater)
 
 ### 数据流
 
-1. `specwf archive fix-state-overwrite` → `archiveHandler('specwf/changes/fix-state-overwrite')`
+1. `blueprint archive fix-state-overwrite` → `archiveHandler('blueprint/changes/fix-state-overwrite')`
 2. `changeName` = `fix-state-overwrite`
-3. `updateState(specwfDir, updater)`
+3. `updateState(blueprintDir, updater)`
 4. updater 先查 `state.changes.find(c => c.name === changeName)`
 5. 未匹配 → 查 `state.adhoc.find(c => c.name === changeName)`
 6. 匹配 → `status = 'archived'`
@@ -51,7 +51,7 @@ archiveHandler() → updateState(updater)
 
 | 文件路径 | 内容描述 | 操作 |
 |---------|---------|------|
-| `src/commands/specwf-archive.ts` | archive 状态更新逻辑增加 adhoc 搜索 | 修改 |
+| `src/commands/blueprint-archive.ts` | archive 状态更新逻辑增加 adhoc 搜索 | 修改 |
 
 ---
 

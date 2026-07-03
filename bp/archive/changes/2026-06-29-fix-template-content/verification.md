@@ -17,7 +17,7 @@
 | `src/public/templates/commands/continue.md` | 增加 change 子命令说明 | ✅ |
 | `src/public/templates/commands/ship.md` | 充实 PR/release 内容指引 | ✅ |
 | `src/public/templates/skills/continue.md` | 状态机表格化 + adhoc 行 | ✅ |
-| `specwf update` regenerate | 38 个平台文件 | ✅ |
+| `blueprint update` regenerate | 38 个平台文件 | ✅ |
 
 ## 目标达成
 

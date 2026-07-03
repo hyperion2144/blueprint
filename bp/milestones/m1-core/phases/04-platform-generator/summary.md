@@ -24,7 +24,7 @@
   - `src/public/templates/commands/archive.md` — archive 命令模板（含 delta 合并 + 代码提取）
   - `src/public/templates/commands/ship.md` — ship 命令模板
   - `src/public/templates/commands/continue.md` — continue 命令模板
-- **验证**: specwf update 生成 14 个 .omp/commands/specwf-*.md，frontmatter 格式合规
+- **验证**: blueprint update 生成 14 个 .omp/commands/blueprint-*.md，frontmatter 格式合规
 
 ### change: implement-agent-generator
 - **描述**: OMP agent 生成器（6 个 agent 模板 + 模型映射 + 生成函数）
@@ -36,7 +36,7 @@
   - `src/public/templates/agents/reviewer.md` — reviewer systemPrompt（含三重审查内容 + 门控规则）
   - `src/public/templates/agents/verifier.md` — verifier systemPrompt（含回环路由规则）
   - `src/public/templates/agents/archiver.md` — archiver systemPrompt（含双重回灌 + AUTO-EXTRACTED 标记）
-- **验证**: specwf update 生成 6 个 .omp/agents/specwf-*.md，frontmatter 含 name/description/tools/model/spawns
+- **验证**: blueprint update 生成 6 个 .omp/agents/blueprint-*.md，frontmatter 含 name/description/tools/model/spawns
 
 ### change: implement-skill-generator
 - **描述**: Skill 生成器（14 个 skill 模板 + 生成函数）
@@ -44,7 +44,7 @@
   - `src/generators/skills.ts` — SkillDef 定义 + generateSkill + generateAllSkills（读模板文件 + 替换 {{step}}/{{description}}）
   - `src/public/templates/skills/init.md` — init skill（6 章节：概述/前置/步骤/产物/验证/陷阱）
   - `src/public/templates/skills/grill.md` ~ `src/public/templates/skills/continue.md` — 其余 13 个 skill 模板
-- **验证**: specwf update 生成 14 个 skills/specwf-*/SKILL.md，frontmatter 含 name/description
+- **验证**: blueprint update 生成 14 个 skills/blueprint-*/SKILL.md，frontmatter 含 name/description
 
 ## 验证结果
 
@@ -52,7 +52,7 @@
 |---|---|---|
 | tsc --noEmit | ✅ | 0 errors |
 | vitest run | ✅ | 65/65 通过 |
-| specwf update | ✅ | 生成 34 个平台文件（14 commands + 6 agents + 14 skills） |
+| blueprint update | ✅ | 生成 34 个平台文件（14 commands + 6 agents + 14 skills） |
 | 命令 frontmatter | ✅ | name + description（OMP native 级别 fatal parse） |
 | agent frontmatter | ✅ | name + description + tools + model + spawns |
 | skill frontmatter | ✅ | name + description（OMP native requireDescription） |

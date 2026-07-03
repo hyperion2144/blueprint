@@ -8,7 +8,7 @@
 |------|------|
 | vitest run | ✅ 79/79 |
 | npm run build | ✅ 78KB |
-| specwf update | ✅ 更新平台文件 |
+| blueprint update | ✅ 更新平台文件 |
 
 ## 验证
 
@@ -16,5 +16,5 @@
 |------|------|
 | 全部 16 个 command 模板统一格式 | ✅ |
 | 每个命令标注子代理 | ✅ |
-| 每个产出标注模板引用（specwf template <type>） | ✅ |
+| 每个产出标注模板引用（blueprint template <type>） | ✅ |
 | 上下文/推进/技能引用齐全 | ✅ |

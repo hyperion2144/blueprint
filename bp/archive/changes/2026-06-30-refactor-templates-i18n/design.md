@@ -2,15 +2,15 @@
 
 ## Context
 
-specwf currently has two separate template systems generating the same content twice:
-- **Commands** (`.omp/commands/specwf-<step>.md`) — loaded from `src/public/templates/commands/<step>.md`
-- **Skills** (`.omp/skills/specwf-<step>/SKILL.md`) — loaded from `src/public/templates/skills/<step>.md`
+blueprint currently has two separate template systems generating the same content twice:
+- **Commands** (`.omp/commands/blueprint-<step>.md`) — loaded from `src/public/templates/commands/<step>.md`
+- **Skills** (`.omp/skills/blueprint-<step>/SKILL.md`) — loaded from `src/public/templates/skills/<step>.md`
 
 Both are markdown files with `{{step}}` / `{{description}}` placeholders, rendered by:
 - `src/generators/omp-commands.ts` — `loadAndRenderTemplate()` → `readFileSync` + `replace`
 - `src/generators/skills.ts` — `loadTemplate()` → `readFileSync` + `replace`
 
-The `specwf template` command also reads markdown files from `src/public/templates/artifacts/`.
+The `blueprint template` command also reads markdown files from `src/public/templates/artifacts/`.
 
 ## Goals / Non-Goals
 
@@ -84,10 +84,10 @@ Every instruction body follows this structure:
 
 ### Decision 3: Continue CLI returns inline instructions
 
-`specwf continue` currently outputs:
+`blueprint continue` currently outputs:
 ```
 → 下一步: plan
-   参考: .omp/commands/specwf-plan.md
+   参考: .omp/commands/blueprint-plan.md
 ```
 
 New behavior — reads the template function and outputs the full `instructions` body. The agent receives complete execution instructions in one turn, no extra file read needed.
@@ -132,7 +132,7 @@ Current agent system prompts live in `src/public/templates/agents/<role>.md`. Mo
 
 ### Decision 6: No runtime template loading
 
-All templates are TypeScript imports — they're baked into the bundle at compile time. `specwf template` command reads from the in-memory template registry, not disk files.
+All templates are TypeScript imports — they're baked into the bundle at compile time. `blueprint template` command reads from the in-memory template registry, not disk files.
 
 ## Data Flow
 
@@ -147,13 +147,13 @@ src/templates/workflows/plan.ts   ─┤
                     │
         ┌───────────┼──────────────┐
         ▼           ▼              ▼
-  omp-commands.ts  skills.ts   specwf-continue.ts
+  omp-commands.ts  skills.ts   blueprint-continue.ts
   (wraps as       (wraps as   (embeds instructions
    CommandTemplate) SkillTemplate) in ContinueResult)
         │           │              │
         ▼           ▼              ▼
   .omp/commands/  .omp/skills/  CLI stdout
-  specwf-*.md     specwf-*/SKILL.md
+  blueprint-*.md     blueprint-*/SKILL.md
 ```
 
 ## Files Changed
@@ -168,19 +168,19 @@ src/templates/workflows/plan.ts   ─┤
 | `src/generators/skills.ts` | MODIFY | Import from templates instead of readFileSync |
 | `src/generators/omp-agents.ts` | MODIFY | Import agent prompts from templates |
 | `src/core/continue.ts` | MODIFY | Include full instructions in ContinueResult |
-| `src/commands/specwf-continue.ts` | MODIFY | Output inline instructions |
-| `src/commands/specwf-template.ts` | MODIFY | Read from template registry, not disk |
+| `src/commands/blueprint-continue.ts` | MODIFY | Output inline instructions |
+| `src/commands/blueprint-template.ts` | MODIFY | Read from template registry, not disk |
 | `src/public/templates/` | DELETE | All markdown template files removed |
-| `.omp/commands/*.md` | REGENERATE | `specwf update` regenerates |
-| `.omp/skills/*/SKILL.md` | REGENERATE | `specwf update` regenerates |
-| `.omp/agents/*.md` | REGENERATE | `specwf update` regenerates |
+| `.omp/commands/*.md` | REGENERATE | `blueprint update` regenerates |
+| `.omp/skills/*/SKILL.md` | REGENERATE | `blueprint update` regenerates |
+| `.omp/agents/*.md` | REGENERATE | `blueprint update` regenerates |
 
 ## Test Strategy
 
 - Unit tests for each template function (verify shape, section presence)
 - Generator integration tests: verify old and new generators produce identical output (after language change)
 - Continue CLI test: verify output contains inline instructions
-- `specwf update` E2E test: regenerate and verify files exist
+- `blueprint update` E2E test: regenerate and verify files exist
 - Existing integration tests must pass after regeneration
 
 ## Risk Assessment
@@ -188,5 +188,5 @@ src/templates/workflows/plan.ts   ─┤
 | Risk | Mitigation |
 |------|-----------|
 | Translation quality of Chinese → English | Review each template against the original intent; use OpenSpec's onboard.ts wording as reference |
-| Regenerated files differ from expected | Run `specwf update` and diff before/after (expect language + format diffs only) |
+| Regenerated files differ from expected | Run `blueprint update` and diff before/after (expect language + format diffs only) |
 | Breaking existing workflows | Existing tests catch regressions; manual dogfood after regeneration |

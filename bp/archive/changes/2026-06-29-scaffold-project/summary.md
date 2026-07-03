@@ -10,7 +10,7 @@ npm 项目骨架 + 构建配置 + CLI 入口
 - `tsconfig.json`
 - `tsup.config.ts`
 - `vitest.config.ts`
-- `bin/specwf.js`
+- `bin/blueprint.js`
 - `src/cli.ts`
 
 ## 验证

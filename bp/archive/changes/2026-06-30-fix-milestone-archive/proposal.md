@@ -7,7 +7,7 @@
 切换里程碑时没有归档能力，旧里程碑的阶段数据留在原地。里程碑完成后没有统一归档路径。
 
 本变更为：
-1. `specwf state set-milestone <id>` 自动归档上一里程碑
+1. `blueprint state set-milestone <id>` 自动归档上一里程碑
 2. 归档结构: `archive/milestones/<name>/`，与 change 归档分离
 3. 归档内容包括里程碑下所有 phase 目录
 4. 生成里程碑 summary
@@ -35,7 +35,7 @@ archive/
 ### In scope
 
 - `src/core/file-tree.ts` 新增 `archiveMilestoneDir` 函数
-- `src/commands/specwf-state.ts` 的 `setMilestone` 增加归档逻辑
+- `src/commands/blueprint-state.ts` 的 `setMilestone` 增加归档逻辑
 - 检测上一 milestone 未 shipped 时自动归档
 - 归档包括完整 phase 结构
 

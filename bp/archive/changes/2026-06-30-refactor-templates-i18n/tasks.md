@@ -43,11 +43,11 @@
 ## Wave 6: Continue CLI — inline instructions
 
 - [ ] 6.1 Modify `src/core/continue.ts` — add `instructions` field to `StepInfo` and `ContinueResult`
-- [ ] 6.2 Modify `src/commands/specwf-continue.ts` — output inline instructions in `formatContinueResult`
+- [ ] 6.2 Modify `src/commands/blueprint-continue.ts` — output inline instructions in `formatContinueResult`
 
 ## Wave 7: Template command — read from TS registry
 
-- [ ] 7.1 Refactor `src/commands/specwf-template.ts` — read from in-memory template registry, not disk
+- [ ] 7.1 Refactor `src/commands/blueprint-template.ts` — read from in-memory template registry, not disk
 
 ## Wave 8: Cleanup — delete old markdown templates
 
@@ -56,6 +56,6 @@
 
 ## Wave 9: Regenerate + verify
 
-- [ ] 9.1 Run `specwf update` to regenerate all `.omp/` output files
+- [ ] 9.1 Run `blueprint update` to regenerate all `.omp/` output files
 - [ ] 9.2 Run existing integration tests
 - [ ] 9.3 Manual verification: read a generated command and skill, confirm same content

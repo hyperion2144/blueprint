@@ -13,7 +13,7 @@
 
 | 测试 | 结果 |
 |------|------|
-| `specwf template change-summary` 生成 change-summary.md | ✅ |
+| `blueprint template change-summary` 生成 change-summary.md | ✅ |
 | executor agent 引用 change-summary 模板 | ✅ |
 | archive 在 summary.md 不存在时 warning | ✅ |
 
@@ -21,5 +21,5 @@
 
 - 新建: `templates/artifacts/change-summary.md`
 - 修改: `agents/executor.md`（加 Step 5 + 模板引用）
-- 修改: `src/commands/specwf-archive.ts`（summary 检查）
-- 修改: `src/commands/specwf-template.ts`（注册 + 文件名修复）
+- 修改: `src/commands/blueprint-archive.ts`（summary 检查）
+- 修改: `src/commands/blueprint-template.ts`（注册 + 文件名修复）

@@ -11,14 +11,14 @@
 ## Wave 1: 修复里程碑状态机
 
 - [x] task-1: [type:refactor] set-milestone 改为 milestone-active
-  - **description**: `specwf-state.ts` 中 `setMilestone` 将 `active_context.type` 设为 `milestone`（非 `phase`），`step` 设为 `active`（非 `discuss`），`project.status` 设为 `milestone-active`（非 `phase-discuss`）
-  - **files**: `src/commands/specwf-state.ts`
-  - **acceptance**: `specwf state set-milestone m2` 后 state 显示 milestone-active，非 phase-discuss
+  - **description**: `blueprint-state.ts` 中 `setMilestone` 将 `active_context.type` 设为 `milestone`（非 `phase`），`step` 设为 `active`（非 `discuss`），`project.status` 设为 `milestone-active`（非 `phase-discuss`）
+  - **files**: `src/commands/blueprint-state.ts`
+  - **acceptance**: `blueprint state set-milestone m2` 后 state 显示 milestone-active，非 phase-discuss
 
 - [x] task-2: [type:refactor] 状态机添加 milestone-active → grill 转移
-  - **description**: `src/types/state.ts` 的 `STATE_TRANSITIONS` 中添加 `{ from: 'milestone-active', command: 'grill', to: 'requirements-defined', slashCommand: '/specwf:grill' }`
+  - **description**: `src/types/state.ts` 的 `STATE_TRANSITIONS` 中添加 `{ from: 'milestone-active', command: 'grill', to: 'requirements-defined', slashCommand: '/blueprint:grill' }`
   - **files**: `src/types/state.ts`
-  - **acceptance**: `specwf continue` 在 milestone-active 时显示 /specwf:grill
+  - **acceptance**: `blueprint continue` 在 milestone-active 时显示 /blueprint:grill
 
 ---
 

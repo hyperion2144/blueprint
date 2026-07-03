@@ -20,7 +20,7 @@
 - 新建 `templates/artifacts/change-summary.md` — Change 级别的 summary 模板（含产出文件、关键决策、验证结果）
 - `executor` agent 的 `## 产物要求` 加"完成后写 summary.md"步骤
 - `archive` 命令在归档前检查 `changes/<name>/summary.md` 是否存在，不存在则 warning
-- 注册 `specwf template change-summary` 模板类型
+- 注册 `blueprint template change-summary` 模板类型
 - 补上我这轮 missing 的 9 个 change summary
 
 ### Out of scope
@@ -56,7 +56,7 @@
 
 在 `## 产物要求` 中增加：
 ```
-执行完成后，使用 `specwf template change-summary` 生成 summary.md，填写后放入 change 目录。
+执行完成后，使用 `blueprint template change-summary` 生成 summary.md，填写后放入 change 目录。
 ```
 
 ### archive 命令更新

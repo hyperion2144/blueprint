@@ -1,4 +1,4 @@
-# Pitfalls: specwf
+# Pitfalls: blueprint
 
 Risks, anti-patterns, technical debt, and fragility hotspots identified during brownfield analysis.
 
@@ -7,7 +7,7 @@ Risks, anti-patterns, technical debt, and fragility hotspots identified during b
 **Severity:** Low | **Impact:** Maintainability
 
 Source files mix Chinese and English inconsistently:
-- JSDoc comments: predominantly Chinese (`/** specwf 状态机类型 */`)
+- JSDoc comments: predominantly Chinese (`/** blueprint 状态机类型 */`)
 - Type/interface field names: English (`ChangeStatus`, `dependsOn`)
 - CLI descriptions: Chinese (`规格驱动开发工作流`)
 - Template bodies: English
@@ -21,7 +21,7 @@ This creates a split-brain for contributors. No lint rule enforces consistency.
 
 **Severity:** Medium | **Impact:** Data loss
 
-`specwf update` regenerates all `.omp/commands/`, `.omp/agents/`, and `.omp/skills/` files from TypeScript templates. If a user manually edits a generated file (e.g., tuning a skill prompt), running `specwf update` overwrites it without warning. The roadmap mentions "已修改的生成文件检测 + warning (pitfalls T18 缓解)" but this is not yet implemented.
+`blueprint update` regenerates all `.omp/commands/`, `.omp/agents/`, and `.omp/skills/` files from TypeScript templates. If a user manually edits a generated file (e.g., tuning a skill prompt), running `blueprint update` overwrites it without warning. The roadmap mentions "已修改的生成文件检测 + warning (pitfalls T18 缓解)" but this is not yet implemented.
 
 **Current behavior:** The same `writeFileSync` path used for both init and update — no hash comparison, no backup.
 
@@ -29,7 +29,7 @@ This creates a split-brain for contributors. No lint rule enforces consistency.
 
 **Severity:** Low | **Impact:** Confusion
 
-`.gitignore` excludes `bin/`, but `package.json` `files` includes `bin/`, and `bin/specwf.js` is the published CLI entry point. The `bin/` contents come from `tsup`'s `publicDir: 'src/public'` which copies files to dist, which then get moved/copied to `bin/`. This indirection is not documented and could break if the build pipeline changes.
+`.gitignore` excludes `bin/`, but `package.json` `files` includes `bin/`, and `bin/blueprint.js` is the published CLI entry point. The `bin/` contents come from `tsup`'s `publicDir: 'src/public'` which copies files to dist, which then get moved/copied to `bin/`. This indirection is not documented and could break if the build pipeline changes.
 
 ## P4 — Vitest v4 Beta
 
@@ -41,7 +41,7 @@ This creates a split-brain for contributors. No lint rule enforces consistency.
 
 **Severity:** Medium | **Impact:** Regression risk
 
-`tests/integration/` has only 2 files (`e2e.test.ts` and `specwf.test.ts`). Most commands are only tested indirectly through core module tests. Generator output correctness (command/skill/agent file formatting) has no test coverage.
+`tests/integration/` has only 2 files (`e2e.test.ts` and `blueprint.test.ts`). Most commands are only tested indirectly through core module tests. Generator output correctness (command/skill/agent file formatting) has no test coverage.
 
 The test directory structure (`tests/core/`, `tests/parser/`, `tests/integration/`) is separate from source (`src/`), contradicting the coding convention of "co-located with source."
 
@@ -59,7 +59,7 @@ The test directory structure (`tests/core/`, `tests/parser/`, `tests/integration
 
 **Severity:** Low | **Impact:** Testability
 
-Several command handlers call `process.exit(1)` on error conditions (e.g., `specwf-init.ts` line 34 when already initialized). This makes these code paths untestable — the test process terminates. Commands should throw errors or return exit codes that the caller handles.
+Several command handlers call `process.exit(1)` on error conditions (e.g., `blueprint-init.ts` line 34 when already initialized). This makes these code paths untestable — the test process terminates. Commands should throw errors or return exit codes that the caller handles.
 
 ## P9 — `src/integrations/**/hook.ts` Excluded from TypeScript
 
@@ -97,14 +97,14 @@ Errors bubble up as unhandled exceptions. There's no centralized error handler t
 
 `mergeAndWrite()` always writes to disk. There's no dry-run or preview mode that shows what would change before committing. If a merge produces unexpected results, the only recovery path is git revert.
 
-## P15 — `specwf continue` Does Not Verify Prerequisites
+## P15 — `blueprint continue` Does Not Verify Prerequisites
 
 **Severity:** Medium | **Impact:** Workflow integrity
 
-`specwf continue` returns the next slash command based solely on state machine position. It does not check whether the current step's artifacts actually exist before suggesting advancement. The `state-validator.ts` exit criteria logic exists but is not called by `continue`.
+`blueprint continue` returns the next slash command based solely on state machine position. It does not check whether the current step's artifacts actually exist before suggesting advancement. The `state-validator.ts` exit criteria logic exists but is not called by `continue`.
 
 ## P16 — Chinese-Only CLI Output
 
 **Severity:** Low | **Impact:** Internationalization
 
-CLI output strings are hard-coded in Chinese (`'specwf 初始化完成。'`, `'✓ 创建 specwf/ 目录结构'`). There's no i18n abstraction or translation support. A non-Chinese-speaking user cannot use the CLI effectively.
+CLI output strings are hard-coded in Chinese (`'blueprint 初始化完成。'`, `'✓ 创建 blueprint/ 目录结构'`). There's no i18n abstraction or translation support. A non-Chinese-speaking user cannot use the CLI effectively.

@@ -1,8 +1,8 @@
-# specwf — Spec-Driven Development Workflow
+# blueprint — Spec-Driven Development Workflow
 
 ## What
 
-specwf is an independent TypeScript CLI package that provides a spec-driven development workflow for AI coding agents. It combines core capabilities from three projects:
+blueprint is an independent TypeScript CLI package that provides a spec-driven development workflow for AI coding agents. It combines core capabilities from three projects:
 
 - **OpenSpec** (MIT) — CLI architecture, change structure, delta-spec merge mechanism
 - **GSD Core** (MIT) — milestone/phase hierarchy, fresh-context sub-agent parallel execution
@@ -10,7 +10,7 @@ specwf is an independent TypeScript CLI package that provides a spec-driven deve
 
 ## Why
 
-AI coding agents are powerful but unpredictable — requirements exist only in chat history. specwf aligns on specs before writing code, executes heavy work in fresh-context sub-agents, and persists state across sessions through structured artifacts.
+AI coding agents are powerful but unpredictable — requirements exist only in chat history. blueprint aligns on specs before writing code, executes heavy work in fresh-context sub-agents, and persists state across sessions through structured artifacts.
 
 ## Core Principles
 
@@ -31,7 +31,7 @@ Project → Milestone (persistent, defaults to v1) → Phase → Change
 - **Milestone** = release cycle (shippable increment, e.g. v0.1.0)
 - **Phase** = work unit (3-8 phases per milestone, goes through discuss/research/split/ship)
 - **Change** = change unit (goes through plan/apply/review/verify/archive)
-- **Adhoc Change** = independent change outside milestone/phase (same change cycle, created via `specwf change new`)
+- **Adhoc Change** = independent change outside milestone/phase (same change cycle, created via `blueprint change new`)
 
 ## State Machine
 
@@ -57,8 +57,8 @@ proposal → planning → applying → reviewing → verifying → archived
 
 | Scope | Command |
 |-------|---------|
-| Project/Phase | `specwf continue` |
-| Change | `specwf continue change <name>` |
+| Project/Phase | `blueprint continue` |
+| Change | `blueprint continue change <name>` |
 
 The continue command validates exit conditions, advances state, and outputs the next step's full instructions inline — agents execute without reading separate files.
 
@@ -78,7 +78,7 @@ src/templates/
 
 Each workflow module's `instructions` string follows `## Input → ## Steps → ## Output → ## Guardrails` format. Templates with sub-agents include the full sub-agent prompt template and an orchestrator guardrail.
 
-Run `specwf update` to regenerate all `.omp/` output files from the TypeScript source. `specwf template <type>` reads from the in-memory `ARTIFACT_TEMPLATES` registry — no disk reads.
+Run `blueprint update` to regenerate all `.omp/` output files from the TypeScript source. `blueprint template <type>` reads from the in-memory `ARTIFACT_TEMPLATES` registry — no disk reads.
 
 ## Tech Stack
 

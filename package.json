@@ -49,7 +49,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hyperion2144/specwf.git"
+    "url": "git+https://github.com/hyperion2144/blueprint.git"
   },
   "exports": {
     ".": "./dist/cli.js"

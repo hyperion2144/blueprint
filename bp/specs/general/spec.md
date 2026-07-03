@@ -4,14 +4,14 @@
 
 ### Detected Behaviors
 
-- 新增: function archiveMilestoneDir(specwfDir, milestoneId) {
+- 新增: function archiveMilestoneDir(blueprintDir, milestoneId) {
 - 新增: function register(program2) {
 - 新增: async function initHandler(options) {
 - 新增: function isTemplateFile(filePath) {
-- 新增: function findChangeDir(specwfDir) {
-- 新增: function checkExitCondition(specwfDir, check) {
+- 新增: function findChangeDir(blueprintDir) {
+- 新增: function checkExitCondition(blueprintDir, check) {
 - 新增: function validateStepAdvance(contextType, contextStep, cwd) {
-- 新增: function determineChangeNextStep(specwfDir, changeName) {
+- 新增: function determineChangeNextStep(blueprintDir, changeName) {
 - 新增: function getStepInfo(command) {
 - 新增: function determineFromChangeStatus(name, statusKey, type) {
 - 新增: function listAvailableChanges(state) {
@@ -23,7 +23,7 @@
 
 - 约束: if (!existsSync2(sourceDir)) {
 - 约束: if (pkg2.dependencies?.next) info.framework = "next.js";
-- 约束: if (isInitialized(specwfDir)) {
+- 约束: if (isInitialized(blueprintDir)) {
 - 约束: if (isBrownfield) {
 - 约束: if (!existsSync6(changesDir)) return [];
 - 约束: if (check.path.endsWith("/") || check.description.includes("\u7684 ")) {
@@ -34,7 +34,7 @@
 - 约束: if (error) {
 - 约束: if (prevMilestone && prevMilestone !== id && currentState.project.status !== "milestone-shipped") {
 - 约束: if (!result.valid) {
-- 约束: if (existsSync7(join13(specwfDir, "requirements.md"))) {
+- 约束: if (existsSync7(join13(blueprintDir, "requirements.md"))) {
 - 约束: if (!existsSync7(convDir)) return [];
 - 约束: if (!existsSync7(changeDir)) return [];
 - 约束: if (existsSync7(fullPath)) {
