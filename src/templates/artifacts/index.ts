@@ -522,6 +522,7 @@ export const ROADMAP_TEMPLATE = `# Roadmap: {{name}}
 
 > Planning mode: {{mode}}
 > Milestones are major delivery checkpoints, not feature buckets. Each milestone represents a complete, demonstrable, shippable state.
+> Naming: milestone M<number>-<kebab>, phase ph.<number>-<kebab>
 
 ---
 

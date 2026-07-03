@@ -61,7 +61,8 @@ bp continue
 ## Guardrails
 - **Default: 1 milestone.** No "foundation", "setup", "scaffolding" — M1 = shippable product.
 - Mode (MVP/technical-layer) shapes **phases within a milestone**, not the milestones themselves.
-- First phase = thinnest end-to-end path (always phase 1, never phase 0).`;
+- First phase = thinnest end-to-end path (always phase 1, never phase 0).
+- **Naming rules**: milestone IDs MUST use \`M<number>-<kebab-case>\` (e.g. \`M1-core\`). Phase IDs MUST use \`ph.<number>-<kebab-case>\` (e.g. \`ph.1-core\`). Number must be unique within the project. The suffix after \`-\` is optional but strongly recommended for readability. No dots or special characters in the suffix.`;
 
 export function getRoadmapSkillTemplate(): SkillTemplate {
   return {
