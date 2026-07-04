@@ -38,6 +38,12 @@ Read these to ensure alignment with prior decisions:
 
 /** Commit + advance — replaces each template's trailing commit and advance steps. */
 export const COMMIT_ADVANCE = (scope: string, desc: string): string => `### Commit & advance
+
+Read \`bp/project.yml\` — check \`workflow.commitDocs\` setting.
+
+**If \`commitDocs\` is \`false\`:** skip commit, run \`bp continue\` directly.
+
+**If \`commitDocs\` is \`true\` (or not set, default true):**
 \`\`\`bash
 bp commit "docs(${scope}): ${desc}" --files "<files>" --scope ${scope} --record
 \`\`\`

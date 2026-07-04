@@ -146,6 +146,7 @@ ${AGENT_CONSTRAINTS}## Execution Flow
 - For type:behavior: RED test first → GREEN → REFACTOR
 - For other types: direct implementation
 - After each task: run the task's own tests (\`npx vitest run <test-file>\`) to verify, then \`bp commit --task <id> --tasks-path ...\`
+- If \`commitDocs\` is \`false\` in \`bp/project.yml\`, code commits work normally (only doc files are filtered)
 - Main agent handles full-suite verification (tsc + vitest run) after all waves complete
 - Return when all tasks in this wave are done
 
@@ -268,7 +269,12 @@ Every review report must include:
 - Final summary: count of PASS/FAIL per review; all three must PASS to advance
 
 ### Step 4: Commit review files
-After all three reviews are written, commit them:
+
+Read \`bp/project.yml\` — check \`workflow.commitDocs\`.
+
+**If \`commitDocs\` is \`false\`:** skip commit, return.
+
+**If \`commitDocs\` is \`true\`:**
 \`\`\`bash
 bp commit "docs(review): triple review for <change-name>" \\
   --files "spec-review.md,quality-review.md,goal-review.md" \\
@@ -415,6 +421,11 @@ Write \`bp/codebase/concerns.md\`.
 
 ### Step 5: Commit
 
+Read \`bp/project.yml\` — check \`workflow.commitDocs\`.
+
+**If \`commitDocs\` is \`false\`:** skip commit, return.
+
+**If \`commitDocs\` is \`true\`:**
 \`\`\`bash
 bp commit "docs(codebase): codebase mapping analysis" \\
   --files "bp/codebase/stack.md,bp/codebase/architecture.md,bp/codebase/structure.md,bp/codebase/conventions.md,bp/codebase/testing.md,bp/codebase/integrations.md,bp/codebase/concerns.md" \\
