@@ -14,17 +14,27 @@ const instructions = `## Input
 ### Step 1: Get context
 Run \`bp context split\` — outputs state, context.md, and research.md paths. Read all listed files.
 
-### Step 2: Split into changes
+### Step 2: Create ALL changes at once
+
 Decompose the phase scope into independently implementable Change units:
 - Each change is a vertical slice (not layer-by-layer)
 - Identify dependencies → dependency graph (must be a DAG)
 - Each change gets a descriptive kebab-case name
 
-Create each change under the phase directory:
+**CRITICAL: Create ALL changes in ONE batch before proceeding.**
+Do NOT create them incrementally — the dependency graph needs all nodes to exist first.
+
 \`\`\`bash
-bp change new <change-name> --milestone <milestone-id> --phase <phase-id>
+# Create all changes for this phase at once:
+bp change new <change-1> --milestone <mid> --phase <pid>
+bp change new <change-2> --milestone <mid> --phase <pid>
+bp change new <change-3> --milestone <mid> --phase <pid>
 \`\`\`
-This creates \`bp/milestones/<mid>/phases/<pid>/changes/<name>/\` with all artifact templates.
+
+Verify all directories exist before proceeding:
+\`\`\`bash
+ls bp/milestones/<mid>/phases/<pid>/changes/
+\`\`\`
 
 ### Step 3: Document dependency graph
 For each change with dependencies, run:
