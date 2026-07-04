@@ -21,9 +21,14 @@ Continue to Step 2.
 2. Read \`bp/specs/<domain>/spec.md\` — these are the initial spec skeletons from the tech stack template.
 3. Dispatch sub-agents:
    - Run \`bp dispatch codebase-mapper\` — outputs the sub-agent tool and its parameters. Call it once. Prompt:
-     - Task: deep-analyze the existing code (modules, patterns, tech debt)
-     - Read: bp/codebase/stack.md, bp/codebase/architecture.md, bp/conventions/coding-standards.md
-     - Output: codebase-stack.md, codebase-architecture.md, codebase-structure.md, codebase-conventions.md, codebase-testing.md, codebase-integrations.md, codebase-concerns.md
+     - Task: deep-analyze the entire codebase and produce all 7 documents
+     - Explore: tech stack, architecture, structure, conventions, testing, integrations, concerns
+     - Use the specific exploration commands listed in your agent prompt
+     - Output: ALL 7 files to \`bp/codebase/\`:
+       stack.md, architecture.md, structure.md, conventions.md, testing.md, integrations.md, concerns.md
+     - Each file MUST include concrete file paths (\`src/services/user.ts\`), version numbers, code examples
+     - STRUCTURE.md MUST include "Where to Add New Code" section
+     - Commit all 7 files when done
    - Run \`bp dispatch spec-bootstrapper\` — outputs the sub-agent tool and its parameters. Call it once. Prompt:
      - Task: extract behavioral contracts from existing code
      - Read: bp/specs/<domain>/spec.md, bp/conventions/coding-standards.md

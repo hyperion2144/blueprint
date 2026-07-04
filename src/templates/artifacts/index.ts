@@ -628,84 +628,184 @@ export const RESEARCH_PITFALLS_TEMPLATE = `# Research Pitfalls: {{name}}
 | {{dep-1}} | {{version}} | {{active/deprecated/unstable}} | {{concern}} |
 `;
 
-export const CODEBASE_STACK_TEMPLATE = `# Tech Stack: {{name}}
+export const CODEBASE_STACK_TEMPLATE = `# Technology Stack
 
-> Codebase analysis — technology stack identified from brownfield scan.
+**Analysis Date:** {{date}}
 
----
+## Languages
+
+**Primary:**
+- {{language}} {{version}} — {{where-used}}
+
+**Secondary:**
+- {{secondary-language}} {{version}} — {{where-used}}
 
 ## Runtime
-- **Language**: {{language}}
-- **Version**: {{version}}
-- **Package manager**: {{package-manager}}
 
-## Frameworks & Libraries
-| Dependency | Version | Purpose |
-|-----------|---------|--------|
-| {{dep-1}} | {{version}} | {{purpose}} |
+**Environment:**
+- {{runtime}} {{version}}
 
-## Build & Tooling
-- **Bundler**: {{bundler}}
-- **Test runner**: {{test-runner}}
-- **Linter**: {{linter}}
-- **Formatter**: {{formatter}}
+**Package Manager:**
+- {{package-manager}} {{version}}
+- Lockfile: {{lockfile}}
 
-## Infrastructure
-- **CI/CD**: {{ci-cd}}
-- **Deployment**: {{deployment}}
-- **Database**: {{database}}
-`;
+## Frameworks
 
-export const CODEBASE_ARCHITECTURE_TEMPLATE = `# Architecture: {{name}}
+**Core:**
+- {{framework}} {{version}} — {{purpose}}
 
-> Codebase analysis — architecture patterns and module structure identified from brownfield scan.
+**Testing:**
+- {{test-framework}} {{version}} — {{purpose}}
+
+**Build/Dev:**
+- {{build-tool}} {{version}} — {{purpose}}
+
+## Key Dependencies
+
+**Critical:**
+- {{package}} {{version}} — {{why-it-matters}}
+
+**Infrastructure:**
+- {{package}} {{version}} — {{purpose}}
+
+## Configuration
+
+**Environment:**
+- {{how-configured}}
+- Key configs: {{key-configs}}
+
+**Build:**
+- {{build-config-files}}
+
+## Platform Requirements
+
+**Development:**
+- {{dev-requirements}}
+
+**Production:**
+- {{deployment-target}}
 
 ---
 
-## Module Map
+*Stack analysis: {{date}}*`;
 
-\`\`\`text
-{{module-map}}
-\`\`\`
+export const CODEBASE_ARCHITECTURE_TEMPLATE = `# Architecture
 
-## Architectural Patterns
-| Pattern | Where | Notes |
-|---------|-------|-------|
-| {{pattern-1}} | {{location}} | {{notes}} |
+**Analysis Date:** {{date}}
 
-## Key Abstractions
-- **{{abstraction-1}}**: {{description}}
+## Pattern Overview
+
+**Overall:** {{pattern-name}}
+
+**Key Characteristics:**
+- {{characteristic-1}}
+- {{characteristic-2}}
+- {{characteristic-3}}
+
+## Layers
+
+**{{layer-name}}:**
+- Purpose: {{what-this-layer-does}}
+- Location: {{location}}
+- Depends on: {{depends-on}}
+- Used by: {{used-by}}
+
+**{{layer-name-2}}:**
+- Purpose: {{what-this-layer-does}}
+- Location: {{location}}
+- Depends on: {{depends-on}}
+- Used by: {{used-by}}
 
 ## Data Flow
-{{data-flow}}
-`;
 
-export const CODEBASE_CONVENTIONS_TEMPLATE = `# Conventions: {{name}}
+**{{flow-name}}:**
+1. {{step-1}}
+2. {{step-2}}
+3. {{step-3}}
+4. {{output}}
 
-> Codebase analysis — coding conventions identified from brownfield scan.
+**State Management:**
+- {{state-approach}}
+
+## Key Abstractions
+
+**{{abstraction-name}}:**
+- Purpose: {{what-it-represents}}
+- Examples: {{examples}}
+- Pattern: {{pattern}}
+
+## Entry Points
+
+**{{entry-name}}:**
+- Location: {{location}}
+- Triggers: {{what-invokes-it}}
+- Responsibilities: {{what-it-does}}
+
+## Error Handling
+
+**Strategy:** {{error-strategy}}
+
+**Patterns:**
+- {{pattern-1}}
+- {{pattern-2}}
+
+## Cross-Cutting Concerns
+
+**Logging:**
+- {{logging-approach}}
+
+**Validation:**
+- {{validation-approach}}
+
+**Authentication:**
+- {{auth-approach}}
 
 ---
 
-## Naming
-- **Files**: {{file-naming}}
-- **Variables**: {{var-naming}}
-- **Functions**: {{func-naming}}
-- **Types/Interfaces**: {{type-naming}}
+*Architecture analysis: {{date}}*`;
+
+export const CODEBASE_CONVENTIONS_TEMPLATE = `# Coding Conventions
+
+**Analysis Date:** {{date}}
 
 ## Code Style
-- **Indentation**: {{indent}}
-- **Quotes**: {{quotes}}
-- **Semicolons**: {{semicolons}}
-- **Max line length**: {{max-line}}
 
-## Import Style
-- **Pattern**: {{import-pattern}}
-- **Path aliases**: {{aliases}}
+- Indentation: {{indent}}
+- Quotes: {{quotes}}
+- Semicolons: {{semicolons}}
+- Max line length: {{max-line}}
 
-## Testing Conventions
-- **Test location**: {{test-location}}
-- **Test naming**: {{test-naming}}
-- **Test framework patterns**: {{test-patterns}}
+## Naming
+
+**Functions:** {{func-naming}}
+**Variables:** {{var-naming}}
+**Classes:** {{class-naming}}
+**Files:** {{file-naming}}
+**Directories:** {{dir-naming}}
+
+## Import Patterns
+
+**Order:** {{import-order}}
+**Path aliases:** {{aliases}}
+**Barrel exports:** {{barrel-exports}}
+
+## Error Handling
+
+**Expected errors:** {{expected-errors}}
+**Unexpected errors:** {{unexpected-errors}}
+**Pattern:** {{error-pattern}}
+
+## Type System
+
+**Strictness:** {{strictness}}
+**Type vs Interface:** {{type-vs-interface}}
+**Generics usage:** {{generics}}
+**\`any\` usage:** {{any-usage}}
+
+## Async Patterns
+
+**Preferred:** {{async-pattern}}
+**Error handling:** {{async-error-handling}}
 `;
 
 export const SPEC_TEMPLATE = `# Delta-Spec: {{domain-name}}
@@ -758,112 +858,251 @@ The system SHALL {{behavior-1}}.
 - **THEN** {{then}}
 `;
 
-export const CODEBASE_CONCERNS_TEMPLATE = `# Concerns: {{name}}
+export const CODEBASE_CONCERNS_TEMPLATE = `# Codebase Concerns
 
-> Codebase analysis — technical debt, security issues, performance risks, fragile areas identified from brownfield scan.
+**Analysis Date:** {{date}}
 
----
+## Tech Debt
 
-## Anti-Patterns
-| Pattern | Location | Risk |
-|---------|----------|------|
-| {{anti-1}} | {{location}} | {{risk}} |
+**{{area}}:**
+- Issue: {{shortcut}}
+- Why: {{why}}
+- Impact: {{what-breaks}}
+- Fix approach: {{how-to-fix}}
+- Location: \`{{path}}\`
 
-## Technical Debt
-| Item | Impact | Effort to Fix |
-|------|--------|--------------|
-| {{debt-1}} | {{impact}} | {{effort}} |
+## Known Bugs
 
-## Security Concerns
-| Issue | Severity | Location |
-|-------|---------|----------|
-| {{sec-1}} | {{severity}} | {{location}} |
+**{{bug-description}}:**
+- Symptoms: {{what-happens}}
+- Trigger: {{how-to-reproduce}}
+- Workaround: {{mitigation}}
+- Root cause: {{root-cause}}
+- Location: \`{{path}}\`
 
-## Performance Risks
-| Area | Why Risky | Mitigation |
-|------|----------|-----------|
-| {{area-1}} | {{reason}} | {{mitigation}} |
+## Security Considerations
+
+**{{area}}:**
+- Risk: {{what-could-go-wrong}}
+- Current mitigation: {{whats-in-place}}
+- Recommendations: {{what-should-be-added}}
+- Location: \`{{path}}\`
+
+## Performance Bottlenecks
+
+**{{operation}}:**
+- Problem: {{whats-slow}}
+- Measurement: {{actual-numbers}}
+- Cause: {{why-slow}}
+- Improvement path: {{how-to-speed-up}}
+- Location: \`{{path}}\`
+
+## Fragile Areas
+
+**{{module}}:**
+- Why fragile: {{what-makes-it-break}}
+- Common failures: {{what-goes-wrong}}
+- Safe modification: {{how-to-change}}
+- Test coverage: {{coverage}}
+- Location: \`{{path}}\`
 
 ## Dependencies at Risk
-| Dependency | Version | Latest | Risk |
-|-----------|---------|--------|------|
-| {{dep-1}} | {{version}} | {{latest}} | {{risk}} |
-`;
 
-export const CODEBASE_STRUCTURE_TEMPLATE = `# Structure: {{name}}
+| Dependency | Version | Latest | Risk | Migration |
+|-----------|---------|--------|------|----------|
+| {{dep}} | {{version}} | {{latest}} | {{risk}} | {{migration}} |
 
-> Codebase analysis — directory layout, module organization, and key file locations identified from brownfield scan.
+## Test Coverage Gaps
+
+**{{untested-area}}:**
+- What's not tested: {{functionality}}
+- Risk: {{what-could-break}}
+- Priority: {{priority}}
+- Difficulty: {{why-not-tested}}
 
 ---
+
+*Concerns audit: {{date}}*`;
+
+export const CODEBASE_STRUCTURE_TEMPLATE = `# Codebase Structure
+
+**Analysis Date:** {{date}}
 
 ## Directory Layout
-\`\`\`text
-{{directory-tree}}
+
+\`\`\`
+{{project-root}}/
+├── {{dir-1}}/          # {{purpose-1}}
+├── {{dir-2}}/          # {{purpose-2}}
+│   ├── {{subdir}}/     # {{purpose}}
+│   └── {{file}}        # {{purpose}}
+├── {{dir-3}}/          # {{purpose-3}}
+└── {{file}}            # {{purpose}}
 \`\`\`
 
-## Key Directories
-| Directory | Purpose | Key Files |
-|-----------|---------|----------|
-| {{dir-1}} | {{purpose}} | {{files}} |
+## Directory Purposes
 
-## Entry Points
-- **{{entry-1}}**: {{description}} (e.g. CLI entry, server start, build config)
+**{{dir-1}}/**
+- Purpose: {{purpose}}
+- Contains: {{file-types}}
+- Key files: {{key-files}}
 
-## Module Boundaries
-- **{{boundary-1}}**: {{what it owns vs what it imports}}
-`;
+**{{dir-2}}/**
+- Purpose: {{purpose}}
+- Contains: {{file-types}}
+- Key files: {{key-files}}
 
-export const CODEBASE_TESTING_TEMPLATE = `# Testing: {{name}}
+## Key File Locations
 
-> Codebase analysis — testing framework, structure, mocking patterns, and coverage identified from brownfield scan.
+**Entry Points:**
+- \`{{path}}\` — {{purpose}}
+
+**Configuration:**
+- \`{{path}}\` — {{purpose}}
+
+**Core Logic:**
+- \`{{path}}\` — {{purpose}}
+
+**Testing:**
+- \`{{path}}\` — {{purpose}}
+
+## Naming Conventions
+
+**Files:** {{file-pattern}} (e.g. \`{{example}}\`)
+**Directories:** {{dir-pattern}} (e.g. \`{{example}}\`)
+**Special:** {{special-pattern}}
+
+## Where to Add New Code
+
+**New Feature:**
+- Primary code: \`{{path}}\`
+- Tests: \`{{path}}\`
+- Config if needed: \`{{path}}\`
+
+**New Module:**
+- Implementation: \`{{path}}\`
+- Types: \`{{path}}\`
+- Tests: \`{{path}}\`
+
+**Utilities:**
+- Shared helpers: \`{{path}}\`
+- Type definitions: \`{{path}}\`
+
+## Special Directories
+
+**{{special-dir}}/**
+- Purpose: {{purpose}}
+- Source: {{source}}
+- Committed: {{committed}}
 
 ---
 
-## Framework
-- **Runner**: {{test-runner}}
-- **Assertion library**: {{assertion-lib}}
-- **Mocking**: {{mock-lib}}
+*Structure analysis: {{date}}*`;
+
+export const CODEBASE_TESTING_TEMPLATE = `# Testing
+
+**Analysis Date:** {{date}}
+
+## Framework & Setup
+
+- Runner: {{test-runner}} {{version}}
+- Assertion library: {{assertion-lib}}
+- Mocking: {{mock-lib}}
+- Config: \`{{config-file}}\`
 
 ## Test Structure
-- **Location**: {{test-location}} (e.g. co-located, \__tests__/, test/)
-- **Naming**: {{test-naming}} (e.g. *.test.ts, *.spec.ts)
-- **Organization**: {{test-organization}}
+
+- Location: {{test-location}}
+- Naming: {{test-naming}}
+- Organization: {{test-organization}}
 
 ## Test Patterns
-| Pattern | Example File | Notes |
-|---------|-------------|-------|
-| {{pattern-1}} | {{file}} | {{notes}} |
+
+**Unit Tests:**
+- Pattern: {{unit-pattern}}
+- Example file: \`{{example-file}}\`
+\`\`\`
+{{unit-example}}
+\`\`\`
+
+**Integration Tests:**
+- Pattern: {{integration-pattern}}
+- Example file: \`{{example-file}}\`
+
+**Mocking:**
+- Approach: {{mock-approach}}
+- Example: {{mock-example}}
 
 ## Coverage
-- **Current coverage**: {{coverage}} (if available)
-- **Gaps**: {{coverage-gaps}}
-`;
 
-export const CODEBASE_INTEGRATIONS_TEMPLATE = `# Integrations: {{name}}
+- Current: {{coverage}}
+- Targets: {{targets}}
+- Gaps: {{coverage-gaps}}
 
-> Codebase analysis — external APIs, databases, services, and auth providers identified from brownfield scan.
+## Running Tests
+
+\`\`\`bash
+{{run-command}}\`\`\`
+
+- Watch mode: \`{{watch-command}}\`
+- CI: {{ci-command}}
 
 ---
 
-## External APIs
-| Service | Purpose | SDK/Library | Auth Method |
-|---------|---------|------------|------------|
-| {{api-1}} | {{purpose}} | {{sdk}} | {{auth}} |
+*Testing analysis: {{date}}*`;
 
-## Databases & Storage
-| Type | Engine | Connection | ORM/Driver |
-|------|--------|-----------|-----------|
-| {{db-1}} | {{engine}} | {{connection}} | {{orm}} |
+export const CODEBASE_INTEGRATIONS_TEMPLATE = `# External Integrations
 
-## Auth & Identity
-- **Provider**: {{auth-provider}}
-- **Method**: {{auth-method}} (e.g. JWT, OAuth2, session)
+**Analysis Date:** {{date}}
 
-## Infrastructure Dependencies
-| Service | Type | Critical? | Notes |
-|---------|------|----------|-------|
-| {{infra-1}} | {{type}} | {{yes/no}} | {{notes}} |
-`;
+## APIs & External Services
+
+**{{category}}:**
+- {{service}} — {{what-its-used-for}}
+  - SDK/Client: \`{{package}}\`
+  - Auth: \`{{env-var}}\`
+
+## Data Storage
+
+**Databases:**
+- {{type}} ({{provider}})
+  - Connection: \`{{env-var}}\`
+  - Client: \`{{orm}}\`
+
+**File Storage:**
+- {{service}}
+
+**Caching:**
+- {{service}}
+
+## Authentication & Identity
+
+**Auth Provider:** {{provider}}
+- Implementation: {{approach}}
+- Middleware: \`{{middleware-path}}\`
+
+## Webhooks & Events
+
+**Incoming:**
+- {{endpoint}} — {{purpose}}
+
+**Outgoing:**
+- {{target}} — {{purpose}}
+
+## Email & Notifications
+
+- Provider: {{provider}}
+- Templates: \`{{path}}\`
+
+## Third-Party Libraries
+
+| Library | Version | Purpose | Risk if Removed |
+|---------|---------|---------|----------------|
+| {{lib}} | {{version}} | {{purpose}} | {{risk}} |
+
+---
+
+*Integrations analysis: {{date}}*`;
 
 export const CODEBASE_PITFALLS_TEMPLATE = `# Pitfalls: {{name}}
 
@@ -982,7 +1221,6 @@ export const ARTIFACT_TEMPLATES: Record<string, string> = {
   'codebase-testing': CODEBASE_TESTING_TEMPLATE,
   'codebase-integrations': CODEBASE_INTEGRATIONS_TEMPLATE,
   'codebase-concerns': CODEBASE_CONCERNS_TEMPLATE,
-  'codebase-pitfalls': CODEBASE_CONCERNS_TEMPLATE,  // alias, deprecated
   // Change lifecycle
   'spec': SPEC_TEMPLATE,
   'global-spec': GLOBAL_SPEC_TEMPLATE,
