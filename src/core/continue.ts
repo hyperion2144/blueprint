@@ -171,6 +171,18 @@ const STEP_INFO: Record<string, StepInfo> = {
     artifacts: [],
     fileRef: '',
   },
+  'fix-planning': {
+    command: 'fix-plan',
+    description: 'Fix design — correct architecture/approach based on review BLOCKERs',
+    artifacts: ['review-design.md', 'review-task.md'],
+    fileRef: '',
+  },
+  'fix-applying': {
+    command: 'fix-apply',
+    description: 'Fix implementation — wave-based dispatch for review finding fixes',
+    artifacts: ['code fixes', 'tests'],
+    fileRef: '',
+  },
 };
 
 /** Step name → WorkflowStep mapping for template lookup */
@@ -206,6 +218,8 @@ export const STEP_TO_WORKFLOW: Record<string, WorkflowStep> = {
   adhoc: 'adhoc',
   continue: 'continue',
   milestone: 'milestone',
+  'fix-planning': 'fix-plan',
+  'fix-applying': 'fix-apply',
 };
 
 function getStepInfo(command: string): StepInfo | undefined {

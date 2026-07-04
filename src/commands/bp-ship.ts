@@ -224,11 +224,11 @@ function markPublished(bpDir: string, entries: Array<{ change: string; date: str
     }
     if (count > 0) {
       writeFileSync(statePath, content, 'utf-8');
-      return `Marked \${count} changes as [published].`;
+      return `Marked ${count} changes as [published].`;
     }
     return 'No changes to mark (already published or not found).';
   } catch (err: unknown) {
-    return `Failed: \${err instanceof Error ? err.message : String(err)}`;
+    return `Failed: ${err instanceof Error ? err.message : String(err)}`;
   }
 }
 

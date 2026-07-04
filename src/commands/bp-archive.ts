@@ -59,8 +59,8 @@ function archiveHandler(changePath: string) {
   // Remove old path from git tracking
   try {
     execSync(`git rm -r "${changePath}" 2>/dev/null || true`, { cwd: process.cwd() });
-  } catch {
-    // git rm is non-critical
+  } catch (e: unknown) {
+    console.warn(`⚠ git rm failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 
   // 5. Update state.md
@@ -112,8 +112,9 @@ function archiveHandler(changePath: string) {
       }
       writeFileSync(statePath, body, 'utf-8');
     }
-  } catch {
-    // state update is non-critical
+  } catch (e: unknown) {
+    console.error(`✗ Failed to update state.md: ${e instanceof Error ? e.message : String(e)}`);
+    console.error('  Please manually update state.md to remove the archived change.');
   }
 
   console.log('Archive complete.');

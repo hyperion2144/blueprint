@@ -109,11 +109,10 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
 ];
 
 function isTemplateFile(filePath: string): boolean {
+  const KNOWN_PLACEHOLDERS = ['{{name}}', '{{date}}', '{{intent}}', '{{scope}}'];
   try {
     const content = readFileSync(filePath, 'utf-8');
-    // Count remaining {{placeholder}} patterns. More than 4 = still empty template.
-    const placeholders = content.match(/\{\{[^}]+\}\}/g);
-    return (placeholders?.length ?? 0) > 4;
+    return KNOWN_PLACEHOLDERS.some((p) => content.includes(p));
   } catch {
     return false;
   }

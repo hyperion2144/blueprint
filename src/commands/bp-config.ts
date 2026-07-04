@@ -54,6 +54,14 @@ function configSet(key: string, value: string) {
   });
 
   console.log(`✓ ${key} = ${value}`);
+
+  // Validate by re-reading with Zod schema
+  try {
+    loadConfig(bpDir);
+  } catch (e) {
+    console.error(`✗ Invalid config value: ${e instanceof Error ? e.message : String(e)}`);
+    process.exit(1);
+  }
 }
 
 function parseTypedValue(value: string): unknown {

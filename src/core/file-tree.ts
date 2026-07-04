@@ -3,7 +3,7 @@
  * 创建 bp/ 骨架、遍历目录、查找 change
  */
 
-import { mkdirSync, existsSync, writeFileSync, readFileSync, readdirSync, statSync, rmSync } from 'node:fs';
+import { mkdirSync, existsSync, writeFileSync, readFileSync, readdirSync, statSync, rmSync, renameSync } from 'node:fs';
 import { join, basename } from 'node:path';
 
 /** bp/ 目录骨架的子目录 */
@@ -129,8 +129,7 @@ export function archiveMilestoneDir(
   return archiveDir;
 }
 
-// Node fs.renameSync 在目录跨设备时可能失败，用 mv 替代
-import { renameSync } from 'node:fs';
+
 
 /** 列出所有 milestones */
 export function listMilestones(bpDir: string): string[] {

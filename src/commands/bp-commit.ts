@@ -106,19 +106,15 @@ function commitHandler(
   }
 
   // ── Build commit message ───────────────────────────────────────
-  const scopeStr = options.scope ? '(' + options.scope + ')' : '';
-  const fullMessage = (message + scopeStr).trim();
+  const fullMessage = options.scope ? `${message}(${options.scope})` : message;
 
   // ── Commit (write message to temp file to avoid shell injection) ──
   const msgFile = join(cwd, '.git', 'COMMIT_EDITMSG_TMP');
   writeFileSync(msgFile, fullMessage, 'utf-8');
   try {
-    const amendFlag = options.amend ? '--amend --no-edit' : '';
-    execSync('git commit ' + amendFlag + ' -F "' + msgFile + '"', {
-      cwd,
-      encoding: 'utf-8',
-      stdio: 'pipe',
-    });
+    const args = ['commit', '-F', msgFile];
+    if (options.amend) args.push('--amend', '--no-edit');
+    execFileSync('git', args, { cwd, encoding: 'utf-8', stdio: 'pipe' });
   } catch (err: unknown) {
     const stderr = err instanceof Error ? err.message : String(err);
     const gitOutput = (err as Record<string, unknown>).stdout as string ?? '';
