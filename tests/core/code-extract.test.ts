@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { extractFromGitDiff, writeExtractionToSpec } from '../../src/core/code-extract.js';
 import { join } from 'node:path';
 import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from 'node:fs';
+import { execSync } from 'node:child_process';
 
 const tmpDir = join(process.cwd(), 'tests/tmp-codeextract');
 
@@ -12,9 +13,18 @@ describe('extractFromGitDiff', () => {
     expect(result.extractions).toEqual([]);
   });
 
-  it('当前仓库返回 available: true', () => {
-    const result = extractFromGitDiff(process.cwd());
+  it('有 git 历史的仓库返回 available: true', () => {
+    // Create a temp git repo with a commit + unstaged change
+    const tmpRepo = join(tmpDir, 'git-repo');
+    mkdirSync(tmpRepo, { recursive: true });
+    execSync('git init && git config user.email test@test.com && git config user.name test', { cwd: tmpRepo });
+    writeFileSync(join(tmpRepo, 'test.txt'), 'hello', 'utf-8');
+    execSync('git add . && git commit -m init', { cwd: tmpRepo });
+    // Make an unstaged change so git diff HEAD returns content
+    writeFileSync(join(tmpRepo, 'test.txt'), 'hello world', 'utf-8');
+    const result = extractFromGitDiff(tmpRepo);
     expect(result.available).toBe(true);
+    rmSync(tmpRepo, { recursive: true, force: true });
   });
 });
 
