@@ -39,6 +39,8 @@ export const STEP_DEFS: CommandDef[] = [
   { step: 'commit', name: 'bp:commit', description: 'Commit changes — conventional commits + hash recording to tasks.md', usesAgent: false, agents: [] },
   { step: 'proposal', name: 'bp:proposal', description: 'Fill change proposal — intent, scope, approach, must-haves, non-goals', usesAgent: false, agents: [] },
   { step: 'config', name: 'bp:config', description: 'Interactive configuration — set workflow, model, conventions, etc.', usesAgent: false, agents: [] },
+  { step: 'fix-plan', name: 'bp:fix-plan', description: 'Fix design — correct architecture/approach based on review BLOCKERs', usesAgent: true, agents: ['planner'] },
+  { step: 'fix-apply', name: 'bp:fix-apply', description: 'Fix implementation — wave-based dispatch for review finding fixes', usesAgent: true, agents: ['executor'] },
 ];
 
 /** Generate a single slash command file content from the TypeScript template */

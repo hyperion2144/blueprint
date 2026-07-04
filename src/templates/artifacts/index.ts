@@ -990,6 +990,9 @@ export const ARTIFACT_TEMPLATES: Record<string, string> = {
   // Phase research (produced by bp-phase-researcher)
   'phase-research': PHASE_RESEARCH_TEMPLATE,
   'uat': UAT_TEMPLATE,
+  // Fix cycle (review loopback)
+  'review-design': DESIGN_TEMPLATE.replace('# Design: {{name}}', '# Fix Design: {{name}}'),
+  'review-tasks': TASKS_TEMPLATE.replace('# Tasks: {{name}}', '# Fix Tasks: {{name}}'),
 };
 
 /** All template IDs for CLI listing */

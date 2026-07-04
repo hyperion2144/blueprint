@@ -69,10 +69,13 @@ export const STATE_TRANSITIONS: StateTransition[] = [
   { from: 'change-reviewing', command: 'archive', to: 'change-archiving', slashCommand: '/bp:archive' },
   { from: 'change-archiving', command: 'archive-done', to: 'change-archived', slashCommand: '' },
 
-  // 回环 (from reviewing — merged verify+archive step)
-  { from: 'change-reviewing', command: 'replan', to: 'change-planning', slashCommand: '/bp:plan', subagent: true },
-  { from: 'change-reviewing', command: 'reapply', to: 'change-applying', slashCommand: '/bp:apply', subagent: true },
-  { from: 'change-reviewing', command: 'fix', to: 'change-applying', slashCommand: '/bp:apply', subagent: true },
+  // 回环 — 从 review 进入独立修复阶段
+  { from: 'change-reviewing', command: 'replan', to: 'change-fix-planning', slashCommand: '/bp:fix-plan', subagent: true },
+  { from: 'change-reviewing', command: 'reapply', to: 'change-fix-applying', slashCommand: '/bp:fix-apply', subagent: true },
+
+  // 修复阶段间流转
+  { from: 'change-fix-planning', command: 'apply-fix', to: 'change-fix-applying', slashCommand: '/bp:fix-apply', subagent: true },
+  { from: 'change-fix-applying', command: 'review-fix', to: 'change-reviewing', slashCommand: '/bp:review', subagent: true },
 
   // Milestone 层（新里程碑 = 项目流程 - init）
   { from: 'milestone-active', command: 'grill', to: 'grill', slashCommand: '/bp:grill' },
@@ -86,4 +89,6 @@ export const STATE_TRANSITIONS: StateTransition[] = [
   { from: 'adhoc-proposal', command: 'plan', to: 'change-planning', slashCommand: '/bp:plan', subagent: true },
   { from: 'change-archived', command: 'adhoc-done', to: 'adhoc-archived', slashCommand: '' },
   { from: 'adhoc-archived', command: 'new-change', to: 'adhoc-proposal', slashCommand: '' },
+  // Milestone 切换
+  { from: 'milestone-shipped', command: 'new-milestone', to: 'milestone-active', slashCommand: '/bp:state set-milestone' },
 ];

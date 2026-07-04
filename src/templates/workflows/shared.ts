@@ -47,3 +47,58 @@ Run \`bp continue\` to proceed.
 /** Truncation guard — replaces repeated ---END--- check in continue/auto. */
 export const TRUNCATION_GUARD = `**Check output completeness**: Confirm \`---END---\` marker exists and \`chars:\` value matches. Missing or mismatched = output truncated — re-run the command.
 `;
+
+/** Wave-based task dispatch for apply/fix-apply — main agent splits tasks.md into waves, dispatches one sub-agent per wave. */
+export const WAVE_SPLIT = `### Step: Wave analysis (MAIN AGENT)
+
+Read \`tasks.md\` (or \`review-task.md\` for fix mode). Parse into execution plan:
+
+1. **Extract waves**: read all \`## Wave N: <theme>\` sections. Keep wave order.
+
+2. **Build inter-wave dependency graph**:
+   - For each task, extract \`depends_on\` field
+   - If task in Wave B has \`depends_on\` referencing a task in Wave A → Wave B depends on Wave A
+   - Result: DAG where nodes = waves, edges = cross-wave depends_on
+
+3. **Generate execution plan**:
+   - Waves with NO unmet cross-wave dependencies → can run concurrently
+   - Waves WITH cross-wave dependencies → must wait for predecessor wave(s)
+
+4. **For each wave, prepare ONE sub-agent prompt**:
+   - Change name and path
+   - ALL tasks in this wave (ids, types, descriptions, files, acceptance, RED tests)
+   - ALL referenced specs (from spec_ref fields across tasks)
+   - Conventions
+   - Instruction: implement tasks in dependency order within the wave
+   - Instruction: \`bp commit --task <id>\` after each task
+   - Instruction: do NOT run tsc/vitest — main agent handles verify
+
+5. **Execute round by round**:
+   - Each round: dispatch all ready waves CONCURRENTLY (task tool, one agent per wave)
+   - Wait for all; then verify (tsc + vitest) + mark [x] + commit
+   - Next round: waves unblocked after predecessor waves complete
+   - Repeat until all waves done
+
+`;
+
+/** Review loopback guidance — what to do when review finds BLOCKERs. */
+export const REVIEW_LOOPBACK = `### Review loopback
+
+If review finds BLOCKERs, determine loopback type:
+
+**reapply (code fix)**: implementation wrong → fix code
+  1. Write \`review-task.md\` — one task per BLOCKER/FLAG finding
+  2. Main agent WAVE_SPLIT → dispatch executor sub-agents (fix mode)
+  3. Main agent verify + mark [x] + commit
+  4. Re-review with \`--fix\` → in-place update original review files
+
+**replan (design fix)**: architecture/approach wrong → redesign
+  1. Dispatch planner sub-agent (fix mode) → write \`review-design.md\` + \`review-task.md\`
+  2. Main agent WAVE_SPLIT → dispatch executor sub-agents (fix mode)
+  3. Main agent verify + mark [x] + commit
+  4. Re-review with \`--fix\` → in-place update original review files
+
+Re-review (--fix): do NOT create new review files. In the ORIGINAL files, mark resolved findings \`✅ 已修复\`, append new findings with continued numbering.
+If BLOCKERs remain → loop back to reapply/replan. If none → advance to archive.
+
+`;

@@ -40,6 +40,24 @@ Your core responsibility is to analyze proposals, design technical solutions, cr
 
 ${AGENT_CONSTRAINTS}## Execution Flow
 
+### Step 0: Determine planning mode
+
+**Normal mode** (proposal.md): Design from scratch.
+- Read proposal.md, context.md, research.md, existing specs
+- Write design.md, tasks.md, delta-specs as described below
+- Output goes to change directory under standard filenames
+
+**Fix mode** (review results): Fix design based on review findings.
+- Read spec-review.md, quality-review.md, goal-review.md from the change directory
+- Identify ALL BLOCKER and FLAG findings with their file:line references
+- Write review-design.md (template = design.md, title \`# Fix Design: <change-name>\`)
+  - For each BLOCKER: describe what was wrong, why the new approach fixes it
+- Write review-task.md (template = tasks.md, title \`# Fix Tasks: <change-name>\`)
+  - Wave 1 = BLOCKER fixes, Wave 2 = FLAG fixes
+  - Each task references the review finding it addresses (e.g. \`spec_ref: spec-review.md#3\`)
+- Output: review-design.md + review-task.md (NOT design.md/tasks.md)
+- Do NOT write delta-specs in fix mode
+
 ### Step 1: Read project context and proposal
 - Read bp/project.yml for profile and workflow configuration
 - Read the change's proposal.md for intent, scope, and must-haves
@@ -118,6 +136,25 @@ Your core responsibility is to implement code according to tasks.md, strictly fo
 
 ${AGENT_CONSTRAINTS}## Execution Flow
 
+### Step 0: Determine execution mode
+
+**Normal mode** (tasks.md): You receive ONE wave of tasks.
+- Implement all tasks in dependency order within this wave (respect \`depends_on\`)
+- For type:behavior: RED test first → GREEN → REFACTOR
+- For other types: direct implementation
+- After each task: \`bp commit --task <id> --tasks-path ...\`
+- Do NOT run tsc or vitest — main agent verifies
+- Return when all tasks in this wave are done
+
+**Fix mode** (review-task.md): You are fixing review findings.
+- Read review-task.md — each task maps to a review finding (BLOCKER/FLAG)
+- Read spec-review.md, quality-review.md, goal-review.md to understand what was wrong
+- Implement fixes following review-task.md wave/task structure
+- Each committed task = one review finding resolved
+- Commit: \`bp commit --task <id> --tasks-path <review-task.md path>\`
+- Do NOT run tsc/vitest; do NOT modify the original review files
+- Return when all fix tasks in this wave are done
+
 ### Step 1: Read task list
 - Read tasks.md for current wave task list and order
 - Read design.md for technical approach
@@ -127,40 +164,9 @@ ${AGENT_CONSTRAINTS}## Execution Flow
   - If \`spec_ref\` is missing on a \`type:behavior\` task, flag it and use \`bp/specs/\` to find the matching domain
 - Read \`bp/conventions/coding-standards.md\` for coding conventions
 
-### Step 2: Execute waves sequentially
+### Step 2: Execute tasks in this wave
 
-Process each wave in tasks.md in order. For each wave:
-
-**2a. Parse dependencies**
-Read all tasks in the current wave. Build execution groups from \`depends_on\` fields:
-- Tasks with no \`depends_on\` (or empty list) → independent, can run together
-- Tasks with \`depends_on\` → must wait for listed predecessors to complete first
-
-**2b. Execute in dependency batches**
-
-**For a SINGLE task:**
-Implement directly: read specs/conventions/design → implement → verify → \`bp commit --task <id>\` (auto-marks done [- [x]] + records hash).
-
-**For a PARALLEL group (2+ independent tasks):**
-1. Run \`bp dispatch executor\` once per task
-2. Each child sub-agent's prompt MUST specify:
-   - Exact task (ID + full description from tasks.md)
-   - Required reads: design.md, delta-specs (specs/), bp/specs/<domain>/spec.md, bp/conventions/coding-standards.md
-   - TDD protocol if type:behavior (RED→GREEN→REFACTOR, 3 separate commits)
-   - \`bp commit --task <id> --tasks-path ...\` — auto-marks task done + records commit hash
-   - NEVER run bp continue or bp state set-*
-   - Do NOT touch the ## Verification section — parent executor handles that
-3. Wait for ALL children in the group to finish before advancing to the next group
-
-**2c. Repeat**
-After all tasks in the wave are committed, move to the next wave. After the last wave, run the full test suite.
-
-\`\`\`bash
-bp commit "<type>(<scope>): <description>" \\
-  --files "<files>" --scope <scope> --task <task-id> \\
-  --tasks-path "bp/milestones/<mid>/phases/<pid>/changes/<name>/tasks.md"
-\`\`\`
-\`--task <id>\` auto-marks the task done (\`- [ ]\` → \`- [x]\`) and records commit hash in tasks.md. \`--files\` stages specific files (never \`git add -A\`). Doc files auto-skipped when \`commitDocs: false\`.
+Implement all tasks in your wave, in dependency order (respect \`depends_on\`):
 
 | Task type | Commit prefix | TDD? |
 |-----------|--------------|------|
@@ -170,14 +176,16 @@ bp commit "<type>(<scope>): <description>" \\
 | docs | docs | No |
 | scaffolding | chore | No |
 
-### Step 3: Per-task verification
-- Run related tests, confirm no regressions
-- Confirm delta-spec constraints are satisfied
+\`\`\`bash
+bp commit "<type>(<scope>): <description>" \\
+  --files "<files>" --scope <scope> --task <task-id> \\
+  --tasks-path "bp/milestones/<mid>/phases/<pid>/changes/<name>/tasks.md"
+\`\`\`
+\`--task <id>\` auto-marks the task done (\`- [ ]\` → \`- [x]\`) and records commit hash.
 
-### Step 4: Wave completion
-- Confirm all wave tasks complete
-- Run full test suite (\`tsc --noEmit\`, \`vitest run\`)
-- **Mark verification items done**: after each check passes, edit tasks.md — replace \`- [ ]\` with \`- [x]\` for the corresponding item in the \`## Verification\` section (tsc, vitest, acceptance, lint, type check)
+### Step 3: Return
+
+When all tasks in your wave are implemented and committed, return. Do NOT run tsc or vitest — the main agent handles final verification.
 
 ## Deviation Rules
 
