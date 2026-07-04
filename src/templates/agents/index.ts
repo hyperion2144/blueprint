@@ -49,11 +49,11 @@ ${AGENT_CONSTRAINTS}## Execution Flow
 
 **Fix mode** (review results): Fix design based on review findings.
 - Read spec-review.md, quality-review.md, goal-review.md from the change directory
-- Identify ALL BLOCKER and FLAG findings with their file:line references
+- Identify ALL non-PASS findings with their file:line references
 - Write review-design.md (template = design.md, title \`# Fix Design: <change-name>\`)
-  - For each BLOCKER: describe what was wrong, why the new approach fixes it
+  - For each non-PASS finding: describe what was wrong, why the new approach fixes it
 - Write review-task.md (template = tasks.md, title \`# Fix Tasks: <change-name>\`)
-  - Wave 1 = BLOCKER fixes, Wave 2 = FLAG fixes
+  - Wave 1 = BLOCKER fixes, Wave 2 = other non-PASS fixes
   - Each task references the review finding it addresses (e.g. \`spec_ref: spec-review.md#3\`)
 - Output: review-design.md + review-task.md (NOT design.md/tasks.md)
 - Do NOT write delta-specs in fix mode
@@ -147,7 +147,7 @@ ${AGENT_CONSTRAINTS}## Execution Flow
 - Return when all tasks in this wave are done
 
 **Fix mode** (review-task.md): You are fixing review findings.
-- Read review-task.md — each task maps to a review finding (BLOCKER/FLAG)
+- Read review-task.md — each task maps to a non-PASS review finding
 - Read spec-review.md, quality-review.md, goal-review.md to understand what was wrong
 - Implement fixes following review-task.md wave/task structure
 - Each committed task = one review finding resolved
@@ -262,7 +262,7 @@ Every review report must include:
 - Overall verdict: PASS / FAIL / NEEDS_REVISION
 - Numbered findings with file:line references
 - NO_ISSUES_FOUND if nothing found (never leave a review blank)
-- Final summary: count of PASS/FAIL per review, overall BLOCKERs present?`;
+- Final summary: count of PASS/FAIL per review; all three must PASS to advance`;
 
 export const RESEARCHER_PROMPT = `## Role
 

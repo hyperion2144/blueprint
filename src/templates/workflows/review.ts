@@ -43,15 +43,16 @@ ${CLASSIFY_CHANGE}${CHANGE_NAME_RESOLVE('applying', 'review')}
 
 ### Step 3: Aggregate results (Normal mode only)
 
-Check each report for BLOCKERs and MAJOR issues.
+Check each report's verdict. All three must be PASS for the change to advance.
+Any FAIL or NEEDS_REVISION means there are issues that must be addressed.
 
 ### Step 4: Handle findings (Normal mode only)
 
-Classify findings: BLOCKER / FLAG / NOTE.
+Classify the issue severity: BLOCKER / FLAG / NOTE.
 
-**If NO BLOCKERs** → commit review files → advance to archive.
+**If all three reports PASS** → commit review files → advance to archive.
 
-**If BLOCKERs exist** → determine loopback type:
+**If any report is FAIL or NEEDS_REVISION** → ALL non-PASS findings must be addressed. Determine loopback type:
 - Implementation bugs → **reapply** (fix-apply)
 - Architecture/design flaws → **replan** (fix-plan)
 
@@ -67,16 +68,16 @@ Read original review files + review-task.md. For each finding:
 - **New issues found**: append new findings with continued numbering (e.g. #7, #8), status BLOCKER/FLAG/NOTE.
 
 After in-place update:
-- If BLOCKERs remain (original unresolved OR new) → write new review-task.md → loop back
-- If no BLOCKERs → commit → advance to archive
+- If any report is still FAIL or NEEDS_REVISION → write new review-task.md → loop back
+- If all three reports PASS → commit → advance to archive
 
 ${COMMIT_ADVANCE('docs', 'triple review for <change-name>')}
 
 ## Guardrails
 - FULL: dispatch 1 reviewer sub-agent (all three reviews sequentially)
 - Fix mode: update existing files in-place, never create new review files
-- Findings: BLOCKER (must fix), FLAG (should fix), NOTE (info)
-- Loopback: BLOCKERs → fix-plan or fix-apply → re-review → repeat until clean`;
+- Findings: all non-PASS findings must be addressed before advancing
+- Loopback: any FAIL or NEEDS_REVISION → fix-plan or fix-apply → re-review → repeat until all PASS`;
 
 export function getReviewSkillTemplate(): SkillTemplate {
   return {

@@ -81,39 +81,34 @@ Read \`tasks.md\` (or \`review-task.md\` for fix mode). Parse into execution pla
 
 `;
 
-/** Review loopback guidance — what to do when review finds BLOCKERs. */
+/** Review loopback guidance — what to do when review finds issues. */
 export const REVIEW_LOOPBACK = `### Review loopback
 
-If review finds BLOCKERs, determine loopback type:
+If any review report is FAIL or NEEDS_REVISION, ALL non-PASS findings must be addressed.
+Determine loopback type:
 
 **reapply (code fix)**: implementation bugs → fix code
   1. **Write \`review-task.md\`** (main agent does this):
      - Get template: \`bp template tasks --stdout\`
      - Replace title: \`# Fix Tasks: <change-name>\`
-     - Write one task per BLOCKER/FLAG finding from the review files
-     - Wave 1 = BLOCKER fixes, Wave 2 = FLAG fixes
+     - Write one task per non-PASS finding from the review files
+     - Wave 1 = BLOCKER fixes, Wave 2 = FLAG/MAJOR fixes
      - Each task references the review finding it addresses (e.g. \`spec_ref: quality-review.md#3\`)
      - Use same task format as tasks.md (type, description, files, acceptance, RED test, depends_on)
   2. **Run the loopback CLI command**: \`bp continue change <name> --command reapply\`
      - This advances the state machine to \`change-fix-applying\`
      - The command outputs the fix-apply workflow instructions
-  3. **Follow the instructions** from the CLI output — they tell you exactly how to:
-     - Analyze review-task.md waves
-     - Dispatch executor sub-agents per wave (fix mode)
-     - Verify, mark [x], commit after each round
+  3. **Follow the instructions** from the CLI output
   4. After fix-apply completes → \`bp continue change <name>\` → re-review with --fix
 
 **replan (design fix)**: architecture/approach wrong → redesign
   1. **Run the loopback CLI command**: \`bp continue change <name> --command replan\`
      - This advances the state machine to \`change-fix-planning\`
      - The command outputs the fix-plan workflow instructions
-  2. **Follow the instructions** from the CLI output — they tell you exactly how to:
-     - Read review findings
-     - Dispatch planner sub-agent (fix mode) to write review-design.md + review-task.md
-     - Verify output, commit, advance to fix-applying
+  2. **Follow the instructions** from the CLI output
   3. After fix-apply completes → \`bp continue change <name>\` → re-review with --fix
 
 Re-review (--fix): do NOT create new review files. In the ORIGINAL files, mark resolved findings \`✅ 已修复\`, append new findings with continued numbering.
-If BLOCKERs remain → loop back to reapply/replan. If none → advance to archive.
+If any report is still FAIL or NEEDS_REVISION → loop back. If all PASS → advance to archive.
 
 `;
