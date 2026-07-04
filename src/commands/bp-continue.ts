@@ -138,11 +138,22 @@ function continueHandler(options?: { auto?: boolean }): void {
 
   const result = determineNextStep(bpDir);
 
-  // Special: phase-ready → auto-advance to next phase
+  // Special: phase-ready → auto-advance to next phase (auto) or completion gate (non-auto)
   if (state.active_context.step === 'ready') {
     const nextPhase = findNextPhase(bpDir, state.project.current_milestone, state.project.current_phase ?? '');
     if (nextPhase) {
-      // 1. Set the next phase
+      if (!isAuto) {
+        console.log([
+          '# bp continue — phase complete',
+          `phase: ${state.project.current_phase}`,
+          `next: ${nextPhase}`,
+          'hint: Current phase complete. Ask user whether to proceed to next phase.',
+          'continue: bp continue --auto',
+          `manual: bp state set-phase ${nextPhase}`,
+        ].join('\n'));
+        return;
+      }
+      // Auto: advance to next phase
       updateState(bpDir, (s) => {
         s.project.current_phase = nextPhase;
         s.active_context = { type: 'phase', ref: `milestones/${s.project.current_milestone}/phases/${nextPhase}`, step: 'start' };
@@ -196,25 +207,6 @@ function continueHandler(options?: { auto?: boolean }): void {
       `reasons: ${validation.errors.join('; ')}`,
       `hint: Complete the current step first. Run \`bp template ${state.active_context.step}\` if you need the step instructions.`,
     ].join('\n'));
-    return;
-  }
-
-  // Non-auto mode: stop at completion gate — do NOT advance state automatically
-  if (!isAuto) {
-    const nextInfo = result.nextStepInfo;
-    console.log([
-      '# bp continue — step complete',
-      `step: ${result.currentStep}`,
-      `type: ${result.type}`,
-      result.nextCommand ? `next: ${result.nextStepInfo?.command ?? result.nextCommand}` : '',
-      result.slashCommand ? `slashCommand: ${result.slashCommand}` : '',
-      result.nextCommand ? `nextCommand: ${result.nextCommand}` : '',
-      'hint: Current step complete. Ask user whether to proceed to next step.',
-      result.type === 'change' || result.type === 'adhoc'
-        ? `continue: bp continue change ${state.active_context.ref?.split('/').pop() ?? '<name>'}`
-        : 'continue: bp continue',
-      'manual: bp state set-step <step>',
-    ].filter(Boolean).join('\n'));
     return;
   }
 
@@ -298,24 +290,6 @@ function continueChangeHandler(name: string, options?: { auto?: boolean; command
       '# bp continue — error',
       `error: ${result.error}`,
     ].join('\n'));
-    return;
-  }
-
-  // Non-auto mode (skip for loopback commands): stop at completion gate
-  if (!isAuto && !options?.command) {
-    const nextInfo = result.nextStepInfo;
-    console.log([
-      '# bp continue — step complete',
-      `step: ${result.currentStep}`,
-      `type: ${result.type}`,
-      `name: ${name}`,
-      result.nextCommand ? `next: ${result.nextStepInfo?.command ?? result.nextCommand}` : '',
-      result.slashCommand ? `slashCommand: ${result.slashCommand}` : '',
-      result.nextCommand ? `nextCommand: ${result.nextCommand}` : '',
-      'hint: Current step complete. Ask user whether to proceed to next step.',
-      `continue: bp continue change ${name}`,
-      'manual: bp state set-step <step>',
-    ].filter(Boolean).join('\n'));
     return;
   }
 
