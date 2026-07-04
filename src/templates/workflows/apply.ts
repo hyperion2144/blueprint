@@ -34,7 +34,9 @@ For each wave in the current round:
    - Return when all tasks in this wave are implemented and committed
 3. For concurrent waves in the same round: run \`bp dispatch executor\` once per wave, dispatch ALL in one task tool call (parallel).
 4. Wait for ALL wave sub-agents in this round to finish before proceeding to verify.
-### Step: Verify after each round
+### Step: Implementation verify after each round
+
+**This verifies the code works — it is NOT the review step.** Review is a separate workflow step that runs after apply completes.
 
 After ALL waves in a round complete, run verify:
 \`\`\`bash
@@ -45,18 +47,21 @@ npx vitest run
 If verify passes: mark all tasks in completed waves \`[x]\` in tasks.md, then proceed to next round.
 If verify fails: route failing tests back to the wave that introduced them — re-dispatch that wave's sub-agent with the failure details.
 
-### Step: Final verify and change summary
+### Step: Final implementation verify and change summary
 
 After ALL waves complete and all tests pass:
 - Run \`bp template change-summary --dir <change-dir>\`, fill with actual details.
 - Ensure all tasks.md checkboxes are \`[x]\`
+
+**CRITICAL: Implementation verification is NOT review.** After this step, run \`bp continue\` — it will advance to the review step. NEVER skip review and go directly to archive.
 
 ${COMMIT_ADVANCE('docs', 'apply complete for <change-name>')}
 
 ## Guardrails
 - Each wave = ONE sub-agent; dispatch concurrent waves in one task tool call
 - Sub-agents implement and commit; main agent verifies
-- NEVER skip verify between rounds
+- NEVER skip implementation verify between rounds
+- **NEVER skip review.** "Implementation Verification" in tasks.md confirms the code compiles and tests pass — it does NOT replace the review step (\`/bp:review\`). After apply, always run \`bp continue\` to advance to review.
 - Summary mandatory: no advance without filled change-summary.md`;
 
 export function getApplySkillTemplate(): SkillTemplate {

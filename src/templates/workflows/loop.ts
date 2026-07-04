@@ -73,6 +73,8 @@ Read the step instructions from \`read skill://bp-<step>\` or the slash command 
 - Auto-determine structure based on requirements and research
 - Run CLI commands directly
 
+**CRITICAL: Never skip review.** The change lifecycle is ALWAYS plan → apply → review → archive. "Implementation Verification" in tasks.md is a code-quality check run DURING apply — it does NOT replace the separate review step (\`/bp:review\`). Even if the previous change already completed review→archive, the current change MUST go through its own review.
+
 ### Step 4: Advance
 Run \`bp continue\` (or \`bp continue change <name>\` for change context).
 Check \`---END---\` marker and \`chars:\` value in output to confirm complete.

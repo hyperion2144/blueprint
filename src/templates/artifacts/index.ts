@@ -208,7 +208,9 @@ Each wave completion enables verification (tsc + test pass).
 
 ---
 
-## Verification
+## Implementation Verification
+
+> **This is NOT the review step.** These checks confirm the code is correct and tests pass. After passing, run \`bp continue\` to advance to the review/archive workflow step.
 
 - [ ] \`tsc --noEmit\` passes (or equivalent type check)
 - [ ] \`vitest run\` all test suites pass
