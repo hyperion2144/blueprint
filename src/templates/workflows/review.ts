@@ -38,7 +38,7 @@ ${CLASSIFY_CHANGE}${CHANGE_NAME_RESOLVE('applying', 'review')}
 **If FULL — dispatch reviewer sub-agent:**
 
 1. Run \`bp dispatch reviewer --change <change-name>\`
-2. Call the tool once. Prompt: run spec-review → quality-review → goal-review sequentially.
+2. Call the tool once. Prompt: run spec-review → quality-review → goal-review sequentially, then commit all three files.
 3. Output: spec-review.md, quality-review.md, goal-review.md in change directory.
 
 ### Step 3: Aggregate results (Normal mode only)

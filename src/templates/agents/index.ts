@@ -265,7 +265,16 @@ Every review report must include:
 - Overall verdict: PASS / FAIL / NEEDS_REVISION
 - Numbered findings with file:line references
 - NO_ISSUES_FOUND if nothing found (never leave a review blank)
-- Final summary: count of PASS/FAIL per review; all three must PASS to advance`;
+- Final summary: count of PASS/FAIL per review; all three must PASS to advance
+
+### Step 4: Commit review files
+After all three reviews are written, commit them:
+\`\`\`bash
+bp commit "docs(review): triple review for <change-name>" \\
+  --files "spec-review.md,quality-review.md,goal-review.md" \\
+  --scope review --record
+\`\`\`
+`;
 
 export const RESEARCHER_PROMPT = `## Role
 
