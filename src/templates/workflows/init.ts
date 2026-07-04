@@ -19,9 +19,15 @@ Continue to Step 2.
 ### Step 2: Brownfield scan
 1. Read \`bp/codebase/stack.md\` and \`bp/codebase/architecture.md\` (created by init CLI scan).
 2. Read \`bp/specs/<domain>/spec.md\` — these are the initial spec skeletons from the tech stack template.
-3. Dispatch \`bp-codebase-mapper\` and \`bp-spec-bootstrapper\` sub-agents:
-   - \`bp-codebase-mapper\`: deep-analyze the existing code (modules, patterns, tech debt)
-   - \`bp-spec-bootstrapper\`: extract behavioral contracts from existing code into \`bp/specs/<domain>/spec.md\`
+3. Dispatch sub-agents:
+   - Run \`bp dispatch codebase-mapper\` — outputs the sub-agent tool and its parameters. Call it once. Prompt:
+     - Task: deep-analyze the existing code (modules, patterns, tech debt)
+     - Read: bp/codebase/stack.md, bp/codebase/architecture.md, bp/conventions/coding-standards.md
+     - Output: codebase-stack.md, codebase-architecture.md, codebase-structure.md, codebase-conventions.md, codebase-testing.md, codebase-integrations.md, codebase-concerns.md
+   - Run \`bp dispatch spec-bootstrapper\` — outputs the sub-agent tool and its parameters. Call it once. Prompt:
+     - Task: extract behavioral contracts from existing code
+     - Read: bp/specs/<domain>/spec.md, bp/conventions/coding-standards.md
+     - Output: bp/specs/<domain>/spec.md (updated with extracted Requirements + Scenarios)
 
 ### Step 3: Advance
 Run \`bp continue\`. The output routes to grill (for requirements exploration).
