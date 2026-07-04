@@ -91,9 +91,12 @@ Determine loopback type:
   1. **Write \`review-task.md\`** (main agent does this):
      - Get template: \`bp template tasks --stdout\`
      - Replace title: \`# Fix Tasks: <change-name>\`
-     - Write one task per non-PASS finding from the review files
-     - Wave 1 = BLOCKER fixes, Wave 2 = FLAG/MAJOR fixes
-     - Each task references the review finding it addresses (e.g. \`spec_ref: quality-review.md#3\`)
+     - Write one task per non-PASS finding from ALL THREE review files:
+       - spec-review.md: FAIL constraints, N/A gaps with file:line
+       - quality-review.md: BLOCKER, MAJOR, MINOR issues with file:line
+       - goal-review.md: PARTIAL, NOT_ACHIEVED goals with file:line
+     - Wave 1 = BLOCKER + FAIL (must fix), Wave 2 = MAJOR + PARTIAL (should fix), Wave 3 = MINOR + INFO + NOT_APPLICABLE gaps
+     - Each task references the review finding it addresses (e.g. \`spec_ref: spec-review.md#2\`)
      - Use same task format as tasks.md (type, description, files, acceptance, RED test, depends_on)
   2. **Run the loopback CLI command**: \`bp continue change <name> --command reapply\`
      - This advances the state machine to \`change-fix-applying\`

@@ -49,12 +49,15 @@ ${AGENT_CONSTRAINTS}## Execution Flow
 
 **Fix mode** (review results): Fix design based on review findings.
 - Read spec-review.md, quality-review.md, goal-review.md from the change directory
-- Identify ALL non-PASS findings with their file:line references
+- Collect ALL non-PASS findings from each:
+  - spec-review: FAIL constraints, N/A gaps
+  - quality-review: BLOCKER, MAJOR, MINOR, INFO issues
+  - goal-review: PARTIAL, NOT_ACHIEVED goals
 - Write review-design.md (template = design.md, title \`# Fix Design: <change-name>\`)
   - For each non-PASS finding: describe what was wrong, why the new approach fixes it
 - Write review-task.md (template = tasks.md, title \`# Fix Tasks: <change-name>\`)
-  - Wave 1 = BLOCKER fixes, Wave 2 = other non-PASS fixes
-  - Each task references the review finding it addresses (e.g. \`spec_ref: spec-review.md#3\`)
+  - Wave 1 = BLOCKER + FAIL (must fix), Wave 2 = MAJOR + PARTIAL (should fix), Wave 3 = MINOR + INFO + N/A gaps
+  - One task per finding, referencing the review file + finding number (e.g. \`spec_ref: goal-review.md#4\`)
 - Output: review-design.md + review-task.md (NOT design.md/tasks.md)
 - Do NOT write delta-specs in fix mode
 

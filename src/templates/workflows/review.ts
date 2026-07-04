@@ -65,7 +65,10 @@ Read original review files + review-task.md. For each finding:
 - **Fixed findings**: append \`**✅ 已修复**\` below the finding.
 - **Unresolved findings**: keep original status.
 - **Code review of fixes**: scan the changed files for new issues.
-- **New issues found**: append new findings with continued numbering (e.g. #7, #8), status BLOCKER/FLAG/NOTE.
+- **New issues found**: append new findings with continued numbering. Use the appropriate status per review type:
+    - spec-review: FAIL / N/A
+    - quality-review: BLOCKER / MAJOR / MINOR / INFO
+    - goal-review: PARTIAL / NOT_ACHIEVED
 
 After in-place update:
 - If any report is still FAIL or NEEDS_REVISION → write new review-task.md → loop back
