@@ -24,14 +24,24 @@ Read the three review files to understand what findings need fixing.
 
 ${WAVE_SPLIT}
 
-**For executor sub-agents, set prompt to fix mode**:
-- This is a FIX wave — implement fixes for review findings
-- Read review-task.md for your wave's tasks
-- Read spec-review.md, quality-review.md, goal-review.md for finding context
-- Each task addresses a specific review finding
-- Implement fixes, commit with \`bp commit --task <id> --tasks-path <review-task.md path>\`
-- Do NOT modify the original review files
-- Do NOT run tsc or vitest
+**Dispatch executor sub-agents in fix mode. Do NOT implement fixes yourself:**
+
+For each wave in the current round:
+1. Run \`bp dispatch executor --change <change-name>\` — outputs the sub-agent tool and its parameters.
+2. Call the tool it specifies. Set the sub-agent's prompt to **fix mode**:
+   - Change: <change-name> (path from resolve step)
+   - Mode: FIX — this wave addresses review findings
+   - Wave: <Wave N> — implement ALL fix tasks in this wave
+   - Tasks: <full task list from review-task.md with ids, types, referenced review findings>
+   - Read: review-task.md (this wave only), spec-review.md, quality-review.md, goal-review.md (for finding context), design.md (original design), bp/conventions/coding-standards.md
+   - Implement fixes in dependency order
+   - Each task addresses a specific review finding — ensure the fix resolves it
+   - After each task: \`bp commit --task <id> --tasks-path <review-task.md path>\`
+   - Do NOT run tsc or vitest — main agent handles verification
+   - Do NOT modify the original review files
+   - Return when all fix tasks in this wave are implemented and committed
+3. For concurrent waves in the same round: dispatch ALL in one task tool call (parallel).
+4. Wait for ALL wave sub-agents in this round to finish before verifying.
 
 ### Step 5: Verify after each round
 
