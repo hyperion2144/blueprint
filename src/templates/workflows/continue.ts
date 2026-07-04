@@ -89,6 +89,7 @@ Inline instructions for the next workflow step, including:
 - **CRITICAL**: Check \`---END---\` marker exists at the end of output AND \`chars:\` value matches total received chars. If missing or mismatch, output was truncated — re-run \`bp continue\` to get the full output.
 - \`bp continue\` (no args) = project/phase level; \`bp continue change <name>\` = change level — do not mix them
 - Continue does NOT advance state if exit conditions are not met — it reports what's blocking
+- In loop mode (\`--auto\` flag): after completing this step, the loop controller checks \`bp/loop.md\` stop conditions before advancing further. Continue as normal — do not alter behavior based on loop context.
 - When multiple changes are pending, always present choices — do not silently pick one`;
 
 export function getContinueSkillTemplate(): SkillTemplate {

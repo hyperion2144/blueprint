@@ -76,8 +76,8 @@ describe('resolveModels', () => {
     const models = resolveModels(config);
     expect(models.researcher).toBe('pi/task');
     expect(models.planner).toBe('pi/plan');
-    expect(models.executor).toBe('pi/plan');
-    expect(models.reviewer).toBe('pi/plan');
+    expect(models.executor).toBe('pi/slow');
+    expect(models.reviewer).toBe('pi/slow');
     expect(models['phase-researcher']).toBe('pi/task');
     expect(models['codebase-mapper']).toBe('pi/task');
     expect(models['spec-bootstrapper']).toBe('pi/task');
@@ -100,11 +100,11 @@ describe('resolveModels', () => {
     });
     const config = loadConfig(tmpDir);
     const models = resolveModels(config);
-    expect(models.researcher).toBe('pi/default');
-    expect(models.planner).toBe('pi/slow');
-    expect(models.executor).toBe('pi/slow');
-    expect(models.reviewer).toBe('pi/slow');
-    expect(models['phase-researcher']).toBe('pi/default');
+    expect(models.researcher).toBe('pi/slow');
+    expect(models.planner).toBe('pi/plan');
+    expect(models.executor).toBe('pi/plan');
+    expect(models.reviewer).toBe('pi/plan');
+    expect(models['phase-researcher']).toBe('pi/slow');
   });
 
   it('lite profile 全部 agent 为 pi/task', () => {

@@ -72,6 +72,7 @@ function templateHandler(type: string, options: { name?: string; dir?: string; s
       'research-stack': 'research/stack.md',
       'research-architecture': 'research/architecture.md',
       'research-pitfalls': 'research/pitfalls.md',
+      'loop.md': 'loop.md',
       'phase-research': 'phase-research.md',
     };
     const filename = filenames[type] ?? `${type}.md`;

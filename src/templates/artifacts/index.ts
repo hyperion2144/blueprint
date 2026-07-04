@@ -1193,6 +1193,28 @@ blocked: 0
 [none yet]
 `;
 
+export const LOOP_MD_TEMPLATE = `# Loop Configuration
+
+## Goal
+{{goal}}
+
+## Stop Condition
+{{stop_condition}}
+
+## Verification
+command: "{{verification_command}}"
+check: "{{verification_check}}"
+
+## Limits
+max_iterations: {{max_iterations}}
+no_progress_threshold: {{no_progress_threshold}}
+
+## Progress
+iteration: 0
+last_progress_at: ""
+status: running
+`;
+
 /** Template registry — maps template ID → body string */
 export const ARTIFACT_TEMPLATES: Record<string, string> = {
   proposal: PROPOSAL_TEMPLATE,
@@ -1228,6 +1250,8 @@ export const ARTIFACT_TEMPLATES: Record<string, string> = {
   // Phase research (produced by bp-phase-researcher)
   'phase-research': PHASE_RESEARCH_TEMPLATE,
   'uat': UAT_TEMPLATE,
+  // Loop configuration
+  'loop.md': LOOP_MD_TEMPLATE,
   // Fix cycle (review loopback)
   'review-design': DESIGN_TEMPLATE.replace('# Design: {{name}}', '# Fix Design: {{name}}'),
   'review-tasks': TASKS_TEMPLATE.replace('# Tasks: {{name}}', '# Fix Tasks: {{name}}'),
