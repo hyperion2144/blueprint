@@ -199,6 +199,25 @@ function continueHandler(options?: { auto?: boolean }): void {
     return;
   }
 
+  // Non-auto mode: stop at completion gate — do NOT advance state automatically
+  if (!isAuto) {
+    const nextInfo = result.nextStepInfo;
+    console.log([
+      '# bp continue — step complete',
+      `step: ${result.currentStep}`,
+      `type: ${result.type}`,
+      result.nextCommand ? `next: ${result.nextStepInfo?.command ?? result.nextCommand}` : '',
+      result.slashCommand ? `slashCommand: ${result.slashCommand}` : '',
+      result.nextCommand ? `nextCommand: ${result.nextCommand}` : '',
+      'hint: Current step complete. Ask user whether to proceed to next step.',
+      result.type === 'change' || result.type === 'adhoc'
+        ? `continue: bp continue change ${state.active_context.ref?.split('/').pop() ?? '<name>'}`
+        : 'continue: bp continue',
+      'manual: bp state set-step <step>',
+    ].filter(Boolean).join('\n'));
+    return;
+  }
+
   if (result.nextCommand) {
     const currentStatus = resolveStatusKey(state.active_context.type, state.active_context.step, state.project.status);
     const transition = getTransition(currentStatus, result.nextCommand);
@@ -242,7 +261,8 @@ function continueHandler(options?: { auto?: boolean }): void {
 }
 
 function continueChangeHandler(name: string, options?: { auto?: boolean; command?: string }): void {
-  const isAuto = options?.auto ?? false;
+  // Commander parent/child --auto conflict workaround: check process.argv directly
+  const isAuto = options?.auto ?? process.argv.includes('--auto');
   const bpDir = join(process.cwd(), 'bp');
   const cwd = process.cwd();
   const state = loadState(bpDir);
@@ -278,6 +298,24 @@ function continueChangeHandler(name: string, options?: { auto?: boolean; command
       '# bp continue — error',
       `error: ${result.error}`,
     ].join('\n'));
+    return;
+  }
+
+  // Non-auto mode (skip for loopback commands): stop at completion gate
+  if (!isAuto && !options?.command) {
+    const nextInfo = result.nextStepInfo;
+    console.log([
+      '# bp continue — step complete',
+      `step: ${result.currentStep}`,
+      `type: ${result.type}`,
+      `name: ${name}`,
+      result.nextCommand ? `next: ${result.nextStepInfo?.command ?? result.nextCommand}` : '',
+      result.slashCommand ? `slashCommand: ${result.slashCommand}` : '',
+      result.nextCommand ? `nextCommand: ${result.nextCommand}` : '',
+      'hint: Current step complete. Ask user whether to proceed to next step.',
+      `continue: bp continue change ${name}`,
+      'manual: bp state set-step <step>',
+    ].filter(Boolean).join('\n'));
     return;
   }
 
