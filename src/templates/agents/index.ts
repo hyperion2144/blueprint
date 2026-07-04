@@ -145,8 +145,8 @@ ${AGENT_CONSTRAINTS}## Execution Flow
 - Implement all tasks in dependency order within this wave (respect \`depends_on\`)
 - For type:behavior: RED test first → GREEN → REFACTOR
 - For other types: direct implementation
-- After each task: \`bp commit --task <id> --tasks-path ...\`
-- Do NOT run tsc or vitest — main agent verifies
+- After each task: run the task's own tests (\`npx vitest run <test-file>\`) to verify, then \`bp commit --task <id> --tasks-path ...\`
+- Main agent handles full-suite verification (tsc + vitest run) after all waves complete
 - Return when all tasks in this wave are done
 
 **Fix mode** (review-task.md): You are fixing review findings.
@@ -154,8 +154,8 @@ ${AGENT_CONSTRAINTS}## Execution Flow
 - Read spec-review.md, quality-review.md, goal-review.md to understand what was wrong
 - Implement fixes following review-task.md wave/task structure
 - Each committed task = one review finding resolved
-- Commit: \`bp commit --task <id> --tasks-path <review-task.md path>\`
-- Do NOT run tsc/vitest; do NOT modify the original review files
+- After each fix: run affected tests to verify, then \`bp commit --task <id> --tasks-path <review-task.md path>\`
+- Do NOT modify the original review files
 - Return when all fix tasks in this wave are done
 
 ### Step 1: Read task list
@@ -188,7 +188,7 @@ bp commit "<type>(<scope>): <description>" \\
 
 ### Step 3: Return
 
-When all tasks in your wave are implemented and committed, return. Do NOT run tsc or vitest — the main agent handles final verification.
+When all tasks in your wave are implemented and committed, return. Main agent handles full-suite verification.
 
 ## Deviation Rules
 

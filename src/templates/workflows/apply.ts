@@ -29,8 +29,7 @@ For each wave in the current round:
    - Read: design.md, tasks.md (this wave only), delta-specs referenced by spec_ref fields, bp/conventions/coding-standards.md
    - Implement tasks in dependency order (respect depends_on within wave)
    - For type:behavior: RED test first → GREEN → REFACTOR
-   - After each task: \`bp commit --task <id> --tasks-path ...\`
-   - Do NOT run tsc or vitest — main agent handles verification
+   - After each task: run \`npx vitest run <test-file>\` to verify, then \`bp commit --task <id> --tasks-path ...\`
    - Do NOT touch tasks outside this wave
    - Return when all tasks in this wave are implemented and committed
 3. For concurrent waves in the same round: run \`bp dispatch executor\` once per wave, dispatch ALL in one task tool call (parallel).
