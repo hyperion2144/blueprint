@@ -47,13 +47,13 @@ Check each report for BLOCKERs and MAJOR issues.
 
 ### Step 4: Handle findings (Normal mode only)
 
-Classify: BLOCKER / FLAG / NOTE.
+Classify findings: BLOCKER / FLAG / NOTE.
 
 **If NO BLOCKERs** → commit review files → advance to archive.
 
 **If BLOCKERs exist** → determine loopback type:
-- Code fix needed → route to reapply (fix-apply)
-- Design fix needed → route to replan (fix-plan)
+- Implementation bugs → **reapply** (fix-apply)
+- Architecture/design flaws → **replan** (fix-plan)
 
 ${REVIEW_LOOPBACK}
 
