@@ -3,7 +3,7 @@ import type { SkillTemplate, CommandTemplate } from '../types';
 const instructions = `## Input
 
 ### Parameters
-- **\`<change-name>\`** (required) — change name from \`bp state\` or user prompt.
+- **\`$ARGUMENTS\`** (required) — change name from \`bp state\` or user prompt.
 
 ### Prerequisites
 - \`bp/requirements.md\` must exist
@@ -29,7 +29,7 @@ Write to the change's \`proposal.md\`:
 
 ### Step 4: Commit
 \`\`\`bash
-bp commit "docs(proposal): fill <change-name>" --files "<proposal-path>" --scope docs --record
+bp commit "docs(proposal): fill [BP:CHANGE_NAME]" --files "<proposal-path>" --scope docs --record
 \`\`\`
 
 ### Step 5: Advance

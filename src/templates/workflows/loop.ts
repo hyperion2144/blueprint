@@ -4,7 +4,7 @@ const instructions = `## Input
 
 ### Parameters
 - **None needed** — reads state and loops through all steps
-- Optionally: \`<change-name>\` to loop on a specific change
+- Optionally: \`$ARGUMENTS\` to loop on a specific change
 
 ### Prerequisites
 - \`bp/state.md\` must exist

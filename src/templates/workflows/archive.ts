@@ -4,7 +4,7 @@ import type { SkillTemplate, CommandTemplate } from '../types.js';
 const instructions = `## Input
 
 ### Parameters
-- **\`<change-name>\`** (required) — the change to verify and archive. Provided by \`bp continue\` output or user.
+- **\`$ARGUMENTS\`** (required) — the change to verify and archive. Provided by \`bp continue\` output or user.
 
 ### Prerequisites
 - Review phase complete: spec-review.md, quality-review.md, goal-review.md
@@ -41,7 +41,7 @@ Run checks first — do NOT write verification.md yet:
 3. Do NOT archive — stop here
 
 ### Step 4: Execute archival
-Run \`bp archive <change-dir>\`. The CLI handles: delta-spec merge, directory move to archive/, state.md update.
+Run \`bp archive [BP:CHANGE_DIR]\`. The CLI handles: delta-spec merge, directory move to archive/, state.md update.
 verification.md is moved to archive together with the change.
 
 ### Step 5: Verify merge result
@@ -56,7 +56,7 @@ Run \`bp state\`, check the \`pending\` list.
 
 **If more pending changes remain:**
 \`\`\`bash
-bp commit "docs(archive): archive <change-name>" \\
+bp commit "docs(archive): archive [BP:CHANGE_NAME]" \\
   --files "bp/archive/<milestone>/<phase>/<change>/" \\
   --scope docs --record
 \`\`\`
@@ -65,7 +65,7 @@ bp commit "docs(archive): archive <change-name>" \\
 1. Write phase summary: \`bp template summary\` → \`bp/milestones/<mid>/phases/<pid>/summary.md\`
 2. Commit archive + summary:
 \`\`\`bash
-bp commit "docs(archive): archive <change-name>, phase complete" \\
+bp commit "docs(archive): archive [BP:CHANGE_NAME], phase complete" \\
   --files "bp/archive/<milestone>/<phase>/<change>/,bp/milestones/<mid>/phases/<pid>/summary.md" \\
   --scope docs --record
 \`\`\`

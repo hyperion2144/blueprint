@@ -4,7 +4,7 @@ import type { SkillTemplate, CommandTemplate } from '../types.js';
 const instructions = `## Input
 
 ### Parameters
-- **\\\`<change-name>\\\`** (required) — the change to verify. Provided by \\\`bp continue\\\` output or user.
+- **\`$ARGUMENTS\`** (required) — the change to verify. Provided by \`bp continue\` output or user.
 
 ### Prerequisites
 - Review phase complete: spec-review.md, quality-review.md, goal-review.md
@@ -33,7 +33,7 @@ Get template: \`bp template verification\`, fill with results.
 - \`gaps_found\` → route back to apply (reapply) or plan (replan)
 - \`human_needed\` → surface to user with specific questions
 
-${COMMIT_ADVANCE('docs', 'verification complete for <change-name>')}
+${COMMIT_ADVANCE('docs', 'verification complete for [BP:CHANGE_NAME]')}
 
 ## Guardrails
 - No sub-agent — run checks yourself and write verification.md

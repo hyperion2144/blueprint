@@ -5,7 +5,7 @@ import type { SkillTemplate, CommandTemplate } from '../types.js';
 const instructions = ORCHESTRATOR_RULE + `## Input
 
 ### Parameters
-- **\`<change-name>\`** (required) — the change to fix. Entered via \`bp continue change <name> --command reapply\` or after fix-plan.
+- **\`$ARGUMENTS\`** (required) — the change to fix. Entered via \`bp continue change <name> --command reapply\` or after fix-plan.
 
 ### Prerequisites
 - review-task.md exists with fix tasks organized by wave
@@ -27,9 +27,9 @@ ${WAVE_SPLIT}
 **Dispatch executor sub-agents in fix mode. Do NOT implement fixes yourself:**
 
 For each wave in the current round:
-1. Run \`bp dispatch executor --change <change-name>\` — outputs the sub-agent tool and its parameters.
+1. Run \`bp dispatch executor --change $1\` — outputs the sub-agent tool and its parameters.
 2. Call the tool it specifies. Set the sub-agent's prompt to **fix mode**:
-   - Change: <change-name> (path from resolve step)
+   - Change: $1 (path from resolve step)
    - Mode: FIX — this wave addresses review findings
    - Wave: <Wave N> — implement ALL fix tasks in this wave
    - Tasks: <full task list from review-task.md with ids, types, referenced review findings>
@@ -59,7 +59,7 @@ After all waves complete and all tests pass, verify:
 - Each BLOCKER finding is addressed by at least one committed fix
 - No regressions in unaffected code
 
-${COMMIT_ADVANCE('fix', 'fix-apply complete for <change-name>')}
+${COMMIT_ADVANCE('fix', 'fix-apply complete for [BP:CHANGE_NAME]')}
 
 ## Guardrails
 - Executor runs in FIX MODE — reads review files for context, implements fixes per review-task.md

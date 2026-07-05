@@ -5,7 +5,7 @@ import type { SkillTemplate, CommandTemplate } from '../types.js';
 const instructions = ORCHESTRATOR_RULE + `## Input
 
 ### Parameters
-- **\`<change-name>\`** (required) — the change to review. Provided by \`bp continue\` output or user.
+- **\`$ARGUMENTS\`** (required) — the change to review. Provided by \`bp continue\` output or user.
 - **\`--fix\`** (flag) — set when reviewing after fix-apply. Indicates this is a re-review of fixes.
 
 ### Prerequisites
@@ -37,7 +37,7 @@ ${CLASSIFY_CHANGE}${CHANGE_NAME_RESOLVE('applying', 'review')}
 
 **If FULL — dispatch reviewer sub-agent:**
 
-1. Run \`bp dispatch reviewer --change <change-name>\`
+1. Run \`bp dispatch reviewer --change $1\`
 2. Call the tool once. Prompt: run spec-review → quality-review → goal-review sequentially, then commit all three files.
 3. Output: spec-review.md, quality-review.md, goal-review.md in change directory.
 
@@ -74,7 +74,7 @@ After in-place update:
 - If any report is still FAIL or NEEDS_REVISION → write new review-task.md → loop back
 - If all three reports PASS → commit → advance to archive
 
-${COMMIT_ADVANCE('docs', 'triple review for <change-name>')}
+${COMMIT_ADVANCE('docs', 'triple review for [BP:CHANGE_NAME]')}
 
 ## Guardrails
 - FULL: dispatch 1 reviewer sub-agent (all three reviews sequentially)

@@ -97,7 +97,7 @@ Determine loopback type:
 **reapply (code fix)**: implementation bugs → fix code
   1. **Write \`review-task.md\`** (main agent does this):
      - Get template: \`bp template tasks --stdout\`
-     - Replace title: \`# Fix Tasks: <change-name>\`
+     - Replace title: \`# Fix Tasks: [BP:CHANGE_NAME]\`
      - Write one task per non-PASS finding from ALL THREE review files:
        - spec-review.md: FAIL constraints, N/A gaps with file:line
        - quality-review.md: BLOCKER, MAJOR, MINOR issues with file:line

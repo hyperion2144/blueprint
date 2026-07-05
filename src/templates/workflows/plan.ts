@@ -5,7 +5,7 @@ import type { SkillTemplate, CommandTemplate } from '../types.js';
 const instructions = ORCHESTRATOR_RULE + `## Input
 
 ### Parameters
-- **\`<change-name>\`** (required) — the change to plan. Provided by \`bp continue\` output or user.
+- **\`$ARGUMENTS\`** (required) — the change to plan. Provided by \`bp continue\` output or user.
 
 ### Prerequisites
 - Change \`proposal.md\` must be confirmed (not template)
@@ -31,7 +31,7 @@ ${RESOLVE_PATHS}${READ_CONTEXT}${CLASSIFY_CHANGE}${CHANGE_NAME_RESOLVE('planning
 
 **If FULL — you MUST dispatch the planner sub-agent. Do NOT write design/tasks/specs yourself:**
 
-1. Run \`bp dispatch planner --change <change-name>\` — outputs the sub-agent tool to call and its parameters.
+1. Run \`bp dispatch planner --change $1\` — outputs the sub-agent tool to call and its parameters.
 2. Call the tool it specifies. Set the sub-agent's prompt to:
    - Task: produce design.md, tasks.md (boxes UNCHECKED), delta-specs
    - Delta-specs go UNDER the change's \`specs/\` directory, organized by **business domain**:
@@ -54,7 +54,7 @@ Check produced files:
 - All must_haves from proposal.md covered
 - No contradictions with context.md
 
-${COMMIT_ADVANCE('docs', 'plan for <change-name>')}
+${COMMIT_ADVANCE('docs', 'plan for [BP:CHANGE_NAME]')}
 
 ## Guardrails
 - FULL: MUST dispatch planner sub-agent; do NOT write design/tasks/specs yourself

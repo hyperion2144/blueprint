@@ -5,7 +5,7 @@ import type { SkillTemplate, CommandTemplate } from '../types.js';
 const instructions = ORCHESTRATOR_RULE + `## Input
 
 ### Parameters
-- **\`<change-name>\`** (required) — the change to fix. Entered via \`bp continue change <name> --command replan\`.
+- **\`$ARGUMENTS\`** (required) — the change to fix. Entered via \`bp continue change <name> --command replan\`.
 
 ### Prerequisites
 - Review phase found design/architecture BLOCKERs
@@ -32,13 +32,13 @@ Extract all BLOCKER and FLAG findings with their file:line references.
 
 **If FULL** — dispatch planner:
 
-1. Run \`bp dispatch planner --change <change-name>\`
+1. Run \`bp dispatch planner --change $1\`
 2. Set the sub-agent prompt to **fix mode**:
    - Task: produce review-design.md + review-task.md from review findings
    - Read: spec-review.md, quality-review.md, goal-review.md
    - For each BLOCKER finding: describe what was wrong, why the new approach fixes it
-   - Write review-design.md (title: "# Fix Design: <change-name>")
-   - Write review-task.md (title: "# Fix Tasks: <change-name>")
+   - Write review-design.md (title: "# Fix Design: [BP:CHANGE_NAME]")
+   - Write review-task.md (title: "# Fix Tasks: [BP:CHANGE_NAME]")
      - Wave 1 = BLOCKER fixes, Wave 2 = FLAG fixes
      - Each task references the review finding it addresses
      - spec_ref points to review file + finding number
@@ -50,7 +50,7 @@ Extract all BLOCKER and FLAG findings with their file:line references.
 - review-task.md has executable tasks for each finding
 - No template placeholders remain
 
-${COMMIT_ADVANCE('docs', 'fix plan for <change-name>')}
+${COMMIT_ADVANCE('docs', 'fix plan for [BP:CHANGE_NAME]')}
 
 ## Guardrails
 - Planner runs in FIX MODE — output is review-design.md + review-task.md, not design.md/tasks.md

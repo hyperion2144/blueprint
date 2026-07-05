@@ -3,7 +3,7 @@ import type { SkillTemplate, CommandTemplate } from '../types';
 const instructions = `## Input
 
 ### Parameters
-- **\`<change-name>\`** (required) — kebab-case name for the new adhoc change.
+- **\`$ARGUMENTS\`** (required) — kebab-case name for the new adhoc change.
 - If no name is provided, ask the user: "What should we call this change? (kebab-case, e.g. fix-login-timeout)"
 
 ### Prerequisites

@@ -5,7 +5,7 @@ import type { SkillTemplate, CommandTemplate } from '../types.js';
 const instructions = ORCHESTRATOR_RULE + `## Input
 
 ### Parameters
-- **\`<change-name>\`** (required) — the change to implement. Provided by \`bp continue\` output or user.
+- **\`$ARGUMENTS\`** (required) — the change to implement. Provided by \`bp continue\` output or user.
 
 ### Prerequisites
 - Plan phase complete: \`design.md\`, \`tasks.md\`, delta-specs ready
@@ -21,9 +21,9 @@ ${WAVE_SPLIT}
 **If FULL — dispatch executor sub-agents. Do NOT implement type:behavior tasks yourself:**
 
 For each wave in the current round:
-1. Run \`bp dispatch executor --change <change-name>\` — outputs the sub-agent tool and its parameters.
+1. Run \`bp dispatch executor --change $1\` — outputs the sub-agent tool and its parameters.
 2. Call the tool it specifies. Set the sub-agent's prompt to:
-   - Change: <change-name> (path from resolve step)
+   - Change: $1 (path from resolve step)
    - Wave: <Wave N: theme> — implement ALL tasks in this wave
    - Tasks: <full task list for this wave with ids, types, descriptions, files, acceptance, RED tests>
    - Read: design.md, tasks.md (this wave only), delta-specs referenced by spec_ref fields, bp/conventions/coding-standards.md
@@ -50,12 +50,12 @@ If verify fails: route failing tests back to the wave that introduced them — r
 ### Step: Final implementation verify and change summary
 
 After ALL waves complete and all tests pass:
-- Run \`bp template change-summary --dir <change-dir>\`, fill with actual details.
+- Run \`bp template change-summary --dir [BP:CHANGE_DIR]\`, fill with actual details.
 - Ensure all tasks.md checkboxes are \`[x]\`
 
 **CRITICAL: Implementation verification is NOT review.** After this step, run \`bp continue\` — it will advance to the review step. NEVER skip review and go directly to archive.
 
-${COMMIT_ADVANCE('docs', 'apply complete for <change-name>')}
+${COMMIT_ADVANCE('docs', 'apply complete for [BP:CHANGE_NAME]')}
 
 ## Guardrails
 - Each wave = ONE sub-agent; dispatch concurrent waves in one task tool call
