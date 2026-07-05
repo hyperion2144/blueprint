@@ -6,7 +6,9 @@
 
 /** Change name + context resolution — replaces repeated paragraphs in plan/apply/review/verify/archive. */
 export const CHANGE_NAME_RESOLVE = (status: string, step: string): string => `### Resolve change
-If change name provided: use it. If not: run \`bp state\`, read \`pending\` array, filter by status \`${status}\`, ask user to pick. Then run \`bp context ${step}\` and read all listed files.
+If \`$ARGUMENTS\` is non-empty: use as change name directly.
+If empty: run \`bp state\`, read \`pending\` array, filter by status \`${status}\`, pick first or ask user.
+Then run \`bp context ${step}\` and read all listed files.
 
 `;
 
@@ -17,11 +19,10 @@ Read \`tasks.md\` task types:
 - **Full**: any type:behavior task
 
 `;
-
 /** Change path resolution — replaces path construction in plan/apply. */
 export const RESOLVE_PATHS = `### Resolve paths
 Run \`bp state\` for \`milestone\` and \`phase\`. Change directory:
-\`bp/milestones/<mid>/phases/<pid>/changes/<name>/\` (adhoc: \`bp/changes/<name>/\`)
+\`[BP:CHANGE_DIR]\`
 
 `;
 
@@ -30,8 +31,8 @@ export const READ_CONTEXT = `### Read context — MUST read before designing
 Read these to ensure alignment with prior decisions:
 - \`bp/requirements.md\` — project requirements, constraints, success criteria
 - \`bp/roadmap.md\` — this phase's goal, scope, and deliverables
-- \`bp/milestones/<mid>/phases/<pid>/research.md\` — implementation research
-- \`bp/milestones/<mid>/phases/<pid>/context.md\` — locked decisions from discuss phase
+- \`bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/research.md\` — implementation research
+- \`bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/context.md\` — locked decisions from discuss phase
 - Never design in isolation — design must trace back to requirements and research.
 
 `;

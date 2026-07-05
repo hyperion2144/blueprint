@@ -346,3 +346,38 @@ function generateHint(state: StateFile): string | null {
   }
   return null;
 }
+
+/** 展开模板变量 [BP:VAR] → state 中的实际值。在 bp continue 输出前调用。 */
+export function expandTemplateVars(
+  instructions: string,
+  state: StateFile,
+  isAuto: boolean,
+): string {
+  const milestone = state.project.current_milestone ?? '';
+  const phase = state.project.current_phase ?? '';
+  const ctx = state.active_context;
+
+  const isChange = ctx.type === 'change' || ctx.type === 'adhoc';
+  const changeName = isChange ? (ctx.ref?.split('/').pop() ?? '') : '';
+  const changeDir = isChange && milestone && phase
+    ? `bp/milestones/${milestone}/phases/${phase}/changes/${changeName}/`
+    : isChange ? `bp/changes/${changeName}/` : '';
+  const changeType = ctx.type === 'adhoc' ? 'adhoc' : 'phase';
+
+  const vars: Record<string, string> = {
+    '[BP:MILESTONE_ID]': milestone,
+    '[BP:PHASE_ID]': phase,
+    '[BP:CHANGE_NAME]': changeName,
+    '[BP:CHANGE_DIR]': changeDir,
+    '[BP:CHANGE_TYPE]': changeType,
+    '[BP:AUTO_FLAG]': isAuto ? '--auto' : '',
+    '[BP:MILESTONE_DIR]': milestone ? `bp/milestones/${milestone}/` : '',
+    '[BP:PHASE_DIR]': milestone && phase ? `bp/milestones/${milestone}/phases/${phase}/` : '',
+  };
+
+  let result = instructions;
+  for (const [key, value] of Object.entries(vars)) {
+    result = result.replaceAll(key, value);
+  }
+  return result;
+}

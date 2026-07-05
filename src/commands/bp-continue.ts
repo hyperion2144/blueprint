@@ -4,12 +4,12 @@
 
 import { join, basename } from 'node:path';
 import { existsSync, readdirSync } from 'node:fs';
-import { determineNextStep, determineChangeNextStep, STEP_TO_WORKFLOW } from '../core/continue.js';
+import { determineNextStep, determineChangeNextStep, STEP_TO_WORKFLOW, expandTemplateVars } from '../core/continue.js';
 import { loadState, updateState } from '../core/state-file.js';
 import { validateStepAdvance } from '../core/state-validator.js';
 import { getTransition } from '../core/state-machine.js';
 import type { ContinueResult } from '../core/continue.js';
-import type { ChangeStatus } from '../types/index.js';
+import type { ChangeStatus, StateFile } from '../types/index.js';
 import { WORKFLOW_REGISTRY, type WorkflowStep } from '../templates/workflows/registry.js';
 
 export function register(program: any): void {
@@ -28,10 +28,14 @@ export function register(program: any): void {
   cmd.action(continueHandler);
 }
 
-function formatContinueResult(result: ContinueResult, isAuto = false): void {
+
+function formatContinueResult(result: ContinueResult, isAuto = false, state?: StateFile): void {
   const stepKey = result.currentStep.replace(/^(phase-|change-)/, '');
   const wfStep = (STEP_TO_WORKFLOW as Record<string, WorkflowStep>)[stepKey];
-  const currentInstructions = (wfStep && WORKFLOW_REGISTRY[wfStep]) ? WORKFLOW_REGISTRY[wfStep].command().content : undefined;
+  const rawInstructions = (wfStep && WORKFLOW_REGISTRY[wfStep]) ? WORKFLOW_REGISTRY[wfStep].command().content : undefined;
+  const currentInstructions = rawInstructions && state
+    ? expandTemplateVars(rawInstructions, state, isAuto)
+    : rawInstructions;
 
   const instrLength = currentInstructions ? currentInstructions.length : 0;
   const lines: string[] = [];
@@ -172,7 +176,7 @@ function continueHandler(options?: { auto?: boolean }): void {
       }
       // 3. Output discuss instructions
       const finalResult = determineNextStep(bpDir);
-      formatContinueResult(finalResult, isAuto);
+      formatContinueResult(finalResult, isAuto, state);
       return;
     }
     // No more phases → suggest ship milestone
@@ -244,12 +248,12 @@ function continueHandler(options?: { auto?: boolean }): void {
         return;
       }
       const newResult = determineNextStep(bpDir);
-      formatContinueResult(newResult, isAuto);
+      formatContinueResult(newResult, isAuto, state);
       return;
     }
   }
 
-  formatContinueResult(result, isAuto);
+  formatContinueResult(result, isAuto, state);
 }
 
 function continueChangeHandler(name: string, options?: { auto?: boolean; command?: string }): void {
@@ -318,13 +322,13 @@ function continueChangeHandler(name: string, options?: { auto?: boolean; command
       // Recompute result after state advance
       const newResult = determineChangeNextStep(bpDir, name);
       if (!('error' in newResult)) {
-        formatContinueResult(newResult, isAuto);
+        formatContinueResult(newResult, isAuto, state);
         return;
       }
     }
   }
 
-  formatContinueResult(result, isAuto);
+  formatContinueResult(result, isAuto, state);
 }
 
 function findNextPhase(bpDir: string, milestoneId: string | null, currentPhase: string): string | null {
