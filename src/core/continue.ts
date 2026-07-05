@@ -347,32 +347,50 @@ function generateHint(state: StateFile): string | null {
   return null;
 }
 
-/** 展开模板变量 [BP:VAR] → state 中的实际值。在 bp continue 输出前调用。 */
+/** 展开模板变量 → state 中的实际值。在 bp continue 输出前调用。
+ *  \$1 根据 active_context.type 推断：change→changeName, phase→phaseId, milestone→milestoneId
+ */
 export function expandTemplateVars(
   instructions: string,
   state: StateFile,
+  step: string,
   isAuto: boolean,
 ): string {
   const milestone = state.project.current_milestone ?? '';
   const phase = state.project.current_phase ?? '';
   const ctx = state.active_context;
 
+  // \$1 推断——根据 context 类型取不同的标识符
   const isChange = ctx.type === 'change' || ctx.type === 'adhoc';
   const changeName = isChange ? (ctx.ref?.split('/').pop() ?? '') : '';
   const changeDir = isChange && milestone && phase
     ? `bp/milestones/${milestone}/phases/${phase}/changes/${changeName}/`
     : isChange ? `bp/changes/${changeName}/` : '';
-  const changeType = ctx.type === 'adhoc' ? 'adhoc' : 'phase';
+
+  let primaryId = '';
+  if (isChange) primaryId = changeName;
+  else if (ctx.type === 'phase') primaryId = phase;
+  else if (ctx.type === 'milestone') primaryId = milestone;
 
   const vars: Record<string, string> = {
     '[BP:MILESTONE_ID]': milestone,
     '[BP:PHASE_ID]': phase,
     '[BP:CHANGE_NAME]': changeName,
     '[BP:CHANGE_DIR]': changeDir,
-    '[BP:CHANGE_TYPE]': changeType,
+    '[BP:CHANGE_TYPE]': ctx.type === 'adhoc' ? 'adhoc' : 'phase',
     '[BP:AUTO_FLAG]': isAuto ? '--auto' : '',
     '[BP:MILESTONE_DIR]': milestone ? `bp/milestones/${milestone}/` : '',
     '[BP:PHASE_DIR]': milestone && phase ? `bp/milestones/${milestone}/phases/${phase}/` : '',
+    '$ARGUMENTS': primaryId,
+    '$1': primaryId,
+    '$2': '',
+    '$3': '',
+    '$4': '',
+    '$5': '',
+    '$6': '',
+    '$7': '',
+    '$8': '',
+    '$9': '',
   };
 
   let result = instructions;

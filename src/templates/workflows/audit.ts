@@ -68,13 +68,13 @@ After UAT complete, if Gaps section has issues:
    - \`severity\`
    - Suggested fix from \`missing\` field
 
-3. Run \`bp continue change <name>\` to route through plan → apply → review → verify → archive.
+3. Run \`bp continue change $1\` to route through plan → apply → review → verify → archive.
 
 **If no issues**: mark uat.md status → complete.
 
 ### Step 6: Advance
 - All tests pass → phase verified, no further action
-- Issues + adhoc changes created → \`bp continue change <name>\` to start fixing
+- Issues + adhoc changes created → \`bp continue change $1\` to start fixing
 - Partial (skipped/blocked) → uat.md status → partial; resume later
 
 ## Output

@@ -34,7 +34,7 @@ function formatContinueResult(result: ContinueResult, isAuto = false, state?: St
   const wfStep = (STEP_TO_WORKFLOW as Record<string, WorkflowStep>)[stepKey];
   const rawInstructions = (wfStep && WORKFLOW_REGISTRY[wfStep]) ? WORKFLOW_REGISTRY[wfStep].command().content : undefined;
   const currentInstructions = rawInstructions && state
-    ? expandTemplateVars(rawInstructions, state, isAuto)
+    ? expandTemplateVars(rawInstructions, state, stepKey, isAuto)
     : rawInstructions;
 
   const instrLength = currentInstructions ? currentInstructions.length : 0;

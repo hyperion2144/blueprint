@@ -32,7 +32,7 @@ Use the \`ask\` tool with two options:
 1. Write the PR body to a temp file
 2. Create PR via \`gh pr create\`:
    \`\`\`bash
-   gh pr create --title "Phase: <phase-name>" --body-file <tmp-file> --base main
+   gh pr create --title "Phase: [BP:PHASE_ID]" --body-file <tmp-file> --base main
    \`\`\`
 3. After PR created, mark changes as published in \`state.md\` archive history:
    - Append \`[published]\` to each entry in the \`## History\` section

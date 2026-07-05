@@ -16,11 +16,11 @@ If a name was provided: use it directly.
 If no name: ask the user for a descriptive kebab-case name.
 
 ### Step 2: Create the adhoc change
-Run \`bp change new <name>\` to create:
-- \`bp/changes/<name>/proposal.md\` — proposal template
-- \`bp/changes/<name>/design.md\` — design template
-- \`bp/changes/<name>/tasks.md\` — tasks template
-- \`bp/changes/<name>/specs/\` — delta-specs directory
+Run \`bp change new $1\` to create:
+- \`bp/changes/$1/proposal.md\` — proposal template
+- \`bp/changes/$1/design.md\` — design template
+- \`bp/changes/$1/tasks.md\` — tasks template
+- \`bp/changes/$1/specs/\` — delta-specs directory
 
 The change is registered in \`state.md\` under the adhoc list with status \`proposal\`.
 
@@ -28,10 +28,10 @@ The change is registered in \`state.md\` under the adhoc list with status \`prop
 Get the proposal template: \`bp template proposal\`. Fill \`proposal.md\` — describe the intent, scope, approach, and must-haves.
 
 ### Step 4: Advance
-Run \`bp continue change <name>\` to proceed through the standard change cycle.
+Run \`bp continue change $1\` to proceed through the standard change cycle.
 
 ## Output
-- \`bp/changes/<name>/\` — change directory with template files
+- \`bp/changes/$1/\` — change directory with template files
 - Updated \`state.md\` with new adhoc entry
 
 ## Guardrails

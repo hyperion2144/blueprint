@@ -55,7 +55,7 @@ After ALL waves complete and all tests pass:
 
 **CRITICAL: Implementation verification is NOT review.** After this step, run \`bp continue\` — it will advance to the review step. NEVER skip review and go directly to archive.
 
-${COMMIT_ADVANCE('docs', 'apply complete for [BP:CHANGE_NAME]')}
+${COMMIT_ADVANCE('docs', 'apply complete for $1')}
 
 ## Guardrails
 - Each wave = ONE sub-agent; dispatch concurrent waves in one task tool call

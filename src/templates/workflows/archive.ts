@@ -35,9 +35,9 @@ Run checks first — do NOT write verification.md yet:
 **Any check failed:**
 1. Write verification.md with \`gaps_found\`, listing what failed
 2. Route back using loopback commands:
-   - \`bp continue change <name> --command reapply\` — re-implement (goes back to apply)
-   - \`bp continue change <name> --command replan\` — re-design (goes back to plan)
-   - \`bp continue change <name> --command fix\` — quick fix (goes back to apply)
+   - \`bp continue change $1 --command reapply\` — re-implement (goes back to apply)
+   - \`bp continue change $1 --command replan\` — re-design (goes back to plan)
+   - \`bp continue change $1 --command fix\` — quick fix (goes back to apply)
 3. Do NOT archive — stop here
 
 ### Step 4: Execute archival
@@ -56,17 +56,17 @@ Run \`bp state\`, check the \`pending\` list.
 
 **If more pending changes remain:**
 \`\`\`bash
-bp commit "docs(archive): archive [BP:CHANGE_NAME]" \\
-  --files "bp/archive/<milestone>/<phase>/<change>/" \\
+bp commit "docs(archive): archive $1" \\
+  --files "bp/archive/[BP:MILESTONE_ID]/[BP:PHASE_ID]/$1/" \\
   --scope docs --record
 \`\`\`
 
 **If this was the LAST change in the phase:**
-1. Write phase summary: \`bp template summary\` → \`bp/milestones/<mid>/phases/<pid>/summary.md\`
+1. Write phase summary: \`bp template summary\` → \`bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/summary.md\`
 2. Commit archive + summary:
 \`\`\`bash
-bp commit "docs(archive): archive [BP:CHANGE_NAME], phase complete" \\
-  --files "bp/archive/<milestone>/<phase>/<change>/,bp/milestones/<mid>/phases/<pid>/summary.md" \\
+bp commit "docs(archive): archive $1, phase complete" \\
+  --files "bp/archive/[BP:MILESTONE_ID]/[BP:PHASE_ID]/$1/,bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/summary.md" \\
   --scope docs --record
 \`\`\`
 
