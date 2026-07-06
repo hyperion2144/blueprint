@@ -21,17 +21,22 @@ Continue to Step 2.
 
 1. Read \`bp/codebase/stack.md\` and \`bp/codebase/architecture.md\` (created by init CLI scan of the existing project).
 2. Dispatch sub-agents:
-   - Run \`bp dispatch codebase-mapper\` — analyze the entire codebase:
-     - Explore tech stack, architecture, structure, conventions, testing, integrations, concerns
-     - Output ALL 7 files to \`bp/codebase/\`: stack.md, architecture.md, structure.md, conventions.md, testing.md, integrations.md, concerns.md
-     - Each file MUST include concrete file paths, version numbers, code examples
+   - Run \`bp dispatch codebase-mapper\` — outputs the sub-agent tool and its parameters. Call it once. Prompt:
+     - Task: deep-analyze the entire codebase and produce all 7 documents
+     - Explore: tech stack, architecture, structure, conventions, testing, integrations, concerns
+     - Use the specific exploration commands listed in your agent prompt
+     - Output: ALL 7 files to \`bp/codebase/\`: stack.md, architecture.md, structure.md, conventions.md, testing.md, integrations.md, concerns.md
+     - Each file MUST include concrete file paths (\`src/services/user.ts\`), version numbers, code examples
+     - STRUCTURE.md MUST include "Where to Add New Code" section
      - Commit all 7 files when done
-   - Run \`bp dispatch spec-bootstrapper\` — extract behavioral contracts FROM THE CODE:
+   - Run \`bp dispatch spec-bootstrapper\` — outputs the sub-agent tool and its parameters. Call it once. Prompt:
+     - Task: extract behavioral contracts from the existing source code
      - Scan the source tree to discover domain boundaries (directories, modules, packages)
      - For each domain, create \`bp/specs/<domain>/spec.md\` with real extracted Requirements + Scenarios
-     - Domain names come from the code structure — NOT from any template
+     - Domain names come from the code structure — NOT from any pre-defined template
      - Read: bp/conventions/coding-standards.md
      - Commit all spec files when done
+
 ### Step 3: Advance
 Run \`bp continue\`. The output routes to grill (for requirements exploration).
 
