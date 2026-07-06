@@ -1,29 +1,27 @@
 /**
- * 生成器入口 — delegates to platform integrations.
+ * 生成器入口 — dispatches to PlatformProviders via PlatformRegistry.
+ *
+ * OMP is registered on first import. Additional providers (claude-code, agent)
+ * register themselves when their integration module is loaded.
  */
 
-import { generateAllCommands } from '../integrations/omp/commands.js';
-import { generateAllAgents } from '../integrations/omp/agents.js';
-import { generateAllSkills } from '../integrations/omp/skills.js';
-import { supportsCommands } from '../integrations/omp/index.js';
+import { PlatformRegistry } from '../core/platform-registry.js';
+import type { GeneratedFile } from '../core/platform-registry.js';
+import { registerOmpProvider } from '../integrations/omp/index.js';
 import type { ProjectConfig } from '../types/index.js';
 
-export interface GeneratedFile {
-  path: string;
-  content: string;
-}
+export type { GeneratedFile };
 
-/** 生成所有平台文件 — skip skills on platforms that support commands (redundant). */
+// Register OMP as the default provider on first import.
+registerOmpProvider();
+
+/** Generate all platform files — dispatches per config.platform. */
 export function generateAll(config: ProjectConfig): GeneratedFile[] {
-  const files: GeneratedFile[] = [
-    ...generateAllCommands(config),
-    ...generateAllAgents(config),
-  ];
-
-  // Skills duplicate command content on command-capable platforms.
-  if (!supportsCommands) {
-    files.push(...generateAllSkills(config));
+  const platforms = config.platform?.length ? config.platform : ['omp'];
+  const files: GeneratedFile[] = [];
+  for (const id of platforms) {
+    const provider = PlatformRegistry.resolve(id);
+    files.push(...provider.generate(config));
   }
-
   return files;
 }

@@ -7,8 +7,8 @@ import { mkdirSync, writeFileSync, rmSync, readdirSync, existsSync } from 'node:
 import { Command } from 'commander';
 import { loadConfig } from '../core/config.js';
 import { generateAll } from '../generators/index.js';
+import { PlatformRegistry } from '../core/platform-registry.js';
 import { writeGeneratedFiles } from './_utils.js';
-import { supportsCommands } from '../integrations/omp/index.js';
 
 const HOOK_TEMPLATE = `/**
  * bp OMP Hook — automated workflow state injection.
@@ -73,7 +73,9 @@ function cleanupStaleFiles(baseDir: string, generatedPaths: string[]): void {
 
   // Cleanup stale skills (entire dir if skills are skipped)
   const skillsDir = join(baseDir, '.omp', 'skills');
-  if (existsSync(skillsDir) && supportsCommands) {
+  const ompCaps = PlatformRegistry.has('omp') ? PlatformRegistry.resolve('omp').capabilities : undefined;
+  const ompSupportsCommands = ompCaps?.supportsCommands ?? true;
+  if (existsSync(skillsDir) && ompSupportsCommands) {
     rmSync(skillsDir, { recursive: true, force: true });
     console.log('  ✓ Removed stale: .omp/skills/ (platform supports commands)');
   }

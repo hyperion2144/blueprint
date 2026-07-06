@@ -88,3 +88,41 @@ describe('createDefaultRegistry / setPlatformRegistry', () => {
     expect(PlatformRegistry.resolve('custom')).toBe(p);
   });
 });
+
+describe('dispatch mode', () => {
+  beforeEach(() => {
+    setPlatformRegistry(null);
+  });
+
+
+  it('returns all registered providers for generateAll', () => {
+    PlatformRegistry.register('x', dummyProvider('x'));
+    PlatformRegistry.register('y', dummyProvider('y'));
+    const files = PlatformRegistry.generateAll({} as ProjectConfig);
+    expect(files).toHaveLength(2);
+    expect(files.map((f) => f.path).sort()).toEqual(['x/test.md', 'y/test.md']);
+  });
+
+  it('generateAll order matches registration order', () => {
+    PlatformRegistry.register('b', dummyProvider('b'));
+    PlatformRegistry.register('a', dummyProvider('a'));
+    const files = PlatformRegistry.generateAll({} as ProjectConfig);
+    expect(files.map((f) => f.path)).toEqual(['b/test.md', 'a/test.md']);
+  });
+
+  it('provider supportsCommands capability defaults to false', () => {
+    const p = dummyProvider('nocmd');
+    expect(p.capabilities?.supportsCommands).toBeUndefined();
+  });
+
+  it('provider with supportsCommands: true capability is recognized', () => {
+    const p: PlatformProvider = {
+      id: 'with-cmd',
+      name: 'With Commands',
+      capabilities: { supportsCommands: true },
+      generate: () => [],
+    };
+    PlatformRegistry.register('with-cmd', p);
+    expect(PlatformRegistry.resolve('with-cmd').capabilities?.supportsCommands).toBe(true);
+  });
+});

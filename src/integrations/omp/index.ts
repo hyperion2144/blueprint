@@ -7,8 +7,37 @@
  * 3. Register in src/integrations/index.ts
  */
 
+import type { PlatformProvider } from '../../core/platform-registry.js';
+import { PlatformRegistry } from '../../core/platform-registry.js';
+import { generateAllCommands } from './commands.js';
+import { generateAllAgents } from './agents.js';
+import { generateAllSkills } from './skills.js';
+
 /** OMP supports slash commands — skills are redundant (same content source). */
 export const supportsCommands = true;
+
+/** Register OMP as a PlatformProvider. Idempotent — no-op if already registered. */
+export function registerOmpProvider(): void {
+  if (PlatformRegistry.has('omp')) return;
+
+  const provider: PlatformProvider = {
+    id: 'omp',
+    name: 'OMP (Oh My Pi)',
+    capabilities: { supportsCommands: true },
+    generate(config) {
+      const files = [
+        ...generateAllCommands(config),
+        ...generateAllAgents(config),
+      ];
+      if (!supportsCommands) {
+        files.push(...generateAllSkills(config));
+      }
+      return files;
+    },
+  };
+
+  PlatformRegistry.register('omp', provider);
+}
 
 export { generateAllCommands, STEP_DEFS } from './commands.js';
 export { generateAllAgents, AGENT_DEFS } from './agents.js';
