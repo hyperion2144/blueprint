@@ -348,18 +348,26 @@ ${READONLY_CONSTRAINTS}
 
 ## Execution Flow
 
+### Step 0: Read output templates
+Get each template before writing — do NOT invent your own format:
+\`\`\`bash
+bp template codebase-stack --stdout
+bp template codebase-architecture --stdout
+bp template codebase-structure --stdout
+bp template codebase-conventions --stdout
+bp template codebase-testing --stdout
+bp template codebase-integrations --stdout
+bp template codebase-concerns --stdout
+\`\`\`
+You MUST read all 7 templates before writing any file. Fill in EVERY section — replace \`{{placeholder}}\` with actual findings. If something is not found, write "Not detected" or "Not applicable".
+
 ### Step 1: Explore tech stack
 
 \`\`\`bash
-# Package manifests
 cat package.json 2>/dev/null | head -80
 cat pyproject.toml Cargo.toml go.mod 2>/dev/null | head -30
-
-# Runtime config
 cat tsconfig.json .nvmrc .python-version 2>/dev/null
 ls .env* 2>/dev/null  # Note existence only, never read contents
-
-# Key dependencies
 grep -E '"dependencies"' -A 30 package.json 2>/dev/null
 grep -E '"devDependencies"' -A 20 package.json 2>/dev/null
 \`\`\`
@@ -369,16 +377,9 @@ Write \`bp/codebase/stack.md\` and \`bp/codebase/integrations.md\`.
 ### Step 2: Explore architecture
 
 \`\`\`bash
-# Directory layout
 find . -type d -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/dist/*' | head -60
-
-# Entry points
 ls src/index.* src/main.* src/app.* src/server.* 2>/dev/null
-
-# Import graph (top 80 imports)
 grep -rh "^import" src/ --include="*.ts" --include="*.tsx" 2>/dev/null | sort | uniq -c | sort -rn | head -80
-
-# Key source files (top 20 by size)
 find src/ -name "*.ts" -o -name "*.tsx" 2>/dev/null | xargs wc -l 2>/dev/null | sort -rn | head -20
 \`\`\`
 
@@ -387,14 +388,9 @@ Read 3-5 key files identified above. Write \`bp/codebase/architecture.md\` and \
 ### Step 3: Explore conventions and testing
 
 \`\`\`bash
-# Lint/format config
 cat .eslintrc* .prettierrc* eslint.config.* 2>/dev/null | head -30
-
-# Test files
 find . -name "*.test.*" -o -name "*.spec.*" 2>/dev/null | head -20
 cat vitest.config.* jest.config.* 2>/dev/null
-
-# Sample source for convention analysis
 ls src/**/*.ts 2>/dev/null | head -8
 \`\`\`
 
@@ -403,18 +399,11 @@ Read 2-3 sample source files and 2-3 test files. Write \`bp/codebase/conventions
 ### Step 4: Explore concerns
 
 \`\`\`bash
-# TODO/FIXME/HACK
 grep -rn "TODO\\|FIXME\\|HACK\\|XXX" src/ --include="*.ts" --include="*.tsx" 2>/dev/null | head -40
-
-# Large files (>200 lines)
 find src/ -name "*.ts" -o -name "*.tsx" 2>/dev/null | xargs wc -l 2>/dev/null | awk '$1>200' | sort -rn | head -15
-
-# Stub returns (potential incomplete implementations)
 grep -rn "return null" src/ --include="*.ts" 2>/dev/null | head -20
 grep -rn "return \\[\\]" src/ --include="*.ts" 2>/dev/null | head -15
-
-# any usage (type safety gaps)
-grep -rn ": any" src/ --include="*.ts" 2>/dev/null | head -20
+grep -rn ": any" src/ --include="*.ts" --include="*.tsx" 2>/dev/null | head -20
 \`\`\`
 
 Write \`bp/codebase/concerns.md\`.
@@ -434,14 +423,14 @@ bp commit "docs(codebase): codebase mapping analysis" \\
 
 ## Output
 
-Write all 7 files to \`bp/codebase/\` using the Write tool (not bash heredoc):
-- \`stack.md\` — languages, runtime, frameworks, dependencies, config
-- \`architecture.md\` — pattern, layers, data flow, abstractions, entry points, error handling
-- \`structure.md\` — directory layout, key files, naming conventions, where to add new code
-- \`conventions.md\` — code style, naming, imports, error handling, async patterns
-- \`testing.md\` — framework, structure, patterns, coverage, how to run
-- \`integrations.md\` — APIs, databases, auth, webhooks, third-party libs
-- \`concerns.md\` — tech debt, bugs, security, perf, fragile areas, test gaps
+Write all 7 files to \`bp/codebase/\` using the Write tool. Read templates first (Step 0). Fill every section.
+- \`stack.md\` — languages, runtime env, frameworks, dependencies, config, platform requirements
+- \`architecture.md\` — diagram, components, layers, data flow, abstractions, entry points, constraints, anti-patterns
+- \`structure.md\` — directory tree, key files per category, naming, where to add new code
+- \`conventions.md\` — naming, code style, imports, error handling, function design, module design, comments
+- \`testing.md\` — framework, file organization, structure, mocking, fixtures, coverage, test types, common patterns
+- \`integrations.md\` — APIs, storage, auth, webhooks, CI/CD, monitoring, env vars, secrets location
+- \`concerns.md\` — tech debt, known bugs, security, performance, fragile areas, scaling limits, dependency risks, test gaps
 
 Each file MUST include:
 - Date of analysis

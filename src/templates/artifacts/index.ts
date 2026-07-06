@@ -691,9 +691,40 @@ export const CODEBASE_STACK_TEMPLATE = `# Technology Stack
 
 *Stack analysis: {{date}}*`;
 
-export const CODEBASE_ARCHITECTURE_TEMPLATE = `# Architecture
+export const CODEBASE_ARCHITECTURE_TEMPLATE = `<!-- refreshed: {{date}} -->
+# Architecture
 
 **Analysis Date:** {{date}}
+
+## System Overview
+
+\`\`\`text
+┌─────────────────────────────────────────────────────────────┐
+│                      {{top-layer-name}}                      │
+├──────────────────┬──────────────────┬───────────────────────┤
+│   {{component-a}}   │   {{component-b}}   │    {{component-c}}     │
+│  \`{{path-to-a}}\`   │  \`{{path-to-b}}\`   │   \`{{path-to-c}}\`    │
+└────────┬─────────┴────────┬─────────┴──────────┬────────────┘
+         │                  │                     │
+         ▼                  ▼                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    {{middle-layer-name}}                     │
+│         \`{{path-to-layer}}\`                                  │
+└─────────────────────────────────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────────────────────────────┐
+│  {{store-or-output}}                                         │
+│  \`{{path-to-store}}\`                                        │
+└─────────────────────────────────────────────────────────────┘
+\`\`\`
+
+## Component Responsibilities
+
+| Component | Responsibility | File |
+|-----------|----------------|------|
+| {{name}} | {{responsibility}} | \`{{path}}\` |
+| {{name}} | {{responsibility}} | \`{{path}}\` |
 
 ## Pattern Overview
 
@@ -708,59 +739,71 @@ export const CODEBASE_ARCHITECTURE_TEMPLATE = `# Architecture
 
 **{{layer-name}}:**
 - Purpose: {{what-this-layer-does}}
-- Location: {{location}}
+- Location: \`{{location}}\`
 - Depends on: {{depends-on}}
 - Used by: {{used-by}}
 
 **{{layer-name-2}}:**
 - Purpose: {{what-this-layer-does}}
-- Location: {{location}}
+- Location: \`{{location}}\`
 - Depends on: {{depends-on}}
 - Used by: {{used-by}}
 
 ## Data Flow
 
-**{{flow-name}}:**
+### Primary Request Path
+1. {{step-1}} (\`{{file:line}}\`)
+2. {{step-2}} (\`{{file:line}}\`)
+3. {{step-3}} (\`{{file:line}}\`)
+
+### {{secondary-flow-name}}
 1. {{step-1}}
 2. {{step-2}}
 3. {{step-3}}
-4. {{output}}
 
-**State Management:**
-- {{state-approach}}
+**State Management:** {{state-approach}}
 
 ## Key Abstractions
 
 **{{abstraction-name}}:**
 - Purpose: {{what-it-represents}}
-- Examples: {{examples}}
-- Pattern: {{pattern}}
+- Examples: \`{{file-path-examples}}\`
+- Pattern: {{pattern-used}}
 
 ## Entry Points
 
 **{{entry-name}}:**
-- Location: {{location}}
+- Location: \`{{location}}\`
 - Triggers: {{what-invokes-it}}
 - Responsibilities: {{what-it-does}}
+
+## Architectural Constraints
+
+- **Threading:** {{threading-model}}
+- **Global state:** {{global-state-description}}
+- **Circular imports:** {{circular-imports}}
+
+## Anti-Patterns
+
+### {{anti-pattern-name}}
+**What happens:** {{description}}
+**Why it's wrong:** {{reason}}
+**Do this instead:** {{correct-pattern}} (\`{{file-reference}}\`)
 
 ## Error Handling
 
 **Strategy:** {{error-strategy}}
-
 **Patterns:**
 - {{pattern-1}}
 - {{pattern-2}}
 
 ## Cross-Cutting Concerns
 
-**Logging:**
-- {{logging-approach}}
-
-**Validation:**
-- {{validation-approach}}
-
-**Authentication:**
-- {{auth-approach}}
+| Concern | Approach | Files |
+|---------|----------|-------|
+| Logging | {{logging-approach}} | \`{{path}}\` |
+| Validation | {{validation-approach}} | \`{{path}}\` |
+| Auth | {{auth-approach}} | \`{{path}}\` |
 
 ---
 
@@ -1001,53 +1044,95 @@ export const CODEBASE_STRUCTURE_TEMPLATE = `# Codebase Structure
 
 *Structure analysis: {{date}}*`;
 
-export const CODEBASE_TESTING_TEMPLATE = `# Testing
+export const CODEBASE_TESTING_TEMPLATE = `# Testing Patterns
 
 **Analysis Date:** {{date}}
 
-## Framework & Setup
+## Test Framework
 
-- Runner: {{test-runner}} {{version}}
-- Assertion library: {{assertion-lib}}
-- Mocking: {{mock-lib}}
-- Config: \`{{config-file}}\`
+**Runner:** {{test-runner}} {{version}}
+**Assertion Library:** {{assertion-lib}}
+**Mocking:** {{mock-lib}}
+**Config:** \`{{config-file}}\`
+
+**Run Commands:**
+\`\`\`bash
+{{run-command}}              # Run all tests
+{{watch-command}}            # Watch mode
+{{coverage-command}}         # Coverage
+\`\`\`
+
+## Test File Organization
+
+**Location:** {{test-location}} (co-located with source or separate \`tests/\`)
+**Naming:** {{test-naming}} (e.g. \`*.test.ts\`)
 
 ## Test Structure
 
-- Location: {{test-location}}
-- Naming: {{test-naming}}
-- Organization: {{test-organization}}
-
-## Test Patterns
-
-**Unit Tests:**
-- Pattern: {{unit-pattern}}
-- Example file: \`{{example-file}}\`
-\`\`\`
-{{unit-example}}
+**Suite Organization:**
+\`\`\`{{language}}
+{{test-suite-example}}
 \`\`\`
 
-**Integration Tests:**
-- Pattern: {{integration-pattern}}
-- Example file: \`{{example-file}}\`
+**Patterns:**
+- Setup: {{setup-pattern}}
+- Teardown: {{teardown-pattern}}
+- Assertion: {{assertion-pattern}}
 
-**Mocking:**
-- Approach: {{mock-approach}}
-- Example: {{mock-example}}
+## Mocking
+
+**Framework:** {{mock-lib}}
+
+**Patterns:**
+\`\`\`{{language}}
+{{mock-example}}
+\`\`\`
+
+**What to Mock:**
+- {{mock-guidelines}}
+
+**What NOT to Mock:**
+- {{no-mock-guidelines}}
+
+## Fixtures and Factories
+
+**Test Data:**
+\`\`\`{{language}}
+{{fixture-example}}
+\`\`\`
+
+**Location:** {{fixture-location}}
 
 ## Coverage
 
-- Current: {{coverage}}
-- Targets: {{targets}}
-- Gaps: {{coverage-gaps}}
+**Requirements:** {{coverage-target}} (or "None enforced")
+**Current:** {{coverage}}
+**View Coverage:** \`{{coverage-command}}\`
 
-## Running Tests
+## Test Types
 
-\`\`\`bash
-{{run-command}}\`\`\`
+**Unit Tests:**
+- Scope: {{unit-scope}}
+- Example: \`{{unit-example-file}}\`
 
-- Watch mode: \`{{watch-command}}\`
-- CI: {{ci-command}}
+**Integration Tests:**
+- Scope: {{integration-scope}}
+- Example: \`{{integration-example-file}}\`
+
+**E2E Tests:**
+- Framework: {{e2e-framework}} (or "Not used")
+
+## Common Patterns
+
+**Async Testing:**
+\`\`\`{{language}}
+{{async-pattern}}
+\`\`\`
+
+**Error Testing:**
+\`\`\`{{language}}
+{{error-pattern}}
+\`\`\`
 
 ---
 
@@ -1090,17 +1175,26 @@ export const CODEBASE_INTEGRATIONS_TEMPLATE = `# External Integrations
 
 **Outgoing:**
 - {{target}} — {{purpose}}
+## Monitoring & Observability
 
-## Email & Notifications
+**Error Tracking:** {{error-tracking}} (or "None")
+**Logging:** {{logging-approach}}
+**Metrics:** {{metrics-approach}} (or "None")
 
-- Provider: {{provider}}
-- Templates: \`{{path}}\`
+## CI/CD & Deployment
+
+**Hosting:** {{hosting-platform}}
+**CI Pipeline:** {{ci-service}} (or "None")
+**Deploy Command:** \`{{deploy-command}}\`
+
+## Environment Configuration
+
+**Required env vars:** {{env-var-list}}
+**Secrets location:** {{secrets-location}}
 
 ## Third-Party Libraries
 
-| Library | Version | Purpose | Risk if Removed |
-|---------|---------|---------|----------------|
-| {{lib}} | {{version}} | {{purpose}} | {{risk}} |
+## Webhooks & Events
 
 ---
 

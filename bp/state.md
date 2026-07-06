@@ -1,13 +1,13 @@
 ---
 project:
   name: blueprint
-  status: change-verifying
+  status: grill
   current_milestone: m2-claude-code
   current_phase: null
 active_context:
-  type: change
+  type: milestone
   ref: null
-  step: archiving
+  step: grill
 changes:
   - name: scaffold-project
     status: archived
@@ -244,3 +244,7 @@ planned → applying → applied → reviewing → verifying → archived
 ---
 
 *state.md 由 blueprint 自动管理。不要手动编辑 frontmatter 的缩进和层级结构。*
+
+
+## History
+[2026-07-06] Archived milestone m1-core
