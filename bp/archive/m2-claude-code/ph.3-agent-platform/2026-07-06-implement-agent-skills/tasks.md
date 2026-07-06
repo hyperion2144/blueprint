@@ -7,7 +7,7 @@ Same pattern as claude-code skills but:
 
 # Tasks: implement-agent-skills
 
-- [ ] task-agent-skills: [type:scaffolding] Create agent skills generator with [BP:xxx] params
+- [x] task-agent-skills: [type:scaffolding] Create agent skills generator with [BP:xxx] params <!-- commit: a5a960a -->
 - [ ] task-agent-skills-test: [type:scaffolding] Add golden-file test
 
 ## Verification
