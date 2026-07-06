@@ -1,3 +1,23 @@
+## m2-claude-code [CURRENT]
+
+### 概述
+
+为 blueprint 增加 Claude Code 平台支持和通用 `.agent/` 格式支持。当前仅支持 OMP 平台。
+
+**产出目标**:
+- `.claude/commands/` + `.claude/agents/` — Claude Code 平台文件生成
+- `.agent/agents/xxx.md` + `.agent/skills/xxx.md` — 通用 agent/skill 格式
+
+### 核心决策
+
+1. **平台共存策略**: 项目级平台选择 — 每个项目在 project.yml 中配置使用 OMP 或 Claude Code，`blueprint update` 只生成选定平台的文件
+2. **Agent 定义格式**: 通用定义 + 平台特定模板 — agent/command 在 blueprint 内部通用表示，渲染到各平台时用不同模板适配 frontmatter/格式差异
+3. **范围边界**: 只增加 Claude Code 和 `.agent/` 文件生成能力，不包括 OMP→Claude Code 迁移文档或指引
+4. **`.agent/` 格式**: 使用 **skill** 格式而非 command 格式 — `.agent/skills/` 而非 `.agent/commands/`。参数占位符使用 `[BP:xxx]`（如 `[BP:MILESTONE_ID]`、`[BP:CHANGE_NAME]`），而非 `$1`/`$ARGUMENTS`。映射由 `expandTemplateVars()` 处理
+5. **平台关系**: 三个独立平台 — `omp`（已有）、`claude-code`（新增）、`agent`（新增）。project.yml 的 `platform: [...]` 数组支持多选，`blueprint update` 遍历选中的每个平台生成对应文件
+
+
+
 # Requirements
 
 ## 概述
