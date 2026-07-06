@@ -6,7 +6,8 @@ version: 1
 # 多平台配置 — CLI 为每个平台生成对应的 slash commands + skills + agent 定义
 platform:
   - omp
-  # - claude-code  # Phase 2 支持
+  - claude-code
+  - agent
 
 # 工作流严格度 — 三档 profile 聚合常见配置组合
 # lite:     无 plan-checker、单 review、TDD 可选、change 串行
