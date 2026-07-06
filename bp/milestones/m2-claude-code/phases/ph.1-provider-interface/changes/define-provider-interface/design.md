@@ -6,9 +6,12 @@
 
 ## Context & Goals
 
-<!-- Context/constraints + core design goals (≤3). Must align with proposal Intent and Must-haves. -->
+**Context**: blueprint 需要支持多平台文件生成。当前 `src/generators/index.ts` 硬编码调用 OMP 生成器。此 change 定义通用的 `PlatformProvider` 接口和 `PlatformRegistry`，作为后续 provider 扩展的基础。
 
-{{background-and-goals}}
+**Goals**:
+1. 定义 `PlatformProvider` 接口 — 统一的平台生成器合约
+2. 实现 `PlatformRegistry` — 注册/解析/遍历 provider
+3. 所有接口/类型可独立测试，不依赖任何实际 provider
 
 ---
 
@@ -16,64 +19,93 @@
 
 ### Architecture Diagram
 
-<!-- ASCII art showing module relationships. Annotate: [NEW], [MODIFIED], [EXISTING]. -->
-
 ```text
-{{architecture-diagram}}
+src/core/platform-registry.ts [NEW]
+  PlatformProvider (interface)       ←  provider 实现方实现
+  PlatformRegistry (class)           ←  singleton, Map 存储
+  createDefaultRegistry()            ←  factory
+  setPlatformRegistry()              ←  test helper
+
+src/generators/index.ts              ← 不变（下个 change 改）
+src/integrations/omp/index.ts        ← 不变
 ```
 
 ### Core Data Structures
 
-<!-- Key types/interfaces introduced or modified. TypeScript interface format, brief description per type. -->
+```typescript
+interface PlatformProvider {
+  readonly id: string;
+  readonly name: string;
+  readonly capabilities?: {
+    supportsCommands?: boolean;  // default: false
+  };
+  generate(config: ProjectConfig): GeneratedFile[];
+}
 
-{{data-structures}}
+interface GeneratedFile {  // 已有，在 types 中
+  path: string;
+  content: string;
+}
+```
 
 ### Data Flow
 
-<!-- Step-by-step data flow from trigger to effect. -->
-
-{{data-flow}}
+```text
+registry = createDefaultRegistry()
+  → registry.register('omp', ompProvider)
+  → registry.resolve('omp')  → ompProvider
+  → registry.generateAll(config)  → [ompProvider.generate(config), ...]
+```
 
 ### Interface Design
 
-<!-- Public API signatures: function/method names, params (name+type+desc), return types, sync/async. -->
-
-{{api-signatures}}
+```typescript
+// PlatformRegistry
+register(id: string, provider: PlatformProvider): void       // throws on duplicate
+resolve(id: string): PlatformProvider                          // throws on unknown
+list(): PlatformProvider[]
+has(id: string): boolean
+generateAll(config: ProjectConfig): GeneratedFile[]           // 顺序遍历
+```
 
 ---
 
 ## File Manifest
 
-<!-- All files to create or modify. -->
-
 | File Path | Description | Action |
 |-----------|-------------|--------|
-| `{{file-path-1}}` | {{description}} | Create |
-| `{{file-path-2}}` | {{description}} | Modify |
+| `src/core/platform-registry.ts` | PlatformProvider 接口 + PlatformRegistry 实现 | Create |
+| `src/core/platform-registry.test.ts` | Registry 单元测试 | Create |
+| `src/types/index.ts` | 重导出 GeneratedFile（已有，验证导出路径） | Verify |
 
 ---
 
 ## Test Strategy
 
 ### Unit Tests
-- <!-- Which modules need unit tests? What needs mocking? -->
+- `platform-registry.test.ts`:
+  - register + resolve 正常路径
+  - register 重复 id 抛错
+  - resolve 未知 id 抛错
+  - has() 存在/不存在
+  - list() 返回所有
+  - generateAll() 遍历所有
+  - capabilities 默认值
 
 ### Integration Tests
-- <!-- Which flows need integration tests? What fixtures needed? -->
+- 无（纯类型/数据结构，不涉及文件系统或外部依赖）
 
 ### TDD Tasks
-- <!-- List type:behavior tasks requiring RED→GREEN→REFACTOR -->
+- 无 type:behavior 任务（纯 refactor/scaffolding）
 
 ---
 
 ## Alternatives
 
-<!-- Evaluated but rejected approaches, with rationale. -->
-
 | Approach | Pros | Cons | Rejection Reason |
 |----------|------|------|-----------------|
-| {{alt-name-1}} | {{pros}} | {{cons}} | {{reason}} |
-| {{alt-name-2}} | {{pros}} | {{cons}} | {{reason}} |
+| 抽象类 AbstractProvider | 强制子类实现 | 限制了未来平台的灵活性 | 接口更轻量 |
+| DI 容器 | 依赖注入清晰 | 引入外部依赖 | Map-based registry 足够 |
 
 ---
 
@@ -81,5 +113,5 @@
 
 | Risk | Probability | Impact | Mitigation |
 |------|------------|--------|-----------|
-| {{risk-1}} | {{probability}} | {{impact}} | {{mitigation}} |
-| {{risk-2}} | {{probability}} | {{impact}} | {{mitigation}} |
+| 接口设计不满足未来平台需求 | Low | Medium | 保持接口最小，额外能力通过 `capabilities` 扩展 |
+| singleton 测试间状态泄漏 | Medium | Low | `setPlatformRegistry()` 允许测试重置 |
