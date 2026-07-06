@@ -157,8 +157,8 @@ export async function runBrownfieldInit(
   writeFileSync(join(codebaseDir, 'stack.md'), report.stack, 'utf-8');
   writeFileSync(join(codebaseDir, 'architecture.md'), report.structure, 'utf-8');
 
-  // bootstrap specs using tech stack template
-  const domains = bootstrapSpecs(rootDir, bpDir, stack);
+  // Note: specs are NOT bootstrapped here — brownfield projects get specs
+  // from code scanning via bp-spec-bootstrapper sub-agent
 
-  return domains;
+  return stack.domains.map(d => d.name);
 }
