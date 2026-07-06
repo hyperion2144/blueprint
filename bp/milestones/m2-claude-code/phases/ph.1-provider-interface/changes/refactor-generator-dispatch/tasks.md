@@ -1,6 +1,6 @@
 # Tasks: refactor-generator-dispatch
 
-> This document breaks the design into executable tasks grouped by wave. Each task includes description, files, acceptance criteria, optional depends_on and spec_ref. type:behavior tasks must include RED test descriptions (GIVEN/WHEN/THEN format).
+> Lightweight change — all tasks type:refactor, no type:behavior.
 
 ---
 
@@ -8,64 +8,36 @@
 
 | type | Meaning | TDD Protocol |
 |------|---------|-------------|
-| `behavior` | Business behavior — implement a concrete, observable/assertable feature | **RED→GREEN→REFACTOR** (mandatory: test first → implement → refactor) |
-| `config` | Configuration — env vars, CI/CD, lint, tsconfig, etc. | Direct implementation, no TDD |
 | `refactor` | Refactoring — improve internal structure without changing behavior | Verify tests pass → refactor → verify again |
-| `docs` | Documentation — README, API docs, comments | Direct implementation, no TDD |
-| `scaffolding` | Skeleton code — new module shells, directory structure, templates | Direct implementation, no TDD |
-
-> **Rule**: If a task's core output is "a behavior" (user-perceptible or test-assertable), use `behavior`. If it's just "file exists" or "config takes effect", use `config`/`scaffolding`.
 
 ---
 
-## Wave 1: {{wave-1-theme}}
+## Wave 1: OMP Provider Registration
 
-<!--
-A wave is an independently verifiable unit of work. Tasks within a wave may have dependencies but the wave is self-contained.
-Each wave completion enables verification (tsc + test pass).
--->
+- [x] task-register-omp: [type:refactor] Add registerOmpProvider() to OMP integration <!-- commit: 40d3df1 -->
+  - **description**: In `src/integrations/omp/index.ts`, add `registerOmpProvider()` that creates a `PlatformProvider` wrapping `generateAllCommands`, `generateAllAgents`, `generateAllSkills` and registers it as `'omp'` via `PlatformRegistry.register()`. The provider includes `capabilities: { supportsCommands: true }`. Keep the existing `supportsCommands` export for backward compatibility.
+  - **files**: src/integrations/omp/index.ts
+  - **acceptance**: After calling registerOmpProvider(), PlatformRegistry.resolve('omp') returns the OMP provider
 
-- [ ] task-{{id-1}}: [type:{{type}}] {{title}}
-  - **description**: {{What to do, approach, files/APIs to reference}}
-  - **files**: {{comma-separated file paths}}
-  - **acceptance**: {{observable, assertable acceptance criteria}}
-  - **depends_on**: [task-{{id-x}}] <!-- optional: predecessor -->
-  - **spec_ref**: specs/{{domain}}/spec.md <!-- optional: linked spec -->
-  {{if behavior}}
-  - ***RED test***:
-    ```
-    GIVEN {{precondition}}
-    WHEN {{trigger action}}
-    THEN {{expected result}}
-    ```
-  {{/if}}
+- [x] task-refactor-dispatch: [type:refactor] Refactor generators/index.ts to dispatch mode <!-- commit: 40d3df1 -->
+  - **description**: Call `registerOmpProvider()` at module scope in `src/generators/index.ts`. Change `generateAll(config)` to: read `config.platform` (default `['omp']`), iterate, resolve each provider via `PlatformRegistry.resolve(id)`, call `provider.generate(config)`, return flattened. Keep `GeneratedFile` export.
+  - **files**: src/generators/index.ts
+  - **acceptance**: `generateAll(config)` with `config.platform: ['omp']` produces identical output to pre-refactor
 
----
+- [x] task-fix-bp-update: [type:refactor] Update bp-update.ts to use OMP provider capability <!-- commit: 40d3df1 -->
+  - **description**: In `src/commands/bp-update.ts`, change `import { supportsCommands }` → get it from `PlatformRegistry.resolve('omp').capabilities?.supportsCommands ?? true`. Remove the direct import from `../integrations/omp/index.js`.
+  - **files**: src/commands/bp-update.ts
+  - **acceptance**: `bp update` still works, stale skills cleanup behavior unchanged
 
-## Wave 2: {{wave-2-theme}}
-
-- [ ] task-{{id-3}}: [type:{{type}}] {{title}}
-  - **description**: {{What to do}}
-  - **files**: {{file paths}}
-  - **acceptance**: {{acceptance criteria}}
-  - **depends_on**: [task-{{id-1}}] <!-- optional -->
-  {{if behavior}}
-  - ***RED test***:
-    ```
-    GIVEN {{precondition}}
-    WHEN {{trigger action}}
-    THEN {{expected result}}
-    ```
-  {{/if}}
+- [x] task-test-dispatch: [type:refactor] Add dispatch integration tests <!-- commit: 40d3df1 -->
+  - **description**: In `src/core/platform-registry.test.ts`, add tests: register OMP mock provider, call generateAll with platform list, verify correct provider dispatch, verify empty platform defaults to omp.
+  - **files**: src/core/platform-registry.test.ts
+  - **acceptance**: All existing + new tests pass
 
 ---
 
 ## Implementation Verification
 
-> **This is NOT the review step.** These checks confirm the code is correct and tests pass. After passing, run `bp continue` to advance to the review/archive workflow step.
-
-- [ ] `tsc --noEmit` passes (or equivalent type check)
-- [ ] `vitest run` all test suites pass
-- [ ] Each wave's acceptance criteria confirmed (manual or automated)
-- [ ] New code passes lint check
-- [ ] No new type errors or warnings introduced
+- [x] `tsc --noEmit` passes (ignoring pre-existing omp/commands.ts error)
+- [x] `vitest run` — all tests pass
+- [x] Existing test suite passes
