@@ -3,7 +3,7 @@ import type { SkillTemplate, CommandTemplate } from '../types';
 const instructions = `## Input
 
 ### Parameters
-- **\`<phase-id>\`** (optional) — the phase to discuss (e.g. \`ph.1-core\`). If not provided, read from \`bp state\` to determine the active phase.
+- **\`$ARGUMENTS\`** (optional) — the phase to discuss (e.g. \`ph.1-core\`). If not provided, read from \`bp state\` to determine the active phase.
 
 ### Prerequisites
 - Active milestone and phase must be set
@@ -22,12 +22,12 @@ If a phase ID was provided, use it directly. If not:
 
 1. Run \`bp state\` — read \`milestone\` and \`phase\` fields.
 2. If both are non-null, use them.
-3. If \`phase\` is null: run \`bp context discuss\` to get the roadmap path. Read roadmap.md, identify the current phase. Run \`bp state set-phase <phase-id>\` to activate it.
-4. If \`milestone\` is null: run \`bp state set-milestone <milestone-id>\` first.
+3. If \`phase\` is null: run \`bp context discuss\` to get the roadmap path. Read roadmap.md, identify the current phase. Run \`bp state set-phase $1\` to activate it.
+4. If \`milestone\` is null: run \`bp state set-milestone [BP:MILESTONE_ID]\` first.
 
 Print the resolved phase identity:
 \`\`\`
-Phase: <phase-id>  |  Milestone: <milestone-id>  |  Mode: <mvp || technical-layer>
+Phase: $1  |  Milestone: [BP:MILESTONE_ID]  |  Mode: <mvp || technical-layer>
 Goal: <phase-goal from roadmap>
 Deliverable: <executable artifact>
 \`\`\`
@@ -51,7 +51,7 @@ Read the phase goal and scope from roadmap. Identify 2-6 concrete gray areas spe
 
 ### Step 3: Present gray areas and let user select
 \`\`\`
-Here's what I identified as gray areas for <phase-id>:
+Here's what I identified as gray areas for $1:
 
 1. <Area 1> — <one-line description>
 2. <Area 2> — <one-line description>
@@ -71,11 +71,11 @@ For each selected area:
 4. **Scope creep guard**: If user mentions something outside this phase, note it as a deferred idea and return to the current area.
 
 ### Step 5: Write context.md
-Get the template: \`bp template context\`. Write to \`bp/milestones/<milestone-id>/phases/<phase-id>/context.md\`.
+Get the template: \`bp template context\`. Write to \`bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/context.md\`.
 
 Ensure the full path exists:
 \`\`\`bash
-mkdir -p bp/milestones/<milestone-id>/phases/<phase-id>
+mkdir -p bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]
 \`\`\`
 
 If no gray areas were discussed (express path): write a minimal context.md with only the phase identity and "No gray areas — all decisions clear from roadmap and prior phases."
@@ -84,14 +84,14 @@ Reference existing specs that this phase's decisions affect. If a decision chang
 
 ### Step 6: Commit
 \`\`\`bash
-bp commit "docs(phase): write context.md for <phase-id>" --files "bp/milestones/<mid>/phases/<pid>/context.md" --scope docs --record
+bp commit "docs(phase): write context.md for $1" --files "bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/context.md" --scope docs --record
 \`\`\`
 
 ### Step 7: Advance
 Run \`bp continue\` to proceed to research-phase.
 
 ## Output
-- \`bp/milestones/<mid>/phases/<pid>/context.md\` — phase-level implementation decisions with D1/D2 format
+- \`bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/context.md\` — phase-level implementation decisions with D1/D2 format
 
 ## Guardrails
 - **Output goes in the phase directory** — NOT in bp/ root

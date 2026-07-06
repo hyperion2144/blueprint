@@ -33,7 +33,7 @@ bp commit "docs(proposal): fill [BP:CHANGE_NAME]" --files "<proposal-path>" --sc
 \`\`\`
 
 ### Step 5: Advance
-Run \`bp continue change <name>\` — routes to plan.
+Run \`bp continue change $1\` — routes to plan.
 
 ## Guardrails
 - NEVER write implementation details in the proposal — that's for design.md

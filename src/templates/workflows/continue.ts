@@ -2,6 +2,10 @@ import type { SkillTemplate, CommandTemplate } from '../types';
 
 const instructions = `## Input
 
+### Parameters
+- **\`$ARGUMENTS\`** — change name (optional). Use for change-level advancement: \`bp continue change <name>\`.
+- **\`--auto\`** flag — enable autonomous mode (auto-fill decisions without asking).
+
 ### Two commands — two scopes
 
 | Command | Scope | When to use |
@@ -10,8 +14,6 @@ const instructions = `## Input
 | \`bp continue change <name>\` | Single change | Advance a specific change through plan → apply → review → verify → archive |
 
 ### Prerequisites
-- \`bp/state.md\` must exist and be valid
-- Previous step must be complete (exit conditions met)
 
 ## Steps
 
@@ -73,8 +75,8 @@ Current state:
 - Adhoc changes: <list or "none">
 
 Run \`bp state\` to inspect. To start new work:
-- \`bp state set-milestone <id>\` then \`bp state set-phase <phase-id>\` to activate the next milestone/phase
-- \`bp change new <name>\` for an adhoc change
+- \`bp state set-milestone [BP:MILESTONE_ID]\` then \`bp state set-phase [BP:PHASE_ID]\` to activate the next milestone/phase
+- \`bp change new [BP:CHANGE_NAME]\` for an adhoc change
 - \`bp continue\` after completing blocking prerequisites
 \`\`\`
 

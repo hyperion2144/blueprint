@@ -3,7 +3,7 @@ import type { SkillTemplate, CommandTemplate } from '../types';
 const instructions = `## Input
 
 ### Parameters
-- **\`<idea>\`** (optional) — the product idea, feature concept, or brief to grill. If not provided, ask the user: "What are you building? Describe the idea in a few sentences."
+- **\`$ARGUMENTS\`** (optional) — the product idea, feature concept, or brief to grill. If not provided, ask the user: "What are you building? Describe the idea in a few sentences."
 
 ### Prerequisites
 - \`bp/requirements.md\` must exist (created by init)

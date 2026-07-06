@@ -2,6 +2,11 @@ import { ORCHESTRATOR_RULE } from '../types.js';
 import type { SkillTemplate, CommandTemplate } from '../types.js';
 
 const instructions = ORCHESTRATOR_RULE + `## Input
+
+### Parameters
+- **\`$ARGUMENTS\`** — phase ID (e.g. \`ph.1-core\`). If not provided, uses current phase from bp state.
+
+### Prerequisites
 - \`context.md\` must exist (discuss phase done)
 - Related specs, conventions, and external dependencies
 
@@ -20,26 +25,26 @@ Run \`bp context research-phase\` — outputs state and file manifest. Read all 
    - Output: research.md with recommended paths and TDD implications
 
 ### Step 3: Verify output
-Confirm \`research.md\` was written by the sub-agent at \`bp/milestones/<milestone-id>/phases/<phase-id>/research.md\` with:
+Confirm \`research.md\` was written by the sub-agent at \`bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/research.md\` with:
 - Recommended implementation paths with rationale
 - Known pitfalls and edge cases
 - TDD implications for the phase's changes
 
 Ensure the directory exists:
 \`\`\`bash
-mkdir -p bp/milestones/<milestone-id>/phases/<phase-id>
+mkdir -p bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]
 \`\`\`
 
 ### Step 4: Commit
 \`\`\`bash
-bp commit "docs(phase): write research.md for <phase-id>" --files "bp/milestones/<mid>/phases/<pid>/research.md" --scope docs --record
+bp commit "docs(phase): write research.md for [BP:PHASE_ID]" --files "bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/research.md" --scope docs --record
 \`\`\`
 
 ### Step 5: Advance
 Run \`bp continue\` to proceed to the split phase.
 
 ## Output
-- \`bp/milestones/<mid>/phases/<pid>/research.md\` — phase-level implementation research
+- \`bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/research.md\` — phase-level implementation research
 
 ## Guardrails
 - Research must respect context.md locked decisions

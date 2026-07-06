@@ -26,20 +26,20 @@ Do NOT create them incrementally — the dependency graph needs all nodes to exi
 
 \`\`\`bash
 # Create all changes for this phase at once:
-bp change new <change-1> --milestone <mid> --phase <pid>
-bp change new <change-2> --milestone <mid> --phase <pid>
-bp change new <change-3> --milestone <mid> --phase <pid>
+bp change new <change-1> --milestone [BP:MILESTONE_ID] --phase [BP:PHASE_ID]
+bp change new <change-2> --milestone [BP:MILESTONE_ID] --phase [BP:PHASE_ID]
+bp change new <change-3> --milestone [BP:MILESTONE_ID] --phase [BP:PHASE_ID]
 \`\`\`
 
 Verify all directories exist before proceeding:
 \`\`\`bash
-ls bp/milestones/<mid>/phases/<pid>/changes/
+ls bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/changes/
 \`\`\`
 
 ### Step 3: Document dependency graph
 For each change with dependencies, run:
 \`\`\`bash
-bp state set-deps <change-name> --deps <dep1,dep2>
+bp state set-deps $1 --deps <dep1,dep2>
 \`\`\`
 
 Example: \`bp state set-deps c2 --deps c1\` means c2 depends on c1 (c1 must complete first).
@@ -56,14 +56,14 @@ Before advancing, verify:
 
 ### Step 5: Commit
 \`\`\`bash
-bp commit "docs(split): create change proposals for <phase-id>" --files "bp/milestones/<mid>/phases/<pid>/changes/" --scope docs --record
+bp commit "docs(split): create change proposals for [BP:PHASE_ID]" --files "bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/changes/" --scope docs --record
 \`\`\`
 
 ### Step 6: Advance
 Run \`bp continue\` to proceed to change planning.
 
 ## Output
-- \`bp/milestones/<mid>/phases/<pid>/changes/<name>/\` — one directory per change
+- \`bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/changes/$1/\` — one directory per change
 - Updated \`state.md\` with change dependency graph
 
 ## Guardrails

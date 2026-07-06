@@ -3,7 +3,7 @@ import type { SkillTemplate, CommandTemplate } from '../types.js';
 const instructions = `## Input
 
 ### Parameters
-- **\`<scope>\`** — \`change <name>\` | \`phase <id>\` | \`milestone <id>\`
+- **\`$1\`** — scope: \`change <name>\` | \`phase <id>\` | \`milestone <id>\`
 - Optional: \`--milestone <id>\` to scope phase search (defaults to active)
 
 ### Prerequisites
@@ -16,7 +16,7 @@ const instructions = `## Input
 Run \`bp state\` to determine active milestone/phase. Determine audit scope from user input or ask.
 
 ### Step 2: Generate skeleton + read artifacts
-Run \`bp audit <scope> <id>\` — the CLI creates a skeleton uat.md with frontmatter + available artifact list.
+Run \`bp audit $1 $2\` — the CLI creates a skeleton uat.md with frontmatter + available artifact list.
 
 Read every listed artifact for each change. At minimum:
 - \`proposal.md\` — intent, scope, must_haves

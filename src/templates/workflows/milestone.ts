@@ -3,7 +3,7 @@ import type { SkillTemplate, CommandTemplate } from '../types';
 const instructions = `## Input
 
 ### Parameters
-- **\\\`<milestone-id>\\\`** (optional) — the milestone to switch to. If not provided, read from \\\`bp state\\\`.
+- **\\\`$ARGUMENTS\\\`** (optional) — the milestone to switch to. If not provided, read from \\\`bp state\\\`.
 
 ### Prerequisites
 - \\\`bp/roadmap.md\\\` must exist with defined milestones and phases
@@ -19,15 +19,15 @@ Run \\\`bp context roadmap\\\` — read roadmap.md.
 Run \\\`bp state\\\`. If the current milestone has all phases shipped, continue. If not, ask: "Current milestone still has in-progress phases. Archive milestone anyway? (yes/no)"
 
 ### Step 3: Archive current milestone
-Run \\\`bp milestone archive <current-milestone-id>\\\`. The CLI:
+Run \\\`bp milestone archive [BP:MILESTONE_ID]\\\`. The CLI:
 
-1. Copies \\\`bp/milestones/<id>/\\\` → \\\`bp/archive/milestones/<id>/\\\`
+1. Copies \\\`bp/milestones/[BP:MILESTONE_ID]/\\\` → \\\`bp/archive/milestones/[BP:MILESTONE_ID]/\\\`
 2. Removes the original milestone directory
-3. Records [date] Archived milestone <id> in \\\`bp/state.md\\\` ## History section
+3. Records [date] Archived milestone [BP:MILESTONE_ID] in \\\`bp/state.md\\\` ## History section
 4. Updates state to milestone-shipped
 
 ### Step 4: Switch to new milestone
-Run \\\`bp state set-milestone <new-id>\\\`. This resets the active context to \\\`milestone-active\\\`.
+Run \\\`bp state set-milestone $1\\\`. This resets the active context to \\\`milestone-active\\\`.
 
 ### Step 5: Advance
 Run \\\`bp continue\\\` — routes to \\\`/bp:grill\\\` for the new milestone. Do NOT set a phase — the new milestone hasn't been split into phases yet.

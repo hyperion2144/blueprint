@@ -31,7 +31,7 @@ Continue to Step 3.
 - Phase count for new milestone: determine by requirements scope
 - Create directories for the new milestone ONLY:
   \`\`\`bash
-  mkdir -p bp/milestones/<new-milestone-id>/phases/<phase-id>
+  mkdir -p bp/milestones/$1/phases/[BP:PHASE_ID]
   \`\`\`
 
 ### Step 3: Choose planning mode (first time only)
@@ -79,13 +79,13 @@ bp commit "docs(roadmap): define milestones and phases" --files "bp/roadmap.md" 
 ### Step 8: Advance
 **First milestone:**
 \`\`\`bash
-bp state set-milestone <first-milestone-id>
-bp state set-phase <first-phase-id>
+bp state set-milestone $1
+bp state set-phase [BP:PHASE_ID]
 \`\`\`
 
 **New milestone (M1 already archived):**
 \`\`\`bash
-bp state set-milestone <new-milestone-id>
+bp state set-milestone $1
 \`\`\`
 Do NOT set a phase — the new milestone needs grill → research → split first.
 
@@ -95,7 +95,7 @@ bp continue
 
 ## Output
 - \`bp/roadmap.md\` — structured roadmap with milestone and phase tables
-- \`bp/milestones/<id>/\` — per-milestone directories
+- \`bp/milestones/[BP:MILESTONE_ID]/\` — per-milestone directories
 
 ## Guardrails
 - **Default: 1 milestone.** No "foundation", "setup", "scaffolding" — M1 = shippable product.
