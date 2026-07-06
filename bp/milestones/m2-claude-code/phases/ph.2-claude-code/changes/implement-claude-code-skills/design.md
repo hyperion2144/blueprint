@@ -1,79 +1,51 @@
 # Design: implement-claude-code-skills
 
-> This document is the Change Design — written after proposal approval, describing how to implement. Each section has fill-in guidance. After this document, proceed to task breakdown.
+> This document is the Change Design.
 
 ---
 
 ## Context & Goals
 
-<!-- Context/constraints + core design goals (≤3). Must align with proposal Intent and Must-haves. -->
+**Context**: OMP 已有命令生成器（commands.ts -> .omp/commands/）。Claude Code 需要类似但格式不同的 skill 文件（.claude/skills/）。
 
-{{background-and-goals}}
+**Goals**: 生成 21 个 Claude Code skill 文件，复用 WORKFLOW_REGISTRY 模板内容。
 
 ---
 
 ## Technical Approach
 
-### Architecture Diagram
-
-<!-- ASCII art showing module relationships. Annotate: [NEW], [MODIFIED], [EXISTING]. -->
+### Architecture
 
 ```text
-{{architecture-diagram}}
+src/integrations/claude-code/skills.ts [NEW]
+  SKILL_DEFS (static array, 21 steps)
+  → STEP_DEFS 格式套 Claude Code frontmatter
+  → body = WORKFLOW_REGISTRY[step].command().content
+  → path = .claude/skills/bp-<step>.md
 ```
 
-### Core Data Structures
+### Key Pattern
 
-<!-- Key types/interfaces introduced or modified. TypeScript interface format, brief description per type. -->
-
-{{data-structures}}
-
-### Data Flow
-
-<!-- Step-by-step data flow from trigger to effect. -->
-
-{{data-flow}}
-
-### Interface Design
-
-<!-- Public API signatures: function/method names, params (name+type+desc), return types, sync/async. -->
-
-{{api-signatures}}
+与 OMP commands.ts 相同结构，但：
+- Frontmatter: `name`, `description`, `allowed-tools`（Claude Code 格式）
+- 路径: `.claude/skills/` 而非 `.omp/commands/`
+- 参数: `$1`/`$ARGUMENTS` 保持原样（Claude Code 原生支持）
 
 ---
 
 ## File Manifest
 
-<!-- All files to create or modify. -->
-
-| File Path | Description | Action |
-|-----------|-------------|--------|
-| `{{file-path-1}}` | {{description}} | Create |
-| `{{file-path-2}}` | {{description}} | Modify |
+| File | Action | Description |
+|------|--------|-------------|
+| `src/integrations/claude-code/skills.ts` | Create | SKILL_DEFS + generateClaudeSkills() |
+| `src/integrations/claude-code/skills.test.ts` | Create | Golden-file snapshot tests |
 
 ---
 
 ## Test Strategy
 
-### Unit Tests
-- <!-- Which modules need unit tests? What needs mocking? -->
-
-### Integration Tests
-- <!-- Which flows need integration tests? What fixtures needed? -->
-
-### TDD Tasks
-- <!-- List type:behavior tasks requiring RED→GREEN→REFACTOR -->
-
----
-
-## Alternatives
-
-<!-- Evaluated but rejected approaches, with rationale. -->
-
-| Approach | Pros | Cons | Rejection Reason |
-|----------|------|------|-----------------|
-| {{alt-name-1}} | {{pros}} | {{cons}} | {{reason}} |
-| {{alt-name-2}} | {{pros}} | {{cons}} | {{reason}} |
+- Golden-file snapshot test: generate all skills, compare against baseline
+- Verify frontmatter format correctness
 
 ---
 
@@ -81,5 +53,4 @@
 
 | Risk | Probability | Impact | Mitigation |
 |------|------------|--------|-----------|
-| {{risk-1}} | {{probability}} | {{impact}} | {{mitigation}} |
-| {{risk-2}} | {{probability}} | {{impact}} | {{mitigation}} |
+| WORKFLOW_REGISTRY 模板变更影响快照 | Medium | Low | Vitest snapshot auto-update |
