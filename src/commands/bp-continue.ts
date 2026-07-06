@@ -77,7 +77,7 @@ function formatContinueResult(result: ContinueResult, isAuto = false, state?: St
 function resolveStatusKey(type: string, step: string, projectStatus: string): string {
   switch (type) {
     case 'project': return projectStatus;
-    case 'milestone': return projectStatus === 'milestone-shipped' ? 'milestone-shipped' : 'milestone-active';
+    case 'milestone': return step === 'active' ? 'milestone-active' : step;
     case 'phase': return `phase-${step}`;
     case 'change': return `change-${step}`;
     // Adhoc changes: 'proposal' uses adhoc- prefix, all others follow change- cycle

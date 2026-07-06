@@ -312,7 +312,7 @@ function resolveStatus(state: StateFile): string {
     case 'project':
       return state.project.status;
     case 'milestone':
-      return state.project.status === 'milestone-shipped' ? 'milestone-shipped' : 'milestone-active';
+      return ctx.step === 'active' ? 'milestone-active' : ctx.step;
     case 'phase':
       return `phase-${ctx.step}`;
     case 'change':

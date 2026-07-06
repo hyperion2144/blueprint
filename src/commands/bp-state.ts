@@ -132,9 +132,9 @@ function setMilestone(id: string) {
   updateState(bpDir, (state) => {
     state.project.current_milestone = id;
     state.project.current_phase = null;
-    state.active_context = { type: 'milestone', ref: null, step: 'active' };
+    state.project.status = 'milestone-active';
+    state.active_context = { type: 'milestone', ref: `milestones/${id}`, step: 'active' };
   });
-  console.log(JSON.stringify({ ok: true, milestone: id }));
 }
 
 function setPhase(id: string) {
