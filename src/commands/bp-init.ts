@@ -99,14 +99,19 @@ async function initHandler(options: {
   writeFileSync(join(bpDir, 'requirements.md'), reqContent, 'utf-8');
   console.log('✓ requirements.md created (template)');
 
-  // Initialize spec directories with tech stack templates
+  // Initialize spec directories with tech stack templates (greenfield only)
   const specsDir = join(bpDir, 'specs');
-  for (const domain of stack.domains) {
-    const domainDir = join(specsDir, domain.name);
-    mkdirSync(domainDir, { recursive: true });
-    writeFileSync(join(domainDir, 'spec.md'), domain.specContent, 'utf-8');
+  if (!isBrownfield) {
+    for (const domain of stack.domains) {
+      const domainDir = join(specsDir, domain.name);
+      mkdirSync(domainDir, { recursive: true });
+      writeFileSync(join(domainDir, 'spec.md'), domain.specContent, 'utf-8');
+    }
+    console.log('✓ specs/ created (' + stack.domains.map((d) => d.name).join(', ') + ')');
+  } else {
+    mkdirSync(specsDir, { recursive: true });
+    console.log('✓ specs/ directory created (brownfield — specs generated from code scanning)');
   }
-  console.log('✓ specs/ created (' + stack.domains.map((d) => d.name).join(', ') + ')');
 
   // Create conventions from stack template
   const convDir = join(bpDir, 'conventions');
