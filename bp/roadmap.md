@@ -1,6 +1,6 @@
 # Roadmap
 
-## Milestone m1-core — CLI 核心可用
+## Milestone m1-core — CLI 核心可用 [COMPLETED]
 
 **目标**: blueprint CLI 可初始化项目、管理状态、生成平台文件、推进流程。完成后用户能在真实项目中使用 blueprint 的完整工作流。
 
@@ -214,10 +214,125 @@ graph LR
 
 **总计**: 1 milestone × 6 phase × 21 change
 
-## 未来 Milestone
+## Milestone m2-claude-code — 多平台生成器 [CURRENT]
 
-### m2-claude-code — Claude Code 平台支持
+> Planning mode: technical-layer
 
-- `.claude/commands/` + `.claude/agents/` 生成
-- agent 定义格式适配（OMP vs Claude Code frontmatter 差异）
-- 多平台并存时的隔离策略
+**目标**: blueprint 支持三平台文件生成（OMP + Claude Code + `.agent/`），`blueprint update` 根据 project.yml 配置遍历生成。
+
+**验收标准**:
+- Provider interface 定义 + registry 注册机制，OMP 零改动注册为第一个 provider
+- `src/integrations/claude-code/` 生成 `.claude/skills/` + `.claude/agents/`
+- `src/integrations/agent/` 生成 `.agent/skills/`（`[BP:xxx]` 参数格式）+ `.agent/agents/`
+- `.agent/skills/` 复用 WORKFLOW_REGISTRY 模板，参数从 `$1`/`$ARGUMENTS` 替换为 `[BP:xxx]`
+- project.yml `platform: [...]` 数组支持多选，`blueprint update` 遍历生成
+- 全部通过 vitest golden-file 测试
+- 原有 OMP 生成完全不改变（路径、内容、格式）
+
+---
+
+### Phase 1: Provider Interface + Registry
+
+**目标**: 定义 `PlatformProvider` 接口和 `PlatformRegistry`，将 `generators/index.ts` 改为 dispatch 模式。OMP 作为第一个 provider 注册，验证零行为变更。
+
+**依赖**: 无（最底层，纯 refactor）
+
+**范围**:
+- `src/core/platform-registry.ts` — `PlatformProvider` 接口（`generateCommands()`, `generateAgents()`, `generateSkills()`）+ `PlatformRegistry`
+- `src/core/platform-registry.test.ts` — provider 注册/注销/遍历测试
+- 改造 `src/generators/index.ts` 为 dispatch 模式：遍历 `config.platform` → registry.resolve(platform) → provider.generate()
+- `src/integrations/omp/index.ts` 注册为 `'omp'` provider
+- `supportsCommands` 从模块级常量变为 per-provider capability flag
+
+**验收**:
+- 注册 OMP provider 后，`blueprint update` 输出与之前完全一致（golden-file 快照）
+- platform-registry.test.ts 通过
+
+**Change 拆分预估**:
+- `define-provider-interface` — PlatformProvider + PlatformRegistry 类型和实现
+- `refactor-generator-dispatch` — generator/index.ts 改为 dispatch 模式 + OMP 注册验证
+
+---
+
+### Phase 2: Claude Code Provider
+
+**目标**: `src/integrations/claude-code/` 实现，生成 `.claude/skills/` + `.claude/agents/`。
+
+**依赖**: Phase 1（provider interface）
+
+**范围**:
+- `src/integrations/claude-code/commands.ts` — 生成 `.claude/skills/bp-<step>/SKILL.md`（skill 格式，非 command）
+- `src/integrations/claude-code/agents.ts` — 生成 `.claude/agents/bp-<role>.md`（Claude Code 格式 frontmatter）
+- `src/integrations/claude-code/index.ts` — 注册为 `'claude-code'` provider
+- WORKFLOW_REGISTRY 模板参数适配：`$1` → 保持 `$1`（Claude Code 原生参数格式）或 `[BP:xxx]`
+
+**验收**:
+- `platform: [claude-code]` 时 `blueprint update` 生成 `.claude/skills/` + `.claude/agents/`
+- 文件格式符合 Claude Code 平台规范
+- golden-file 测试
+
+**Change 拆分预估**:
+- `implement-claude-code-commands` — 命令/skill 生成
+- `implement-claude-code-agents` — agent 生成
+
+---
+
+### Phase 3: .agent/ Provider
+
+**目标**: `src/integrations/agent/` 实现，生成 `.agent/skills/`（`[BP:xxx]` 参数格式）+ `.agent/agents/`。
+
+**依赖**: Phase 1（provider interface）
+
+**范围**:
+- `src/integrations/agent/skills.ts` — 生成 `.agent/skills/bp-<step>/SKILL.md`，参数用 `[BP:MILESTONE_ID]`、`[BP:CHANGE_NAME]` 等
+- `src/integrations/agent/agents.ts` — 生成 `.agent/agents/bp-<role>.md`，通用 frontmatter（不含 OMP 特定字段）
+- `src/integrations/agent/index.ts` — 注册为 `'agent'` provider
+- 参数替换逻辑：WORKFLOW_REGISTRY 模板中的 `$1`/`$ARGUMENTS` → `[BP:CHANGE_NAME]`/`[BP:MILESTONE_ID]`
+
+**验收**:
+- `platform: [agent]` 时 `blueprint update` 生成 `.agent/skills/` + `.agent/agents/`
+- skill 文件中参数格式为 `[BP:xxx]`，无 `$1`/`$ARGUMENTS`
+- agent frontmatter 无 OMP 特定字段
+- golden-file 测试
+
+**Change 拆分预估**:
+- `implement-agent-skills` — skill 生成（参数替换）
+- `implement-agent-agents` — agent 生成
+
+---
+
+### Phase 4: 多平台集成 + 测试
+
+**目标**: project.yml `platform` 数组支持、多平台同时生成、完整测试覆盖。
+
+**依赖**: Phase 2, Phase 3（两个 provider 就绪）
+
+**范围**:
+- `src/core/config.ts` — `platform: [...]` 数组读取验证，支持 `omp`/`claude-code`/`agent` 三种值
+- `src/generators/index.ts` — 已支持多 platform 遍历（Phase 1 已完成），补充 `platform` 数组为空时的默认行为（默认 `[omp]`）
+- golden-file 测试：每个平台独立快照 + 多平台组合快照
+- 集成测试：`platform: [omp, claude-code, agent]` → 验证所有文件生成
+- 更新 `bp` 自身 `project.yml` 和文档
+
+**验收**:
+- `platform: [omp, claude-code]` 同时生成两套文件
+- `platform: []` 时回退到 `[omp]`
+- 全部测试通过
+- 多平台生成互不干扰（无文件覆盖冲突）
+
+**Change 拆分预估**:
+- `implement-config-platform-array` — project.yml 平台数组支持
+- `add-multi-platform-tests` — golden-file + 集成测试
+
+---
+
+## 汇总
+
+| Phase | 标题 | 依赖 | Change 数 | 预估关键产出 |
+|-------|------|------|-----------|-------------|
+| 1 | Provider Interface + Registry | 无 | 2 | platform-registry.ts + generator dispatch |
+| 2 | Claude Code Provider | 1 | 2 | src/integrations/claude-code/ |
+| 3 | .agent/ Provider | 1 | 2 | src/integrations/agent/ |
+| 4 | 多平台集成 + 测试 | 2,3 | 2 | config 增强 + golden-file 测试 |
+
+**m2-claude-code 总计**: 4 个 phase，8 个 change
