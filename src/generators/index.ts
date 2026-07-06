@@ -9,14 +9,15 @@ import { PlatformRegistry } from '../core/platform-registry.js';
 import type { GeneratedFile } from '../core/platform-registry.js';
 import { registerOmpProvider } from '../integrations/omp/index.js';
 import { registerClaudeCodeProvider } from '../integrations/claude-code/index.js';
-
+import { registerAgentProvider } from '../integrations/agent/index.js';
 export type { GeneratedFile };
 
 // Register OMP as the default provider on first import.
 registerOmpProvider();
 // Register claude-code provider (lazy — only used when platform includes 'claude-code')
 registerClaudeCodeProvider();
-/** Generate all platform files — dispatches per config.platform. */
+// Register agent provider
+registerAgentProvider();
 export function generateAll(config: ProjectConfig): GeneratedFile[] {
   const platforms = config.platform?.length ? config.platform : ['omp'];
   const files: GeneratedFile[] = [];
