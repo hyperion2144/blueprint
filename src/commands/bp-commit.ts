@@ -173,7 +173,9 @@ function commitHandler(
 // ── Task hash recording ──────────────────────────────────────────
 
 function resolveTasksPath(bpDir: string, explicit?: string): string | null {
-  if (explicit && existsSync(join(process.cwd(), explicit))) {
+  // If caller explicitly provided a path, trust it — no existsSync gate.
+  // existsSync can fail on Windows path separator mismatches.
+  if (explicit) {
     return join(process.cwd(), explicit);
   }
 
