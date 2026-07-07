@@ -7,7 +7,7 @@
  * - Returns structured JSON: hash, files, skipped, records written
  */
 
-import { join, basename } from 'node:path';
+import { resolve, join, basename } from 'node:path';
 import { existsSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { execSync, execFileSync } from 'node:child_process';
 import { loadConfig } from '../core/config.js';
@@ -175,7 +175,7 @@ function commitHandler(
 function resolveTasksPath(bpDir: string, explicit?: string): string | null {
   // If caller explicitly provided a path, trust it.
   if (explicit) {
-    return join(process.cwd(), explicit);
+    return resolve(explicit);
   }
 
   // Auto-detect: search for task files in common locations
