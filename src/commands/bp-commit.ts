@@ -8,7 +8,7 @@
  */
 
 import { join, basename } from 'node:path';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { execSync, execFileSync } from 'node:child_process';
 import { loadConfig } from '../core/config.js';
 import { loadState, saveState } from '../core/state-file.js';
@@ -177,7 +177,7 @@ function resolveTasksPath(bpDir: string, explicit?: string): string | null {
     return join(process.cwd(), explicit);
   }
 
-  // Auto-detect: search for tasks.md in common locations
+  // Auto-detect: search for tasks.md in common locations (Node.js recursive, no shell commands)
   const candidates = [
     join(bpDir, 'changes'),
     join(bpDir, 'milestones'),
@@ -187,14 +187,25 @@ function resolveTasksPath(bpDir: string, explicit?: string): string | null {
   for (const dir of candidates) {
     if (!existsSync(dir)) continue;
     try {
-      const result = execSync(
-        `find "${dir}" -name tasks.md -type f 2>/dev/null | head -1`,
-        { cwd: process.cwd(), encoding: 'utf-8', timeout: 3000 },
-      ).trim();
-      if (result) return result;
+      const found = findFileRecursive(dir, 'tasks.md');
+      if (found) return found;
     } catch { continue; }
   }
 
+  return null;
+}
+
+function findFileRecursive(root: string, target: string): string | null {
+  const entries = readdirSync(root, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = join(root, entry.name);
+    if (entry.isDirectory()) {
+      const found = findFileRecursive(fullPath, target);
+      if (found) return found;
+    } else if (entry.isFile() && entry.name === target) {
+      return fullPath;
+    }
+  }
   return null;
 }
 
