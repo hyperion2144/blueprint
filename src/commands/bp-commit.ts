@@ -222,9 +222,10 @@ function recordTaskHash(
       return undefined;
     }
     let content = readFileSync(tasksPath, 'utf-8');
-    // Match task line: "- [x] task-1.1: ..." or "- [ ] task-1.1: ..."
+    // Match task line: "- [x] task-1.1: ...", "- [ ] **task-3-1**: ...", or "- [ ] task-3-1: ..."
+    // taskId may be wrapped in ** (bold) in tasks.md
     const taskPattern = new RegExp(
-      `^(- \\[[ x]\\] ${escapeRegex(taskId)}[^\\n]*)`,
+      `^(- \\[[ x]\\] \\*{0,2}${escapeRegex(taskId)}\\*{0,2}[^\\n]*)`,
       'm',
     );
     const match = content.match(taskPattern);
