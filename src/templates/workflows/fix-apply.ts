@@ -42,6 +42,15 @@ For each wave in the current round:
 3. For concurrent waves in the same round: dispatch ALL in one task tool call (parallel).
 4. Wait for ALL wave sub-agents in this round to finish before verifying.
 
+
+### Step: Verify each sub-agent's fix output
+
+After each wave finishes, verify fixes actually landed:
+- **Check git log**: \`git log --oneline -5\` — confirm new commits
+- **Check tasks.md marking**: read \`[BP:CHANGE_DIR]review-task.md\` — confirm each fix task is \`[x]\` + \`<!-- commit: -->\`
+- **Run affected tests**: \`npx vitest run <test-file>\` — must pass
+- Any missing annotation → manually \`bp commit\` for that task
+
 ### Step 5: Verify after each round
 
 After ALL waves in a round complete:

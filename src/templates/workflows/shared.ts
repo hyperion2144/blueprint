@@ -109,7 +109,8 @@ Read \`tasks.md\` (or \`review-task.md\` for fix mode). Parse into execution pla
 
 5. **Execute round by round**:
    - Each round: dispatch all ready waves CONCURRENTLY (task tool, one agent per wave)
-   - Wait for all; then verify (tsc + vitest) + mark [x] + commit
+   - Wait for all; then **verify each sub-agent's output** (git log, git diff, tasks.md marking, test pass)
+   - Then run full round verify (tsc + vitest) + mark \`[x]\` + commit
    - Next round: waves unblocked after predecessor waves complete
    - Repeat until all waves done
 

@@ -37,18 +37,26 @@ For each wave in the current round:
    - Return when all tasks in this wave are implemented and committed
 3. For concurrent waves in the same round: run \`bp dispatch executor\` once per wave, dispatch ALL in one task tool call (parallel).
 4. Wait for ALL wave sub-agents in this round to finish before proceeding to verify.
-### Step: Implementation verify after each round
 
-**This verifies the code works — it is NOT the review step.** Review is a separate workflow step that runs after apply completes.
+### Step: Verify each sub-agent's output
 
-After ALL waves in a round complete, run verify:
+**After each wave finishes, verify the sub-agent actually implemented what it promised:**
+
+For each task in the completed wave:
+- **Check git log**: \`git log --oneline -5\` — confirm new commits exist with commit hashes.
+- **Check git diff**: \`git diff --stat HEAD~<N>\` — confirm files were actually changed (not just a no-op).
+- **Check tasks.md marking**: read \`[BP:CHANGE_DIR]tasks.md\` — confirm task \`[x]\` is checked AND \`<!-- commit: HASH -->\` annotation exists next to the task.
+- **Run task's tests**: \`npx vitest run <test-file>\` (from task's \`files\` field) — must pass.
+- **If lightweight** (you implemented tasks yourself): same checks — confirm your commits actually landed.
+
+Any task missing \`<!-- commit: -->\` annotation → re-run \`bp commit\` for that task manually:
 \`\`\`bash
-npx tsc --noEmit
-npx vitest run
+bp commit "<type>(<scope>): <description>" --files <changed-files> --task <id> --tasks-path [BP:CHANGE_DIR]tasks.md --record
 \`\`\`
 
-If verify passes: mark all tasks in completed waves \`[x]\` in tasks.md, then proceed to next round.
-If verify fails: route failing tests back to the wave that introduced them — re-dispatch that wave's sub-agent with the failure details.
+Any task with failing tests → re-dispatch the wave with failure details.
+
+After all tasks in the wave pass verification, proceed to round verify.
 
 ### Step: Final implementation verify and change summary
 
@@ -63,6 +71,7 @@ ${COMMIT_ADVANCE('docs', 'apply complete for $1')}
 ## Guardrails
 - Each wave = ONE sub-agent; dispatch concurrent waves in one task tool call
 - Sub-agents implement and commit; main agent verifies
+- **After each wave: verify git log, tasks.md marking (\`[x]\` + \`<!-- commit: -->\`), and test pass** — no-op or incomplete tasks are treated as failures
 - NEVER skip implementation verify between rounds
 - **NEVER skip review.** "Implementation Verification" in tasks.md confirms the code compiles and tests pass — it does NOT replace the review step (\`/bp:review\`). After apply, always run \`bp continue\` to advance to review.
 - Summary mandatory: no advance without filled change-summary.md`;
