@@ -166,7 +166,7 @@ If verify fails: route failing tests back to the wave that introduced them — r
 ### Step: Final implementation verify and change summary
 
 After ALL waves complete and all tests pass:
-- Run \`bp template change-summary --dir [BP:CHANGE_DIR]\`, fill with actual details.
+- Run \`bp template change-summary --stdout\` to read the template, then write to \`[BP:CHANGE_DIR]change-summary.md\` using the Write tool. Fill with actual details.
 - Ensure all tasks.md checkboxes are \`[x]\`
 
 **CRITICAL: Implementation verification is NOT review.** After this step, run \`bp continue\` — it will advance to the review step. NEVER skip review and go directly to archive.

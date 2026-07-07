@@ -51,25 +51,12 @@ function archiveHandler(changePath: string) {
       console.log(`✓ Code extraction complete (${extractResult.extractions.length} domains)`);
     }
   }
-
-  // 4. Move to archive/
-  const archiveDir = archiveChangeDir(bpDir, fullChangePath);
-  console.log(`✓ Archived to: ${archiveDir}`);
-
-  // Remove old path from git tracking
-  try {
-    execSync(`git rm -r "${changePath}" 2>/dev/null || true`, { cwd: process.cwd() });
-  } catch (e: unknown) {
-    console.warn(`⚠ git rm failed: ${e instanceof Error ? e.message : String(e)}`);
-  }
-
-  // 5. Update state.md
+  // 4. Update state.md BEFORE moving directory (avoids inconsistent state if move fails)
   const changeName = basename(changePath);
   try {
     updateState(bpDir, (state) => {
       const change = state.changes.find((c) => c.name === changeName);
       if (change) {
-        // Remove from active changes — move to archive/ dir, not lingering in changes list
         state.changes = state.changes.filter((c) => c.name !== changeName);
       }
       const adhoc = state.adhoc.find((c) => c.name === changeName);
@@ -85,7 +72,6 @@ function archiveHandler(changePath: string) {
       } else if (nextChange) {
         state.active_context = { type: 'change', ref: `changes/${nextChange.name}`, step: nextChange.status };
       } else {
-        // No pending changes — advance to ship-phase
         state.active_context = { type: 'project', ref: null, step: 'archived' };
         state.project.status = 'change-archived';
       }
@@ -93,9 +79,10 @@ function archiveHandler(changePath: string) {
     console.log('✓ state.md updated');
 
     // Append history for non-adhoc (phase-scoped) changes
-    const isPhaseChange = changePath.includes('/milestones/') && changePath.includes('/phases/');
+    const normalizedPath = changePath.replace(/\\/g, '/');
+    const isPhaseChange = normalizedPath.includes('/milestones/') && normalizedPath.includes('/phases/');
     if (isPhaseChange) {
-      const parts = changePath.split(/[/\\]/);
+      const parts = normalizedPath.split('/');
       const msIdx = parts.indexOf('milestones');
       const chIdx = parts.indexOf('changes');
       const msId = msIdx >= 0 ? parts[msIdx + 1] : '?';
@@ -114,10 +101,19 @@ function archiveHandler(changePath: string) {
     }
   } catch (e: unknown) {
     console.error(`✗ Failed to update state.md: ${e instanceof Error ? e.message : String(e)}`);
-    console.error('  Please manually update state.md to remove the archived change.');
+    console.error('  state.md unchanged — archive aborted.');
+    process.exit(1);
   }
 
-  console.log('Archive complete.');
+  // 5. Move to archive/
+  const archiveDir = archiveChangeDir(bpDir, fullChangePath);
+  console.log(`✓ Archived to: ${archiveDir}`);
+
+  // 6. Remove old path from git tracking (best-effort)
+  try {
+    const gitPath = changePath.replace(/\\/g, '/');
+    execSync(`git rm -r "${gitPath}" || true`, { cwd: process.cwd() });
+  } catch { /* non-critical */ }
 }
 
 /** 合并 delta-specs 到全局 specs/ */

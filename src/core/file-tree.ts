@@ -3,7 +3,7 @@
  * 创建 bp/ 骨架、遍历目录、查找 change
  */
 
-import { mkdirSync, existsSync, writeFileSync, readFileSync, readdirSync, statSync, rmSync, renameSync } from 'node:fs';
+import { mkdirSync, existsSync, writeFileSync, readFileSync, readdirSync, statSync, rmSync, renameSync, copyFileSync } from 'node:fs';
 import { join, basename } from 'node:path';
 
 /** bp/ 目录骨架的子目录 */
@@ -97,7 +97,10 @@ export function archiveChangeDir(
     const archiveRoot = join(bpDir, 'archive', ms, ph);
     mkdirSync(archiveRoot, { recursive: true });
     const archiveDir = join(archiveRoot, `${date}-${changeName}`);
-    if (existsSync(changeDir)) renameSync(changeDir, archiveDir);
+    if (existsSync(changeDir)) {
+      copyDirRecursive(changeDir, archiveDir);
+      rmSync(changeDir, { recursive: true, force: true });
+    }
     return archiveDir;
   }
 
@@ -105,8 +108,24 @@ export function archiveChangeDir(
   const archiveRoot = join(bpDir, 'archive', 'changes');
   mkdirSync(archiveRoot, { recursive: true });
   const archiveDir = join(archiveRoot, `${date}-${changeName}`);
-  if (existsSync(changeDir)) renameSync(changeDir, archiveDir);
+  if (existsSync(changeDir)) {
+    copyDirRecursive(changeDir, archiveDir);
+    rmSync(changeDir, { recursive: true, force: true });
+  }
   return archiveDir;
+}
+
+function copyDirRecursive(src: string, dest: string): void {
+  mkdirSync(dest, { recursive: true });
+  for (const entry of readdirSync(src, { withFileTypes: true })) {
+    const srcPath = join(src, entry.name);
+    const destPath = join(dest, entry.name);
+    if (entry.isDirectory()) {
+      copyDirRecursive(srcPath, destPath);
+    } else {
+      copyFileSync(srcPath, destPath);
+    }
+  }
 }
 
 /** 归档 milestone 到 archive/milestones/ */

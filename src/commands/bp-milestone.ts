@@ -33,7 +33,7 @@ function archiveHandler(id: string): void {
 
   // Update git
   try {
-    execSync('git rm -r "' + join('bp', 'milestones', id) + '" 2>/dev/null || true', { cwd: process.cwd() });
+    execSync(`git rm -r "bp/milestones/${id}" || true`, { cwd: process.cwd() });
   } catch { /* non-critical */ }
 
   // Record in state.md history
