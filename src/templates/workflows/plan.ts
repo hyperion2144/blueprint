@@ -1,5 +1,5 @@
 import { ORCHESTRATOR_RULE } from '../types.js';
-import { RESOLVE_PATHS, READ_CONTEXT, CLASSIFY_CHANGE, CHANGE_NAME_RESOLVE, COMMIT_ADVANCE } from './shared.js';
+import { RESOLVE_PATHS, READ_CONTEXT, CLASSIFY_CHANGE, CHANGE_NAME_RESOLVE, COMMIT_ADVANCE, CHANGE_TYPE_GUIDE } from './shared.js';
 import type { SkillTemplate, CommandTemplate } from '../types.js';
 
 const instructions = ORCHESTRATOR_RULE + `## Input
@@ -12,7 +12,7 @@ const instructions = ORCHESTRATOR_RULE + `## Input
 
 ## Steps
 
-${RESOLVE_PATHS}${READ_CONTEXT}${CLASSIFY_CHANGE}${CHANGE_NAME_RESOLVE('planning', 'plan')}### Step 3: Execute design
+${RESOLVE_PATHS}${CHANGE_TYPE_GUIDE}${READ_CONTEXT}${CLASSIFY_CHANGE}${CHANGE_NAME_RESOLVE('planning', 'plan')}### Step 3: Execute design
 
 **Domain guidance for planner sub-agent:**
 - A domain is a logical group of related behaviors (think "chapter" of specs)
