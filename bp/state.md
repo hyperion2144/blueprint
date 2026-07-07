@@ -1,13 +1,13 @@
 ---
 project:
   name: blueprint
-  status: researching
+  status: change-archived
   current_milestone: m2-claude-code
-  current_phase: null
+  current_phase: ph.4-multi-platform-test
 active_context:
-  type: milestone
-  ref: milestones/m2-claude-code
-  step: researching
+  type: phase
+  ref: milestones/m2-claude-code/phases/ph.4-multi-platform-test
+  step: ready
 changes: []
 adhoc: []
 ---
@@ -118,4 +118,12 @@ planned → applying → applied → reviewing → verifying → archived
 
 
 ## History
+- [2026-07-06] Archived `add-multi-platform-tests` (m2-claude-code / ph.4-multi-platform-test)
+- [2026-07-06] Archived `implement-config-platform-array` (m2-claude-code / ph.4-multi-platform-test)
+- [2026-07-06] Archived `implement-agent-agents` (m2-claude-code / ph.3-agent-platform)
+- [2026-07-06] Archived `implement-agent-skills` (m2-claude-code / ph.3-agent-platform)
+- [2026-07-06] Archived `implement-claude-code-agents` (m2-claude-code / ph.2-claude-code)
+- [2026-07-06] Archived `implement-claude-code-skills` (m2-claude-code / ph.2-claude-code)
+- [2026-07-06] Archived `refactor-generator-dispatch` (m2-claude-code / ph.1-provider-interface)
+- [2026-07-06] Archived `define-provider-interface` (m2-claude-code / ph.1-provider-interface)
 [2026-07-06] Archived milestone m1-core

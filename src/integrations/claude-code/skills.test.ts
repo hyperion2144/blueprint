@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { generateClaudeSkills } from './skills.js';
-import type { ProjectConfig } from '../types/index.js';
+import type { ProjectConfig } from '../../types/index.js';
 
 describe('generateClaudeSkills', () => {
   it('generates all skill files with correct frontmatter', () => {

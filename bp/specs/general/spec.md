@@ -60,3 +60,13 @@
 - 约束: if (existsSync12(tplPath)) {
 
 <!-- END AUTO-EXTRACTED -->
+
+<!-- AUTO-EXTRACTED: 以下内容由 code-extract 从代码 diff 提取，请人工审核 -->
+
+## Auto-Extracted Behaviors
+
+### Detected Behaviors
+
+- 新增: export function generateAll(config: ProjectConfig): GeneratedFile[]
+
+<!-- END AUTO-EXTRACTED -->

@@ -61,5 +61,31 @@ function contextHandler(step: string) {
     }
   }
 
+  // --- Directory paths ---
+  lines.push('dirs:');
+  const mid = project.current_milestone;
+  const pid = project.current_phase;
+  if (mid) {
+    lines.push(`  milestone: bp/milestones/${mid}/`);
+    if (pid) {
+      lines.push(`  phase: bp/milestones/${mid}/phases/${pid}/`);
+    }
+  }
+  lines.push(`  archive: bp/archive/`);
+  if (mid && pid) {
+    lines.push(`  archive_phase: bp/archive/${mid}/${pid}/`);
+  }
+  lines.push(`  specs: bp/specs/`);
+  lines.push(`  conventions: bp/conventions/`);
+  if (pendingChanges.length > 0 || pendingAdhoc.length > 0) {
+    for (const c of pendingChanges) {
+      const ref = mid && pid ? `bp/milestones/${mid}/phases/${pid}/changes/${c.name}/` : `bp/changes/${c.name}/`;
+      lines.push(`  change_${c.name}: ${ref} [${c.status}]`);
+    }
+    for (const c of pendingAdhoc) {
+      lines.push(`  adhoc_${c.name}: bp/changes/${c.name}/ [${c.status}]`);
+    }
+  }
+
   console.log(lines.join('\n'));
 }

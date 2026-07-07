@@ -10,6 +10,7 @@ import type { GeneratedFile } from '../core/platform-registry.js';
 import { registerOmpProvider } from '../integrations/omp/index.js';
 import { registerClaudeCodeProvider } from '../integrations/claude-code/index.js';
 import { registerAgentProvider } from '../integrations/agent/index.js';
+import type { ProjectConfig } from '../types/index.js';
 export type { GeneratedFile };
 
 // Register OMP as the default provider on first import.

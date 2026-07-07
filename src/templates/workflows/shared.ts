@@ -8,6 +8,12 @@
 export const CHANGE_NAME_RESOLVE = (status: string, step: string): string => `### Resolve change
 If \`$ARGUMENTS\` is non-empty: use as change name directly.
 If empty: run \`bp state\`, read \`pending\` array, filter by status \`${status}\`, pick first or ask user.
+
+**Resolved path formulas**:
+- Phase change directory:  \`bp/milestones/<milestone>/phases/<phase>/changes/<name>/\`
+- Adhoc change directory:  \`bp/changes/<name>/\`
+- Run \`bp context ${step}\` for resolved paths in the \`dirs:\` section.
+
 Then run \`bp context ${step}\` and read all listed files.
 
 `;
@@ -21,7 +27,19 @@ Read \`tasks.md\` task types:
 `;
 /** Change path resolution — replaces path construction in plan/apply. */
 export const RESOLVE_PATHS = `### Resolve paths
-Run \`bp state\` for \`milestone\` and \`phase\`. Change directory:
+Run \`bp state\` for \`milestone\` and \`phase\`. Or run \`bp context <step>\` for complete path listing.
+
+Directory layout:
+  milestone dir:   bp/milestones/[BP:MILESTONE_ID]/
+  phase dir:       bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/
+  change dir:      bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/changes/[BP:CHANGE_NAME]/
+  |-- proposal.md, design.md, tasks.md, change-summary.md
+  |-- spec-review.md, quality-review.md, goal-review.md
+  |-- verification.md
+  adhoc change:    bp/changes/<change-name>/
+  archive dir:     bp/archive/[BP:MILESTONE_ID]/[BP:PHASE_ID]/
+
+Current change directory for this step:
 \`[BP:CHANGE_DIR]\`
 
 `;
@@ -33,7 +51,16 @@ Read these to ensure alignment with prior decisions:
 - \`bp/roadmap.md\` — this phase's goal, scope, and deliverables
 - \`bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/research.md\` — implementation research
 - \`bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/context.md\` — locked decisions from discuss phase
-- Never design in isolation — design must trace back to requirements and research.
+
+Change files (relative to [BP:CHANGE_DIR]):
+- \`proposal.md\` — intent, scope, approach, must-haves
+- \`design.md\` — technical architecture, data flow, approach
+- \`tasks.md\` — task list with waves, types, acceptance criteria
+- \`specs/<domain>/spec.md\` — delta-specs for affected domain
+- \`change-summary.md\` — apply completion summary
+- \`verification.md\` — final verification report
+
+Never design in isolation — design must trace back to requirements and research.
 
 `;
 
@@ -120,5 +147,19 @@ Determine loopback type:
 
 Re-review (--fix): do NOT create new review files. In the ORIGINAL files, mark resolved findings \`✅ 已修复\`, append new findings with continued numbering.
 If any report is still FAIL or NEEDS_REVISION → loop back. If all PASS → advance to archive.
+
+`;
+
+/** Adhoc vs Phase change guide — clarifies directory types. */
+export const CHANGE_TYPE_GUIDE = `## Change Types: Directory Guide
+
+Blueprint 有两种 change，目录结构不同：
+
+| 类型 | 创建方式 | 目录路径 |
+|------|----------|----------|
+| **Phase change** | \`bp change new <name> --milestone <mid> --phase <pid>\` | \`bp/milestones/<mid>/phases/<pid>/changes/<name>/\` |
+| **Adhoc change** | \`bp change new <name>\`（无 milestone/phase） | \`bp/changes/<name>/\` |
+
+判断方法：\`bp state\` 输出的 \`ref:\` 字段如果以 \`milestones/\` 开头则是 **phase change**，以 \`changes/\` 开头则是 **adhoc change**。
 
 `;
