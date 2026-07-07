@@ -153,13 +153,13 @@ If any report is still FAIL or NEEDS_REVISION → loop back. If all PASS → adv
 /** Adhoc vs Phase change guide — clarifies directory types. */
 export const CHANGE_TYPE_GUIDE = `## Change Types: Directory Guide
 
-Blueprint 有两种 change，目录结构不同：
+Blueprint has two change types with different directory structures:
 
-| 类型 | 创建方式 | 目录路径 |
-|------|----------|----------|
+| Type | How to create | Directory path |
+|------|--------------|----------------|
 | **Phase change** | \`bp change new <name> --milestone <mid> --phase <pid>\` | \`bp/milestones/<mid>/phases/<pid>/changes/<name>/\` |
-| **Adhoc change** | \`bp change new <name>\`（无 milestone/phase） | \`bp/changes/<name>/\` |
+| **Adhoc change** | \`bp change new <name>\` (no milestone/phase) | \`bp/changes/<name>/\` |
 
-判断方法：\`bp state\` 输出的 \`ref:\` 字段如果以 \`milestones/\` 开头则是 **phase change**，以 \`changes/\` 开头则是 **adhoc change**。
+How to tell: check \`bp state\` output's \`ref:\` field. Starts with \`milestones/\` → **phase change**. Starts with \`changes/\` → **adhoc change**.
 
 `;
