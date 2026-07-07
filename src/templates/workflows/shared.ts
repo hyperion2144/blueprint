@@ -104,7 +104,7 @@ Read \`tasks.md\` (or \`review-task.md\` for fix mode). Parse into execution pla
    - ALL referenced specs (from spec_ref fields across tasks)
    - Conventions
    - Instruction: implement tasks in dependency order within the wave
-   - Instruction: \`bp commit --task <id>\` after each task
+   - Instruction: after each task, commit with \`bp commit "<type>(<scope>): <description>" --files <changed-files> --task <id> --tasks-path <tasks.md path> --record\`
    - Instruction: do NOT run tsc/vitest — main agent handles verify
 
 5. **Execute round by round**:

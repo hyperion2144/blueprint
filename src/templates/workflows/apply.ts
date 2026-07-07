@@ -16,7 +16,10 @@ ${RESOLVE_PATHS}${CLASSIFY_CHANGE}${CHANGE_NAME_RESOLVE('planning', 'apply')}
 ${WAVE_SPLIT}
 ### Step: Dispatch executor per wave
 
-**If LIGHTWEIGHT** — implement tasks yourself, one by one. After each: verify, mark \`[x]\`, \`bp commit --task <id>\`.
+**If LIGHTWEIGHT** — implement tasks yourself, one by one. After each: verify, mark \`[x]\`, then commit with changed files:
+\`\`\`bash
+bp commit "<type>(<scope>): <description>" --files "<changed-files>" --task <id> --tasks-path [BP:CHANGE_DIR]tasks.md --record
+\`\`\`
 
 **If FULL — dispatch executor sub-agents. Do NOT implement type:behavior tasks yourself:**
 
@@ -27,9 +30,9 @@ For each wave in the current round:
    - Wave: <Wave N: theme> — implement ALL tasks in this wave
    - Tasks: <full task list for this wave with ids, types, descriptions, files, acceptance, RED tests>
    - Read: design.md, tasks.md (this wave only), delta-specs referenced by spec_ref fields, bp/conventions/coding-standards.md
-   - Implement tasks in dependency order (respect depends_on within wave)
    - For type:behavior: RED test first → GREEN → REFACTOR
-   - After each task: run \`npx vitest run <test-file>\` to verify, then \`bp commit --task <id> --tasks-path ...\`
+   - After each task: run \`npx vitest run <test-file>\` to verify, then:
+     \`bp commit "<type>(<scope>): <description>" --files <changed-files> --task <id> --tasks-path <tasks.md path> --record\`
    - Do NOT touch tasks outside this wave
    - Return when all tasks in this wave are implemented and committed
 3. For concurrent waves in the same round: run \`bp dispatch executor\` once per wave, dispatch ALL in one task tool call (parallel).

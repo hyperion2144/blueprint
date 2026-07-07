@@ -119,7 +119,7 @@ Read \`tasks.md\` (or \`review-task.md\` for fix mode). Parse into execution pla
    - ALL referenced specs (from spec_ref fields across tasks)
    - Conventions
    - Instruction: implement tasks in dependency order within the wave
-   - Instruction: \`bp commit --task <id>\` after each task
+   - Instruction: after each task, commit with \`bp commit "<type>(<scope>): <description>" --files <changed-files> --task <id> --tasks-path <tasks.md path> --record\`
    - Instruction: do NOT run tsc/vitest — main agent handles verify
 
 5. **Execute round by round**:
@@ -131,7 +131,10 @@ Read \`tasks.md\` (or \`review-task.md\` for fix mode). Parse into execution pla
 
 ### Step: Dispatch executor per wave
 
-**If LIGHTWEIGHT** — implement tasks yourself, one by one. After each: verify, mark \`[x]\`, \`bp commit --task <id>\`.
+**If LIGHTWEIGHT** — implement tasks yourself, one by one. After each: verify, mark \`[x]\`, then commit with changed files:
+\`\`\`bash
+bp commit "<type>(<scope>): <description>" --files "<changed-files>" --task <id> --tasks-path [BP:CHANGE_DIR]tasks.md --record
+\`\`\`
 
 **If FULL — dispatch executor sub-agents. Do NOT implement type:behavior tasks yourself:**
 
@@ -142,9 +145,9 @@ For each wave in the current round:
    - Wave: <Wave N: theme> — implement ALL tasks in this wave
    - Tasks: <full task list for this wave with ids, types, descriptions, files, acceptance, RED tests>
    - Read: design.md, tasks.md (this wave only), delta-specs referenced by spec_ref fields, bp/conventions/coding-standards.md
-   - Implement tasks in dependency order (respect depends_on within wave)
    - For type:behavior: RED test first → GREEN → REFACTOR
-   - After each task: run \`npx vitest run <test-file>\` to verify, then \`bp commit --task <id> --tasks-path ...\`
+   - After each task: run \`npx vitest run <test-file>\` to verify, then:
+     \`bp commit "<type>(<scope>): <description>" --files <changed-files> --task <id> --tasks-path <tasks.md path> --record\`
    - Do NOT touch tasks outside this wave
    - Return when all tasks in this wave are implemented and committed
 3. For concurrent waves in the same round: run \`bp dispatch executor\` once per wave, dispatch ALL in one task tool call (parallel).
@@ -867,7 +870,7 @@ Read \`tasks.md\` (or \`review-task.md\` for fix mode). Parse into execution pla
    - ALL referenced specs (from spec_ref fields across tasks)
    - Conventions
    - Instruction: implement tasks in dependency order within the wave
-   - Instruction: \`bp commit --task <id>\` after each task
+   - Instruction: after each task, commit with \`bp commit "<type>(<scope>): <description>" --files <changed-files> --task <id> --tasks-path <tasks.md path> --record\`
    - Instruction: do NOT run tsc/vitest — main agent handles verify
 
 5. **Execute round by round**:
@@ -890,9 +893,9 @@ For each wave in the current round:
    - Read: review-task.md (this wave only), spec-review.md, quality-review.md, goal-review.md (for finding context), design.md (original design), bp/conventions/coding-standards.md
    - Implement fixes in dependency order
    - Each task addresses a specific review finding — ensure the fix resolves it
-   - After each task: run affected tests to verify, then \`bp commit --task <id> --tasks-path <review-task.md path>\`
+   - After each task: run affected tests to verify, then:
+     \`bp commit "fix(<scope>): <description>" --files <changed-files> --task <id> --tasks-path <review-task.md path> --record\`
    - Do NOT modify the original review files
-   - Return when all fix tasks in this wave are implemented and committed
 3. For concurrent waves in the same round: dispatch ALL in one task tool call (parallel).
 4. Wait for ALL wave sub-agents in this round to finish before verifying.
 
@@ -1411,6 +1414,17 @@ Directory layout:
 
 Current change directory for this step:
 \`[BP:CHANGE_DIR]\`
+
+## Change Types: Directory Guide
+
+Blueprint has two change types with different directory structures:
+
+| Type | How to create | Directory path |
+|------|--------------|----------------|
+| **Phase change** | \`bp change new <name> --milestone <mid> --phase <pid>\` | \`bp/milestones/<mid>/phases/<pid>/changes/<name>/\` |
+| **Adhoc change** | \`bp change new <name>\` (no milestone/phase) | \`bp/changes/<name>/\` |
+
+How to tell: check \`bp state\` output's \`ref:\` field. Starts with \`milestones/\` → **phase change**. Starts with \`changes/\` → **adhoc change**.
 
 ### Read context — MUST read before designing
 Read these to ensure alignment with prior decisions:

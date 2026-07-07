@@ -175,7 +175,7 @@ Your core responsibility is to implement code according to tasks.md, strictly fo
 - Implement all tasks in dependency order within this wave (respect \`depends_on\`)
 - For type:behavior: RED test first → GREEN → REFACTOR
 - For other types: direct implementation
-- After each task: run the task's own tests (\`npx vitest run <test-file>\`) to verify, then \`bp commit --task <id> --tasks-path ...\`
+- After each task: run the task's own tests (\`npx vitest run <test-file>\`) to verify, then \`bp commit "<type>(<scope>): <description>" --files <changed-files> --task <id> --tasks-path <tasks.md path>\`
 - If \`commitDocs\` is \`false\` in \`bp/project.yml\`, code commits work normally (only doc files are filtered)
 - Main agent handles full-suite verification (tsc + vitest run) after all waves complete
 - Return when all tasks in this wave are done
@@ -185,7 +185,7 @@ Your core responsibility is to implement code according to tasks.md, strictly fo
 - Read spec-review.md, quality-review.md, goal-review.md to understand what was wrong
 - Implement fixes following review-task.md wave/task structure
 - Each committed task = one review finding resolved
-- After each fix: run affected tests to verify, then \`bp commit --task <id> --tasks-path <review-task.md path>\`
+- After each fix: run affected tests to verify, then \`bp commit "fix(<scope>): <description>" --files <changed-files> --task <id> --tasks-path <review-task.md path>\`
 - Do NOT modify the original review files
 - Return when all fix tasks in this wave are done
 

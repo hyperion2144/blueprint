@@ -36,9 +36,9 @@ For each wave in the current round:
    - Read: review-task.md (this wave only), spec-review.md, quality-review.md, goal-review.md (for finding context), design.md (original design), bp/conventions/coding-standards.md
    - Implement fixes in dependency order
    - Each task addresses a specific review finding — ensure the fix resolves it
-   - After each task: run affected tests to verify, then \`bp commit --task <id> --tasks-path <review-task.md path>\`
+   - After each task: run affected tests to verify, then:
+     \`bp commit "fix(<scope>): <description>" --files <changed-files> --task <id> --tasks-path <review-task.md path> --record\`
    - Do NOT modify the original review files
-   - Return when all fix tasks in this wave are implemented and committed
 3. For concurrent waves in the same round: dispatch ALL in one task tool call (parallel).
 4. Wait for ALL wave sub-agents in this round to finish before verifying.
 
