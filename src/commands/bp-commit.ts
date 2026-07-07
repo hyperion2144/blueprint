@@ -173,25 +173,27 @@ function commitHandler(
 // ── Task hash recording ──────────────────────────────────────────
 
 function resolveTasksPath(bpDir: string, explicit?: string): string | null {
-  // If caller explicitly provided a path, trust it — no existsSync gate.
-  // existsSync can fail on Windows path separator mismatches.
+  // If caller explicitly provided a path, trust it.
   if (explicit) {
     return join(process.cwd(), explicit);
   }
 
-  // Auto-detect: search for tasks.md in common locations (Node.js recursive, no shell commands)
+  // Auto-detect: search for task files in common locations
   const candidates = [
     join(bpDir, 'changes'),
     join(bpDir, 'milestones'),
     join(bpDir, 'archive'),
   ];
+  const filenames = ['tasks.md', 'review-task.md'];
 
   for (const dir of candidates) {
     if (!existsSync(dir)) continue;
-    try {
-      const found = findFileRecursive(dir, 'tasks.md');
-      if (found) return found;
-    } catch { continue; }
+    for (const filename of filenames) {
+      try {
+        const found = findFileRecursive(dir, filename);
+        if (found) return found;
+      } catch { continue; }
+    }
   }
 
   return null;
