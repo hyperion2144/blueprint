@@ -217,6 +217,10 @@ function recordTaskHash(
   hash: string,
 ): { task: string; hash: string; path: string } | undefined {
   try {
+    if (!existsSync(tasksPath)) {
+      console.warn(`⚠ tasks.md not found at: ${tasksPath}. Task hash not recorded.`);
+      return undefined;
+    }
     let content = readFileSync(tasksPath, 'utf-8');
     // Match task line: "- [x] task-1.1: ..." or "- [ ] task-1.1: ..."
     const taskPattern = new RegExp(
