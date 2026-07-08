@@ -127,6 +127,12 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
       { path: 'review-task.md', description: 'Not all fix tasks in review-task.md are marked [x] with <!-- commit: -->. Complete all fixes before advancing.', checkMode: 'tasks_marked' },
     ],
   },
+  {
+    type: 'adhoc', step: 'fix-applying',
+    checks: [
+      { path: 'review-task.md', description: 'Not all fix tasks in review-task.md are marked [x] with <!-- commit: -->. Complete all fixes before advancing.', checkMode: 'tasks_marked' },
+    ],
+  },
 ];
 
 function isTemplateFile(filePath: string): boolean {
