@@ -36,10 +36,10 @@ describe('determineNextStep', () => {
     expect(result.needsSubagent).toBe(true);
   });
 
-  it('从 roadmap-defined 推进到 discuss', () => {
+  it('从 roadmap 推进到 discuss', () => {
     writeState(tmpDir, {
-      project: { name: 'test', status: 'roadmap-defined', current_milestone: 'm1', current_phase: null },
-      active_context: { type: 'project', ref: null, step: 'discuss' },
+      project: { name: 'test', status: 'roadmap', current_milestone: 'm1', current_phase: null },
+      active_context: { type: 'project', ref: null, step: 'roadmap' },
       changes: [],
       adhoc: [],
     });

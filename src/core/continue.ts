@@ -190,11 +190,9 @@ export const STEP_TO_WORKFLOW: Record<string, WorkflowStep> = {
   // Project-level steps
   grill: 'grill',
   'ui-design': 'design',
-  researching: 'research',
-  researched: 'roadmap',
-  'roadmap-defined': 'discuss',
+  research: 'research',
+  roadmap: 'roadmap',
   // Phase-level steps (after strip prefix)
-  research: 'research-phase',
   discuss: 'discuss',
   split: 'split',
   // Change-level steps (after strip prefix)

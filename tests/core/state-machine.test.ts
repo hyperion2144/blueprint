@@ -49,8 +49,8 @@ describe('getSlashCommand', () => {
     expect(getSlashCommand('grill', 'research')).toBe('/bp:research');
   });
 
-  it('无 slash command 时返回 null', () => {
-    expect(getSlashCommand('researching', 'research-done')).toBeNull();
+  it('research → roadmap 的 slash command', () => {
+    expect(getSlashCommand('research', 'roadmap')).toBe('/bp:roadmap');
   });
 });
 

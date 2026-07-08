@@ -54,12 +54,11 @@ export interface StateTransition {
 export const STATE_TRANSITIONS: StateTransition[] = [
   // 项目层路径
   { from: 'initialized', command: 'grill', to: 'grill', slashCommand: '/bp:grill' },
-  { from: 'grill', command: 'research', to: 'researching', slashCommand: '/bp:research', subagent: true },
+  { from: 'grill', command: 'research', to: 'research', slashCommand: '/bp:research', subagent: true },
   { from: 'grill', command: 'design', to: 'ui-design', slashCommand: '/bp:design' },
-  { from: 'ui-design', command: 'research', to: 'researching', slashCommand: '/bp:research', subagent: true },
-  { from: 'researching', command: 'research-done', to: 'researched', slashCommand: '' },
-  { from: 'researched', command: 'roadmap', to: 'roadmap-defined', slashCommand: '/bp:roadmap' },
-  { from: 'roadmap-defined', command: 'discuss', to: 'phase-discuss', slashCommand: '/bp:discuss' },
+  { from: 'ui-design', command: 'research', to: 'research', slashCommand: '/bp:research', subagent: true },
+  { from: 'research', command: 'roadmap', to: 'roadmap', slashCommand: '/bp:roadmap' },
+  { from: 'roadmap', command: 'discuss', to: 'phase-discuss', slashCommand: '/bp:discuss' },
 
   // Phase 路径（phase-start 是 setPhase 后的入口，discuss-start 引导输出指令）
   { from: 'phase-start', command: 'discuss-start', to: 'phase-discuss', slashCommand: '/bp:discuss' },
