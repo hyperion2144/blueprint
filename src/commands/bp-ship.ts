@@ -10,7 +10,7 @@
 import { join } from 'node:path';
 import { existsSync, readFileSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs';
 import { execSync } from 'node:child_process';
-import { loadState, saveState } from '../core/state-file.js';
+import { loadState, saveState, updateState } from '../core/state-file.js';
 import { loadConfig } from '../core/config.js';
 
 /* ── Types ─────────────────────────────────────────────────── */
