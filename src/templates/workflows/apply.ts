@@ -16,7 +16,7 @@ ${RESOLVE_PATHS}${CLASSIFY_CHANGE}${CHANGE_NAME_RESOLVE('planning', 'apply')}
 ${WAVE_SPLIT}
 ### Step: Dispatch executor per wave
 
-**If LIGHTWEIGHT** — implement tasks yourself, one by one. After each: verify, mark \`[x]\`, then commit with changed files:
+**If LIGHTWEIGHT** — implement tasks yourself, one by one. After each: verify with \`npx vitest run <test-file>\`, then commit (auto-marks \`[x]\` + commit hash):
 \`\`\`bash
 bp commit "<type>(<scope>): <description>" --files "<changed-files>" --task <id> --tasks-path [BP:CHANGE_DIR]tasks.md --record
 \`\`\`
