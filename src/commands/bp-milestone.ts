@@ -39,15 +39,15 @@ function archiveHandler(id: string): void {
   // Record in state.md history
   const state = loadState(bpDir);
   const date = new Date().toISOString().slice(0, 10);
-  const historyLine = '[' + date + '] Archived milestone ' + id;
+  const entry = `- [${date}] Archived milestone \`${id}\``;
 
   try {
     const statePath = join(bpDir, 'state.md');
     let text = readFileSync(statePath, 'utf-8');
     if (!text.includes('## History')) {
-      text += '\n\n## History\n' + historyLine + '\n';
+      text += `\n\n## History\n${entry}\n`;
     } else {
-      text = text.replace('## History\n', '## History\n' + historyLine + '\n');
+      text = text.replace('## History\n', `## History\n${entry}\n`);
     }
     writeFileSync(statePath, text, 'utf-8');
 
