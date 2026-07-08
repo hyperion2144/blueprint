@@ -24,9 +24,7 @@ const CompletedEntrySchema = z.object({
   milestone: z.string().nullable(),
   phase: z.string().nullable(),
   archived_at: z.string(),
-  archive_dir: z.string(),
 });
-
 const ReleasedEntrySchema = z.object({
   name: z.string(),
   type: z.enum(['change', 'adhoc']),

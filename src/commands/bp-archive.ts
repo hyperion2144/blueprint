@@ -71,7 +71,6 @@ function archiveHandler(changePath: string) {
       const msId = msIdx >= 0 ? parts[msIdx + 1] : null;
       const phId = chIdx > 0 ? parts[chIdx - 1] : null;
       const archiveDir = join('bp', 'archive', msId ?? 'changes', phId ?? '', `${date}-${changeName}`);
-
       if (!state.completed) state.completed = [];
       state.completed.push({
         name: changeName,
@@ -79,7 +78,6 @@ function archiveHandler(changePath: string) {
         milestone: msId,
         phase: phId,
         archived_at: date,
-        archive_dir: archiveDir,
       });
 
       // Clean up contexts if in parallel mode

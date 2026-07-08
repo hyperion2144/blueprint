@@ -70,7 +70,6 @@ function shipHandler(options?: { dryRun?: boolean; skipCommit?: boolean; markPub
       const loc = c.type === 'change' ? ` (${c.milestone} / ${c.phase})` : ' (adhoc)';
       console.log(`  ${c.name}${loc}`);
       console.log(`    archived: ${c.archived_at}`);
-      console.log(`    dir: ${c.archive_dir}`);
     }
     console.log('Run: bp ship --release-changes "name1,name2" to release them.');
     return;

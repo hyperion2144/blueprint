@@ -21,7 +21,6 @@ export interface CompletedEntry {
   milestone: string | null;
   phase: string | null;
   archived_at: string;
-  archive_dir: string;
 }
 
 /** 已发布的变更 */
