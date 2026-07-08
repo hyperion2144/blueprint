@@ -3253,9 +3253,10 @@ Your core responsibility is to extract behavioral contracts from existing code �
 - Mark all entries as BOOTSTRAPPED with source file:line references
 - Low-confidence entries flagged for human review
 - Each Requirement header SHALL be unique within the spec (no duplicates)",
-  ".claude/skills/bp-adhoc.md": "---
+  ".claude/commands/bp-adhoc.md": "---
 name: bp:adhoc
 description: Create adhoc change — independent change unrelated to milestone/phase
+argument-hint: "[change-name]"
 ---
 
 ## Input
@@ -3297,9 +3298,10 @@ Run \`bp continue change $1\` to proceed through the standard change cycle.
 - To associate with a phase, use \`bp change new --phase <id>\`
 - Archived adhoc changes are stored under \`bp/archive/\`
 - Adhoc changes follow the same plan->apply->review->verify->archive cycle as phase changes",
-  ".claude/skills/bp-apply.md": "---
+  ".claude/commands/bp-apply.md": "---
 name: bp:apply
 description: Code implementation — TDD RED→GREEN→REFACTOR
+argument-hint: "[change-name]"
 ---
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
@@ -3451,9 +3453,10 @@ Run \`bp continue\` to proceed.
 - NEVER skip implementation verify between rounds
 - **NEVER skip review.** "Implementation Verification" in tasks.md confirms the code compiles and tests pass — it does NOT replace the review step (\`/bp:review\`). After apply, always run \`bp continue\` to advance to review.
 - Summary mandatory: no advance without filled change-summary.md",
-  ".claude/skills/bp-archive.md": "---
+  ".claude/commands/bp-archive.md": "---
 name: bp:archive
-description: Verify & archive — run checks, then delta-spec merge + directory move + state update
+description: Verify and archive — run checks, then delta-spec merge + directory move + state update
+argument-hint: "[change-name]"
 ---
 
 ## Input
@@ -3551,7 +3554,7 @@ Run \`bp continue\` — routes to next change or ship-phase.
 - Commit --files points to \`bp/archive/\` directory (the archived location)
 - Last change in phase: must write summary.md before advancing
 - Test suite must pass completely — never archive a failing change",
-  ".claude/skills/bp-audit.md": "---
+  ".claude/commands/bp-audit.md": "---
 name: bp:audit
 description: Human UAT verification — generate uat.md, interactive testing, create adhoc fixes
 ---
@@ -3645,7 +3648,7 @@ After UAT complete, if Gaps section has issues:
 - Severity is inferred, never asked
 - After UAT, always suggest adhoc changes for gaps
 - \`bp change new --adhoc\` creates standalone changes outside the DAG",
-  ".claude/skills/bp-commit.md": "---
+  ".claude/commands/bp-commit.md": "---
 name: bp:commit
 description: Commit changes — conventional commits + hash recording to tasks.md
 ---
@@ -3736,7 +3739,7 @@ If you didn't use \`--task\`, manually add the commit hash as a comment:
 - Use \`--record\` for milestone-level commits (ship, archive)
 - When \`commitDocs: false\`, doc changes are skipped but listed in \`skipped\` — review manually if needed
 - Commit messages follow Conventional Commits strictly: \`type(scope): description\`",
-  ".claude/skills/bp-config.md": "---
+  ".claude/commands/bp-config.md": "---
 name: bp:config
 description: Interactive configuration — set workflow, model, conventions, etc.
 ---
@@ -3845,9 +3848,10 @@ Output a summary of all changes made. For each agent role, show the RESOLVED mod
 - After model changes, always run \`bp update\` to regenerate agent files
 - If the user only wants to view config, run \`bp config list\` and exit
 - Per-agent override (\`agentModels.<agent>\`) has the highest priority — document this clearly",
-  ".claude/skills/bp-continue.md": "---
+  ".claude/commands/bp-continue.md": "---
 name: bp:continue
 description: Auto-advance — read STATE and route to next step
+argument-hint: "[change-name] [--auto]"
 ---
 
 ## Input
@@ -3943,7 +3947,7 @@ Inline instructions for the next workflow step, including:
 - Continue does NOT advance state if exit conditions are not met — it reports what's blocking
 - In loop mode (\`--auto\` flag): after completing this step, the loop controller checks \`bp/loop.md\` stop conditions before advancing further. Continue as normal — do not alter behavior based on loop context.
 - When multiple changes are pending, always present choices — do not silently pick one",
-  ".claude/skills/bp-discuss.md": "---
+  ".claude/commands/bp-discuss.md": "---
 name: bp:discuss
 description: Phase discussion — capture implementation decisions into context.md
 ---
@@ -4047,9 +4051,10 @@ Run \`bp continue\` to proceed to research-phase.
 - **Express path**: skip discussion if everything is clear — don't force questions
 - Defer out-of-scope ideas, don't lose them
 - context.md is the single source of truth for this phase's implementation",
-  ".claude/skills/bp-fix-apply.md": "---
+  ".claude/commands/bp-fix-apply.md": "---
 name: bp:fix-apply
 description: Fix implementation — wave-based dispatch for review finding fixes
+argument-hint: "[change-name]"
 ---
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
@@ -4196,9 +4201,10 @@ Run \`bp continue\` to proceed.
 - Same wave-based dispatch as apply, source is review-task.md
 - Advance routes to review (--fix) automatically
 - If fixes incomplete → BLOCKERs remain in next review → loop back",
-  ".claude/skills/bp-fix-plan.md": "---
+  ".claude/commands/bp-fix-plan.md": "---
 name: bp:fix-plan
 description: Fix design — correct architecture/approach based on review BLOCKERs
+argument-hint: "[change-name]"
 ---
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
@@ -4312,7 +4318,7 @@ Run \`bp continue\` to proceed.
 - Planner runs in FIX MODE — output is review-design.md + review-task.md, not design.md/tasks.md
 - Fix plan must reference specific review findings — not generic descriptions
 - Advance routes to fix-apply automatically",
-  ".claude/skills/bp-grill.md": "---
+  ".claude/commands/bp-grill.md": "---
 name: bp:grill
 description: Requirements exploration — detailed questioning until shared understanding
 ---
@@ -4404,7 +4410,7 @@ Run \`bp continue\` to proceed to the research phase.
 - Record decisions immediately, not at the end
 - Conventions ARE part of the project consensus — confirm them just like requirements
 - If truly stuck, mark \`[TODO: decide]\` and move on",
-  ".claude/skills/bp-init.md": "---
+  ".claude/commands/bp-init.md": "---
 name: bp:init
 description: Initialize bp project structure and generate platform files
 ---
@@ -4454,7 +4460,7 @@ Run \`bp continue\`. The output routes to grill (for requirements exploration).
 - NEVER run \`bp init\` or \`bp update\` — user did this already
 - Brownfield: specs come from code scanning via spec-bootstrapper. Domain names come from source tree structure. Do NOT create spec directories manually.
 - If greenfield: advance immediately, no questions needed",
-  ".claude/skills/bp-loop.md": "---
+  ".claude/commands/bp-loop.md": "---
 name: bp:loop
 description: Autonomous loop — auto-advance all steps, AI fills decisions without asking
 ---
@@ -4596,9 +4602,10 @@ After each advance (Step 4), before going back to Step 1:
 - Auto mode values speed and completeness — prefer reasonable defaults over perfect precision
 - Read \`bp/loop.md\` at the start of every iteration (Step 5.1) to get current counters — never cache in memory
 - Write \`bp/loop.md\` after every iteration — enables resume if loop is interrupted",
-  ".claude/skills/bp-milestone.md": "---
+  ".claude/commands/bp-milestone.md": "---
 name: bp:milestone
 description: Milestone management — switch/create milestones, set current phase
+argument-hint: "[milestone-id]"
 ---
 
 ## Input
@@ -4638,9 +4645,10 @@ Run \\\`bp continue\\\` — routes to \\\`/bp:grill\\\` for the new milestone. D
 - Do NOT set a phase after switching — the new milestone needs grill first
 - If \\\`bp milestone archive\\\` errors (archive already exists), report to user and stop
 - Ensure all changes in the current milestone are archived before switching",
-  ".claude/skills/bp-plan.md": "---
+  ".claude/commands/bp-plan.md": "---
 name: bp:plan
 description: Change design — technical design + task breakdown + delta-specs
+argument-hint: "[change-name]"
 ---
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
@@ -4776,9 +4784,10 @@ Run \`bp continue\` to proceed.
 - Delta-specs for behavior, not implementation — skip for LIGHTWEIGHT
 - tasks.md stays UNCHECKED after plan — apply marks each done
 - Too large to split? Return to split phase",
-  ".claude/skills/bp-proposal.md": "---
+  ".claude/commands/bp-proposal.md": "---
 name: bp:proposal
 description: Fill change proposal — intent, scope, approach, must-haves, non-goals
+argument-hint: "[change-name]"
 ---
 
 ## Input
@@ -4820,7 +4829,7 @@ Run \`bp continue change $1\` — routes to plan.
 - NEVER write implementation details in the proposal — that's for design.md
 - Must-haves must be testable (SHALL/MUST format)
 - If the proposal template already has content (not placeholder), skip filling and advance",
-  ".claude/skills/bp-research-phase.md": "---
+  ".claude/commands/bp-research-phase.md": "---
 name: bp:research-phase
 description: Phase research — implementation path investigation
 ---
@@ -4875,7 +4884,7 @@ Run \`bp continue\` to proceed to the split phase.
 ## Guardrails
 - Research must respect context.md locked decisions
 - Surface trade-offs explicitly",
-  ".claude/skills/bp-research.md": "---
+  ".claude/commands/bp-research.md": "---
 name: bp:research
 description: Project-level technical research — parallel multi-direction investigation
 ---
@@ -4934,9 +4943,10 @@ Run \`bp continue\` to proceed to roadmap definition.
 - Dispatch sub-agents in parallel — they are independent
 - Each must compare ≥2 alternatives
 - Mark speculative findings with confidence levels",
-  ".claude/skills/bp-review.md": "---
+  ".claude/commands/bp-review.md": "---
 name: bp:review
 description: Triple review — spec/quality/goal reviews in parallel
+argument-hint: "[change-name]"
 ---
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
@@ -5079,7 +5089,7 @@ Run \`bp continue\` to proceed.
 - Fix mode: update existing files in-place, never create new review files
 - Findings: all non-PASS findings must be addressed before advancing
 - Loopback: any FAIL or NEEDS_REVISION → fix-plan or fix-apply → re-review → repeat until all PASS",
-  ".claude/skills/bp-roadmap.md": "---
+  ".claude/commands/bp-roadmap.md": "---
 name: bp:roadmap
 description: Roadmap definition — split project into Milestones × Phases
 ---
@@ -5189,7 +5199,7 @@ bp continue
 - **Adding new milestone**: mark old ones as [COMPLETED], append new ones below, don't overwrite.
 - **New milestone**: do NOT set-phase — grill/research/split will be done first.
 - **Naming rules**: milestone IDs MUST use \`M<number>-<kebab-case>\` (e.g. \`M1-core\`). Phase IDs MUST use \`ph.<number>-<kebab-case>\` (e.g. \`ph.1-core\`).",
-  ".claude/skills/bp-ship.md": "---
+  ".claude/commands/bp-ship.md": "---
 name: bp:ship
 description: Ship — create PR + update state / release tag
 ---
@@ -5258,7 +5268,7 @@ For each change that was shipped, edit \`bp/state.md\` → \`## History\` sectio
 - Version bump: recommend minor for feature releases, patch for fixes
 - After publishing, mark changes \`[published]\` immediately — never leave them unmarked
 - \`gh\` CLI must be authenticated before creating PRs or releases",
-  ".claude/skills/bp-split.md": "---
+  ".claude/commands/bp-split.md": "---
 name: bp:split
 description: Change splitting — dependency graph + N changes
 ---

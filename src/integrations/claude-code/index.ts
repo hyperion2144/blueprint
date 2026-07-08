@@ -4,7 +4,7 @@
 
 import type { PlatformProvider } from '../../core/platform-registry.js';
 import { PlatformRegistry } from '../../core/platform-registry.js';
-import { generateClaudeSkills } from './skills.js';
+import { generateClaudeCommands } from './commands.js';
 import { generateClaudeAgents } from './agents.js';
 
 export function registerClaudeCodeProvider(): void {
@@ -13,10 +13,10 @@ export function registerClaudeCodeProvider(): void {
   const provider: PlatformProvider = {
     id: 'claude-code',
     name: 'Claude Code Platform',
-    capabilities: { supportsCommands: false },
+    capabilities: { supportsCommands: true },
     generate(config) {
       return [
-        ...generateClaudeSkills(config),
+        ...generateClaudeCommands(config),
         ...generateClaudeAgents(config),
       ];
     },
