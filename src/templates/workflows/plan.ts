@@ -33,6 +33,7 @@ ${RESOLVE_PATHS}${CHANGE_TYPE_GUIDE}${READ_CONTEXT}${CLASSIFY_CHANGE}${CHANGE_NA
 
 1. Run \`bp dispatch planner --change $1\` — outputs the sub-agent tool to call and its parameters.
 2. Call the tool it specifies. Set the sub-agent's prompt to:
+   **IMPORTANT: Do NOT include output file format or writing instructions in the prompt.** The sub-agent reads templates via \`bp template design\`, \`bp template tasks\`, \`bp template spec\` on its own. Only specify WHAT to produce, not HOW.
    - Task: produce design.md, tasks.md (boxes UNCHECKED), delta-specs
    - Delta-specs go UNDER the change's \`specs/\` directory, organized by **business domain**:
      \`changes/<name>/specs/<domain>/spec.md\`
@@ -45,7 +46,6 @@ ${RESOLVE_PATHS}${CHANGE_TYPE_GUIDE}${READ_CONTEXT}${CLASSIFY_CHANGE}${CHANGE_NA
    - Delta-specs must use \`## ADDED Requirements\` / \`## MODIFIED Requirements\` / \`## REMOVED Requirements\` sections
    - Each delta-spec Requirement must reference the global spec it modifies (if any)
    - Output: design.md, tasks.md, specs/<domain>/spec.md
-
 ### Step 4: Verify output
 Check produced files:
 - \`design.md\` — architecture, data flow, approach
