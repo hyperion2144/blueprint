@@ -25,15 +25,10 @@ Decompose the phase scope into independently implementable Change units:
 Do NOT create them incrementally — the dependency graph needs all nodes to exist first.
 
 \`\`\`bash
-# Create all changes for this phase at once:
+# Create all changes for this phase at once (N = number of changes determined by scope):
 bp change new <change-1> --milestone [BP:MILESTONE_ID] --phase [BP:PHASE_ID]
 bp change new <change-2> --milestone [BP:MILESTONE_ID] --phase [BP:PHASE_ID]
-bp change new <change-3> --milestone [BP:MILESTONE_ID] --phase [BP:PHASE_ID]
-\`\`\`
-
-Verify all directories exist before proceeding:
-\`\`\`bash
-ls bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/changes/
+# ... repeat for all changes
 \`\`\`
 
 ### Step 3: Document dependency graph
