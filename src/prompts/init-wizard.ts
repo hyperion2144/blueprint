@@ -42,6 +42,8 @@ export async function runInitWizard(defaults: { profile: string; yes: boolean })
       message: 'Target platform — which AI agent platform(s) to generate integration files for:',
       options: [
         { value: 'omp', label: 'Oh My Pi', hint: 'generates .omp/commands/, .omp/agents/, and hooks' },
+        { value: 'claude-code', label: 'Claude Code', hint: 'generates .claude/commands/ + .claude/agents/' },
+        { value: 'agent', label: 'Agent (generic)', hint: 'generates .agent/skills/ + .agent/agents/ with [BP:xxx] params' },
       ],
       initialValues: ['omp'],
     });
