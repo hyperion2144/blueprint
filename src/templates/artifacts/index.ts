@@ -473,6 +473,16 @@ export const CHANGE_SUMMARY_TEMPLATE = `# Change Summary: {{name}}
 ## Intent
 {{intent}}
 
+## Must-haves Status
+| Must-have | Status |
+|-----------|--------|
+| {{must-have-1}} | ✅ |
+
+## Commits
+| Hash | Message |
+|------|--------|
+| \`{{hash-1}}\` | {{message-1}} |
+
 ## Output Files
 | File | Action |
 |------|--------|
