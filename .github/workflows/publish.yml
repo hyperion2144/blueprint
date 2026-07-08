@@ -22,12 +22,14 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Create GitHub Release
         run: |
+          # Fetch tags to ensure previous tag is available
+          git fetch --tags origin 2>/dev/null || true
           # Get commits since the previous tag
           PREV_TAG=$(git tag --sort=-creatordate | sed -n '2p')
           if [ -n "$PREV_TAG" ]; then
-            NOTES=$(git log "$PREV_TAG"..HEAD --pretty=format:'- %s')
+            NOTES=$(git log "$PREV_TAG"..HEAD --pretty=format:'- %s' --no-merges)
           else
-            NOTES=$(git log --pretty=format:'- %s')
+            NOTES=$(git log --pretty=format:'- %s' --no-merges $(git rev-list --max-parents=0 HEAD)..HEAD)
           fi
           # Create or update release
           if gh release view "${{ github.ref_name }}" &>/dev/null; then
