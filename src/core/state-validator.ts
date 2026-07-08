@@ -15,6 +15,7 @@ export interface ValidationResult {
 interface ExitCheck {
   path: string;
   description: string;
+  checkMode?: 'file' | 'tasks_marked'; // default: 'file'
 }
 
 interface StepExitCriteria {
@@ -106,6 +107,26 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
       { path: 'tasks.md', description: 'tasks.md is still a template. Complete the plan step.' },
     ],
   },
+
+  // Change at applying — all tasks in tasks.md/review-task.md must be marked [x] with commit hash
+  {
+    type: 'change', step: 'applying',
+    checks: [
+      { path: 'tasks.md', description: 'Not all tasks in tasks.md are marked [x] with <!-- commit: -->. Complete all tasks before advancing.', checkMode: 'tasks_marked' },
+    ],
+  },
+  {
+    type: 'adhoc', step: 'applying',
+    checks: [
+      { path: 'tasks.md', description: 'Not all tasks in tasks.md are marked [x] with <!-- commit: -->. Complete all tasks before advancing.', checkMode: 'tasks_marked' },
+    ],
+  },
+  {
+    type: 'change', step: 'fix-applying',
+    checks: [
+      { path: 'review-task.md', description: 'Not all fix tasks in review-task.md are marked [x] with <!-- commit: -->. Complete all fixes before advancing.', checkMode: 'tasks_marked' },
+    ],
+  },
 ];
 
 function isTemplateFile(filePath: string): boolean {
@@ -178,6 +199,43 @@ function checkExitCondition(bpDir: string, check: ExitCheck, resolvedPath?: stri
     return check.description;
   }
 
+
+  // Tasks marking check: all tasks and verification items must be [x]
+  if (check.checkMode === 'tasks_marked') {
+    if (!existsSync(fullPath)) {
+      return `${check.path} not found. ${check.description}`;
+    }
+    try {
+      const content = readFileSync(fullPath, 'utf-8');
+      const lines = content.split('\n');
+      const unmarked: string[] = [];
+      const unhashed: string[] = [];
+
+      for (const line of lines) {
+        // Match task lines and verification checkbox lines: "- [ ] ..."
+        const taskMatch = line.match(/^- \[([ x])\].*/);
+        if (!taskMatch) continue;
+
+        if (taskMatch[1] === ' ') {
+          unmarked.push(line.trim());
+        } else if (taskMatch[1] === 'x') {
+          // [x] task must have <!-- commit: xxx --> annotation
+          if (!line.includes('<!-- commit:') && !line.includes('## Implementation Verification')) {
+            unhashed.push(line.trim());
+          }
+        }
+      }
+
+      if (unmarked.length > 0) {
+        return `Unmarked tasks remain (${unmarked.length}): ${unmarked[0]}${unmarked.length > 1 ? ` (+${unmarked.length - 1} more)` : ''}. ${check.description}`;
+      }
+      if (unhashed.length > 0) {
+        return `Tasks marked [x] but missing commit hash (${unhashed.length}): ${unhashed[0]}${unhashed.length > 1 ? ` (+${unhashed.length - 1} more)` : ''}. Re-run \`bp commit\` with --task to record the hash.`;
+      }
+    } catch {
+      return `Cannot read ${check.path}: ${check.description}`;
+    }
+  }
   return null;
 }
 
