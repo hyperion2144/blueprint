@@ -4,6 +4,7 @@
  * Direct imports (no barrel re-exports) to avoid TypeScript module resolution issues.
  */
 
+import { getDesignSkillTemplate, getDesignCommandTemplate } from './design.js';
 import { getInitSkillTemplate, getInitCommandTemplate } from './init';
 import { getGrillSkillTemplate, getGrillCommandTemplate } from './grill';
 import { getResearchSkillTemplate, getResearchCommandTemplate } from './research';
@@ -32,6 +33,7 @@ import type { SkillTemplate, CommandTemplate } from '../types';
 /** All workflow steps in dependency order */
 export const ALL_WORKFLOW_STEPS = [
   'init', 'grill', 'research', 'roadmap', 'milestone',
+  'design',
   'discuss', 'research-phase', 'split', 'adhoc',
   'plan', 'apply', 'review', 'archive',
   'proposal', 'ship', 'continue', 'audit', 'loop', 'config', 'commit',
@@ -46,6 +48,7 @@ export const WORKFLOW_REGISTRY: Record<WorkflowStep, {
   command: () => CommandTemplate;
 }> = {
   init:      { skill: getInitSkillTemplate,      command: getInitCommandTemplate },
+  design:     { skill: getDesignSkillTemplate,     command: getDesignCommandTemplate },
   grill:     { skill: getGrillSkillTemplate,     command: getGrillCommandTemplate },
   research:  { skill: getResearchSkillTemplate,  command: getResearchCommandTemplate },
   roadmap:   { skill: getRoadmapSkillTemplate,   command: getRoadmapCommandTemplate },

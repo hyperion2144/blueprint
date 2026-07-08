@@ -1304,6 +1304,42 @@ blocked: 0
 [none yet]
 `;
 
+export const DESIGN_PREVIEW_TEMPLATE = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Preview — {{name}}</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family={{display-font-url}}&family={{body-font-url}}&display=swap');
+:root {
+  --primary: {{primary-color}};
+  --bg: {{bg-color}};
+  --text: {{text-color}};
+  --font-display: '{{display-font}}', serif;
+  --font-body: '{{body-font}}', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font-body); color: var(--text); background: var(--bg); }
+.hero { padding: 120px 24px; text-align: center; }
+.hero h1 { font-family: var(--font-display); font-size: clamp(2.5rem, 6vw, 5rem); color: var(--primary); }
+.hero p { margin-top: 24px; font-size: 1.25rem; max-width: 640px; margin-inline: auto; opacity: 0.8; }
+.palette { padding: 80px 24px; display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.swatch { width: 120px; height: 120px; border-radius: 12px; display: flex; align-items: flex-end; padding: 8px; font-size: 0.75rem; color: #fff; }
+</style>
+</head>
+<body>
+<section class="hero">
+  <h1>{{name}}</h1>
+  <p>{{tagline}}</p>
+</section>
+<section class="palette">
+  <div class="swatch" style="background:{{primary-color}}">{{primary-color}}</div>
+  <div class="swatch" style="background:{{secondary-color}}">{{secondary-color}}</div>
+</section>
+</body>
+</html>`;
+
 export const LOOP_MD_TEMPLATE = `# Loop Configuration
 
 ## Goal
@@ -1361,6 +1397,8 @@ export const ARTIFACT_TEMPLATES: Record<string, string> = {
   // Phase research (produced by bp-phase-researcher)
   'phase-research': PHASE_RESEARCH_TEMPLATE,
   'uat': UAT_TEMPLATE,
+  // Design preview
+  'design-preview': DESIGN_PREVIEW_TEMPLATE,
   // Loop configuration
   'loop.md': LOOP_MD_TEMPLATE,
   // Fix cycle (review loopback)

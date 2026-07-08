@@ -30,8 +30,8 @@ describe('getTransition', () => {
 describe('getNextSteps', () => {
   it('返回从当前状态的所有可用转移', () => {
     const steps = getNextSteps('grill');
-    expect(steps).toHaveLength(1);
-    expect(steps[0].command).toBe('research');
+    expect(steps).toHaveLength(2);
+    expect(steps.map((s) => s.command).sort()).toEqual(['design', 'research']);
   });
 
   it('change-reviewing 有多个转移（archive/replan/reapply/fix）', () => {

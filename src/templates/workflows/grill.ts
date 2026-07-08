@@ -73,8 +73,19 @@ If customize: go through conventions section by section, one \`ask\` per section
 bp commit "docs: complete requirements and conventions" --files "bp/requirements.md,bp/conventions/coding-standards.md" --scope docs --record
 \`\`\`
 
+### Step 6b: UI design decision
+Ask the user:
+"Does this project involve a UI (web/mobile/desktop interface)? If yes, you can do a quick design direction before technical research."
+Options:
+- **design** — "Yes, let's define the design direction first" → run \`bp continue --command design\` (routes to /bp:design)
+- **skip** — "No, skip design and go to research" → run \`bp continue\` (routes to /bp:research as usual)
+- **later** — "I'll decide later, just go to research for now" → run \`bp continue\` (routes to /bp:research)
+
+Recommended: \`skip\` — design is optional and can be done anytime later.
+
 ### Step 7: Advance
-Run \`bp continue\` to proceed to the research phase.
+If user chose "design": run \`bp continue --command design\` to proceed to the UI design phase.
+Otherwise: run \`bp continue\` to proceed to the research phase.
 
 ## Output
 - \`bp/requirements.md\` — populated with agreed requirements

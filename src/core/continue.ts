@@ -189,6 +189,7 @@ const STEP_INFO: Record<string, StepInfo> = {
 export const STEP_TO_WORKFLOW: Record<string, WorkflowStep> = {
   // Project-level steps
   grill: 'grill',
+  'ui-design': 'design',
   researching: 'research',
   researched: 'roadmap',
   'roadmap-defined': 'discuss',

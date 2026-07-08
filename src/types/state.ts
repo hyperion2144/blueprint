@@ -55,6 +55,8 @@ export const STATE_TRANSITIONS: StateTransition[] = [
   // 项目层路径
   { from: 'initialized', command: 'grill', to: 'grill', slashCommand: '/bp:grill' },
   { from: 'grill', command: 'research', to: 'researching', slashCommand: '/bp:research', subagent: true },
+  { from: 'grill', command: 'design', to: 'ui-design', slashCommand: '/bp:design' },
+  { from: 'ui-design', command: 'research', to: 'researching', slashCommand: '/bp:research', subagent: true },
   { from: 'researching', command: 'research-done', to: 'researched', slashCommand: '' },
   { from: 'researched', command: 'roadmap', to: 'roadmap-defined', slashCommand: '/bp:roadmap' },
   { from: 'roadmap-defined', command: 'discuss', to: 'phase-discuss', slashCommand: '/bp:discuss' },
