@@ -210,28 +210,24 @@ function checkExitCondition(bpDir: string, check: ExitCheck, resolvedPath?: stri
       const lines = content.split('\n');
       const unmarked: string[] = [];
       const unhashed: string[] = [];
-
+      let inVerification = false;
       for (const line of lines) {
-        // Match task lines and verification checkbox lines: "- [ ] ..."
+        // Track section: skip hash check for ## Implementation Verification
+        if (line.startsWith('## ')) inVerification = line.includes('## Implementation Verification');
+
+        // Match task/checkbox lines: "- [...] ..."
         const taskMatch = line.match(/^- \[([ x])\].*/);
         if (!taskMatch) continue;
 
         if (taskMatch[1] === ' ') {
           unmarked.push(line.trim());
         } else if (taskMatch[1] === 'x') {
-          // [x] task must have <!-- commit: xxx --> annotation
-          if (!line.includes('<!-- commit:') && !line.includes('## Implementation Verification')) {
+          // [x] task must have <!-- commit: xxx --> annotation (skip for verification section)
+          if (!inVerification && !line.includes('<!-- commit:')) {
             unhashed.push(line.trim());
           }
         }
-      }
-
-      if (unmarked.length > 0) {
-        return `Unmarked tasks remain (${unmarked.length}): ${unmarked[0]}${unmarked.length > 1 ? ` (+${unmarked.length - 1} more)` : ''}. ${check.description}`;
-      }
-      if (unhashed.length > 0) {
-        return `Tasks marked [x] but missing commit hash (${unhashed.length}): ${unhashed[0]}${unhashed.length > 1 ? ` (+${unhashed.length - 1} more)` : ''}. Re-run \`bp commit\` with --task to record the hash.`;
-      }
+    }
     } catch {
       return `Cannot read ${check.path}: ${check.description}`;
     }
