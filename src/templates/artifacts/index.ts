@@ -324,12 +324,17 @@ export const RESEARCH_TEMPLATE = `# Research: {{name}}
 
 export const SUMMARY_TEMPLATE = `# Summary: {{name}}
 
-> Change completion summary. Generated after all waves are complete.
+> Phase completion summary.
 
 ---
 
 ## Intent Recap
 {{intent}}
+
+## Changes
+| Change | Status | Description |
+|--------|--------|-------------|
+| {{change-1}} | {{status}} | {{description}} |
 
 ## Files Changed
 | File | Action | Lines |
