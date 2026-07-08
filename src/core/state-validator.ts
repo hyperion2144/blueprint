@@ -211,11 +211,11 @@ function checkExitCondition(bpDir: string, check: ExitCheck, resolvedPath?: stri
     if (!existsSync(fullPath)) {
       return `${check.path} not found. ${check.description}`;
     }
+    const unmarked: string[] = [];
+    const unhashed: string[] = [];
     try {
       const content = readFileSync(fullPath, 'utf-8');
       const lines = content.split('\n');
-      const unmarked: string[] = [];
-      const unhashed: string[] = [];
       let inVerification = false;
       for (const line of lines) {
         // Track section: skip hash check for ## Implementation Verification
@@ -233,9 +233,16 @@ function checkExitCondition(bpDir: string, check: ExitCheck, resolvedPath?: stri
             unhashed.push(line.trim());
           }
         }
-    }
+      }
     } catch {
       return `Cannot read ${check.path}: ${check.description}`;
+    }
+
+    if (unmarked.length > 0) {
+      return `Unmarked tasks remain (${unmarked.length}): ${unmarked[0]}${unmarked.length > 1 ? ` (+${unmarked.length - 1} more)` : ''}. ${check.description}`;
+    }
+    if (unhashed.length > 0) {
+      return `Tasks marked [x] but missing commit hash (${unhashed.length}): ${unhashed[0]}${unhashed.length > 1 ? ` (+${unhashed.length - 1} more)` : ''}. Re-run \`bp commit\` with --task to record the hash.`;
     }
   }
   return null;
