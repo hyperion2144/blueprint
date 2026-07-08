@@ -3,7 +3,7 @@
  */
 
 import { join, basename } from 'node:path';
-import { existsSync, readdirSync, readFileSync, writeFileSync, copyFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync, copyFileSync, mkdirSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { loadState, updateState } from '../core/state-file.js';
 import { mergeAndWrite } from '../core/delta-merge.js';

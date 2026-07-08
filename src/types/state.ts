@@ -6,6 +6,14 @@
 import type { EntityType, ChangeStatus } from './project.js';
 
 
+/** 单个 change 在状态机中的跟踪状态 */
+export interface ChangeState {
+  name: string;
+  status: ChangeStatus | 'blocked';
+  depends_on: string[];
+  /** 执行模式: lightweight (编排者自实现) | full (派发子代理) */
+  mode?: 'lightweight' | 'full';
+}
 /** 已归档的变更 */
 export interface CompletedEntry {
   name: string;

@@ -111,7 +111,7 @@ function continueHandler(options?: { auto?: boolean; command?: string }): void {
       if (to.startsWith('phase-')) {
         s.active_context = { type: 'phase', ref: `milestones/${s.project.current_milestone}/phases/${s.project.current_phase}`, step: to.substring(6) };
       } else if (to.startsWith('change-')) {
-        s.active_context = { type: 'change', step: to.substring(7) };
+        s.active_context = { type: 'change', ref: null, step: to.substring(7) };
       } else {
         s.active_context.step = to;
         if (s.active_context.type === 'project' || s.active_context.type === 'milestone') s.project.status = to;

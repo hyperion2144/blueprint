@@ -52,7 +52,7 @@ const StateFileSchema = z.object({
     type: z.enum(['project', 'milestone', 'phase', 'change', 'adhoc', 'changes']),
     ref: z.string().nullable(),
     step: z.string(),
-    contexts: z.record(ContextEntrySchema).optional(),
+    contexts: z.record(z.string(), ContextEntrySchema).optional(),
   }),
   changes: z.array(ChangeStateSchema).optional().default([]),
   adhoc: z.array(ChangeStateSchema).optional().default([]),

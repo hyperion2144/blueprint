@@ -44,6 +44,10 @@ export const STEP_DEFS: CommandDef[] = [
   { step: 'fix-apply', name: 'bp:fix-apply', description: '[change-name] — Fix implementation — wave-based dispatch for review finding fixes', usesAgent: true, agents: ['executor'], argumentHint: '[change-name]' },
 ];
 
+function fallbackBody(def: CommandDef): string {
+  return `# ${def.description}\n\nWorkflow guide for \`${def.step}\`.`;
+}
+
 /** Generate a single slash command file content from the TypeScript template */
 export function generateSlashCommand(def: CommandDef, _config: ProjectConfig): string {
   const entry = WORKFLOW_REGISTRY[def.step as WorkflowStep];
