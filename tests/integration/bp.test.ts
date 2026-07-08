@@ -54,7 +54,7 @@ describe('bp integration', () => {
   it('bp list', () => {
     const output = execSync(`node ${cliPath} list`, { encoding: 'utf-8', cwd: process.cwd() });
     expect(output).toContain('Milestones:');
-    expect(output).toContain('m1-core/');
+    expect(output).toContain('m2-claude-code/');
   });
 
   it('bp continue 显示下一步', () => {
