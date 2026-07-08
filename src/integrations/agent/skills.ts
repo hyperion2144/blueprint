@@ -8,24 +8,42 @@
 import type { ProjectConfig } from '../../types/index.js';
 import { WORKFLOW_REGISTRY, type WorkflowStep } from '../../templates/workflows/registry.js';
 
-/** Map of $1/$ARGUMENTS → [BP:xxx] replacements */
-const PARAM_MAP: Record<string, string> = {
-  '$ARGUMENTS': '[BP:CHANGE_NAME]',
-  '$1': '[BP:CHANGE_NAME]',
-  '$2': '',
-  '$3': '',
-  '$4': '',
-  '$5': '',
+/**
+ * $1 含义取决于 step 类型，和 expandTemplateVars() 的 primaryId 推断一致：
+ *   上下文为 milestone → [BP:MILESTONE_ID]
+ *   上下文为 phase → [BP:PHASE_ID]
+ *   上下文为 change → [BP:CHANGE_NAME]
+ *   无上下文 (init/grill/…) → 保持 $1 原样
+ */
+const STEP_PARAM: Record<string, string> = {
+  milestone: '[BP:MILESTONE_ID]',
+  discuss: '[BP:PHASE_ID]',
+  'research-phase': '[BP:PHASE_ID]',
+  split: '[BP:PHASE_ID]',
+  adhoc: '[BP:CHANGE_NAME]',
+  proposal: '[BP:CHANGE_NAME]',
+  plan: '[BP:CHANGE_NAME]',
+  apply: '[BP:CHANGE_NAME]',
+  review: '[BP:CHANGE_NAME]',
+  archive: '[BP:CHANGE_NAME]',
+  continue: '[BP:CHANGE_NAME]',
+  audit: '[BP:CHANGE_NAME]',
+  ship: '[BP:CHANGE_NAME]',
+  'fix-plan': '[BP:CHANGE_NAME]',
+  'fix-apply': '[BP:CHANGE_NAME]',
 };
 
 function resolveBody(step: string): string {
   const entry = WORKFLOW_REGISTRY[step as WorkflowStep];
   let body = entry ? entry.command().content : `# bp-${step}\n\nWorkflow guide.`;
-  for (const [from, to] of Object.entries(PARAM_MAP)) {
-    if (to) {
-      body = body.replaceAll(from, to);
-    }
-  }
+
+  // $ARGUMENTS/$1 根据 step 类型映射到对应的 [BP:xxx]
+  const param = STEP_PARAM[step];
+  body = body.replaceAll('$ARGUMENTS', param ?? '$ARGUMENTS');
+  body = body.replaceAll('$1', param ?? '$1');
+  for (let i = 2; i <= 9; i++) body = body.replaceAll(`$${i}`, '');
+
+  // [BP:xxx] 变量原样保留（agent 运行时替换）
   return body;
 }
 

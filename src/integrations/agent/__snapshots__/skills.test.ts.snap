@@ -325,7 +325,7 @@ hide: false
 Run \`bp state\` to determine active milestone/phase. Determine audit scope from user input or ask.
 
 ### Step 2: Generate skeleton + read artifacts
-Run \`bp audit [BP:CHANGE_NAME] $2\` — the CLI creates a skeleton uat.md with frontmatter + available artifact list.
+Run \`bp audit [BP:CHANGE_NAME] \` — the CLI creates a skeleton uat.md with frontmatter + available artifact list.
 
 Read every listed artifact for each change. At minimum:
 - \`proposal.md\` — intent, scope, must_haves
@@ -407,7 +407,7 @@ hide: false
 ## Input
 
 ### Parameters
-- **\`[BP:CHANGE_NAME]\`** (required) — conventional commit message (e.g. "feat: add undo stack")
+- **\`$ARGUMENTS\`** (required) — conventional commit message (e.g. "feat: add undo stack")
 - \`--files <list>\` — comma-separated file paths to stage (e.g. "src/core/move.ts,tests/unit/move.test.ts")
 - \`--scope <scope>\` — commit scope. See \`bp/conventions/coding.md\` for standard list (core, cli, test, docs, config, render, input, level, shell). Omit if unsure.
 - \`--task <id>\` — task ID to record hash against in tasks.md (e.g. "task-1.3")
@@ -708,7 +708,7 @@ hide: false
 ## Input
 
 ### Parameters
-- **\`[BP:CHANGE_NAME]\`** (optional) — the phase to discuss (e.g. \`ph.1-core\`). If not provided, read from \`bp state\` to determine the active phase.
+- **\`[BP:PHASE_ID]\`** (optional) — the phase to discuss (e.g. \`ph.1-core\`). If not provided, read from \`bp state\` to determine the active phase.
 
 ### Prerequisites
 - Active milestone and phase must be set
@@ -727,12 +727,12 @@ If a phase ID was provided, use it directly. If not:
 
 1. Run \`bp state\` — read \`milestone\` and \`phase\` fields.
 2. If both are non-null, use them.
-3. If \`phase\` is null: run \`bp context discuss\` to get the roadmap path. Read roadmap.md, identify the current phase. Run \`bp state set-phase [BP:CHANGE_NAME]\` to activate it.
+3. If \`phase\` is null: run \`bp context discuss\` to get the roadmap path. Read roadmap.md, identify the current phase. Run \`bp state set-phase [BP:PHASE_ID]\` to activate it.
 4. If \`milestone\` is null: run \`bp state set-milestone [BP:MILESTONE_ID]\` first.
 
 Print the resolved phase identity:
 \`\`\`
-Phase: [BP:CHANGE_NAME]  |  Milestone: [BP:MILESTONE_ID]  |  Mode: <mvp || technical-layer>
+Phase: [BP:PHASE_ID]  |  Milestone: [BP:MILESTONE_ID]  |  Mode: <mvp || technical-layer>
 Goal: <phase-goal from roadmap>
 Deliverable: <executable artifact>
 \`\`\`
@@ -756,7 +756,7 @@ Read the phase goal and scope from roadmap. Identify 2-6 concrete gray areas spe
 
 ### Step 3: Present gray areas and let user select
 \`\`\`
-Here's what I identified as gray areas for [BP:CHANGE_NAME]:
+Here's what I identified as gray areas for [BP:PHASE_ID]:
 
 1. <Area 1> — <one-line description>
 2. <Area 2> — <one-line description>
@@ -789,7 +789,7 @@ Reference existing specs that this phase's decisions affect. If a decision chang
 
 ### Step 6: Commit
 \`\`\`bash
-bp commit "docs(phase): write context.md for [BP:CHANGE_NAME]" --files "bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/context.md" --scope docs --record
+bp commit "docs(phase): write context.md for [BP:PHASE_ID]" --files "bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/context.md" --scope docs --record
 \`\`\`
 
 ### Step 7: Advance
@@ -1080,7 +1080,7 @@ hide: false
 ## Input
 
 ### Parameters
-- **\`[BP:CHANGE_NAME]\`** (optional) — the product idea, feature concept, or brief to grill. If not provided, ask the user: "What are you building? Describe the idea in a few sentences."
+- **\`$ARGUMENTS\`** (optional) — the product idea, feature concept, or brief to grill. If not provided, ask the user: "What are you building? Describe the idea in a few sentences."
 
 ### Prerequisites
 - \`bp/requirements.md\` must exist (created by init)
@@ -1225,7 +1225,7 @@ hide: false
 
 ### Parameters
 - **None needed** — reads state and loops through all steps
-- Optionally: \`[BP:CHANGE_NAME]\` to loop on a specific change
+- Optionally: \`$ARGUMENTS\` to loop on a specific change
 
 ### Prerequisites
 - \`bp/state.md\` must exist
@@ -1367,7 +1367,7 @@ hide: false
 ## Input
 
 ### Parameters
-- **\\\`[BP:CHANGE_NAME]\\\`** (optional) — the milestone to switch to. If not provided, read from \\\`bp state\\\`.
+- **\\\`[BP:MILESTONE_ID]\\\`** (optional) — the milestone to switch to. If not provided, read from \\\`bp state\\\`.
 
 ### Prerequisites
 - \\\`bp/roadmap.md\\\` must exist with defined milestones and phases
@@ -1391,7 +1391,7 @@ Run \\\`bp milestone archive [BP:MILESTONE_ID]\\\`. The CLI:
 4. Updates state to milestone-shipped
 
 ### Step 4: Switch to new milestone
-Run \\\`bp state set-milestone [BP:CHANGE_NAME]\\\`. This resets the active context to \\\`milestone-active\\\`.
+Run \\\`bp state set-milestone [BP:MILESTONE_ID]\\\`. This resets the active context to \\\`milestone-active\\\`.
 
 ### Step 5: Advance
 Run \\\`bp continue\\\` — routes to \\\`/bp:grill\\\` for the new milestone. Do NOT set a phase — the new milestone hasn't been split into phases yet.
@@ -1656,7 +1656,7 @@ hide: false
 ## Input
 
 ### Parameters
-- **\`[BP:CHANGE_NAME]\`** — phase ID (e.g. \`ph.1-core\`). If not provided, uses current phase from bp state.
+- **\`[BP:PHASE_ID]\`** — phase ID (e.g. \`ph.1-core\`). If not provided, uses current phase from bp state.
 
 ### Prerequisites
 - \`context.md\` must exist (discuss phase done)
@@ -1884,7 +1884,7 @@ Continue to Step 3.
 - Phase count for new milestone: determine by requirements scope
 - Create directories for the new milestone ONLY:
   \`\`\`bash
-  mkdir -p bp/milestones/[BP:CHANGE_NAME]/phases/[BP:PHASE_ID]
+  mkdir -p bp/milestones/$1/phases/[BP:PHASE_ID]
   \`\`\`
 
 ### Step 3: Choose planning mode (first time only)
@@ -1932,13 +1932,13 @@ bp commit "docs(roadmap): define milestones and phases" --files "bp/roadmap.md" 
 ### Step 8: Advance
 **First milestone:**
 \`\`\`bash
-bp state set-milestone [BP:CHANGE_NAME]
+bp state set-milestone $1
 bp state set-phase [BP:PHASE_ID]
 \`\`\`
 
 **New milestone (M1 already archived):**
 \`\`\`bash
-bp state set-milestone [BP:CHANGE_NAME]
+bp state set-milestone $1
 \`\`\`
 Do NOT set a phase — the new milestone needs grill → research → split first.
 
@@ -2073,7 +2073,7 @@ ls bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/changes/
 ### Step 3: Document dependency graph
 For each change with dependencies, run:
 \`\`\`bash
-bp state set-deps [BP:CHANGE_NAME] --deps <dep1,dep2>
+bp state set-deps [BP:PHASE_ID] --deps <dep1,dep2>
 \`\`\`
 
 Example: \`bp state set-deps c2 --deps c1\` means c2 depends on c1 (c1 must complete first).
@@ -2097,7 +2097,7 @@ bp commit "docs(split): create change proposals for [BP:PHASE_ID]" --files "bp/m
 Run \`bp continue\` to proceed to change planning.
 
 ## Output
-- \`bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/changes/[BP:CHANGE_NAME]/\` — one directory per change
+- \`bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/changes/[BP:PHASE_ID]/\` — one directory per change
 - Updated \`state.md\` with change dependency graph
 
 ## Guardrails
