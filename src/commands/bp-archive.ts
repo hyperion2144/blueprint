@@ -133,16 +133,11 @@ function mergeDeltaSpecs(deltaDir: string, bpDir: string): void {
 
     if (!existsSync(deltaSpecPath)) continue;
 
-    // Validate: domain must exist in bp/specs/ (prevent phase names becoming domains)
-    if (!existingDomains.includes(domain)) {
-      console.warn('Skipping delta-spec merge: domain "' + domain + '" does not exist in bp/specs/');
-      continue;
-    }
-
+    // If domain doesn't exist in bp/specs/, create it (no longer skip)
     if (!existsSync(liveSpecPath)) {
-      // Domain exists but spec.md might be missing synchronize error case
-      console.warn('Domain "' + domain + '" exists but spec.md is missing, copying delta.');
+      mkdirSync(join(globalSpecsDir, domain), { recursive: true });
       copyFileSync(deltaSpecPath, liveSpecPath);
+      console.log(`  ✓ Created bp/specs/${domain}/spec.md from delta`);
       continue;
     }
 
