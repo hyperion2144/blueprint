@@ -2,7 +2,7 @@
  * bp state — view/modify current state (compact JSON output)
  */
 
-import { join } from 'node:path';
+import { join, basename } from 'node:path';
 import { readFileSync, existsSync } from 'node:fs';
 import { loadState, updateState } from '../core/state-file.js';
 
@@ -63,21 +63,8 @@ function showState() {
   const state = loadState(bpDir);
   const { project, active_context } = state;
 
-  const pendingChanges = state.changes.filter((c: any) => c.status !== 'archived');
-  const pendingAdhoc = state.adhoc.filter((c: any) => c.status !== 'archived');
-
-  // Read task progress for each pending change
-  const withProgress = (items: any[], type: string) => items.map((c: any) => {
-    const tasksPath = join(bpDir, 'changes', c.name, 'tasks.md');
-    let tasks = null;
-    try {
-      const content = readFileSync(tasksPath, 'utf-8');
-      const total = (content.match(/^\s*-\s*\[[ x]\]/gm) || []).length;
-      const completed = (content.match(/^\s*-\s*\[x\]/gm) || []).length;
-      if (total > 0) tasks = { total, completed };
-    } catch { /* no tasks.md yet */ }
-    return { type, name: c.name, status: c.status, depends_on: c.depends_on || [], tasks };
-  });
+  const allPending = state.changes.filter((c: any) => c.status !== 'archived');
+  const allPendingAdhoc = state.adhoc.filter((c: any) => c.status !== 'archived');
 
   // Read milestone/phase status from roadmap if available
   let roadmap = null;
@@ -107,13 +94,54 @@ function showState() {
   lines.push(`step: ${active_context.step}`);
   if (active_context.ref) lines.push(`ref: ${active_context.ref}`);
 
-  const pending = withProgress(pendingChanges, 'change').concat(withProgress(pendingAdhoc, 'adhoc'));
-  if (pending.length > 0) {
-    lines.push('pending:');
-    for (const p of pending) {
-      const deps = p.depends_on && p.depends_on.length > 0 ? ` (needs: ${(p.depends_on as string[]).join(', ')})` : '';
-      const tasks = p.tasks ? ` [${p.tasks.completed}/${p.tasks.total} tasks]` : '';
-      lines.push(`  ${p.name} [${p.status}]${deps}${tasks}`);
+  // Active changes (not pending, not archived)
+  const active = allPending.filter((c: any) => c.status !== 'pending');
+  const activeAdhoc = allPendingAdhoc.filter((c: any) => c.status !== 'pending');
+  const activeList = [...active, ...activeAdhoc];
+  if (activeList.length > 0) {
+    lines.push('active:');
+    const focusRef = active_context.ref ? basename(active_context.ref) : null;
+    for (const c of activeList) {
+      const marker = c.name === focusRef ? ' *' : '';
+      const deps = c.depends_on?.length > 0 ? ` (needs: ${c.depends_on.join(', ')})` : '';
+      lines.push(`  ${c.name} [${c.status}]${marker}${deps}`);
+    }
+  }
+
+  // Not started changes (pending)
+  const notStarted = allPending.filter((c: any) => c.status === 'pending');
+  const notStartedAdhoc = allPendingAdhoc.filter((c: any) => c.status === 'pending');
+  if (notStarted.length + notStartedAdhoc.length > 0) {
+    lines.push('not_started:');
+    for (const c of [...notStarted, ...notStartedAdhoc]) {
+      const deps = c.depends_on?.length > 0 ? ` (needs: ${c.depends_on.join(', ')})` : '';
+      lines.push(`  ${c.name}${deps}`);
+    }
+  }
+
+  // Contexts (parallel changes)
+  if (active_context.type === 'changes' && active_context.contexts) {
+    lines.push('contexts:');
+    for (const [name, entry] of Object.entries(active_context.contexts)) {
+      lines.push(`  ${name} [${entry.step}]`);
+    }
+  }
+
+  // Completed (archived but not released)
+  if (state.completed && state.completed.length > 0) {
+    lines.push('completed:');
+    for (const c of state.completed) {
+      const loc = c.type === 'change' ? ` (${c.milestone} / ${c.phase})` : ' (adhoc)';
+      lines.push(`  ${c.name}${loc}`);
+    }
+  }
+
+  // Released
+  if (state.released && state.released.length > 0) {
+    lines.push('released:');
+    for (const r of state.released) {
+      const loc = r.type === 'change' ? ` (${r.milestone} / ${r.phase})` : ' (adhoc)';
+      lines.push(`  ${r.name}${loc}`);
     }
   }
 

@@ -56,24 +56,54 @@ function archiveHandler(changePath: string) {
   try {
     updateState(bpDir, (state) => {
       const change = state.changes.find((c) => c.name === changeName);
-      if (change) {
-        state.changes = state.changes.filter((c) => c.name !== changeName);
-      }
       const adhoc = state.adhoc.find((c) => c.name === changeName);
-      if (adhoc) {
-        state.adhoc = state.adhoc.filter((c) => c.name !== changeName);
-      }
 
-      // Reset active_context based on remaining pending changes
-      const nextChange = state.changes[0];
-      const nextAdhoc = state.adhoc[0];
-      if (nextAdhoc) {
-        state.active_context = { type: 'adhoc', ref: `changes/${nextAdhoc.name}`, step: nextAdhoc.status };
-      } else if (nextChange) {
-        state.active_context = { type: 'change', ref: `changes/${nextChange.name}`, step: nextChange.status };
+      if (change) state.changes = state.changes.filter((c) => c.name !== changeName);
+      if (adhoc) state.adhoc = state.adhoc.filter((c) => c.name !== changeName);
+
+      // Write to completed list
+      const date = new Date().toISOString().slice(0, 10);
+      const normalizedPath = changePath.replace(/\\/g, '/');
+      const isPhaseChange = normalizedPath.includes('/milestones/') && normalizedPath.includes('/phases/');
+      const parts = normalizedPath.split('/');
+      const msIdx = parts.indexOf('milestones');
+      const chIdx = parts.indexOf('changes');
+      const msId = msIdx >= 0 ? parts[msIdx + 1] : null;
+      const phId = chIdx > 0 ? parts[chIdx - 1] : null;
+      const archiveDir = join('bp', 'archive', msId ?? 'changes', phId ?? '', `${date}-${changeName}`);
+
+      if (!state.completed) state.completed = [];
+      state.completed.push({
+        name: changeName,
+        type: isPhaseChange ? 'change' : 'adhoc',
+        milestone: msId,
+        phase: phId,
+        archived_at: date,
+        archive_dir: archiveDir,
+      });
+
+      // Clean up contexts if in parallel mode
+      if (state.active_context.type === 'changes' && state.active_context.contexts) {
+        delete state.active_context.contexts[changeName];
+        const remaining = Object.keys(state.active_context.contexts);
+        if (remaining.length === 0) {
+          state.active_context = { type: 'project', ref: null, step: state.project.status };
+        } else if (remaining.length === 1) {
+          const last = state.active_context.contexts[remaining[0]];
+          state.active_context = { type: last.type, ref: last.ref, step: last.step };
+        }
       } else {
-        state.active_context = { type: 'project', ref: null, step: 'archived' };
-        state.project.status = 'change-archived';
+        // Single change mode: reset active_context
+        const nextChange = state.changes[0];
+        const nextAdhoc = state.adhoc[0];
+        if (nextAdhoc) {
+          state.active_context = { type: 'adhoc', ref: 'changes/' + nextAdhoc.name, step: nextAdhoc.status };
+        } else if (nextChange) {
+          state.active_context = { type: 'change', ref: 'changes/' + nextChange.name, step: nextChange.status };
+        } else {
+          state.active_context = { type: 'project', ref: null, step: 'archived' };
+          state.project.status = 'change-archived';
+        }
       }
     });
     console.log('✓ state.md updated');

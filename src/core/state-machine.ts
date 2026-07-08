@@ -35,5 +35,6 @@ export function getSlashCommand(from: string, command: string): string | null {
 
 /** 检查状态是否存在 */
 export function isValidStatus(status: string): boolean {
+  if (status === 'changes') return true;
   return STATE_TRANSITIONS.some((t) => t.from === status || t.to === status);
 }

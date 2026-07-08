@@ -5,13 +5,24 @@
 
 import type { EntityType, ChangeStatus } from './project.js';
 
-/** 单个 change 在状态机中的跟踪状态 */
-export interface ChangeState {
+
+/** 已归档的变更 */
+export interface CompletedEntry {
   name: string;
-  status: ChangeStatus | 'blocked';
-  depends_on: string[];
-  /** 执行模式: lightweight (编排者自实现) | full (派发子代理) */
-  mode?: 'lightweight' | 'full';
+  type: 'change' | 'adhoc';
+  milestone: string | null;
+  phase: string | null;
+  archived_at: string;
+  archive_dir: string;
+}
+
+/** 已发布的变更 */
+export interface ReleasedEntry {
+  name: string;
+  type: 'change' | 'adhoc';
+  milestone: string | null;
+  phase: string | null;
+  released_at: string;
 }
 
 /** state.md 的 frontmatter 结构 */
@@ -26,11 +37,12 @@ export interface StateFile {
     type: EntityType;
     ref: string | null;
     step: string;
+    contexts?: Record<string, { type: 'change' | 'adhoc'; ref: string; step: string }>;
   };
-  /** 当前 phase 的所有 change 状态（依赖图并行） */
   changes: ChangeState[];
-  /** 活跃的临时 change */
   adhoc: ChangeState[];
+  completed?: CompletedEntry[];
+  released?: ReleasedEntry[];
 }
 
 /** 状态转移定义 */
@@ -73,6 +85,9 @@ export const STATE_TRANSITIONS: StateTransition[] = [
   // 回环 — 从 review 进入独立修复阶段
   { from: 'change-reviewing', command: 'replan', to: 'change-fix-planning', slashCommand: '/bp:fix-plan', subagent: true },
   { from: 'change-reviewing', command: 'reapply', to: 'change-fix-applying', slashCommand: '/bp:fix-apply', subagent: true },
+  // Change pending → proposal (首次推进激活)
+  { from: 'change-pending', command: 'proposal', to: 'change-proposal', slashCommand: '' },
+  { from: 'adhoc-pending', command: 'proposal', to: 'adhoc-proposal', slashCommand: '' },
 
   // 修复阶段间流转
   { from: 'change-fix-planning', command: 'apply-fix', to: 'change-fix-applying', slashCommand: '/bp:fix-apply', subagent: true },

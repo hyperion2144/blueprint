@@ -4,10 +4,11 @@
  */
 
 /** 实体类型 */
-export type EntityType = 'project' | 'milestone' | 'phase' | 'change' | 'adhoc';
+export type EntityType = 'project' | 'milestone' | 'phase' | 'change' | 'adhoc' | 'changes';
 
 /** Change 状态 */
 export type ChangeStatus =
+  | 'pending'
   | 'proposal'
   | 'planning'
   | 'applying'

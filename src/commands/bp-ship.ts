@@ -46,20 +46,61 @@ export function register(program: any): void {
     .option('--dry-run', 'Preview without executing')
     .option('--skip-commit', 'Skip git commit (for testing)')
     .option('--mark-published', 'Mark shipped changes as [published] in state.md history')
+    .option('--list-releases', 'List completed changes ready to be released')
+    .option('--release-changes <list>', 'Release specific changes (comma-separated names from completed list)')
     .action(shipHandler);
 }
 
 /* ── Main handler ──────────────────────────────────────────── */
 
-function shipHandler(options?: { dryRun?: boolean; skipCommit?: boolean; markPublished?: boolean }): void {
+function shipHandler(options?: { dryRun?: boolean; skipCommit?: boolean; markPublished?: boolean; listReleases?: boolean; releaseChanges?: string }): void {
   const cwd = process.cwd();
   const bpDir = join(cwd, 'bp');
   const state = loadState(bpDir);
+
+  // --list-releases: show completed changes
+  if (options?.listReleases) {
+    const completed = state.completed ?? [];
+    if (completed.length === 0) {
+      console.log('No completed changes ready for release.');
+      return;
+    }
+    console.log('Completed changes ready for release:');
+    for (const c of completed) {
+      const loc = c.type === 'change' ? ` (${c.milestone} / ${c.phase})` : ' (adhoc)';
+      console.log(`  ${c.name}${loc}`);
+      console.log(`    archived: ${c.archived_at}`);
+      console.log(`    dir: ${c.archive_dir}`);
+    }
+    console.log('Run: bp ship --release-changes "name1,name2" to release them.');
+    return;
+  }
+
+  // --release-changes: move from completed to released
+  if (options?.releaseChanges) {
+    const names = options.releaseChanges.split(',').map(s => s.trim()).filter(Boolean);
+    const notFound: string[] = [];
+    const released: string[] = [];
+    updateState(bpDir, (s) => {
+      if (!s.released) s.released = [];
+      for (const name of names) {
+        const idx = (s.completed ?? []).findIndex(c => c.name === name);
+        if (idx === -1) { notFound.push(name); continue; }
+        const entry = s.completed!.splice(idx, 1)[0];
+        s.released.push({ name: entry.name, type: entry.type, milestone: entry.milestone, phase: entry.phase, released_at: new Date().toISOString().slice(0, 10) });
+        released.push(name);
+      }
+    });
+    if (notFound.length > 0) console.log('Not found in completed:', notFound.join(', '));
+    if (released.length > 0) console.log('Released:', released.join(', '));
+    return;
+  }
+
+  // Original ship logic (unchanged)
   const config = loadConfig(bpDir);
   const template = config.release?.template ?? 'standard';
   const tpl = RELEASE_TEMPLATES[template] ?? RELEASE_TEMPLATES.standard;
 
-  // Parse archive history for unpublished entries
   const history = parseArchiveHistory(bpDir);
   const unpublished = history.filter((e) => !e.published);
 
@@ -68,7 +109,6 @@ function shipHandler(options?: { dryRun?: boolean; skipCommit?: boolean; markPub
     return;
   }
 
-  // Build PR body from template
   const body = buildPrBody(unpublished, tpl.sections, bpDir);
 
   console.log(JSON.stringify({

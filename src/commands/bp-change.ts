@@ -38,22 +38,17 @@ function newChange(name: string, options: { dir: string; full?: boolean; intent?
   mkdirSync(changeDir, { recursive: true });
   const changeType = isPhaseChange ? 'change' : 'adhoc';
 
+  const changeEntry = { name, status: 'pending' as const, depends_on: [] as string[] };
+
   if (options.full) {
-    // Full cycle: proposal only, goes through plan → apply → review → archive
+    // Full cycle: proposal only
     const content = (ARTIFACT_TEMPLATES['proposal'] ?? `# Proposal: ${name}\n`)
       .replace(/\{\{name\}\}/g, name)
       .replace(/\{\{date\}\}/g, date);
     writeFileSync(join(changeDir, 'proposal.md'), content, 'utf-8');
-
     console.log(`✓ Created change: ${changeDir} (full cycle)`);
-
-    const changeEntry = { name, status: 'proposal' as const, depends_on: [] as string[] };
-    updateState(bpDir, (state) => {
-      if (changeType === 'change') state.changes.push(changeEntry);
-      else state.adhoc.push(changeEntry);
-    });
   } else {
-    // Fast path (default): all artifacts, skip plan, go directly to apply
+    // Fast path (default): all artifacts pre-created
     const templates: Record<string, string> = {
       'proposal.md': (ARTIFACT_TEMPLATES['proposal'] ?? `# Proposal: ${name}\n`)
         .replace(/\{\{name\}\}/g, name).replace(/\{\{date\}\}/g, date)
@@ -63,22 +58,19 @@ function newChange(name: string, options: { dir: string; full?: boolean; intent?
       'tasks.md': (ARTIFACT_TEMPLATES['tasks'] ?? `# Tasks: ${name}\n`)
         .replace(/\{\{name\}\}/g, name).replace(/\{\{date\}\}/g, date),
     };
-
     for (const [filename, content] of Object.entries(templates)) {
       writeFileSync(join(changeDir, filename), content, 'utf-8');
     }
-
     console.log(`✓ Created change: ${changeDir}`);
-
-    const changeEntry = { name, status: 'proposal' as const, depends_on: [] as string[] };
-    updateState(bpDir, (state) => {
-      if (changeType === 'change') state.changes.push(changeEntry);
-      else state.adhoc.push(changeEntry);
-    });
   }
 
+  updateState(bpDir, (state) => {
+    if (changeType === 'change') state.changes.push(changeEntry);
+    else state.adhoc.push(changeEntry);
+  });
   console.log(`✓ state.md updated`);
   console.log('');
-  const proposalContent = getProposalCommandTemplate().content;
-  console.log(proposalContent);
+  console.log(`## Next step`);
+  console.log(`Run \`bp continue change ${name}\` to activate and start working on this change.`);
+  console.log(`(Fast-path artifacts created: proposal.md, design.md, tasks.md — ready for \`bp continue change ${name}\` → planning)`);
 }

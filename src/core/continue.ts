@@ -315,9 +315,11 @@ function resolveStatus(state: StateFile): string {
     case 'phase':
       return `phase-${ctx.step}`;
     case 'change':
-      return `change-${ctx.step}`;
+      return ctx.step === 'pending' ? 'change-pending' : `change-${ctx.step}`;
     case 'adhoc':
-      return ctx.step === 'proposal' ? `adhoc-${ctx.step}` : `change-${ctx.step}`;
+      return ctx.step === 'pending' ? 'adhoc-pending' : ctx.step === 'proposal' ? `adhoc-${ctx.step}` : `change-${ctx.step}`;
+    case 'changes':
+      return 'changes';
     default:
       return state.project.status;
   }

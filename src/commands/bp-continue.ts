@@ -134,6 +134,18 @@ function continueHandler(options?: { auto?: boolean; command?: string }): void {
     return;
   }
 
+
+  // Changes (parallel): output hint, do not auto-route
+  if (state.active_context.type === 'changes') {
+    const entries = state.active_context.contexts ?? {};
+    const list = Object.entries(entries).map(([n, e]) => `${n}[${e.step}]`).join(', ');
+    console.log([
+      '# bp continue — multiple changes active',
+      `active: ${list}`,
+      'hint: Use \`bp continue change <name>\` to advance a specific change.',
+    ].join('\n'));
+    return;
+  }
   // Change/adhoc context with active ref: auto-route to that change
   if ((state.active_context.type === 'change' || state.active_context.type === 'adhoc') && state.active_context.step !== 'archived') {
     const ref = state.active_context.ref;
@@ -298,43 +310,68 @@ function continueHandler(options?: { auto?: boolean; command?: string }): void {
 }
 
 function continueChangeHandler(name: string, options?: { auto?: boolean; command?: string }): void {
-  // Commander parent/child --auto conflict workaround: check process.argv directly
   const isAuto = options?.auto ?? process.argv.includes('--auto');
   const bpDir = join(process.cwd(), 'bp');
   const cwd = process.cwd();
   const state = loadState(bpDir);
 
-  // Validate exit conditions before advancing (skip for loopback commands)
-  if (!options?.command) {
-    const changeEntry = state.changes.find((c: any) => c.name === name) || state.adhoc.find((c: any) => c.name === name);
-    if (changeEntry) {
-      const ctxType = state.changes.includes(changeEntry) ? 'change' : 'adhoc';
-      const ref = ctxType === 'change' && state.project.current_milestone && state.project.current_phase
-        ? 'milestones/' + state.project.current_milestone + '/phases/' + state.project.current_phase + '/changes/' + name
-        : 'changes/' + name;
-      const validation = validateStepAdvance(ctxType, changeEntry.status, ref, cwd);
-      if (!validation.valid) {
-        const note = isAuto ? 'AUTO mode' : 'MUST read instructions below, check ---END--- marker exists.';
-        console.log([
-          '# bp continue — blocked',
-          'error: exit conditions not met',
-          'note: ' + note,
-          'step: ' + changeEntry.status,
-          'type: ' + ctxType,
-          'reasons: ' + validation.errors.join('; '),
-          'hint: Complete the current step first. Run bp template ' + changeEntry.status + ' if you need the step instructions.',
-        ].join('\n'));
-        return;
+  const changeEntry = state.changes.find((c: any) => c.name === name) || state.adhoc.find((c: any) => c.name === name);
+  if (!changeEntry) {
+    console.log(JSON.stringify({ error: `Change "${name}" not found in active changes` }));
+    return;
+  }
+
+  const ctxType = state.changes.includes(changeEntry) ? 'change' : 'adhoc';
+  const ref = ctxType === 'change' && state.project.current_milestone && state.project.current_phase
+    ? 'milestones/' + state.project.current_milestone + '/phases/' + state.project.current_phase + '/changes/' + name
+    : 'changes/' + name;
+
+  // Dependency check: depends_on changes must not be in active changes list
+  for (const depName of changeEntry.depends_on || []) {
+    const dep = state.changes.find((c: any) => c.name === depName) || state.adhoc.find((c: any) => c.name === depName);
+    if (dep) {
+      console.log(`# bp continue — blocked\n${name} depends on "${depName}" which is still active [${dep.status}]. Archive or release it first.`);
+      return;
+    }
+  }
+
+  // Pending → proposal: first activation
+  if (changeEntry.status === 'pending') {
+    updateState(bpDir, (s) => {
+      const ce = s.changes.find((c: any) => c.name === name) || s.adhoc.find((c: any) => c.name === name);
+      if (ce) ce.status = 'proposal';
+      const newEntry = { type: ctxType as 'change' | 'adhoc', ref, step: 'proposal' };
+      if (s.active_context.type === 'change' || s.active_context.type === 'adhoc') {
+        const oldName = basename(s.active_context.ref ?? '');
+        s.active_context = {
+          type: 'changes', ref: null, step: '',
+          contexts: { [oldName]: { type: s.active_context.type === 'adhoc' ? 'adhoc' as const : 'change' as const, ref: s.active_context.ref ?? '', step: s.active_context.step }, [name]: newEntry },
+        };
+      } else if (s.active_context.type === 'changes') {
+        if (!s.active_context.contexts) s.active_context.contexts = {};
+        s.active_context.contexts[name] = newEntry;
+      } else {
+        s.active_context = { type: ctxType as 'change' | 'adhoc', ref, step: 'proposal' };
       }
+    });
+    const proposalWf = WORKFLOW_REGISTRY['proposal'];
+    if (proposalWf) console.log('---INSTRUCTIONS---\n' + proposalWf.command().content + '\n---END---');
+    return;
+  }
+
+  // Validate exit conditions before advancing
+  if (!options?.command) {
+    const validation = validateStepAdvance(ctxType, changeEntry.status, ref, cwd);
+    if (!validation.valid) {
+      const note = isAuto ? 'AUTO mode' : 'MUST read instructions below, check ---END--- marker exists.';
+      console.log(['# bp continue — blocked', 'error: exit conditions not met', 'note: ' + note, 'step: ' + changeEntry.status, 'type: ' + ctxType, 'reasons: ' + validation.errors.join('; '), 'hint: Complete the current step first. Run bp template ' + changeEntry.status + ' if you need the step instructions.'].join('\n'));
+      return;
     }
   }
 
   const result = determineChangeNextStep(bpDir, name);
   if ('error' in result) {
-    console.log([
-      '# bp continue — error',
-      `error: ${result.error}`,
-    ].join('\n'));
+    console.log(JSON.stringify({ error: result.error }));
     return;
   }
 
@@ -342,33 +379,18 @@ function continueChangeHandler(name: string, options?: { auto?: boolean; command
   if (command) {
     const state = loadState(bpDir);
     const transition = getTransition(result.currentStep, command);
-
     if (transition) {
       const shortStatus = transition.to.replace(/^(change|adhoc)-/, '') as ChangeStatus;
-
       updateState(bpDir, (s) => {
         const adhoc = s.adhoc.find((c) => c.name === name);
-        if (adhoc) {
-          adhoc.status = shortStatus;
-          s.active_context = { type: 'adhoc', ref: `changes/${name}`, step: shortStatus };
-          return;
-        }
+        if (adhoc) { adhoc.status = shortStatus; s.active_context = { type: 'adhoc', ref: 'changes/' + name, step: shortStatus }; return; }
         const change = s.changes.find((c) => c.name === name);
-        if (change) {
-          change.status = shortStatus;
-          s.active_context = { type: 'change', ref: `changes/${name}`, step: shortStatus };
-        }
+        if (change) { change.status = shortStatus; s.active_context = { type: 'change', ref: 'changes/' + name, step: shortStatus }; }
       });
-
-      // Recompute result after state advance
       const newResult = determineChangeNextStep(bpDir, name);
-      if (!('error' in newResult)) {
-        formatContinueResult(newResult, isAuto, state);
-        return;
-      }
+      if (!('error' in newResult)) { formatContinueResult(newResult, isAuto, state); return; }
     }
   }
-
   formatContinueResult(result, isAuto, state);
 }
 

@@ -7,11 +7,21 @@
 /** Change name + context resolution — replaces repeated paragraphs in plan/apply/review/verify/archive. */
 export const CHANGE_NAME_RESOLVE = (status: string, step: string): string => `### Resolve change
 If \`$ARGUMENTS\` is non-empty: use as change name directly.
-If empty: run \`bp state\`, read \`pending\` array, filter by status \`${status}\`, pick first or ask user.
+If empty: run \`bp state\`, read the \`active:\` or \`not_started:\` sections for change names.
+
+**Always specify a change name by running \`bp continue change <name>\`**.
+The orchestrator provides the change name — do not guess.
+
+**When multiple changes are active** (type=changes in bp state):
+- Each change listed in the \`active:\` section has its own independent step
+- Pick the one specified by the orchestrator
+- Run \`bp continue change <name>\` — the change name is always required
+
+**Dependency check**: If the change has \`depends_on\`, all dependencies must be archived (no longer in \`active:\`) before this change can advance.
 
 **Resolved path formulas**:
-- Phase change directory:  \`bp/milestones/<milestone>/phases/<phase>/changes/<name>/\`
-- Adhoc change directory:  \`bp/changes/<name>/\`
+- Phase change: \`bp/milestones/<milestone>/phases/<phase>/changes/<name>/\`
+- Adhoc change: \`bp/changes/<name>/\`
 - Run \`bp context ${step}\` for resolved paths in the \`dirs:\` section.
 
 Then run \`bp context ${step}\` and read all listed files.

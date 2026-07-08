@@ -18,6 +18,29 @@ const ChangeStateSchema = z.object({
   depends_on: z.array(z.string()).optional().default([]),
 });
 
+const CompletedEntrySchema = z.object({
+  name: z.string(),
+  type: z.enum(['change', 'adhoc']),
+  milestone: z.string().nullable(),
+  phase: z.string().nullable(),
+  archived_at: z.string(),
+  archive_dir: z.string(),
+});
+
+const ReleasedEntrySchema = z.object({
+  name: z.string(),
+  type: z.enum(['change', 'adhoc']),
+  milestone: z.string().nullable(),
+  phase: z.string().nullable(),
+  released_at: z.string(),
+});
+
+const ContextEntrySchema = z.object({
+  type: z.enum(['change', 'adhoc']),
+  ref: z.string(),
+  step: z.string(),
+});
+
 const StateFileSchema = z.object({
   project: z.object({
     name: z.string(),
@@ -26,12 +49,15 @@ const StateFileSchema = z.object({
     current_phase: z.string().nullable(),
   }),
   active_context: z.object({
-    type: z.enum(['project', 'milestone', 'phase', 'change', 'adhoc']),
+    type: z.enum(['project', 'milestone', 'phase', 'change', 'adhoc', 'changes']),
     ref: z.string().nullable(),
     step: z.string(),
+    contexts: z.record(ContextEntrySchema).optional(),
   }),
   changes: z.array(ChangeStateSchema).optional().default([]),
   adhoc: z.array(ChangeStateSchema).optional().default([]),
+  completed: z.array(CompletedEntrySchema).optional().default([]),
+  released: z.array(ReleasedEntrySchema).optional().default([]),
 });
 
 /** state.md 路径 */
