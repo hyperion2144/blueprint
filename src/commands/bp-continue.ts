@@ -32,8 +32,13 @@ export function register(program: any): void {
 
 function formatContinueResult(result: ContinueResult, isAuto = false, state?: StateFile): void {
   const stepKey = result.currentStep.replace(/^(phase-|change-)/, '');
-  const wfStep = (STEP_TO_WORKFLOW as Record<string, WorkflowStep>)[stepKey];
+  let wfStep = (STEP_TO_WORKFLOW as Record<string, WorkflowStep>)[stepKey];
+  // Phase-level research should use research-phase template
+  if (result.type === 'phase' && stepKey === 'research') {
+    wfStep = 'research-phase';
+  }
   const rawInstructions = (wfStep && WORKFLOW_REGISTRY[wfStep]) ? WORKFLOW_REGISTRY[wfStep].command().content : undefined;
+
   const currentInstructions = rawInstructions && state
     ? expandTemplateVars(rawInstructions, state, stepKey, isAuto)
     : rawInstructions;
@@ -115,7 +120,11 @@ function continueHandler(options?: { auto?: boolean; command?: string }): void {
     // Show target state's instructions
     const ns = loadState(bpDir);
     const stepKey = ns.active_context.step.replace(/^(phase-|change-)/, '');
-    const wfStep = (STEP_TO_WORKFLOW as Record<string, WorkflowStep>)[stepKey];
+    let wfStep = (STEP_TO_WORKFLOW as Record<string, WorkflowStep>)[stepKey];
+    // Phase-level research should use research-phase template
+    if (ns.active_context.type === 'phase' && stepKey === 'research') {
+      wfStep = 'research-phase';
+    }
     const raw = wfStep && WORKFLOW_REGISTRY[wfStep] ? WORKFLOW_REGISTRY[wfStep].command().content : undefined;
     const instr = raw && ns ? expandTemplateVars(raw, ns, stepKey, isAuto) : raw;
     const ctxStr = ns.active_context.type === 'milestone' ? `Milestone ${ns.project.current_milestone ?? '?'}` : ns.active_context.type === 'phase' ? `Phase ${ns.project.current_phase ?? '?'}` : `${ns.project.current_milestone ?? '?'} — ${ns.active_context.step}`;
