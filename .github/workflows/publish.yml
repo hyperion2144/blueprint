@@ -25,18 +25,30 @@ jobs:
           git fetch --tags origin 2>/dev/null || true
           PREV_TAG=$(git tag --sort=-creatordate | sed -n '2p')
           if [ -n "$PREV_TAG" ]; then
-            COMMITS=$(git log "$PREV_TAG"..HEAD --pretty=format:'%s' --no-merges)
+            LOG_CMD="git log \"$PREV_TAG\"..HEAD --pretty=format:'---%n%s%n%-b' --no-merges"
           else
-            COMMITS=$(git log --pretty=format:'%s' --no-merges $(git rev-list --max-parents=0 HEAD)..HEAD)
+            LOG_CMD="git log --pretty=format:'---%n%s%n%-b' --no-merges $(git rev-list --max-parents=0 HEAD)..HEAD"
           fi
+          COMMITS=$(eval "$LOG_CMD")
           FEATS=""; FIXES=""; REFACTORS=""; CHORES=""
+          CURRENT=""
           while IFS= read -r line; do
-            case "$line" in
-              "feat"*) FEATS="$FEATS- ${line#feat: }"$'\n' ;;
-              "fix"*)  FIXES="$FIXES- ${line#fix: }"$'\n' ;;
-              "refactor"*) REFACTORS="$REFACTORS- ${line#refactor: }"$'\n' ;;
-              *)       CHORES="$CHORES- $line"$'\n' ;;
-            esac
+            if [ "$line" = "---" ]; then
+              if [ -n "$CURRENT" ]; then
+                TITLE="${CURRENT%%$'\n'*}"
+                BODY="${CURRENT#*$'\n'}"
+                [ "$TITLE" = "$BODY" ] && BODY=""
+                case "$TITLE" in
+                  "feat:"*) ENTRY="- ${TITLE#feat: }"; [ -n "$BODY" ] && ENTRY="$ENTRY"$'\n'"$(echo "$BODY" | sed 's/^/  /')"; FEATS="$FEATS$ENTRY"$'\n' ;;
+                  "fix:"*)  ENTRY="- ${TITLE#fix: }"; [ -n "$BODY" ] && ENTRY="$ENTRY"$'\n'"$(echo "$BODY" | sed 's/^/  /')"; FIXES="$FIXES$ENTRY"$'\n' ;;
+                  "refactor:"*) ENTRY="- ${TITLE#refactor: }"; [ -n "$BODY" ] && ENTRY="$ENTRY"$'\n'"$(echo "$BODY" | sed 's/^/  /')"; REFACTORS="$REFACTORS$ENTRY"$'\n' ;;
+                  *) ENTRY="- $TITLE"; [ -n "$BODY" ] && ENTRY="$ENTRY"$'\n'"$(echo "$BODY" | sed 's/^/  /')"; CHORES="$CHORES$ENTRY"$'\n' ;;
+                esac
+              fi
+              CURRENT=""
+            else
+              [ -z "$CURRENT" ] && CURRENT="$line" || CURRENT="$CURRENT"$'\n'"$line"
+            fi
           done <<< "$COMMITS"
           NOTES=""
           [ -n "$FEATS" ] && NOTES="${NOTES}### Features\n${FEATS}\n"
