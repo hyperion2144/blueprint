@@ -16,7 +16,8 @@ export function register(program: any): void {
   const cmd = program
     .command('continue')
     .description('Auto-advance to next step')
-    .option('--auto', 'Autonomous mode — agent fills decisions without asking user');
+    .option('--auto', 'Autonomous mode — agent fills decisions without asking user')
+    .option('--command <cmd>', 'Specify command: design | research (override next step)');
 
   cmd
     .command('change <name>')
@@ -85,13 +86,44 @@ function resolveStatusKey(type: string, step: string, projectStatus: string): st
     default: return projectStatus;
   }
 }
-
-function continueHandler(options?: { auto?: boolean }): void {
+function continueHandler(options?: { auto?: boolean; command?: string }): void {
   const isAuto = options?.auto ?? false;
   const bpDir = join(process.cwd(), 'bp');
   const cwd = process.cwd();
 
   const state = loadState(bpDir);
+
+  // --command: one explicit transition to target state, show its instructions, stop
+  if (options?.command && state.active_context.type !== 'change' && state.active_context.type !== 'adhoc') {
+    const currentStatus = resolveStatusKey(state.active_context.type, state.active_context.step, state.project.status);
+    const transition = getTransition(currentStatus, options.command);
+    if (!transition) {
+      console.log(JSON.stringify({ error: `No transition "${options.command}" from current state "${currentStatus}"` }));
+      return;
+    }
+    const to = transition.to;
+    updateState(bpDir, (s) => {
+      if (to.startsWith('phase-')) {
+        s.active_context = { type: 'phase', ref: `milestones/${s.project.current_milestone}/phases/${s.project.current_phase}`, step: to.substring(6) };
+      } else if (to.startsWith('change-')) {
+        s.active_context = { type: 'change', step: to.substring(7) };
+      } else {
+        s.active_context.step = to;
+        if (s.active_context.type === 'project' || s.active_context.type === 'milestone') s.project.status = to;
+      }
+    });
+    // Show target state's instructions
+    const ns = loadState(bpDir);
+    const stepKey = ns.active_context.step.replace(/^(phase-|change-)/, '');
+    const wfStep = (STEP_TO_WORKFLOW as Record<string, WorkflowStep>)[stepKey];
+    const raw = wfStep && WORKFLOW_REGISTRY[wfStep] ? WORKFLOW_REGISTRY[wfStep].command().content : undefined;
+    const instr = raw && ns ? expandTemplateVars(raw, ns, stepKey, isAuto) : raw;
+    const ctxStr = ns.active_context.type === 'milestone' ? `Milestone ${ns.project.current_milestone ?? '?'}` : ns.active_context.type === 'phase' ? `Phase ${ns.project.current_phase ?? '?'}` : `${ns.project.current_milestone ?? '?'} — ${ns.active_context.step}`;
+    const lines = [`# bp continue → ${ns.active_context.step}`, `step: ${ns.active_context.step}`, `type: ${ns.active_context.type}`, `ref: ${ctxStr}`, `status: ${ns.project.status}`, `chars: ${instr ? instr.length : 0}`];
+    if (instr) lines.push('', '---INSTRUCTIONS---', instr, '---END---');
+    console.log(lines.join('\n'));
+    return;
+  }
 
   // Change/adhoc context with active ref: auto-route to that change
   if ((state.active_context.type === 'change' || state.active_context.type === 'adhoc') && state.active_context.step !== 'archived') {

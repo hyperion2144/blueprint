@@ -104,3 +104,20 @@ Run \`bp continue\` to proceed to the research phase.
 - HTML preview is optional
 - DESIGN.md is not a hard constraint — refinement happens during implementation
 `;
+
+export function getDesignSkillTemplate(): SkillTemplate {
+  return {
+    name: 'bp-design',
+    description: 'UI design direction — define aesthetic, color, typography, layout',
+    instructions,
+  };
+}
+
+export function getDesignCommandTemplate(): CommandTemplate {
+  return {
+    description: 'UI design direction — define aesthetic, color, typography, layout',
+    category: 'Planning',
+    tags: ['bp', 'design', 'ui', 'ux'],
+    content: instructions,
+  };
+}
