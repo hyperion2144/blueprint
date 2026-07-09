@@ -156,7 +156,7 @@ Determine loopback type:
   2. **Follow the instructions** from the CLI output
   3. After fix-apply completes → \`bp continue change <name>\` → re-review with --fix
 
-Re-review (--fix): do NOT create new review files. In the ORIGINAL files, mark resolved findings \`✅ 已修复\`, append new findings with continued numbering.
+Re-review (--fix): do NOT create new review files. In the ORIGINAL files, mark resolved findings by changing "[ ]" to "[x]" in the \`## Issues\` section. Append new findings with continued numbering.
 If any report is still FAIL or NEEDS_REVISION → loop back. If all PASS → advance to archive.
 
 `;
