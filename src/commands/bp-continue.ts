@@ -459,16 +459,24 @@ function continueChangeHandler(name: string, options?: { auto?: boolean; command
     if (transition) {
       const shortStatus = transition.to.replace(/^(change|adhoc)-/, '') as ChangeStatus;
       updateState(bpDir, (s) => {
-        const adhoc = s.adhoc.find((c) => c.name === name);
-        if (adhoc) { adhoc.status = shortStatus; s.active_context = { type: 'adhoc', ref: 'changes/' + name, step: shortStatus }; return; }
-        const change = s.changes.find((c) => c.name === name);
-        if (change) { change.status = shortStatus; s.active_context = { type: 'change', ref: 'changes/' + name, step: shortStatus }; }
+        const entry = s.adhoc.find((c) => c.name === name);
+        const entryType = entry ? 'adhoc' : 'change';
+        const target = entry ?? s.changes.find((c) => c.name === name);
+        if (!target) return;
+        target.status = shortStatus;
+
+        // 如果已在 parallel 模式 (type:changes)，原地更新该 entry
+        if (s.active_context.type === 'changes' && s.active_context.contexts) {
+          s.active_context.contexts[name] = { type: entryType as 'change' | 'adhoc', ref: 'changes/' + name, step: shortStatus };
+        } else {
+          // 单个 change 模式
+          s.active_context = { type: entryType as 'change' | 'adhoc', ref: 'changes/' + name, step: shortStatus };
+        }
       });
       const newResult = determineChangeNextStep(bpDir, name);
       if (!('error' in newResult)) { formatContinueResult(newResult, isAuto, state); return; }
     }
   }
-  formatContinueResult(result, isAuto, state);
 }
 
 function findNextPhase(bpDir: string, milestoneId: string | null, currentPhase: string): string | null {
