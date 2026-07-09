@@ -143,6 +143,32 @@ function archiveHandler(changePath: string) {
     const gitPath = changePath.replace(/\\/g, '/');
     execSync(`git rm -r "${gitPath}" || true`, { cwd: process.cwd() });
   } catch { /* non-critical */ }
+
+  // 7. Auto-mark roadmap phase as COMPLETED
+  try {
+    const roadmapPath = join(bpDir, 'roadmap.md');
+    if (existsSync(roadmapPath)) {
+      const state = loadState(bpDir);
+      const milestone = state.project.current_milestone;
+      const phase = state.project.current_phase;
+      if (milestone && phase) {
+        let roadmap = readFileSync(roadmapPath, 'utf-8');
+        // Mark phase as COMPLETED: Ph-{mid}.{pid} [ACTIVE] → [COMPLETED]
+        const phasePattern = new RegExp(`(### Ph-${milestone}\\.${phase}: .*?) \\[ACTIVE\\]`);
+        if (phasePattern.test(roadmap)) {
+          roadmap = roadmap.replace(phasePattern, `$1 [COMPLETED]`);
+          // Check if all phases in this milestone are COMPLETED
+          const mstoneRegex = new RegExp(`## Md-${milestone}: .*? \\[ACTIVE\\]`);
+          const allPhasesDone = !roadmap.includes(`### Ph-${milestone}.`);
+          if (allPhasesDone && mstoneRegex.test(roadmap)) {
+            roadmap = roadmap.replace(mstoneRegex, (match: string) => match.replace('[ACTIVE]', '[COMPLETED]'));
+          }
+          writeFileSync(roadmapPath, roadmap, 'utf-8');
+          console.log(`✓ roadmap.md: Ph-${milestone}.${phase} marked COMPLETED`);
+        }
+      }
+    }
+  } catch { /* non-critical */ }
 }
 
 /** 合并 delta-specs 到全局 specs/ */
