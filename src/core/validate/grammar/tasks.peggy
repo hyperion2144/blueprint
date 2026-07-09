@@ -2,8 +2,7 @@
 
 Tasks
   = "# Tasks:" __ name:LineRest NEWLINE
-    __ body:(WaveSection / TaskItem / BlankLine / OtherLine)*
-    { 
+    __ body:(WaveSection / TaskItem / BlankLine / OtherLine)* __ (.)* { 
       const tasks = [];
       for (const b of body) {
         if (b && b.tasks) tasks.push(...b.tasks);
@@ -56,6 +55,7 @@ Integer
 LineRest
   = chars:[^\n\r]+ { return chars.join("").trim(); }
 
+_ = [	]*
 __
   = [ \t\n\r]*
 

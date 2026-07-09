@@ -2,8 +2,7 @@
 
 Design
   = "# Design:" __ name:LineRest NEWLINE
-    __ items:DesignItemsSection
-    { return { name, items: items || [] }; }
+    __ items:DesignItemsSection __ (.)* { return { name, items: items || [] }; }
 
 DesignItemsSection
   = "## Design Items" NEWLINE items:DesignItem+
@@ -27,7 +26,7 @@ PRId
   = "PR-" id:Integer { return "PR-" + id; }
 
 DescriptionBlock
-  = lines:(__ !"- " !"## " !NEWLINE text:LineRest NEWLINE)+
+  = lines:(_ !"- " !"## " !NEWLINE text:LineRest NEWLINE)+
     { return lines.map(l => l.text).join("\n").trim(); }
 
 Integer
@@ -36,6 +35,7 @@ Integer
 LineRest
   = chars:[^\n\r]+ { return chars.join("").trim(); }
 
+_ = [	]*
 __
   = [ \t\n\r]*
 

@@ -255,6 +255,7 @@ function checkTasks(ast: any, content: string, context?: any): ValidationError[]
       errs.push({ field: 'fill', message: `T-${t.id}: missing files field` });
     }
   }
+  return errs;
 }
 
 function checkVerification(ast: any, content: string): ValidationError[] {

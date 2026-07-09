@@ -4,8 +4,7 @@ Proposal
   = "# Proposal:" __ name:LineRest NEWLINE
     __ intent:IntentSection
     __ refs:RefsSection?
-    __ deliverables:DeliverablesSection
-    { return { name, intent, refs, deliverables: deliverables || [] }; }
+    __ deliverables:DeliverablesSection __ (.)* { return { name, intent, refs, deliverables: deliverables || [] }; }
 
 IntentSection
   = "## Intent" NEWLINE text:ContentBlock
@@ -43,11 +42,11 @@ RefIdList
     { return [head].concat(tail.map(t => t[3])); }
 
 DescriptionBlock
-  = lines:(__ !"- " !"## " !NEWLINE text:LineRest NEWLINE)+
+  = lines:(_ !"- " !"## " !NEWLINE text:LineRest NEWLINE)+
     { return lines.map(l => l.text).join(" ").trim(); }
 
 ContentBlock
-  = lines:(__ text:LineRest NEWLINE)+
+  = lines:(_ text:LineRest NEWLINE)+
     { return lines.map(l => l.text).join("\n"); }
 
 Integer
@@ -56,6 +55,7 @@ Integer
 LineRest
   = chars:[^\n\r]+ { return chars.join("").trim(); }
 
+_ = [	]*
 __
   = [ \t\n\r]*
 

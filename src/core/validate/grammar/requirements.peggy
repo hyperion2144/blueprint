@@ -40,7 +40,7 @@ ConstraintLine
     { return { type: "constraint", text: constraintText }; }
 
 PlainLine
-  = __ !"#" text:LineRest NEWLINE
+  = _ !"#" text:LineRest NEWLINE
     { return { type: "text", text }; }
 
 Integer
@@ -49,6 +49,7 @@ Integer
 LineRest
   = chars:[^\n\r]+ { return chars.join("").trim(); }
 
+_ = [	]*
 __
   = [ \t]*
 
