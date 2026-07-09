@@ -7,6 +7,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { determineNextStep, determineChangeNextStep, STEP_TO_WORKFLOW, expandTemplateVars } from '../core/continue.js';
 import { loadState, updateState } from '../core/state-file.js';
 import { validateStepAdvance } from '../core/state-validator.js';
+import { parseAndValidate, checkCoverage } from '../core/validate/index.js';
 import { getTransition } from '../core/state-machine.js';
 import type { ContinueResult } from '../core/continue.js';
 import type { ChangeStatus, StateFile } from '../types/index.js';
@@ -444,6 +445,24 @@ function continueChangeHandler(name: string, options?: { auto?: boolean; command
       lines.push('hint: Wait for the above changes to complete and archive, then retry.');
       console.log(lines.join('\n'));
       return;
+    }
+
+    // Coverage check: PR→DS→T chain completeness
+    const changeDir = join(bpDir, ref);
+    const [propResult, desResult, taskResult] = ['proposal', 'design', 'tasks'].map(type => {
+      const path = join(changeDir, `${type}.md`);
+      if (!existsSync(path)) return null;
+      const content = readFileSync(path, 'utf-8');
+      return parseAndValidate(type, content);
+    });
+    if (propResult?.ast && desResult?.ast && taskResult?.ast) {
+      const covErrors = checkCoverage(propResult.ast, desResult.ast, taskResult.ast);
+      if (covErrors.length > 0) {
+        console.log(['# bp continue — blocked', 'error: reference chain incomplete'].concat(
+          covErrors.map(e => '  ' + e.message)
+        ).concat(['hint: Ensure every PR is referenced by a DS, and every DS by a Task.']).join('\n'));
+        return;
+      }
     }
   }
 
