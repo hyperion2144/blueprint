@@ -10,8 +10,13 @@
  */
 
 import { readFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const _require = createRequire(__filename);
 // ── Types ──────────────────────────────────────────────────────────
 
 export interface SectionRef {
@@ -50,13 +55,12 @@ type Parser = {
 };
 
 const grammarCache = new Map<string, Parser>();
-
 function loadGrammar(name: string): Parser | null {
   if (grammarCache.has(name)) return grammarCache.get(name)!;
   try {
-    const mod = require(`./grammar/${name}.js`) as { parse: (input: string) => any };
-    grammarCache.set(name, mod as any);
-    return mod as any;
+    const mod: { parse: (input: string) => any } = _require(`./grammar/${name}.js`);
+    grammarCache.set(name, mod);
+    return mod;
   } catch {
     return null;
   }

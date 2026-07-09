@@ -2,6 +2,7 @@
 //
 // https://peggyjs.org/
 
+"use strict";
 
 class peg$SyntaxError extends SyntaxError {
   constructor(message, expected, found, location) {
@@ -847,12 +848,8 @@ function peg$parse(input, options) {
   }
 }
 
-const peg$allowedStartRules = [
-  "Roadmap"
-];
-
-export {
-  peg$allowedStartRules as StartRules,
-  peg$SyntaxError as SyntaxError,
-  peg$parse as parse
+module.exports = {
+  StartRules: ["Roadmap"],
+  SyntaxError: peg$SyntaxError,
+  parse: peg$parse,
 };

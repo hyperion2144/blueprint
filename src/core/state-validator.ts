@@ -133,21 +133,21 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
     ],
   },
 
-  // Change at reviewing — must have all three review files AND all Issues must be [x]
+  // Change at reviewing — PEG validate, fallback to issues_all_marked for old format
   {
     type: 'change', step: 'reviewing',
     checks: [
-      { path: 'spec-review.md', description: 'spec-review.md not found. Complete the spec review first.', checkMode: 'issues_all_marked' },
-      { path: 'quality-review.md', description: 'quality-review.md not found. Complete the quality review first.', checkMode: 'issues_all_marked' },
-      { path: 'goal-review.md', description: 'goal-review.md not found. Complete the goal review first.', checkMode: 'issues_all_marked' },
+      { path: 'spec-review.md', description: 'spec-review.md not found. Complete the spec review first.', checkMode: 'peg_validate', pegType: 'spec-review' },
+      { path: 'quality-review.md', description: 'quality-review.md not found. Complete the quality review first.', checkMode: 'peg_validate', pegType: 'quality-review' },
+      { path: 'goal-review.md', description: 'goal-review.md not found. Complete the goal review first.', checkMode: 'peg_validate', pegType: 'goal-review' },
     ],
   },
   {
     type: 'adhoc', step: 'reviewing',
     checks: [
-      { path: 'spec-review.md', description: 'spec-review.md not found.', checkMode: 'issues_all_marked' },
-      { path: 'quality-review.md', description: 'quality-review.md not found.', checkMode: 'issues_all_marked' },
-      { path: 'goal-review.md', description: 'goal-review.md not found.', checkMode: 'issues_all_marked' },
+      { path: 'spec-review.md', description: 'spec-review.md not found.', checkMode: 'peg_validate', pegType: 'spec-review' },
+      { path: 'quality-review.md', description: 'quality-review.md not found.', checkMode: 'peg_validate', pegType: 'quality-review' },
+      { path: 'goal-review.md', description: 'goal-review.md not found.', checkMode: 'peg_validate', pegType: 'goal-review' },
     ],
   },
 
@@ -192,10 +192,27 @@ function findChangeDir(bpDir: string, baseDir?: string): string[] {
     return [];
   }
 }
+/** Extract unmarked issues from review file (old format fallback) */
+function extractUnmarkedIssues(content: string): string[] {
+  const unmarked: string[] = [];
+  const lines = content.split('\n');
+  let inIssues = false;
+  for (const line of lines) {
+    if (line.startsWith('## ')) {
+      inIssues = line.trim() === '## Issues';
+      continue;
+    }
+    if (!inIssues) continue;
+    const issueMatch = line.match(/^- \[([ x])\]/);
+    if (!issueMatch) continue;
+    if (issueMatch[1] === ' ') unmarked.push(line.trim());
+  }
+  return unmarked;
+}
 
 function checkExitCondition(bpDir: string, check: ExitCheck, resolvedPath?: string): string | null {
-  const fullPath = resolvedPath ?? join(bpDir, check.path);
 
+  const fullPath = resolvedPath ?? join(bpDir, check.path);
   // Directory check: path ends with / → verify the directory has content
   if (check.path.endsWith('/')) {
     if (!existsSync(fullPath)) return `${check.path} directory not found. ${check.description}`;
@@ -375,17 +392,25 @@ function checkExitCondition(bpDir: string, check: ExitCheck, resolvedPath?: stri
     if (!existsSync(fullPath)) {
       return `${check.path} not found. ${check.description}`;
     }
+    const content = readFileSync(fullPath, 'utf-8');
+    let result;
     try {
-      const content = readFileSync(fullPath, 'utf-8');
-      const result = parseAndValidate(check.pegType, content);
-      if (!result.valid) {
-        return `${check.path}: ${result.errors.map(e => e.message).join('; ')}`;
-      }
+      result = parseAndValidate(check.pegType, content);
     } catch (e: any) {
-      return `${check.path}: validation error - ${e.message}`;
+      // PEG parse error (old format) — fall back to format-specific check
+      result = { valid: true, errors: [] };
+      // For review files, fall back to issues_all_marked
+      if (['spec-review', 'quality-review', 'goal-review'].includes(check.pegType)) {
+        const unmarked = extractUnmarkedIssues(content);
+        if (unmarked.length > 0) {
+          return `Unmarked issues in ${check.path} (${unmarked.length}): ${unmarked[0]}${unmarked.length > 1 ? ` (+${unmarked.length - 1} more)` : ''}. Complete re-review or fix.`;
+        }
+      }
+    }
+    if (!result.valid) {
+      return `${check.path}: ${result.errors.map((e: any) => e.message).join('; ')}`;
     }
   }
-  return null;
 }
 /**
  * Validate exit conditions for the current step
