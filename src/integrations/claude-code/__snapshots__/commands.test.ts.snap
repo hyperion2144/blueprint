@@ -1831,10 +1831,14 @@ Issue numbering rules (used in all three review files):
 
 Each finding gets a unique number (R1, R2, Q1, Q2, G1, G2, D1, D2...) written in the checklist/Issues table, AND a corresponding \`- [ ]\` entry in the \`## Issues\` section at the bottom.
 
-**If LIGHTWEIGHT — quick checklist:**
-- **No code**: write minimal reviews, advance
-- **With code**: tsc + vitest must pass; quick scan → write PASS reviews
-- Use the numbering rules above when writing issues
+**If LIGHTWEIGHT — use templates, fill quickly, then advance:**
+1. Run \`bp template spec-review\` → read template → fill it → write to \`spec-review.md\`
+2. Run \`bp template quality-review\` → read template → fill it → write to \`quality-review.md\`
+3. Run \`bp template goal-review\` → read template → fill it → write to \`goal-review.md\`
+4. Use the numbering rules above (R/Q/G/D prefixes) when filling
+5. \`tsc\` + \`vitest\` must pass before writing reviews; include evidence in the review files
+6. Leave all \`## Issues\` entries as \`- [ ]\` (unchecked) — they are checked during re-review
+7. All three files MUST be written — never skip a review file
 
 **If FULL — dispatch reviewer sub-agent:**
 1. Run \`bp dispatch reviewer --change $1\`
