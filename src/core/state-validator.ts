@@ -15,7 +15,7 @@ export interface ValidationResult {
 interface ExitCheck {
   path: string;
   description: string;
-  checkMode?: 'file' | 'tasks_marked'; // default: 'file'
+  checkMode?: 'file' | 'tasks_marked' | 'issues_all_marked'; // default: 'file'
 }
 
 interface StepExitCriteria {
@@ -134,21 +134,21 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
     ],
   },
 
-  // Change at reviewing — all three review files must exist
+  // Change at reviewing — must have all three review files AND all Issues must be [x]
   {
     type: 'change', step: 'reviewing',
     checks: [
-      { path: 'spec-review.md', description: 'spec-review.md not found. Complete the spec review first.' },
-      { path: 'quality-review.md', description: 'quality-review.md not found. Complete the quality review first.' },
-      { path: 'goal-review.md', description: 'goal-review.md not found. Complete the goal review first.' },
+      { path: 'spec-review.md', description: 'spec-review.md not found. Complete the spec review first.', checkMode: 'issues_all_marked' },
+      { path: 'quality-review.md', description: 'quality-review.md not found. Complete the quality review first.', checkMode: 'issues_all_marked' },
+      { path: 'goal-review.md', description: 'goal-review.md not found. Complete the goal review first.', checkMode: 'issues_all_marked' },
     ],
   },
   {
     type: 'adhoc', step: 'reviewing',
     checks: [
-      { path: 'spec-review.md', description: 'spec-review.md not found.' },
-      { path: 'quality-review.md', description: 'quality-review.md not found.' },
-      { path: 'goal-review.md', description: 'goal-review.md not found.' },
+      { path: 'spec-review.md', description: 'spec-review.md not found.', checkMode: 'issues_all_marked' },
+      { path: 'quality-review.md', description: 'quality-review.md not found.', checkMode: 'issues_all_marked' },
+      { path: 'goal-review.md', description: 'goal-review.md not found.', checkMode: 'issues_all_marked' },
     ],
   },
 ];
@@ -261,6 +261,41 @@ function checkExitCondition(bpDir: string, check: ExitCheck, resolvedPath?: stri
     }
     if (unhashed.length > 0) {
       return `Tasks marked [x] but missing commit hash (${unhashed.length}): ${unhashed[0]}${unhashed.length > 1 ? ` (+${unhashed.length - 1} more)` : ''}. Re-run \`bp commit\` with --task to record the hash.`;
+    }
+  }
+
+  // Issues marking check: ## Issues section must have all items [x]
+  if (check.checkMode === 'issues_all_marked') {
+    if (!existsSync(fullPath)) {
+      return `${check.path} not found. ${check.description}`;
+    }
+    const unmarked: string[] = [];
+    try {
+      const content = readFileSync(fullPath, 'utf-8');
+      const lines = content.split('\n');
+      let inIssues = false;
+      for (const line of lines) {
+        // Track section: ## Issues marks the start, any other ## ends it
+        if (line.startsWith('## ')) {
+          inIssues = line.trim() === '## Issues';
+          continue;
+        }
+        if (!inIssues) continue;
+
+        // Match issue checkbox lines: "- [...] ..."
+        const issueMatch = line.match(/^- \[([ x])\]/);
+        if (!issueMatch) continue;
+
+        if (issueMatch[1] === ' ') {
+          unmarked.push(line.trim());
+        }
+      }
+    } catch {
+      return `Cannot read ${check.path}: ${check.description}`;
+    }
+
+    if (unmarked.length > 0) {
+      return `Unmarked issues in ${check.path} (${unmarked.length}): ${unmarked[0]}${unmarked.length > 1 ? ` (+${unmarked.length - 1} more)` : ''}. Complete re-review or fix. ${check.description}`;
     }
   }
   return null;
