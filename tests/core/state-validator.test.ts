@@ -80,7 +80,7 @@ describe('validateStepAdvance', () => {
     const chRef = 'milestones/m1/phases/p1/changes/add-feature';
     mkdirSync(join(bpDir, chRef), { recursive: true });
     writeFileSync(join(bpDir, chRef, 'design.md'), '# Design\n\nImplemented with strategy pattern.', 'utf-8');
-    writeFileSync(join(bpDir, chRef, 'tasks.md'), '# Tasks\n\n- [ ] task-1.1: do thing', 'utf-8');
+    writeFileSync(join(bpDir, chRef, 'tasks.md'), '# Tasks\n\n- [ ] task-1.1: do thing\n  - **files**: src/core/feature.ts\n  - **acceptance**: works\n', 'utf-8');
     const result = validateStepAdvance('change', 'planning', chRef, tmpDir);
     expect(result.valid).toBe(true);
   });

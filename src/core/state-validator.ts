@@ -15,7 +15,7 @@ export interface ValidationResult {
 interface ExitCheck {
   path: string;
   description: string;
-  checkMode?: 'file' | 'tasks_marked' | 'issues_all_marked'; // default: 'file'
+  checkMode?: 'file' | 'tasks_marked' | 'issues_all_marked' | 'tasks_format'; // default: 'file'
 }
 
 interface StepExitCriteria {
@@ -92,19 +92,19 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
       { path: 'proposal.md', description: 'proposal.md is still a template. Fill in intent, scope, and must-haves.' },
     ],
   },
-  // Change at planning — design.md + tasks.md must be filled
+  // Change at planning — design.md + tasks.md must be properly filled
   {
     type: 'change', step: 'planning',
     checks: [
       { path: 'design.md', description: 'design.md is still a template. Complete the plan step.' },
-      { path: 'tasks.md', description: 'tasks.md is still a template. Complete the plan step.' },
+      { path: 'tasks.md', description: 'tasks.md must have checkboxes, task names, and files. Complete the plan step.', checkMode: 'tasks_format' },
     ],
   },
   {
     type: 'adhoc', step: 'planning',
     checks: [
       { path: 'design.md', description: 'design.md is still a template. Complete the plan step.' },
-      { path: 'tasks.md', description: 'tasks.md is still a template. Complete the plan step.' },
+      { path: 'tasks.md', description: 'tasks.md must have checkboxes, task names, and files. Complete the plan step.', checkMode: 'tasks_format' },
     ],
   },
 
@@ -317,9 +317,61 @@ function checkExitCondition(bpDir: string, check: ExitCheck, resolvedPath?: stri
       return `Unmarked issues in ${check.path} (${unmarked.length}): ${unmarked[0]}${unmarked.length > 1 ? ` (+${unmarked.length - 1} more)` : ''}. Complete re-review or fix. ${check.description}`;
     }
   }
+
+  // Tasks format check: must have checkboxes, task names, and files
+  if (check.checkMode === 'tasks_format') {
+    if (!existsSync(fullPath)) {
+      return `${check.path} not found. ${check.description}`;
+    }
+    if (isTemplateFile(fullPath)) {
+      return `${check.path} is still a template. Fill in all fields. ${check.description}`;
+    }
+    try {
+      const content = readFileSync(fullPath, 'utf-8');
+      const lines = content.split('\n');
+      let taskCount = 0;
+      const missingFiles: string[] = [];
+      let currentTask = '';
+      let hasFiles = false;
+
+      for (const line of lines) {
+        // Match checkbox task line: "- [ ] task-name"
+        const taskMatch = line.match(/^- \[( |x)\]\s*(.+)/);
+        if (taskMatch) {
+          if (currentTask && !hasFiles && taskCount > 0) {
+            missingFiles.push(currentTask);
+          }
+          currentTask = taskMatch[2].trim();
+          taskCount++;
+          hasFiles = false;
+          // Check if task name is just a placeholder
+          if (!currentTask || currentTask.length === 0 || currentTask.startsWith('{{')) {
+            return `${check.path}: task at line has no name. ${check.description}`;
+          }
+          continue;
+        }
+        // Track files field for the current task
+        if (currentTask && line.match(/^\s*-\s+\*\*files\*\*:/)) {
+          hasFiles = true;
+        }
+      }
+      // Check last task
+      if (currentTask && !hasFiles && taskCount > 0) {
+        missingFiles.push(currentTask);
+      }
+
+      if (taskCount === 0) {
+        return `${check.path}: no tasks found (missing \`- [ ]\` checkboxes). ${check.description}`;
+      }
+      if (missingFiles.length > 0) {
+        return `${check.path}: tasks missing \`files\` field: ${missingFiles[0]}${missingFiles.length > 1 ? ` (+${missingFiles.length - 1} more)` : ''}. ${check.description}`;
+      }
+    } catch {
+      return `Cannot read ${check.path}: ${check.description}`;
+    }
+  }
   return null;
 }
-
 /**
  * 校验当前步骤的退出条件是否满足
  * @param contextType active_context.type
