@@ -1544,12 +1544,19 @@ Then run \`bp context plan\` and read all listed files.
 
 **If LIGHTWEIGHT:**
 
-1. Run \`bp template design\`, fill approach (1-2 paragraphs), write \`design.md\`
-2. Run \`bp template tasks\`, list tasks with type annotations, write \`tasks.md\`
+1. Run \`bp template design\`, fill Design Items with DS-N numbering:
+   - Read proposal.md → extract PR-1, PR-2 from ## Deliverables
+   - Decompose into DS-1, DS-2... each with \`refs: PR-{id}\`
+   - Every PR must be referenced by at least one DS (validation checks this)
+   - Write Architecture section
+2. Run \`bp template tasks\`, list tasks:
+   - Each task gets T-N, with \`refs: DS-{id}\`
+   - Every DS must be referenced by at least one Task (validation checks this)
+   - Behavior tasks require \`spec_ref\`
+   - \`files\` field is REQUIRED for every task (full relative paths)
 3. Skip delta-specs (not needed for non-behavioral changes)
-4. **\`files\` field is REQUIRED for every task**: list ALL files the task creates or modifies, using full relative paths from project root (e.g. \`src/core/engine.ts\`). Multiple files comma-separated. This is the basis for parallel change conflict detection.
-5. **Leave all task boxes UNCHECKED** — apply phase marks them done after implementation
-6. Run \`bp continue\`
+4. **Leave all task boxes UNCHECKED** — apply marks them done
+5. Run \`bp continue\`
 
 **If FULL — you MUST dispatch the planner sub-agent. Do NOT write design/tasks/specs yourself:**
 
@@ -1622,18 +1629,25 @@ Run \`bp template proposal\` to read the proposal skeleton.
 ### Step 3: Fill proposal
 Write to the change's \`proposal.md\`:
 
-- **Intent** — what problem/capability, who affected, what if not done, type (bugfix/feature/debt/perf)
-- **Scope** — in-scope items (verb-first, one per line), out-of-scope items with reasons
-- **Approach** — high-level technical direction: architecture layer, library choices, data flow. No implementation detail — that's for design.md.
-- **Must-haves** — 3-7 observable verifiable conditions in SHALL/MUST format
-- **Non-goals** — explicitly excluded targets to prevent scope creep
+- **Intent** — what problem/capability, who affected, type (bugfix/feature/debt/perf)
+- **References** (phase change only) — list FR/NFR and D IDs that this proposal addresses.
+  Extract IDs from \`bp/requirements.md\` (FR-N) and \`context.md\` (D-N).
+  Adhoc change: skip References section.
+- **Deliverables** — list each deliverable as \`PR-1\`, \`PR-2\`... with \`refs: FR-{id}, D-{id}\`.
+  Each PR item must specify which requirement/decision it implements.
+  Every PR ref must exist in requirements.md or context.md — validation checks this.
+- **Scope** — what's included, what's excluded
 
-### Step 4: Commit
+### Step 4: Verify references
+Read \`bp/requirements.md\` and \`context.md\`. Confirm every \`refs\` ID in your proposal's deliverables
+exists in those files. Missing IDs will cause \`bp continue\` to block.
+
+### Step 5: Commit
 \`\`\`bash
 bp commit "docs(proposal): fill [BP:CHANGE_NAME]" --files "<proposal-path>" --scope docs --record
 \`\`\`
 
-### Step 5: Advance
+### Step 6: Advance
 Run \`bp continue change $1\` — routes to plan.
 
 ## Guardrails
@@ -1858,6 +1872,13 @@ Each finding gets a unique number (R1, R2, Q1, Q2, G1, G2, D1, D2...) written in
 
 ### Step 3: Collect and classify issues
 Read all three review files. Extract all \`## Issues\` entries.
+
+**Check for reference chain completeness** (proposal→design→tasks):
+- Read \`proposal.md\` → list all PR-{id}
+- Read \`design.md\` → list DS-{id} and their refs: PR-{id}
+- Read \`tasks.md\` → list T-{id} and their refs: DS-{id}
+- Any PR not referenced by any DS → issue (replan)
+- Any DS not referenced by any task → issue (reapply)
 
 **Check for D-prefixed issues** (design/architecture problems):
 - Search for \`- [ ] D\` in all three files

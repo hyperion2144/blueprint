@@ -23,12 +23,19 @@ ${RESOLVE_PATHS}${CHANGE_TYPE_GUIDE}${READ_CONTEXT}${CLASSIFY_CHANGE}${CHANGE_NA
 
 **If LIGHTWEIGHT:**
 
-1. Run \`bp template design\`, fill approach (1-2 paragraphs), write \`design.md\`
-2. Run \`bp template tasks\`, list tasks with type annotations, write \`tasks.md\`
+1. Run \`bp template design\`, fill Design Items with DS-N numbering:
+   - Read proposal.md → extract PR-1, PR-2 from ## Deliverables
+   - Decompose into DS-1, DS-2... each with \`refs: PR-{id}\`
+   - Every PR must be referenced by at least one DS (validation checks this)
+   - Write Architecture section
+2. Run \`bp template tasks\`, list tasks:
+   - Each task gets T-N, with \`refs: DS-{id}\`
+   - Every DS must be referenced by at least one Task (validation checks this)
+   - Behavior tasks require \`spec_ref\`
+   - \`files\` field is REQUIRED for every task (full relative paths)
 3. Skip delta-specs (not needed for non-behavioral changes)
-4. **\`files\` field is REQUIRED for every task**: list ALL files the task creates or modifies, using full relative paths from project root (e.g. \`src/core/engine.ts\`). Multiple files comma-separated. This is the basis for parallel change conflict detection.
-5. **Leave all task boxes UNCHECKED** — apply phase marks them done after implementation
-6. Run \`bp continue\`
+4. **Leave all task boxes UNCHECKED** — apply marks them done
+5. Run \`bp continue\`
 
 **If FULL — you MUST dispatch the planner sub-agent. Do NOT write design/tasks/specs yourself:**
 

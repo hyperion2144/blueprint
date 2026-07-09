@@ -73,6 +73,13 @@ Each finding gets a unique number (R1, R2, Q1, Q2, G1, G2, D1, D2...) written in
 ### Step 3: Collect and classify issues
 Read all three review files. Extract all \`## Issues\` entries.
 
+**Check for reference chain completeness** (proposal→design→tasks):
+- Read \`proposal.md\` → list all PR-{id}
+- Read \`design.md\` → list DS-{id} and their refs: PR-{id}
+- Read \`tasks.md\` → list T-{id} and their refs: DS-{id}
+- Any PR not referenced by any DS → issue (replan)
+- Any DS not referenced by any task → issue (reapply)
+
 **Check for D-prefixed issues** (design/architecture problems):
 - Search for \`- [ ] D\` in all three files
 - If any D issue exists → design flaw identified

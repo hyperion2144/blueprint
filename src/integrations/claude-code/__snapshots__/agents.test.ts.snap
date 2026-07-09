@@ -358,31 +358,39 @@ Take notes on must_haves, architecture constraints, spec requirements.
 
 ### Step 2: Design technical solution
 
-Run \`bp template design\` to get the design template. Fill the template:
-- Architecture: component tree, data flow, module boundaries
-- Compare at least 2 alternatives with tradeoffs
-- Record rejected alternatives in design.md
-- Must cover all must_haves from proposal.md
-- Must respect constraints from context.md
+Run \`bp template design\`. Fill the template:
 
-Write the completed design to \`design.md\` (normal) or \`review-design.md\` (fix mode).
+1. Read proposal.md → extract PR-1, PR-2 from ## Deliverables
+   Note each PR's title and refs to understand scope
+2. Decompose the solution into design items (modules/components):
+   - Assign DS-1, DS-2, DS-3... sequentially
+   - For each DS item: \`refs: PR-{id}, PR-{id}\` — which deliverables it implements
+   - Every PR must be referenced by at least one DS (no orphan PRs — validation checks)
+   - Write a concise description of each component's responsibilities and interfaces
+3. Write Architecture section (component diagram, data flow, module boundaries)
+4. Compare at least 2 alternatives in Alternatives section
+5. Write the completed design to \`design.md\`
 
 ### Step 3: Break down into executable tasks
 
-Run \`bp template tasks\` to get the tasks template. Fill the template:
-- Group tasks into waves. Name each wave with a meaningful theme describing its deliverable (e.g. "Core Data Types", "API Endpoints", "Error Handling"). The \`{{wave-1-theme}}\` placeholder in the template should be replaced with the actual theme — never leave it as a placeholder.
-- Each wave must be independently verifiable (tsc + test pass after completion)
-- Annotate each task's type (behavior/config/refactor/docs/scaffolding) and \`depends_on\`
-- **spec_ref required**: every \`type:behavior\` task MUST have a \`spec_ref\` field pointing to the delta-spec (e.g. \`specs/cli/spec.md\`)
-- **files (required)**: every task MUST include a \`files\` field listing ALL files it creates or modifies, using full relative paths from project root (e.g. \`src/core/engine.ts\`). Multiple files separated by commas. This is the basis for parallel change conflict detection.
+Run \`bp template tasks\`. Fill the template:
 
-Write the completed tasks to \`tasks.md\` (normal) or \`review-task.md\` (fix mode).
-**Leave all checkboxes UNCHECKED** — the executor marks them after implementation.
+1. Read design.md → extract DS-1, DS-2 from ## Design Items
+2. Group tasks into waves by theme. Name each wave meaningfully.
+3. For each task:
+   - Assign T-1, T-2... sequentially
+   - \`refs: DS-{id}\` (required) — which design item this task implements
+     Every DS must be referenced by at least one task (no orphan DS — validation checks)
+   - \`spec_ref\` (required for behavior): the delta-spec domain
+   - \`files\` (required): full relative paths from project root
+   - \`acceptance\`: observable criteria
+   - \`type\`: behavior/config/refactor/docs/scaffolding
+4. Write the completed tasks to \`tasks.md\`
+5. **Leave all checkboxes UNCHECKED** — the executor marks them after implementation
 
 In fix mode:
 - Group by severity: Wave 1 = BLOCKER + FAIL, Wave 2 = MAJOR + PARTIAL, Wave 3 = MINOR + INFO + N/A
 - One task per finding, referencing the review file + finding number (e.g. \`spec_ref: goal-review.md#G1\`)
-- Fix mode wave theme examples: "Critical Fixes", "Secondary Issues", "Minor Cleanup"
 
 ### Step 4: Pre-write delta-specs (Normal mode only)
 
@@ -398,6 +406,8 @@ For each affected domain:
 
 Check before finishing:
 - design.md covers all must_haves from proposal.md (normal mode)
+- Every PR from proposal is referenced by at least one DS item (no orphans)
+- Every DS from design is referenced by at least one task (no orphans)
 - tasks.md has no template placeholders remaining (\`{{name}}\`, \`{{date}}\`, etc.)
 - specs/<domain>/spec.md has ≥1 non-template SHALL/MUST (reject all \`<name>\`/\`<behavior>\` placeholders)
 - No contradictions with context.md decisions
@@ -532,7 +542,16 @@ Every finding needs a prefix + number. Write it in the checklist table AND in \`
 4. Data model does not support planned extensions
 
 Non-D issues go to R/Q/G and can be fixed by modifying code alone.
+## Additional Check: Reference Chain Completeness
 
+During review, verify the proposal→design→tasks reference chain:
+1. Read proposal.md → list all PR-{id} items
+2. Read design.md → list all DS-{id} items and their \`refs: PR-{id}\`
+3. Read tasks.md → list all T-{id} items and their \`refs: DS-{id}\`
+4. Check: every PR is referenced by at least one DS → if not, add an issue
+5. Check: every DS is referenced by at least one task → if not, add an issue
+
+Orphan references should be treated as NEEDS_REVISION and prevent archive.
 ## Execution Flow
 
 ### Step 0: Identify affected domains
