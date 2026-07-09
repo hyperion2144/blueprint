@@ -37,7 +37,8 @@ function archiveHandler(changePath: string) {
   // 2. Check change-summary.md
   const summaryPath = join(fullChangePath, 'change-summary.md');
   if (!existsSync(summaryPath)) {
-    console.warn('⚠ change-summary.md not found. Run `bp template change-summary` to generate it.');
+    console.error('✗ change-summary.md not found. Run `bp template change-summary` to generate it first.');
+    process.exit(1);
   }
 
   // 3. Code cognition extraction

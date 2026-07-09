@@ -151,6 +151,22 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
       { path: 'goal-review.md', description: 'goal-review.md not found.', checkMode: 'issues_all_marked' },
     ],
   },
+
+  // Change at archiving — must have change-summary.md and verification.md
+  {
+    type: 'change', step: 'archiving',
+    checks: [
+      { path: 'change-summary.md', description: 'change-summary.md not found. Run \`bp template change-summary\` to generate it.' },
+      { path: 'verification.md', description: 'verification.md not found. Complete verification first.' },
+    ],
+  },
+  {
+    type: 'adhoc', step: 'archiving',
+    checks: [
+      { path: 'change-summary.md', description: 'change-summary.md not found. Run \`bp template change-summary\` to generate it.' },
+      { path: 'verification.md', description: 'verification.md not found. Complete verification first.' },
+    ],
+  },
 ];
 
 function isTemplateFile(filePath: string): boolean {

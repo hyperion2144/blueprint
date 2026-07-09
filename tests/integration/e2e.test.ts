@@ -91,6 +91,10 @@ describe('E2E: init → template → archive', () => {
       'utf-8',
     );
 
+
+    // 创建 change-summary.md
+    writeFileSync(join(changeDir, 'change-summary.md'), '# Change Summary: add-auth\n\n## Intent\nAdd authentication.\n\n## Verification\n- tsc: PASS\n- test: PASS\n', 'utf-8');
+    writeFileSync(join(changeDir, 'verification.md'), '# Verification: add-auth\n\n## Status: passed\n\n## Results\nAll checks passed.\n', 'utf-8');
     // 执行 archive
     execSync(`node ${cliPath} archive bp/changes/add-auth`, { encoding: 'utf-8', cwd: testDir });
 
