@@ -93,8 +93,8 @@ Write the completed design to \`design.md\` (normal) or \`review-design.md\` (fi
 ### Step 3: Break down into executable tasks
 
 Run \`bp template tasks\` to get the tasks template. Fill the template:
-- Group tasks into waves using tracer-bullet vertical slice principle
-- First wave is typically an end-to-end skeleton
+- Group tasks into waves. Name each wave with a meaningful theme describing its deliverable (e.g. "Core Data Types", "API Endpoints", "Error Handling"). The \`{{wave-1-theme}}\` placeholder in the template should be replaced with the actual theme — never leave it as a placeholder.
+- Each wave must be independently verifiable (tsc + test pass after completion)
 - Annotate each task's type (behavior/config/refactor/docs/scaffolding) and \`depends_on\`
 - **spec_ref required**: every \`type:behavior\` task MUST have a \`spec_ref\` field pointing to the delta-spec (e.g. \`specs/cli/spec.md\`)
 - **files (required)**: every task MUST include a \`files\` field listing ALL files it creates or modifies, using full relative paths from project root (e.g. \`src/core/engine.ts\`). Multiple files separated by commas. This is the basis for parallel change conflict detection.
@@ -103,8 +103,9 @@ Write the completed tasks to \`tasks.md\` (normal) or \`review-task.md\` (fix mo
 **Leave all checkboxes UNCHECKED** — the executor marks them after implementation.
 
 In fix mode:
-- Wave 1 = BLOCKER + FAIL (must fix), Wave 2 = MAJOR + PARTIAL (should fix), Wave 3 = MINOR + INFO + N/A gaps
+- Group by severity: Wave 1 = BLOCKER + FAIL, Wave 2 = MAJOR + PARTIAL, Wave 3 = MINOR + INFO + N/A
 - One task per finding, referencing the review file + finding number (e.g. \`spec_ref: goal-review.md#G1\`)
+- Fix mode wave theme examples: "Critical Fixes", "Secondary Issues", "Minor Cleanup"
 
 ### Step 4: Pre-write delta-specs (Normal mode only)
 
