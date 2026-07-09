@@ -26,7 +26,7 @@ ${RESOLVE_PATHS}${CHANGE_TYPE_GUIDE}${READ_CONTEXT}${CLASSIFY_CHANGE}${CHANGE_NA
 1. Run \`bp template design\`, fill approach (1-2 paragraphs), write \`design.md\`
 2. Run \`bp template tasks\`, list tasks with type annotations, write \`tasks.md\`
 3. Skip delta-specs (not needed for non-behavioral changes)
-4. **每个 task 必须填写 \`files\` 字段**，列出该 task 创建或修改的所有文件，使用从项目根到文件的完整相对路径，如 \`src/core/engine.ts\`，多个文件逗号相隔。这是并行 change 冲突检测的依据。
+4. **\`files\` field is REQUIRED for every task**: list ALL files the task creates or modifies, using full relative paths from project root (e.g. \`src/core/engine.ts\`). Multiple files comma-separated. This is the basis for parallel change conflict detection.
 5. **Leave all task boxes UNCHECKED** — apply phase marks them done after implementation
 6. Run \`bp continue\`
 

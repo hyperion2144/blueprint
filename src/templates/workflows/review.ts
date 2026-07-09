@@ -99,7 +99,7 @@ Read original review files + review-task.md. The issues in the original review f
 
 **Mark fixed issues:**
 - For each issue referenced in review-task.md as fixed → find in \`## Issues\` and change \`- [ ]\` to \`- [x]\`
-- Do NOT modify the report content above Issues (no \`已修复\` annotations needed)
+ - Do NOT modify the report content above Issues (no "fixed" or status annotations in report text — only change the checkbox [ ] to [x])
 
 **New issues found:**
 - Continue numbering from the existing highest number

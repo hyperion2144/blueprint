@@ -366,7 +366,7 @@ Run \`bp template tasks\` to get the tasks template. Fill the template:
 - First wave is typically an end-to-end skeleton
 - Annotate each task's type (behavior/config/refactor/docs/scaffolding) and \`depends_on\`
 - **spec_ref required**: every \`type:behavior\` task MUST have a \`spec_ref\` field pointing to the delta-spec (e.g. \`specs/cli/spec.md\`)
-- **files 必填**: 每个 task 必须有 \`files\` 字段，列出该 task 创建或修改的所有文件的**完整相对路径**（如 \`src/core/engine.ts\`），多个逗号相隔。这是并行 change 冲突检测的依据，不可省略。
+- **files (required)**: every task MUST include a \`files\` field listing ALL files it creates or modifies, using full relative paths from project root (e.g. \`src/core/engine.ts\`). Multiple files separated by commas. This is the basis for parallel change conflict detection.
 
 Write the completed tasks to \`tasks.md\` (normal) or \`review-task.md\` (fix mode).
 **Leave all checkboxes UNCHECKED** — the executor marks them after implementation.

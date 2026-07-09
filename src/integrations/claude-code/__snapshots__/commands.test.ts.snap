@@ -1547,7 +1547,7 @@ Then run \`bp context plan\` and read all listed files.
 1. Run \`bp template design\`, fill approach (1-2 paragraphs), write \`design.md\`
 2. Run \`bp template tasks\`, list tasks with type annotations, write \`tasks.md\`
 3. Skip delta-specs (not needed for non-behavioral changes)
-4. **每个 task 必须填写 \`files\` 字段**，列出该 task 创建或修改的所有文件，使用从项目根到文件的完整相对路径，如 \`src/core/engine.ts\`，多个文件逗号相隔。这是并行 change 冲突检测的依据。
+4. **\`files\` field is REQUIRED for every task**: list ALL files the task creates or modifies, using full relative paths from project root (e.g. \`src/core/engine.ts\`). Multiple files comma-separated. This is the basis for parallel change conflict detection.
 5. **Leave all task boxes UNCHECKED** — apply phase marks them done after implementation
 6. Run \`bp continue\`
 
@@ -1917,7 +1917,7 @@ Read original review files + review-task.md. The issues in the original review f
 
 **Mark fixed issues:**
 - For each issue referenced in review-task.md as fixed → find in \`## Issues\` and change \`- [ ]\` to \`- [x]\`
-- Do NOT modify the report content above Issues (no \`已修复\` annotations needed)
+ - Do NOT modify the report content above Issues (no "fixed" or status annotations in report text — only change the checkbox [ ] to [x])
 
 **New issues found:**
 - Continue numbering from the existing highest number
