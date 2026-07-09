@@ -59,7 +59,7 @@ After UAT complete, if Gaps section has issues:
 
 1. For each gap, create an adhoc change:
    \`\`\`bash
-   bp change new <kebab-case-fix-name> --adhoc
+   bp change new <kebab-case-fix-name> --full --intent "fix: <issue description>"
    \`\`\`
 
 2. Fill the adhoc proposal.md with:
@@ -88,7 +88,7 @@ After UAT complete, if Gaps section has issues:
 - Record user responses verbatim in Gaps
 - Severity is inferred, never asked
 - After UAT, always suggest adhoc changes for gaps
-- \`bp change new --adhoc\` creates standalone changes outside the DAG`;
+- \`bp change new <name> --full\` creates standalone adhoc changes outside the DAG`;
 
 export function getAuditSkillTemplate(): SkillTemplate {
   return {
