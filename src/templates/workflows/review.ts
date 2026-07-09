@@ -60,11 +60,15 @@ Each finding gets a unique number (R1, R2, Q1, Q2, G1, G2, D1, D2...) written in
 6. Leave all \`## Issues\` entries as \`- [ ]\` (unchecked) — they are checked during re-review. If no issues exist, leave the \`## Issues\` section empty (heading only, do NOT write \`NO_ISSUES_FOUND\`).
 7. All three files MUST be written — never skip a review file
 
-**If FULL — dispatch reviewer sub-agent:**
-1. Run \`bp dispatch reviewer --change $1\`
-2. Call the tool once. Prompt: run spec-review → quality-review → goal-review sequentially, then commit all three files.
-   Include the numbering rules (R/Q/G/D prefixes, D identification criteria, Issues section).
-3. Output: spec-review.md, quality-review.md, goal-review.md in change directory.
+**If FULL — dispatch reviewer sub-agent. DO NOT write review files yourself.**
+1. Run \`bp dispatch reviewer --change $1\` — this outputs the sub-agent tool name and parameters
+2. **Call that tool.** Do NOT read/write review files. The sub-agent handles everything:
+   - Runs spec-review → quality-review → goal-review sequentially
+   - Uses templates (\`bp template spec-review\` etc.) to produce properly formatted files
+   - Applies numbering rules (R/Q/G/D prefixes, D identification criteria, Issues section)
+   - Commits all three files
+3. **Wait for the sub-agent to complete.** Only then read the output files at Step 3 below.
+4. If the sub-agent fails or times out, re-run \`bp dispatch reviewer --change $1\` and call the tool again.
 
 ### Step 3: Collect and classify issues
 Read all three review files. Extract all \`## Issues\` entries.
