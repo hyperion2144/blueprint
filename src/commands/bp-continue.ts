@@ -309,7 +309,7 @@ function continueHandler(options?: { auto?: boolean; command?: string }): void {
   formatContinueResult(result, isAuto, state);
 }
 
-/** 并行 change 文件冲突检测 */
+/** Parallel change file conflict detection */
 const CONFLICT_STEPS = new Set(['applying', 'reviewing', 'verifying', 'archiving']);
 
 interface FileConflict {
@@ -320,17 +320,17 @@ interface FileConflict {
 function checkFileConflicts(name: string, bpDir: string, state: StateFile): FileConflict[] | null {
   if (state.active_context.type !== 'changes' || !state.active_context.contexts) return null;
 
-  // 找出当前 change 的目录
+  // Find current change's directory
   const ctxEntry = state.active_context.contexts[name];
   if (!ctxEntry) return null;
   const myDir = join(bpDir, ctxEntry.ref);
   const myTasksPath = join(myDir, 'tasks.md');
 
-  // 读取当前 change 的 tasks.md → 提取 files
+  // Read current change's tasks.md → extract files
   const myFiles = extractFilesFromTasks(myTasksPath);
   if (!myFiles || myFiles.size === 0) return null;
 
-  // 扫描其他并行 change 中已进入执行+阶段的
+  // Scan other parallel changes that are already at or past applying stage
   const conflicts: FileConflict[] = [];
   for (const [otherName, otherCtx] of Object.entries(state.active_context.contexts)) {
     if (otherName === name) continue;
@@ -338,7 +338,7 @@ function checkFileConflicts(name: string, bpDir: string, state: StateFile): File
 
     const otherDir = join(bpDir, otherCtx.ref);
     const otherFiles = extractFilesFromTasks(join(otherDir, 'tasks.md'));
-    // review-task.md 也检查（fix 模式下修改的文件）
+    // Also check review-task.md (files modified during fix mode)
     const reviewFiles = extractFilesFromTasks(join(otherDir, 'review-task.md'));
 
     const allOtherFiles = new Set([...(otherFiles ?? []), ...(reviewFiles ?? [])]);
@@ -353,7 +353,7 @@ function checkFileConflicts(name: string, bpDir: string, state: StateFile): File
   return conflicts.length > 0 ? conflicts : null;
 }
 
-/** 从 tasks.md/review-task.md 中提取 - **files**: <paths> */
+/** Extract - **files**: <paths> entries from tasks.md/review-task.md */
 function extractFilesFromTasks(tasksPath: string): string[] | null {
   if (!existsSync(tasksPath)) return null;
   const content = readFileSync(tasksPath, 'utf-8');
@@ -361,7 +361,7 @@ function extractFilesFromTasks(tasksPath: string): string[] | null {
   for (const line of content.split('\n')) {
     const m = line.match(/^\s*-\s+\*\*files\*\*:\s*(.+)/i);
     if (m) {
-      // 逗号分隔，trim 每条路径
+      // Comma-separated, trim each path
       for (const f of m[1].split(',')) {
         const trimmed = f.trim();
         if (trimmed) files.push(trimmed);
@@ -431,7 +431,7 @@ function continueChangeHandler(name: string, options?: { auto?: boolean; command
     }
   }
 
-  // 文件冲突检查：planning → applying 时检测并行 change
+  // File conflict check: planning → applying, detect parallel change overlap
   if (changeEntry.status === 'planning') {
     const conflicts = checkFileConflicts(name, bpDir, state);
     if (conflicts) {
@@ -465,11 +465,11 @@ function continueChangeHandler(name: string, options?: { auto?: boolean; command
         if (!target) return;
         target.status = shortStatus;
 
-        // 如果已在 parallel 模式 (type:changes)，原地更新该 entry
+        // If already in parallel mode (type:changes), update entry in-place
         if (s.active_context.type === 'changes' && s.active_context.contexts) {
           s.active_context.contexts[name] = { type: entryType as 'change' | 'adhoc', ref: 'changes/' + name, step: shortStatus };
         } else {
-          // 单个 change 模式
+          // Single change mode
           s.active_context = { type: entryType as 'change' | 'adhoc', ref: 'changes/' + name, step: shortStatus };
         }
       });
