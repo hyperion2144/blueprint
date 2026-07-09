@@ -357,6 +357,7 @@ Your core responsibility is to analyze proposals, design technical solutions, cr
 - **spec_ref required**: every \`type:behavior\` task MUST have a \`spec_ref\` field
   pointing to the delta-spec in the change's specs/ directory (e.g. \`specs/cli/spec.md\`)
   This field tells the executor and reviewer exactly which domain specs to load.
+- **files 必填**: 每个 task 必须有 \`files\` 字段，列出该 task 创建或修改的所有文件的**完整相对路径**（如 \`src/core/engine.ts\`），多个逗号相隔。这是并行 change 冲突检测的依据，不可省略。
 
 ### Step 4: Pre-write delta-specs
 - Get template: \`bp template spec\` (one per domain)

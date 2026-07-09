@@ -148,7 +148,7 @@ export const DESIGN_TEMPLATE = `# Design: {{name}}
 
 export const TASKS_TEMPLATE = `# Tasks: {{name}}
 
-> This document breaks the design into executable tasks grouped by wave. Each task includes description, files, acceptance criteria, optional depends_on and spec_ref. type:behavior tasks must include RED test descriptions (GIVEN/WHEN/THEN format).
+> This document breaks the design into executable tasks grouped by wave. Each task includes description, files (必填), acceptance criteria, optional depends_on and spec_ref. type:behavior tasks must include RED test descriptions (GIVEN/WHEN/THEN format).
 
 ---
 
@@ -175,7 +175,7 @@ Each wave completion enables verification (tsc + test pass).
 
 - [ ] task-{{id-1}}: [type:{{type}}] {{title}}
   - **description**: {{What to do, approach, files/APIs to reference}}
-  - **files**: {{comma-separated file paths}}
+  - **files**: {{必填。完整相对路径，如 src/core/engine.ts，多个逗号相隔}}
   - **acceptance**: {{observable, assertable acceptance criteria}}
   - **depends_on**: [task-{{id-x}}] <!-- optional: predecessor -->
   - **spec_ref**: specs/{{domain}}/spec.md <!-- optional: linked spec -->
@@ -194,7 +194,7 @@ Each wave completion enables verification (tsc + test pass).
 
 - [ ] task-{{id-3}}: [type:{{type}}] {{title}}
   - **description**: {{What to do}}
-  - **files**: {{file paths}}
+  - **files**: {{必填。完整相对路径，多个逗号相隔}}
   - **acceptance**: {{acceptance criteria}}
   - **depends_on**: [task-{{id-1}}] <!-- optional -->
   {{if behavior}}

@@ -3,7 +3,7 @@
  */
 
 import { join, basename } from 'node:path';
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { determineNextStep, determineChangeNextStep, STEP_TO_WORKFLOW, expandTemplateVars } from '../core/continue.js';
 import { loadState, updateState } from '../core/state-file.js';
 import { validateStepAdvance } from '../core/state-validator.js';
@@ -309,6 +309,68 @@ function continueHandler(options?: { auto?: boolean; command?: string }): void {
   formatContinueResult(result, isAuto, state);
 }
 
+/** 并行 change 文件冲突检测 */
+const CONFLICT_STEPS = new Set(['applying', 'reviewing', 'verifying', 'archiving']);
+
+interface FileConflict {
+  conflictFiles: string[];
+  blockingChange: string;
+}
+
+function checkFileConflicts(name: string, bpDir: string, state: StateFile): FileConflict[] | null {
+  if (state.active_context.type !== 'changes' || !state.active_context.contexts) return null;
+
+  // 找出当前 change 的目录
+  const ctxEntry = state.active_context.contexts[name];
+  if (!ctxEntry) return null;
+  const myDir = join(bpDir, ctxEntry.ref);
+  const myTasksPath = join(myDir, 'tasks.md');
+
+  // 读取当前 change 的 tasks.md → 提取 files
+  const myFiles = extractFilesFromTasks(myTasksPath);
+  if (!myFiles || myFiles.size === 0) return null;
+
+  // 扫描其他并行 change 中已进入执行+阶段的
+  const conflicts: FileConflict[] = [];
+  for (const [otherName, otherCtx] of Object.entries(state.active_context.contexts)) {
+    if (otherName === name) continue;
+    if (!CONFLICT_STEPS.has(otherCtx.step)) continue;
+
+    const otherDir = join(bpDir, otherCtx.ref);
+    const otherFiles = extractFilesFromTasks(join(otherDir, 'tasks.md'));
+    // review-task.md 也检查（fix 模式下修改的文件）
+    const reviewFiles = extractFilesFromTasks(join(otherDir, 'review-task.md'));
+
+    const allOtherFiles = new Set([...(otherFiles ?? []), ...(reviewFiles ?? [])]);
+    if (allOtherFiles.size === 0) continue;
+
+    const overlap = [...myFiles].filter(f => allOtherFiles.has(f));
+    if (overlap.length > 0) {
+      conflicts.push({ conflictFiles: overlap, blockingChange: otherName });
+    }
+  }
+
+  return conflicts.length > 0 ? conflicts : null;
+}
+
+/** 从 tasks.md/review-task.md 中提取 - **files**: <paths> */
+function extractFilesFromTasks(tasksPath: string): string[] | null {
+  if (!existsSync(tasksPath)) return null;
+  const content = readFileSync(tasksPath, 'utf-8');
+  const files: string[] = [];
+  for (const line of content.split('\n')) {
+    const m = line.match(/^\s*-\s+\*\*files\*\*:\s*(.+)/i);
+    if (m) {
+      // 逗号分隔，trim 每条路径
+      for (const f of m[1].split(',')) {
+        const trimmed = f.trim();
+        if (trimmed) files.push(trimmed);
+      }
+    }
+  }
+  return files.length > 0 ? files : null;
+}
+
 function continueChangeHandler(name: string, options?: { auto?: boolean; command?: string }): void {
   const isAuto = options?.auto ?? process.argv.includes('--auto');
   const bpDir = join(process.cwd(), 'bp');
@@ -365,6 +427,21 @@ function continueChangeHandler(name: string, options?: { auto?: boolean; command
     if (!validation.valid) {
       const note = isAuto ? 'AUTO mode' : 'MUST read instructions below, check ---END--- marker exists.';
       console.log(['# bp continue — blocked', 'error: exit conditions not met', 'note: ' + note, 'step: ' + changeEntry.status, 'type: ' + ctxType, 'reasons: ' + validation.errors.join('; '), 'hint: Complete the current step first. Run bp template ' + changeEntry.status + ' if you need the step instructions.'].join('\n'));
+      return;
+    }
+  }
+
+  // 文件冲突检查：planning → applying 时检测并行 change
+  if (changeEntry.status === 'planning') {
+    const conflicts = checkFileConflicts(name, bpDir, state);
+    if (conflicts) {
+      const lines = ['# bp continue — blocked', 'error: file conflicts with parallel changes'];
+      for (const c of conflicts) {
+        lines.push(`  Change "${c.blockingChange}" (${state.active_context.contexts?.[c.blockingChange]?.step ?? 'unknown'}) modifies:`);
+        for (const f of c.conflictFiles) lines.push(`    - ${f}`);
+      }
+      lines.push('hint: Wait for the above changes to complete and archive, then retry.');
+      console.log(lines.join('\n'));
       return;
     }
   }

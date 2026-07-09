@@ -349,6 +349,7 @@ Your core responsibility is to analyze proposals, design technical solutions, cr
 - **spec_ref required**: every \`type:behavior\` task MUST have a \`spec_ref\` field
   pointing to the delta-spec in the change's specs/ directory (e.g. \`specs/cli/spec.md\`)
   This field tells the executor and reviewer exactly which domain specs to load.
+- **files 必填**: 每个 task 必须有 \`files\` 字段，列出该 task 创建或修改的所有文件的**完整相对路径**（如 \`src/core/engine.ts\`），多个逗号相隔。这是并行 change 冲突检测的依据，不可省略。
 
 ### Step 4: Pre-write delta-specs
 - Get template: \`bp template spec\` (one per domain)
@@ -2143,8 +2144,9 @@ Then run \`bp context plan\` and read all listed files.
 1. Run \`bp template design\`, fill approach (1-2 paragraphs), write \`design.md\`
 2. Run \`bp template tasks\`, list tasks with type annotations, write \`tasks.md\`
 3. Skip delta-specs (not needed for non-behavioral changes)
-4. **Leave all task boxes UNCHECKED** — apply phase marks them done after implementation
-5. Run \`bp continue\`
+4. **每个 task 必须填写 \`files\` 字段**，列出该 task 创建或修改的所有文件，使用从项目根到文件的完整相对路径，如 \`src/core/engine.ts\`，多个文件逗号相隔。这是并行 change 冲突检测的依据。
+5. **Leave all task boxes UNCHECKED** — apply phase marks them done after implementation
+6. Run \`bp continue\`
 
 **If FULL — you MUST dispatch the planner sub-agent. Do NOT write design/tasks/specs yourself:**
 
@@ -3128,6 +3130,7 @@ Your core responsibility is to analyze proposals, design technical solutions, cr
 - **spec_ref required**: every \`type:behavior\` task MUST have a \`spec_ref\` field
   pointing to the delta-spec in the change's specs/ directory (e.g. \`specs/cli/spec.md\`)
   This field tells the executor and reviewer exactly which domain specs to load.
+- **files 必填**: 每个 task 必须有 \`files\` 字段，列出该 task 创建或修改的所有文件的**完整相对路径**（如 \`src/core/engine.ts\`），多个逗号相隔。这是并行 change 冲突检测的依据，不可省略。
 
 ### Step 4: Pre-write delta-specs
 - Get template: \`bp template spec\` (one per domain)
@@ -4921,8 +4924,9 @@ Then run \`bp context plan\` and read all listed files.
 1. Run \`bp template design\`, fill approach (1-2 paragraphs), write \`design.md\`
 2. Run \`bp template tasks\`, list tasks with type annotations, write \`tasks.md\`
 3. Skip delta-specs (not needed for non-behavioral changes)
-4. **Leave all task boxes UNCHECKED** — apply phase marks them done after implementation
-5. Run \`bp continue\`
+4. **每个 task 必须填写 \`files\` 字段**，列出该 task 创建或修改的所有文件，使用从项目根到文件的完整相对路径，如 \`src/core/engine.ts\`，多个文件逗号相隔。这是并行 change 冲突检测的依据。
+5. **Leave all task boxes UNCHECKED** — apply phase marks them done after implementation
+6. Run \`bp continue\`
 
 **If FULL — you MUST dispatch the planner sub-agent. Do NOT write design/tasks/specs yourself:**
 
@@ -5920,6 +5924,7 @@ Your core responsibility is to analyze proposals, design technical solutions, cr
 - **spec_ref required**: every \`type:behavior\` task MUST have a \`spec_ref\` field
   pointing to the delta-spec in the change's specs/ directory (e.g. \`specs/cli/spec.md\`)
   This field tells the executor and reviewer exactly which domain specs to load.
+- **files 必填**: 每个 task 必须有 \`files\` 字段，列出该 task 创建或修改的所有文件的**完整相对路径**（如 \`src/core/engine.ts\`），多个逗号相隔。这是并行 change 冲突检测的依据，不可省略。
 
 ### Step 4: Pre-write delta-specs
 - Get template: \`bp template spec\` (one per domain)
@@ -7730,8 +7735,9 @@ Then run \`bp context plan\` and read all listed files.
 1. Run \`bp template design\`, fill approach (1-2 paragraphs), write \`design.md\`
 2. Run \`bp template tasks\`, list tasks with type annotations, write \`tasks.md\`
 3. Skip delta-specs (not needed for non-behavioral changes)
-4. **Leave all task boxes UNCHECKED** — apply phase marks them done after implementation
-5. Run \`bp continue\`
+4. **每个 task 必须填写 \`files\` 字段**，列出该 task 创建或修改的所有文件，使用从项目根到文件的完整相对路径，如 \`src/core/engine.ts\`，多个文件逗号相隔。这是并行 change 冲突检测的依据。
+5. **Leave all task boxes UNCHECKED** — apply phase marks them done after implementation
+6. Run \`bp continue\`
 
 **If FULL — you MUST dispatch the planner sub-agent. Do NOT write design/tasks/specs yourself:**
 
