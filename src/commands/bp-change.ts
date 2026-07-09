@@ -53,9 +53,7 @@ function newChange(name: string, options: { dir: string; full?: boolean; intent?
     if (changeType === 'change') state.changes.push(changeEntry);
     else state.adhoc.push(changeEntry);
   });
-  console.log(`✓ state.md updated`);
   console.log('');
   console.log(`## Next step`);
-  console.log(`Run \`bp continue change ${name}\` to activate and start working on this change.`);
-  console.log(`(Use \`bp template proposal\`, \`bp template design\`, \`bp template tasks\` to create files as needed.)`);
+  console.log(`Run \`bp continue change ${name}\` to start working on this change.`);
 }
