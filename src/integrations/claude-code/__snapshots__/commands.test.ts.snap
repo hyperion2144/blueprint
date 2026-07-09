@@ -344,7 +344,7 @@ description: Human UAT verification — generate uat.md, interactive testing, cr
 Run \`bp state\` to determine active milestone/phase. Determine audit scope from user input or ask.
 
 ### Step 2: Generate skeleton + read artifacts
-Run \`bp audit $1 $2\` — the CLI creates a skeleton uat.md with frontmatter + available artifact list.
+Run \`bp audit change $1\` (or \`bp audit phase $1\` or \`bp audit milestone $1\` depending on scope) — the CLI creates a skeleton uat.md with frontmatter + available artifact list.
 
 Read every listed artifact for each change. At minimum:
 - \`proposal.md\` — intent, scope, must_haves

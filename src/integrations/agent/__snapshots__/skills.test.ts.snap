@@ -345,7 +345,7 @@ hide: false
 Run \`bp state\` to determine active milestone/phase. Determine audit scope from user input or ask.
 
 ### Step 2: Generate skeleton + read artifacts
-Run \`bp audit [BP:CHANGE_NAME] \` — the CLI creates a skeleton uat.md with frontmatter + available artifact list.
+Run \`bp audit change [BP:CHANGE_NAME]\` (or \`bp audit phase [BP:CHANGE_NAME]\` or \`bp audit milestone [BP:CHANGE_NAME]\` depending on scope) — the CLI creates a skeleton uat.md with frontmatter + available artifact list.
 
 Read every listed artifact for each change. At minimum:
 - \`proposal.md\` — intent, scope, must_haves
