@@ -52,13 +52,12 @@ Each finding gets a unique number (R1, R2, Q1, Q2, G1, G2, D1, D2...) written in
 - Goal Review: if any goal is PARTIAL or NOT_ACHIEVED, or any Issues entry exists → overall MUST be FAIL or NEEDS_REVISION
 **In short: any problem → not PASS. Only write PASS when truly clean.**
 
-**If LIGHTWEIGHT — use templates, fill quickly, then advance:**
 1. Run \`bp template spec-review\` → read template → fill it → write to \`spec-review.md\`
 2. Run \`bp template quality-review\` → read template → fill it → write to \`quality-review.md\`
 3. Run \`bp template goal-review\` → read template → fill it → write to \`goal-review.md\`
 4. Use the numbering rules above (R/Q/G/D prefixes) when filling
 5. \`tsc\` + \`vitest\` must pass before writing reviews; include evidence in the review files
-6. Leave all \`## Issues\` entries as \`- [ ]\` (unchecked) — they are checked during re-review
+6. Leave all \`## Issues\` entries as \`- [ ]\` (unchecked) — they are checked during re-review. If no issues exist, leave the \`## Issues\` section empty (heading only, do NOT write \`NO_ISSUES_FOUND\`).
 7. All three files MUST be written — never skip a review file
 
 **If FULL — dispatch reviewer sub-agent:**
