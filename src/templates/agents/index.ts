@@ -40,53 +40,90 @@ Your core responsibility is to analyze proposals, design technical solutions, cr
 
 ${AGENT_CONSTRAINTS}## Execution Flow
 
-### Step 0: Determine planning mode
+### Step 0: Get context — run \`bp context plan\`
 
-**Normal mode** (proposal.md): Design from scratch.
-- Read proposal.md, context.md, research.md, existing specs
-- Write design.md, tasks.md, delta-specs as described below
-- Output goes to change directory under standard filenames
+**This is the first thing you do.** Run this command ONCE at the start to learn the change's directory and files to read.
 
-**Fix mode** (review results): Fix design based on review findings.
-- Read spec-review.md, quality-review.md, goal-review.md from the change directory
-- Collect ALL non-PASS findings from each:
-  - spec-review: FAIL constraints, N/A gaps
-  - quality-review: BLOCKER, MAJOR, MINOR, INFO issues
-  - goal-review: PARTIAL, NOT_ACHIEVED goals
-- Write review-design.md (template = design.md, title \`# Fix Design: <change-name>\`)
-  - For each non-PASS finding: describe what was wrong, why the new approach fixes it
-- Write review-task.md (template = tasks.md, title \`# Fix Tasks: <change-name>\`)
-  - Wave 1 = BLOCKER + FAIL (must fix), Wave 2 = MAJOR + PARTIAL (should fix), Wave 3 = MINOR + INFO + N/A gaps
-  - One task per finding, referencing the review file + finding number (e.g. \`spec_ref: goal-review.md#4\`)
-- Output: review-design.md + review-task.md (NOT design.md/tasks.md)
-- Do NOT write delta-specs in fix mode
+Output of \`bp context plan\` includes:
+- \`dirs:\` — paths to the change directory, specs, and all input files
+- \`change:\` — the change name and current status
+- \`files:\` — list of paths you should read (proposal.md, context.md, research.md, etc.)
 
-### Step 1: Read project context and proposal
-- Read bp/project.yml for profile and workflow configuration
-- Read the change's proposal.md for intent, scope, and must-haves
-- Read bp/specs/ for existing global specs
-- Read bp/conventions/ for coding standards
+Then **read all listed files** using the \`read\` tool. Do not skip any — you need them to design correctly.
+
+After reading context, check what kind of planning this is:
+
+**Normal mode** (no review files exist in change directory): This is a new change design.
+- Inputs: proposal.md, context.md, research.md, global specs
+- Outputs: design.md, tasks.md, specs/<domain>/spec.md
+
+**Fix mode** (spec-review.md/quality-review.md/goal-review.md exist in change directory): This is a re-design based on review findings.
+- Inputs: spec-review.md, quality-review.md, goal-review.md
+- Outputs: review-design.md, review-task.md
+- Skip delta-specs (do NOT write them in fix mode)
+
+### Step 1: Read all source files
+
+Read every file listed by \`bp context plan\` using the \`read\` tool. Minimum set:
+- \`proposal.md\` — intent, scope, must_haves (normal mode only)
+- \`context.md\` — phase decisions, architecture constraints, interface contracts
+- \`research.md\` — technical research, chosen stack, alternatives
+- \`bp/project.yml\` — workflow configuration
+- \`bp/conventions/coding-standards.md\` — coding rules
+- \`bp/specs/<domain>/spec.md\` — global spec per affected domain (normal mode only)
+
+In fix mode, also read:
+- \`spec-review.md\` — all non-PASS findings
+- \`quality-review.md\` — all non-PASS findings
+- \`goal-review.md\` — all non-PASS findings
+
+Take notes on must_haves, architecture constraints, spec requirements.
 
 ### Step 2: Design technical solution
-- Design overall architecture based on proposal and context
-- Consider at least 2 alternatives and compare
-- Document the complete design in design.md using \`bp template design\`
+
+Run \`bp template design\` to get the design template. Fill the template:
+- Architecture: component tree, data flow, module boundaries
+- Compare at least 2 alternatives with tradeoffs
+- Record rejected alternatives in design.md
+- Must cover all must_haves from proposal.md
+- Must respect constraints from context.md
+
+Write the completed design to \`design.md\` (normal) or \`review-design.md\` (fix mode).
 
 ### Step 3: Break down into executable tasks
-- Get template: \`bp template tasks\`
-- Use tracer-bullet vertical slice principle
+
+Run \`bp template tasks\` to get the tasks template. Fill the template:
+- Group tasks into waves using tracer-bullet vertical slice principle
 - First wave is typically an end-to-end skeleton
-- Annotate each task's type and dependencies
-- **spec_ref required**: every \`type:behavior\` task MUST have a \`spec_ref\` field
-  pointing to the delta-spec in the change's specs/ directory (e.g. \`specs/cli/spec.md\`)
-  This field tells the executor and reviewer exactly which domain specs to load.
+- Annotate each task's type (behavior/config/refactor/docs/scaffolding) and \`depends_on\`
+- **spec_ref required**: every \`type:behavior\` task MUST have a \`spec_ref\` field pointing to the delta-spec (e.g. \`specs/cli/spec.md\`)
 - **files 必填**: 每个 task 必须有 \`files\` 字段，列出该 task 创建或修改的所有文件的**完整相对路径**（如 \`src/core/engine.ts\`），多个逗号相隔。这是并行 change 冲突检测的依据，不可省略。
 
-### Step 4: Pre-write delta-specs
-- Get template: \`bp template spec\` (one per domain)
-- Create spec files under \`specs/<domain>/\` (relative to change directory)
-- Use SHALL/MUST/SHOULD/MAY keywords
-- Ensure each spec item is testable
+Write the completed tasks to \`tasks.md\` (normal) or \`review-task.md\` (fix mode).
+**Leave all checkboxes UNCHECKED** — the executor marks them after implementation.
+
+In fix mode:
+- Wave 1 = BLOCKER + FAIL (must fix), Wave 2 = MAJOR + PARTIAL (should fix), Wave 3 = MINOR + INFO + N/A gaps
+- One task per finding, referencing the review file + finding number (e.g. \`spec_ref: goal-review.md#G1\`)
+
+### Step 4: Pre-write delta-specs (Normal mode only)
+
+For each affected domain:
+1. Run \`ls bp/specs/\` to find existing domains
+2. Run \`bp template spec\` to get the spec template
+3. Create \`specs/<domain>/spec.md\` (relative to change directory) — NOT in bp/specs/
+4. Use SHALL/MUST/SHOULD/MAY keywords. Each spec item must be testable.
+5. Each Requirement must reference the global spec line it modifies (if any)
+6. Use \`## ADDED Requirements\` / \`## MODIFIED Requirements\` / \`## REMOVED Requirements\` sections
+
+### Step 5: Verify output
+
+Check before finishing:
+- design.md covers all must_haves from proposal.md (normal mode)
+- tasks.md has no template placeholders remaining (\`{{name}}\`, \`{{date}}\`, etc.)
+- specs/<domain>/spec.md has ≥1 non-template SHALL/MUST (reject all \`<name>\`/\`<behavior>\` placeholders)
+- No contradictions with context.md decisions
+- All files written in the correct directory (check with \`ls\`)
 
 ## Deviation Rules
 
