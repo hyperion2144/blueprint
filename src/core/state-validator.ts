@@ -133,6 +133,24 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
       { path: 'review-task.md', description: 'Not all fix tasks in review-task.md are marked [x] with <!-- commit: -->. Complete all fixes before advancing.', checkMode: 'tasks_marked' },
     ],
   },
+
+  // Change at reviewing — all three review files must exist
+  {
+    type: 'change', step: 'reviewing',
+    checks: [
+      { path: 'spec-review.md', description: 'spec-review.md not found. Complete the spec review first.' },
+      { path: 'quality-review.md', description: 'quality-review.md not found. Complete the quality review first.' },
+      { path: 'goal-review.md', description: 'goal-review.md not found. Complete the goal review first.' },
+    ],
+  },
+  {
+    type: 'adhoc', step: 'reviewing',
+    checks: [
+      { path: 'spec-review.md', description: 'spec-review.md not found.' },
+      { path: 'quality-review.md', description: 'quality-review.md not found.' },
+      { path: 'goal-review.md', description: 'goal-review.md not found.' },
+    ],
+  },
 ];
 
 function isTemplateFile(filePath: string): boolean {
