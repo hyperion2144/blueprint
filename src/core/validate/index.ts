@@ -58,7 +58,7 @@ const grammarCache = new Map<string, Parser>();
 function loadGrammar(name: string): Parser | null {
   if (grammarCache.has(name)) return grammarCache.get(name)!;
   try {
-    const mod: { parse: (input: string) => any } = _require(`./grammar/${name}.js`);
+    const mod: { parse: (input: string) => any } = _require(`./grammar/${name}.cjs`);
     grammarCache.set(name, mod);
     return mod;
   } catch {
@@ -233,12 +233,14 @@ function checkTasks(ast: any, content: string, context?: any): ValidationError[]
     }
   }
   for (const t of ast.tasks || []) {
+    const f = t.fields || {};
+    const refs = typeof f.refs === 'string' ? [f.refs] : (f.refs || []);
     if (!['behavior', 'config', 'refactor', 'docs', 'scaffolding'].includes(t.type)) {
       errs.push({ field: 'enum', message: `T-${t.id}: type must be behavior/config/refactor/docs/scaffolding, got "${t.type}"` });
     }
     // REFS: DS-N exists in design
-    if (t.refs?.length > 0) {
-      for (const ref of t.refs) {
+    if (refs.length > 0) {
+      for (const ref of refs) {
         if (ref.startsWith('DS-') && designRefs.length > 0 && !designRefs.includes(ref)) {
           errs.push({ field: 'refs', message: `T-${t.id} refs ${ref} not found in design.md` });
         }
@@ -246,14 +248,13 @@ function checkTasks(ast: any, content: string, context?: any): ValidationError[]
     } else {
       errs.push({ field: 'refs', message: `T-${t.id}: missing refs field` });
     }
-    if (t.type === 'behavior' && !t.spec_ref) {
+    if (t.type === 'behavior' && !f.spec_ref) {
       errs.push({ field: 'refs', message: `T-${t.id}: behavior type requires spec_ref` });
     }
-    if (!t.files) {
+    if (!f.files) {
       errs.push({ field: 'fill', message: `T-${t.id}: missing files field` });
     }
   }
-  return errs;
 }
 
 function checkVerification(ast: any, content: string): ValidationError[] {

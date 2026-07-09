@@ -38,20 +38,20 @@ afterEach(() => {
 });
 
 describe('validateStepAdvance', () => {
-  it('项目 roadmap-defined 缺少 roadmap.md 时失败', () => {
+  it('project roadmap-defined fails without roadmap.md', () => {
     const result = validateStepAdvance('project', 'roadmap-defined', null, tmpDir);
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('roadmap.md'))).toBe(true);
   });
 
-  it('项目 roadmap-defined 满足条件时通过', () => {
+  it('project roadmap-defined passes with roadmap.md', () => {
     writeFileSync(join(bpDir, 'roadmap.md'), '# Roadmap\n\nContent here', 'utf-8');
     mkdirSync(join(bpDir, 'milestones', 'm1'), { recursive: true });
     const result = validateStepAdvance('project', 'roadmap-defined', null, tmpDir);
     expect(result.valid).toBe(true);
   });
 
-  it('phase discuss 缺失 context.md 时失败', () => {
+  it('phase discuss fails without context.md', () => {
     const phRef = 'milestones/m1/phases/p1';
     mkdirSync(join(bpDir, phRef), { recursive: true });
     const result = validateStepAdvance('phase', 'discuss', phRef, tmpDir);
@@ -59,7 +59,7 @@ describe('validateStepAdvance', () => {
     expect(result.errors.some((e) => e.includes('context.md'))).toBe(true);
   });
 
-  it('phase discuss context.md 存在但为模板时失败', () => {
+  it('phase discuss context.md is template fails', () => {
     const phRef = 'milestones/m1/phases/p1';
     mkdirSync(join(bpDir, phRef), { recursive: true });
     writeFileSync(join(bpDir, phRef, 'context.md'), '# Context\n\n{{name}} {{date}} {{intent}}', 'utf-8');
@@ -67,7 +67,7 @@ describe('validateStepAdvance', () => {
     expect(result.valid).toBe(false);
   });
 
-  it('change planning 模板未填写时失败', () => {
+  it('change planning template fails', () => {
     const chRef = 'milestones/m1/phases/p1/changes/add-feature';
     mkdirSync(join(bpDir, chRef), { recursive: true });
     writeFileSync(join(bpDir, chRef, 'design.md'), '# Design\n\n{{name}} {{date}}', 'utf-8');
@@ -76,16 +76,18 @@ describe('validateStepAdvance', () => {
     expect(result.valid).toBe(false);
   });
 
-  it('已填写的文档通过校验', () => {
+  it('filled documents pass PEG validation', () => {
     const chRef = 'milestones/m1/phases/p1/changes/add-feature';
     mkdirSync(join(bpDir, chRef), { recursive: true });
-    writeFileSync(join(bpDir, chRef, 'design.md'), '# Design\n\nImplemented with strategy pattern.', 'utf-8');
-    writeFileSync(join(bpDir, chRef, 'tasks.md'), '# Tasks\n\n- [ ] task-1.1: do thing\n  - **files**: src/core/feature.ts\n  - **acceptance**: works\n', 'utf-8');
+    writeFileSync(join(bpDir, chRef, 'proposal.md'), '# Proposal: add-feature\n\n## Intent\ntest\n\n## References\n- FR-1: test\n\n## Deliverables\n- PR-1: login  refs: FR-1\n  desc\n', 'utf-8');
+    writeFileSync(join(bpDir, chRef, 'design.md'), '# Design: add-feature\n\n## Design Items\n- DS-1: Comp\n  refs: PR-1\n  desc\n\n## Architecture\nsimple\n', 'utf-8');
+    writeFileSync(join(bpDir, chRef, 'tasks.md'), '# Tasks: add-feature\n\n## Wave 1: Core\n- [ ] T-1: [type:behavior] do thing\n  - **refs**: DS-1\n  - **files**: src/core/feature.ts\n  - **spec_ref**: specs/x/spec.md\n  - **acceptance**: works\n', 'utf-8');
+    // Planning step validates design.md and tasks.md with PEG
     const result = validateStepAdvance('change', 'planning', chRef, tmpDir);
     expect(result.valid).toBe(true);
   });
 
-  it('无显式退出条件的步骤默认通过', () => {
+  it('steps without exit criteria pass by default', () => {
     const result = validateStepAdvance('project', 'unknown-step', null, tmpDir);
     expect(result.valid).toBe(true);
     expect(result.errors).toEqual([]);
@@ -93,15 +95,15 @@ describe('validateStepAdvance', () => {
 });
 
 describe('isTemplateContent', () => {
-  it('含占位符的内容为模板', () => {
+  it('content with placeholders is template', () => {
     expect(isTemplateContent('# Doc\n\n{{name}} {{date}} {{intent}} {{scope}}')).toBe(true);
   });
 
-  it('无占位符的内容非模板', () => {
+  it('content without placeholders is not template', () => {
     expect(isTemplateContent('# Implemented Feature\n\nFull description here.')).toBe(false);
   });
 
-  it('仅 1-3 个占位符也判定为非模板', () => {
+  it('1-3 placeholders also count as template', () => {
     expect(isTemplateContent('# Doc\n\n{{name}}')).toBe(false);
     expect(isTemplateContent('# Doc\n\n{{name}} {{date}}')).toBe(false);
   });

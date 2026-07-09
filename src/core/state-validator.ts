@@ -78,32 +78,33 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
       { path: 'changes/', description: 'No change directories found under this phase. Run split to create change directories.' },
     ],
   },
-  // adhoc/proposal → proposal.md must be filled (not template)
+  // adhoc/proposal → proposal.md must be PEG-validated
   {
     type: 'adhoc', step: 'proposal',
     checks: [
-      { path: 'proposal.md', description: 'proposal.md is still a template. Fill in intent, scope, and must-haves.' },
+      { path: 'proposal.md', description: 'proposal.md is not properly formatted. Fill intent and deliverables.', checkMode: 'peg_validate', pegType: 'proposal' },
     ],
   },
   {
     type: 'change', step: 'proposal',
     checks: [
-      { path: 'proposal.md', description: 'proposal.md is still a template. Fill in intent, scope, and must-haves.' },
+      { path: 'proposal.md', description: 'proposal.md is not properly formatted. Fill intent and deliverables.', checkMode: 'peg_validate', pegType: 'proposal' },
     ],
   },
-  // Change at planning — design.md + tasks.md must be properly filled
+
+  // Change at planning — design.md + tasks.md must be PEG-validated
   {
     type: 'change', step: 'planning',
     checks: [
-      { path: 'design.md', description: 'design.md is still a template. Complete the plan step.' },
-      { path: 'tasks.md', description: 'tasks.md must have checkboxes, task names, and files. Complete the plan step.', checkMode: 'tasks_format' },
+      { path: 'design.md', description: 'design.md is not properly formatted. Fill Design Items with DS-N and refs.', checkMode: 'peg_validate', pegType: 'design' },
+      { path: 'tasks.md', description: 'tasks.md is not properly formatted. Fill tasks with T-N, refs, files.', checkMode: 'peg_validate', pegType: 'tasks' },
     ],
   },
   {
     type: 'adhoc', step: 'planning',
     checks: [
-      { path: 'design.md', description: 'design.md is still a template. Complete the plan step.' },
-      { path: 'tasks.md', description: 'tasks.md must have checkboxes, task names, and files. Complete the plan step.', checkMode: 'tasks_format' },
+      { path: 'design.md', description: 'design.md is not properly formatted. Fill Design Items with DS-N and refs.', checkMode: 'peg_validate', pegType: 'design' },
+      { path: 'tasks.md', description: 'tasks.md is not properly formatted. Fill tasks with T-N, refs, files.', checkMode: 'peg_validate', pegType: 'tasks' },
     ],
   },
 
@@ -156,14 +157,14 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
     type: 'change', step: 'archiving',
     checks: [
       { path: 'change-summary.md', description: 'change-summary.md not found. Run \`bp template change-summary\` to generate it.' },
-      { path: 'verification.md', description: 'verification.md not found. Complete verification first.' },
+      { path: 'verification.md', description: 'verification.md is not properly formatted. Check status.', checkMode: 'peg_validate', pegType: 'verification' },
     ],
   },
   {
     type: 'adhoc', step: 'archiving',
     checks: [
       { path: 'change-summary.md', description: 'change-summary.md not found. Run \`bp template change-summary\` to generate it.' },
-      { path: 'verification.md', description: 'verification.md not found. Complete verification first.' },
+      { path: 'verification.md', description: 'verification.md is not properly formatted. Check status.', checkMode: 'peg_validate', pegType: 'verification' },
     ],
   },
 ];
@@ -191,24 +192,7 @@ function findChangeDir(bpDir: string, baseDir?: string): string[] {
   } catch {
     return [];
   }
-}
-/** Extract unmarked issues from review file (old format fallback) */
-function extractUnmarkedIssues(content: string): string[] {
-  const unmarked: string[] = [];
-  const lines = content.split('\n');
-  let inIssues = false;
-  for (const line of lines) {
-    if (line.startsWith('## ')) {
-      inIssues = line.trim() === '## Issues';
-      continue;
-    }
-    if (!inIssues) continue;
-    const issueMatch = line.match(/^- \[([ x])\]/);
-    if (!issueMatch) continue;
-    if (issueMatch[1] === ' ') unmarked.push(line.trim());
-  }
-  return unmarked;
-}
+} // end findChangeDir
 
 function checkExitCondition(bpDir: string, check: ExitCheck, resolvedPath?: string): string | null {
 
@@ -393,22 +377,13 @@ function checkExitCondition(bpDir: string, check: ExitCheck, resolvedPath?: stri
       return `${check.path} not found. ${check.description}`;
     }
     const content = readFileSync(fullPath, 'utf-8');
-    let result;
     try {
-      result = parseAndValidate(check.pegType, content);
-    } catch (e: any) {
-      // PEG parse error (old format) — fall back to format-specific check
-      result = { valid: true, errors: [] };
-      // For review files, fall back to issues_all_marked
-      if (['spec-review', 'quality-review', 'goal-review'].includes(check.pegType)) {
-        const unmarked = extractUnmarkedIssues(content);
-        if (unmarked.length > 0) {
-          return `Unmarked issues in ${check.path} (${unmarked.length}): ${unmarked[0]}${unmarked.length > 1 ? ` (+${unmarked.length - 1} more)` : ''}. Complete re-review or fix.`;
-        }
+      const result = parseAndValidate(check.pegType, content);
+      if (!result.valid) {
+        return `${check.path}: ${result.errors.map((e: any) => e.message).join('; ')}`;
       }
-    }
-    if (!result.valid) {
-      return `${check.path}: ${result.errors.map((e: any) => e.message).join('; ')}`;
+    } catch (e: any) {
+      return `${check.path}: PEG parse error - ${e.message}`;
     }
   }
 }

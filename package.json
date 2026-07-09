@@ -7,7 +7,7 @@
     "bp": "bin/cli.js"
   },
   "scripts": {
-    "build:grammar": "ls src/core/validate/grammar/*.peggy 2>/dev/null | while read f; do echo \"compile $(basename $f)\"; npx peggy -o \"${f%.peggy}.js\" \"$f\"; done",
+    "build:grammar": "ls src/core/validate/grammar/*.peggy 2>/dev/null | while read f; do b=\"${f%.peggy}\"; echo \"compile $(basename $f)\"; npx peggy -o \"${b}.cjs\" --format commonjs \"$f\"; done",
     "build": "npm run build:grammar && tsup && cp bin/cli.js bin/bp.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
