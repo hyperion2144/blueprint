@@ -23,7 +23,6 @@ export function register(program: any): void {
     .command('change <name>')
     .description('Advance a specific change')
     .option('--auto', 'Autonomous mode')
-    .option('--command <cmd>', 'Specify command: replan | reapply (for loopback)')
     .action(continueChangeHandler);
 
   cmd.action(continueHandler);
@@ -371,8 +370,10 @@ function extractFilesFromTasks(tasksPath: string): string[] | null {
   return files.length > 0 ? files : null;
 }
 
-function continueChangeHandler(name: string, options?: { auto?: boolean; command?: string }): void {
+function continueChangeHandler(name: string, options?: { auto?: boolean; command?: string }, cmdObj?: any): void {
   const isAuto = options?.auto ?? process.argv.includes('--auto');
+  // --command is defined on parent 'continue', pass through via cmdObj.parent
+  const resolvedCommand = options?.command ?? cmdObj?.parent?.getOptionValue?.('command');
   const bpDir = join(process.cwd(), 'bp');
   const cwd = process.cwd();
   const state = loadState(bpDir);
@@ -422,7 +423,7 @@ function continueChangeHandler(name: string, options?: { auto?: boolean; command
   }
 
   // Validate exit conditions before advancing
-  if (!options?.command) {
+  if (!resolvedCommand) {
     const validation = validateStepAdvance(ctxType, changeEntry.status, ref, cwd);
     if (!validation.valid) {
       const note = isAuto ? 'AUTO mode' : 'MUST read instructions below, check ---END--- marker exists.';
@@ -452,7 +453,7 @@ function continueChangeHandler(name: string, options?: { auto?: boolean; command
     return;
   }
 
-  const command = options?.command || result.nextCommand;
+  const command = resolvedCommand || result.nextCommand;
   if (command) {
     const state = loadState(bpDir);
     const transition = getTransition(result.currentStep, command);
