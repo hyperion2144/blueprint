@@ -328,7 +328,7 @@ function checkFileConflicts(name: string, bpDir: string, state: StateFile): File
 
   // Read current change's tasks.md → extract files
   const myFiles = extractFilesFromTasks(myTasksPath);
-  if (!myFiles || myFiles.size === 0) return null;
+  if (!myFiles || myFiles.length === 0) return null;
 
   // Scan other parallel changes that are already at or past applying stage
   const conflicts: FileConflict[] = [];

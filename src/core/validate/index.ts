@@ -310,9 +310,9 @@ export function checkCoverage(
 ): ValidationError[] {
   const errs: ValidationError[] = [];
 
-  const prIds = new Set((proposalAst?.deliverables || []).map((p: any) => `PR-${p.id}`));
-  const dsIds = new Set((designAst?.items || []).map((d: any) => `DS-${d.id}`));
-  const tIds = new Set((tasksAst?.tasks || []).map((t: any) => `T-${t.id}`));
+  const prIds = new Set<string>((proposalAst?.deliverables || []).map((p: any) => `PR-${p.id}`));
+  const dsIds = new Set<string>((designAst?.items || []).map((d: any) => `DS-${d.id}`));
+  const tIds = new Set<string>((tasksAst?.tasks || []).map((t: any) => `T-${t.id}`));
 
   // PRs referenced by DSs
   const prInDs = new Set<string>();

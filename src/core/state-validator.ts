@@ -16,6 +16,8 @@ interface ExitCheck {
   path: string;
   description: string;
   checkMode?: 'file' | 'tasks_marked' | 'issues_all_marked' | 'tasks_format' | 'peg_validate'; // default: 'file'
+  /** Document type for PEG validation (e.g. 'tasks', 'design', 'proposal') */
+  pegType?: string;
 }
 
 interface StepExitCriteria {
@@ -192,7 +194,7 @@ function findChangeDir(bpDir: string, baseDir?: string): string[] {
   } catch {
     return [];
   }
-} // end findChangeDir
+}
 
 function checkExitCondition(bpDir: string, check: ExitCheck, resolvedPath?: string): string | null {
 
@@ -386,6 +388,7 @@ function checkExitCondition(bpDir: string, check: ExitCheck, resolvedPath?: stri
       return `${check.path}: PEG parse error - ${e.message}`;
     }
   }
+  return null;
 }
 /**
  * Validate exit conditions for the current step
