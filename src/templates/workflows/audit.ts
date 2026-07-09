@@ -54,27 +54,27 @@ Present tests one at a time:
 
 Default: major.
 
-### Step 5: Handle issues — create adhoc fixes
+### Step 5: Handle issues — create a single fix change
 After UAT complete, if Gaps section has issues:
 
-1. For each gap, create an adhoc change:
+1. Create ONE adhoc change covering all issues:
    \`\`\`bash
-   bp change new <kebab-case-fix-name> --full --intent "fix: <issue description>"
+   bp change new uat-fixes --full --intent "fix all UAT gaps: <summary>"
    \`\`\`
 
-2. Fill the adhoc proposal.md with:
-   - The gap's \`truth\` (expected behavior)
+2. Fill the proposal.md with ALL gaps:
+   - List each gap with its \`truth\` (expected behavior)
    - \`reason\` (user's verbatim report)
    - \`severity\`
-   - Suggested fix from \`missing\` field
+   - Suggested fix
 
-3. Run \`bp continue change $1\` to route through plan → apply → review → verify → archive.
+3. Run \`bp continue change uat-fixes\` to route through plan → apply → review → verify → archive.
 
 **If no issues**: mark uat.md status → complete.
 
 ### Step 6: Advance
 - All tests pass → phase verified, no further action
-- Issues + adhoc changes created → \`bp continue change $1\` to start fixing
+- Issues + fix change created → \`bp continue change uat-fixes\` to start fixing
 - Partial (skipped/blocked) → uat.md status → partial; resume later
 
 ## Output
