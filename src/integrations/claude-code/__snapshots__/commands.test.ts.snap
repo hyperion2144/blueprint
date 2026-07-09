@@ -1832,6 +1832,12 @@ Issue numbering rules (used in all three review files):
 
 Each finding gets a unique number (R1, R2, Q1, Q2, G1, G2, D1, D2...) written in the checklist/Issues table, AND a corresponding \`- [ ]\` entry in the \`## Issues\` section at the bottom.
 
+**Verdict constraint — strict rule for ALL modes:**
+- Spec Review: if any row in Constraint Checklist is FAIL, or any Issues entry exists → overall MUST be FAIL or NEEDS_REVISION
+- Quality Review: if any issue exists (BLOCKER/MAJOR/MINOR/INFO), or any Issues entry exists → overall MUST be FAIL or NEEDS_REVISION
+- Goal Review: if any goal is PARTIAL or NOT_ACHIEVED, or any Issues entry exists → overall MUST be FAIL or NEEDS_REVISION
+**In short: any problem → not PASS. Only write PASS when truly clean.**
+
 **If LIGHTWEIGHT — use templates, fill quickly, then advance:**
 1. Run \`bp template spec-review\` → read template → fill it → write to \`spec-review.md\`
 2. Run \`bp template quality-review\` → read template → fill it → write to \`quality-review.md\`

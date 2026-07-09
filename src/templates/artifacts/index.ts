@@ -393,7 +393,7 @@ export const SPEC_REVIEW_TEMPLATE = `# Spec Review: {{name}}
 
 ## Overall: {{verdict}}
 
-<!-- PASS / FAIL / NEEDS_REVISION -->
+<!-- PASS / FAIL / NEEDS_REVISION — If any row below is FAIL, or any Issues entry exists, overall MUST be FAIL or NEEDS_REVISION, NOT PASS. -->
 
 ## Constraint Checklist
 
@@ -423,7 +423,7 @@ export const QUALITY_REVIEW_TEMPLATE = `# Quality Review: {{name}}
 
 ## Overall: {{verdict}}
 
-<!-- PASS / FAIL / NEEDS_REVISION -->
+<!-- PASS / FAIL / NEEDS_REVISION — If any issue below (BLOCKER/MAJOR/MINOR/INFO) or any Issues entry exists, overall MUST be FAIL or NEEDS_REVISION, NOT PASS. -->
 
 ## Issues
 
@@ -453,7 +453,7 @@ export const GOAL_REVIEW_TEMPLATE = `# Goal Review: {{name}}
 
 ## Overall: {{verdict}}
 
-<!-- PASS / FAIL / NEEDS_REVISION -->
+<!-- PASS / FAIL / NEEDS_REVISION — If any goal below is PARTIAL or NOT_ACHIEVED, or any Issues entry exists, overall MUST be FAIL or NEEDS_REVISION, NOT PASS. -->
 
 ## Goal Checklist
 

@@ -531,8 +531,8 @@ For EVERY review file you write:
 3. Add each issue to the \`## Issues\` section as \`- [ ] <prefix><N> — <brief>\`
 4. Leave all \`- [ ]\` unchecked — they are checked during re-review
 5. Overall verdict: PASS / FAIL / NEEDS_REVISION
-6. NO_ISSUES_FOUND if nothing found (never leave a review blank)
-
+6. **Verdict constraint**: If any finding exists (FAIL/BLOCKER/MAJOR/MINOR/PARTIAL/NOT_ACHIEVED) or any Issues entry exists, overall MUST be FAIL or NEEDS_REVISION. Only write PASS when the review is truly clean.
+7. NO_ISSUES_FOUND if nothing found (never leave a review blank)
 ### Step 4: Commit review files
 
 Read \`bp/project.yml\` — check \`workflow.commitDocs\`.
