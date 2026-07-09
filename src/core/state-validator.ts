@@ -1,12 +1,12 @@
 /**
- * 状态转移前置校验
- * 在推进状态前，检查当前步骤的退出条件是否满足。
- * 退出条件 = 离开当前步骤前必须完成的文档/产物。
+ * State transition pre-validation
+ * Before advancing state, checks that current step's exit conditions are met.
+ * Exit conditions = documents/artifacts that must be completed before leaving the step.
  */
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-
+import { parseAndValidate } from './validate/index.js';
 export interface ValidationResult {
   valid: boolean;
   errors: string[];
@@ -15,7 +15,7 @@ export interface ValidationResult {
 interface ExitCheck {
   path: string;
   description: string;
-  checkMode?: 'file' | 'tasks_marked' | 'issues_all_marked' | 'tasks_format'; // default: 'file'
+  checkMode?: 'file' | 'tasks_marked' | 'issues_all_marked' | 'tasks_format' | 'peg_validate'; // default: 'file'
 }
 
 interface StepExitCriteria {
@@ -23,10 +23,9 @@ interface StepExitCriteria {
   step: string;
   checks: ExitCheck[];
 }
-
 /**
- * 每步的退出条件。
- * 当 CLI 尝试推进某步时，检查这些条件是否满足。
+ * Exit criteria per step.
+ * When CLI attempts to advance from a step, these conditions are checked.
  */
 const EXIT_CRITERIA: StepExitCriteria[] = [
   // project/roadmap-defined → must have roadmap + milestone directories
@@ -44,18 +43,18 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
       { path: 'requirements.md', description: 'requirements.md not found' },
     ],
   },
-  // project/grill → 必须有完整的 requirements.md
+  // project/grill → requirements.md must be complete (not template)
   {
     type: 'project', step: 'grill',
     checks: [
-      { path: 'requirements.md', description: 'requirements.md 内容为模板，请填写后重试' },
+      { path: 'requirements.md', description: 'requirements.md is still a template. Fill it before continuing.' },
     ],
   },
-  // project/researched → 必须有调研产出
+  // project/researched → must have research output
   {
     type: 'project', step: 'researched',
     checks: [
-      { path: 'research/summary.md', description: 'research/summary.md 不存在，请先完成调研' },
+      { path: 'research/summary.md', description: 'research/summary.md not found. Complete the research step first.' },
     ],
   },
   // phase/discuss → must have context.md in phase dir
@@ -370,14 +369,30 @@ function checkExitCondition(bpDir: string, check: ExitCheck, resolvedPath?: stri
       return `Cannot read ${check.path}: ${check.description}`;
     }
   }
+
+  // PEG validation: parse document with grammar and run 4D checks
+  if (check.checkMode === 'peg_validate' && check.pegType) {
+    if (!existsSync(fullPath)) {
+      return `${check.path} not found. ${check.description}`;
+    }
+    try {
+      const content = readFileSync(fullPath, 'utf-8');
+      const result = parseAndValidate(check.pegType, content);
+      if (!result.valid) {
+        return `${check.path}: ${result.errors.map(e => e.message).join('; ')}`;
+      }
+    } catch (e: any) {
+      return `${check.path}: validation error - ${e.message}`;
+    }
+  }
   return null;
 }
 /**
- * 校验当前步骤的退出条件是否满足
+ * Validate exit conditions for the current step
  * @param contextType active_context.type
  * @param contextStep active_context.step
- * @param ref active_context.ref（用于解析 phase/change 路径）
- * @param cwd 项目根目录
+ * @param ref active_context.ref (resolves phase/change paths)
+ * @param cwd project root directory
  */
 export function validateStepAdvance(
   contextType: string,
@@ -395,7 +410,7 @@ export function validateStepAdvance(
   );
 
   if (!criteria) {
-    // 无显式退出条件 = 默认通过
+    // No explicit exit criteria = pass by default
     return { valid: true, errors: [] };
   }
 
@@ -416,7 +431,7 @@ export function validateStepAdvance(
 }
 
 /**
- * 检查文件是否为模板空壳（含未填写的 {{placeholder}}）
+  * Check if file is a template shell (contains unfilled {{placeholder}})
  */
 export function isTemplateContent(content: string): boolean {
   const placeholders = content.match(/\{\{[a-zA-Z_-]+\}\}/g);
