@@ -1,0 +1,63 @@
+// Proposal grammar — PR deliverables with refs to FR/D
+
+Proposal
+  = "# Proposal:" __ name:LineRest NEWLINE
+    __ intent:IntentSection
+    __ refs:RefsSection?
+    __ deliverables:DeliverablesSection
+    { return { name, intent, refs, deliverables: deliverables || [] }; }
+
+IntentSection
+  = "## Intent" NEWLINE text:ContentBlock
+
+RefsSection
+  = "## References" NEWLINE refs:RefLine+
+    { return refs; }
+
+RefLine
+  = __ "- " refId:RefId ": " text:LineRest NEWLINE
+    { return { ref: refId, text }; }
+
+RefId
+  = "FR-" id:Integer { return "FR-" + id; }
+  / "NFR-" id:Integer { return "NFR-" + id; }
+  / "D-" id:Integer { return "D-" + id; }
+
+DeliverablesSection
+  = "## Deliverables" NEWLINE items:DeliverableItem+
+    { return items; }
+
+DeliverableItem
+  = __ "- PR-" id:Integer ": " title:DeliverableTitle restLine:RefsOnLine? NEWLINE desc:DescriptionBlock?
+    { return { id, title, refs: restLine?.refs || [] }; }
+
+DeliverableTitle
+  = chars:(!"refs:" [^\n\r])* { return chars.map(c => c[1]).join("").trim(); }
+
+RefsOnLine
+  = "refs:" __ refs:RefIdList
+    { return { refs }; }
+
+RefIdList
+  = head:RefId tail:(__ "," __ RefId)*
+    { return [head].concat(tail.map(t => t[3])); }
+
+DescriptionBlock
+  = lines:(__ !"- " !"## " !NEWLINE text:LineRest NEWLINE)+
+    { return lines.map(l => l.text).join(" ").trim(); }
+
+ContentBlock
+  = lines:(__ text:LineRest NEWLINE)+
+    { return lines.map(l => l.text).join("\n"); }
+
+Integer
+  = digits:[0-9]+ { return parseInt(digits.join("")); }
+
+LineRest
+  = chars:[^\n\r]+ { return chars.join("").trim(); }
+
+__
+  = [ \t\n\r]*
+
+NEWLINE
+  = "\n" / "\r\n" / "\r"
