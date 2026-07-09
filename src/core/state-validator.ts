@@ -154,10 +154,13 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
 ];
 
 function isTemplateFile(filePath: string): boolean {
-  const KNOWN_PLACEHOLDERS = ['{{name}}', '{{date}}', '{{intent}}', '{{scope}}'];
   try {
     const content = readFileSync(filePath, 'utf-8');
-    return KNOWN_PLACEHOLDERS.some((p) => content.includes(p));
+    // Known template placeholders (proposal.md, design.md, etc.)
+    if (['{{name}}', '{{date}}', '{{intent}}', '{{scope}}'].some((p) => content.includes(p))) return true;
+    // Generic template placeholders (tasks.md: {{wave-1-theme}}, {{type}}, {{title}}, etc.)
+    if (/\{\{[a-z][\w-]*\}\}/.test(content)) return true;
+    return false;
   } catch {
     return false;
   }

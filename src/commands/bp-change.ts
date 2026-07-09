@@ -40,27 +40,12 @@ function newChange(name: string, options: { dir: string; full?: boolean; intent?
 
   const changeEntry = { name, status: 'pending' as const, depends_on: [] as string[] };
 
-  if (options.full) {
-    // Full cycle: proposal only
-    const content = (ARTIFACT_TEMPLATES['proposal'] ?? `# Proposal: ${name}\n`)
-      .replace(/\{\{name\}\}/g, name)
-      .replace(/\{\{date\}\}/g, date);
-    writeFileSync(join(changeDir, 'proposal.md'), content, 'utf-8');
-    console.log(`✓ Created change: ${changeDir} (full cycle)`);
+  if (options.intent) {
+    // Write intent-only proposal so the agent knows what to do
+    writeFileSync(join(changeDir, 'proposal.md'), `# Proposal: ${name}\n\nintent: ${options.intent}\nscope: TBD\nmust_haves:\n- TBD\n`, 'utf-8');
+    console.log(`✓ Created change: ${changeDir} (with intent)`);
   } else {
-    // Fast path (default): all artifacts pre-created
-    const templates: Record<string, string> = {
-      'proposal.md': (ARTIFACT_TEMPLATES['proposal'] ?? `# Proposal: ${name}\n`)
-        .replace(/\{\{name\}\}/g, name).replace(/\{\{date\}\}/g, date)
-        .replace('{{intent}}', options.intent || '{{intent}}'),
-      'design.md': (ARTIFACT_TEMPLATES['design'] ?? `# Design: ${name}\n`)
-        .replace(/\{\{name\}\}/g, name).replace(/\{\{date\}\}/g, date),
-      'tasks.md': (ARTIFACT_TEMPLATES['tasks'] ?? `# Tasks: ${name}\n`)
-        .replace(/\{\{name\}\}/g, name).replace(/\{\{date\}\}/g, date),
-    };
-    for (const [filename, content] of Object.entries(templates)) {
-      writeFileSync(join(changeDir, filename), content, 'utf-8');
-    }
+    // No auto-generated artifacts — agent uses \`bp template <type>\` to create each file
     console.log(`✓ Created change: ${changeDir}`);
   }
 
@@ -72,5 +57,5 @@ function newChange(name: string, options: { dir: string; full?: boolean; intent?
   console.log('');
   console.log(`## Next step`);
   console.log(`Run \`bp continue change ${name}\` to activate and start working on this change.`);
-  console.log(`(Fast-path artifacts created: proposal.md, design.md, tasks.md — ready for \`bp continue change ${name}\` → planning)`);
+  console.log(`(Use \`bp template proposal\`, \`bp template design\`, \`bp template tasks\` to create files as needed.)`);
 }
