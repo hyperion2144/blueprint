@@ -399,7 +399,8 @@ export const SPEC_REVIEW_TEMPLATE = `# Spec Review: {{name}}
 
 | # | Constraint | Location | Status | Evidence |
 |---|-----------|----------|--------|----------|
-| 1 | {{constraint}} | {{file:line}} | PASS / FAIL / N/A | {{note}} |
+| R1 | {{constraint}} | {{file:line}} | PASS / FAIL / N/A | {{note}} |
+| R2 | {{constraint}} | {{file:line}} | PASS / FAIL / N/A | {{note}} |
 
 ## Edge Case Coverage
 
@@ -407,9 +408,11 @@ export const SPEC_REVIEW_TEMPLATE = `# Spec Review: {{name}}
 |-----------|---------|----------|
 | {{edge-case}} | {{yes/no}} | {{note}} |
 
-## Findings
-
-{{findings}}
+## Issues
+- [ ] R1 — {{brief}} (xref R1)
+- [ ] R2 — {{brief}} (xref R2)
+<!-- Add more: - [ ] R<N> — <brief> (xref R<N>) -->
+<!-- Design issues: - [ ] D1 — <design issue> (replan required) -->
 `;
 
 export const QUALITY_REVIEW_TEMPLATE = `# Quality Review: {{name}}
@@ -426,7 +429,8 @@ export const QUALITY_REVIEW_TEMPLATE = `# Quality Review: {{name}}
 
 | # | Severity | Category | Location | Description |
 |---|----------|----------|----------|-------------|
-| 1 | BLOCKER / MAJOR / MINOR / INFO | {{category}} | {{file:line}} | {{description}} |
+| Q1 | BLOCKER / MAJOR / MINOR / INFO | {{category}} | {{file:line}} | {{description}} |
+| Q2 | BLOCKER / MAJOR / MINOR / INFO | {{category}} | {{file:line}} | {{description}} |
 
 ## Convention Compliance
 
@@ -434,9 +438,11 @@ export const QUALITY_REVIEW_TEMPLATE = `# Quality Review: {{name}}
 |------|--------|------|
 | {{rule}} | {{status}} | {{note}} |
 
-## Findings
-
-{{findings}}
+## Issues
+- [ ] Q1 — {{brief}} (xref Q1)
+- [ ] Q2 — {{brief}} (xref Q2)
+<!-- Add more: - [ ] Q<N> — <brief> (xref Q<N>) -->
+<!-- Design issues: - [ ] D<N> — <design issue> (replan required) -->
 `;
 
 export const GOAL_REVIEW_TEMPLATE = `# Goal Review: {{name}}
@@ -453,15 +459,18 @@ export const GOAL_REVIEW_TEMPLATE = `# Goal Review: {{name}}
 
 | # | Goal / Must-have | Status | Evidence |
 |---|-----------------|--------|----------|
-| 1 | {{goal}} | ACHIEVED / PARTIAL / NOT_ACHIEVED | {{note}} |
+| G1 | {{goal}} | ACHIEVED / PARTIAL / NOT_ACHIEVED | {{note}} |
+| G2 | {{goal}} | ACHIEVED / PARTIAL / NOT_ACHIEVED | {{note}} |
 
 ## Completeness Assessment
 
 {{assessment}}
 
-## Findings
-
-{{findings}}
+## Issues
+- [ ] G1 — {{brief}} (xref G1)
+- [ ] G2 — {{brief}} (xref G2)
+<!-- Add more: - [ ] G<N> — <brief> (xref G<N>) -->
+<!-- Design issues: - [ ] D<N> — <design issue> (replan required) -->
 `;
 
 export const CHANGE_SUMMARY_TEMPLATE = `# Change Summary: {{name}}

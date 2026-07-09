@@ -30,57 +30,77 @@ ${CLASSIFY_CHANGE}${CHANGE_NAME_RESOLVE('applying', 'review')}
 
 ### Step 2: Execute review (Normal mode only)
 
-**If LIGHTWEIGHT — quick checklist:**
+Issue numbering rules (used in all three review files):
+| Prefix | Source | Meaning | Loopback |
+|--------|--------|---------|----------|
+| R1, R2 | Spec Review | Specification non-compliance | reapply |
+| Q1, Q2 | Quality Review | Code quality issues | reapply |
+| G1, G2 | Goal Review | Goal not achieved | reapply |
+| D1, D2 | Any review | **Design/architecture flaw** — needs redesign, not code fix | **replan** |
 
+**D prefix identification**: Mark as D if the issue cannot be fixed by modifying code alone:
+1. SHALL/MUST requires a new module or architecture change
+2. Core abstraction/component responsibility is wrong
+3. Technology stack does not support requirements
+4. Data model does not support planned extensions
+
+Each finding gets a unique number (R1, R2, Q1, Q2, G1, G2, D1, D2...) written in the checklist/Issues table, AND a corresponding \`- [ ]\` entry in the \`## Issues\` section at the bottom.
+
+**If LIGHTWEIGHT — quick checklist:**
 - **No code**: write minimal reviews, advance
 - **With code**: tsc + vitest must pass; quick scan → write PASS reviews
+- Use the numbering rules above when writing issues
 
 **If FULL — dispatch reviewer sub-agent:**
-
 1. Run \`bp dispatch reviewer --change $1\`
 2. Call the tool once. Prompt: run spec-review → quality-review → goal-review sequentially, then commit all three files.
+   Include the numbering rules (R/Q/G/D prefixes, D identification criteria, Issues section).
 3. Output: spec-review.md, quality-review.md, goal-review.md in change directory.
 
-### Step 3: Aggregate results (Normal mode only)
+### Step 3: Collect and classify issues
+Read all three review files. Extract all \`## Issues\` entries.
 
-Check each report's verdict. All three must be PASS for the change to advance.
-Any FAIL or NEEDS_REVISION means there are issues that must be addressed.
+**Check for D-prefixed issues** (design/architecture problems):
+- Search for \`- [ ] D\` in all three files
+- If any D issue exists → design flaw identified
 
-### Step 4: Handle findings (Normal mode only)
+### Step 4: Route based on findings
 
-Classify the issue severity: BLOCKER / FLAG / NOTE.
+**If any D issue found** → **replan** (design loopback):
+\`\`\`bash
+bp continue change [BP:CHANGE_NAME] --command replan
+\`\`\`
+The design needs to be reworked before code fixes make sense.
+
+**If only R/Q/G issues found and any report is FAIL or NEEDS_REVISION** → **reapply** (code fix loopback):
+\`\`\`bash
+bp continue change [BP:CHANGE_NAME] --command reapply
+\`\`\`
 
 **If all three reports PASS** → commit review files → advance to archive.
-
-**If any report is FAIL or NEEDS_REVISION** → ALL non-PASS findings must be addressed. Determine loopback type:
-- Implementation bugs → **reapply** (fix-apply)
-- Architecture/design flaws → **replan** (fix-plan)
+\`\`\`bash
+bp commit "docs(review): triple review for [BP:CHANGE_NAME]" --files "spec-review.md,quality-review.md,goal-review.md" --scope review --record
+\`\`\`
 
 ${REVIEW_LOOPBACK}
 
 ### Step 5: In-place re-review (Fix mode only)
 
-Read original review files + review-task.md. For each finding:
+Read original review files + review-task.md. The issues in the original review files should still have \`- [ ]\` entries.
 
-- **Fixed findings**: append \`**✅ 已修复**\` below the finding.
-- **Unresolved findings**: keep original status.
-- **Code review of fixes**: scan the changed files for new issues.
-- **New issues found**: append new findings with continued numbering. Use the appropriate status per review type:
-    - spec-review: FAIL / N/A
-    - quality-review: BLOCKER / MAJOR / MINOR / INFO
-    - goal-review: PARTIAL / NOT_ACHIEVED
+**Mark fixed issues:**
+- For each issue referenced in review-task.md as fixed → find in \`## Issues\` and change \`- [ ]\` to \`- [x]\`
+- Do NOT modify the report content above Issues (no \`已修复\` annotations needed)
 
-After in-place update:
-- If any report is still FAIL or NEEDS_REVISION → write new review-task.md → loop back
-- If all three reports PASS → commit → advance to archive
+**New issues found:**
+- Continue numbering from the existing highest number
+- Add new entries to the report content AND to \`## Issues\` as \`- [ ]\`
+- New D issues → use D prefix, continue D numbering
 
-${COMMIT_ADVANCE('docs', 'triple review for [BP:CHANGE_NAME]')}
-
-## Guardrails
-- FULL: dispatch 1 reviewer sub-agent (all three reviews sequentially)
-- Fix mode: update existing files in-place, never create new review files
-- Findings: all non-PASS findings must be addressed before advancing
-- Loopback: any FAIL or NEEDS_REVISION → fix-plan or fix-apply → re-review → repeat until all PASS`;
+**After in-place update:**
+- Check if \`## Issues\` has any remaining \`- [ ]\` → if yes, write new review-task.md → loop back
+- If all \`- [x]\` → commit → advance to archive
+`;
 
 export function getReviewSkillTemplate(): SkillTemplate {
   return {
