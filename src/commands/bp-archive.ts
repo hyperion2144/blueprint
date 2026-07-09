@@ -148,20 +148,29 @@ function archiveHandler(changePath: string) {
   try {
     const roadmapPath = join(bpDir, 'roadmap.md');
     if (existsSync(roadmapPath)) {
-      const state = loadState(bpDir);
-      const milestone = state.project.current_milestone;
-      const phase = state.project.current_phase;
+      // Try to extract milestone/phase from change path first, fall back to state
+      let milestone: string | null = null;
+      let phase: string | null = null;
+      const pathMatch = changePath.match(/milestones\/([^/]+)\/phases\/([^/]+)\/changes\//);
+      if (pathMatch) {
+        milestone = pathMatch[1];
+        phase = pathMatch[2];
+      } else {
+        const state = loadState(bpDir);
+        milestone = state.project.current_milestone;
+        phase = state.project.current_phase;
+      }
       if (milestone && phase) {
         let roadmap = readFileSync(roadmapPath, 'utf-8');
-        // Mark phase as COMPLETED: Ph-{mid}.{pid} [ACTIVE] → [COMPLETED]
         const phasePattern = new RegExp(`(### Ph-${milestone}\\.${phase}: .*?) \\[ACTIVE\\]`);
         if (phasePattern.test(roadmap)) {
           roadmap = roadmap.replace(phasePattern, `$1 [COMPLETED]`);
-          // Check if all phases in this milestone are COMPLETED
-          const mstoneRegex = new RegExp(`## Md-${milestone}: .*? \\[ACTIVE\\]`);
-          const allPhasesDone = !roadmap.includes(`### Ph-${milestone}.`);
-          if (allPhasesDone && mstoneRegex.test(roadmap)) {
-            roadmap = roadmap.replace(mstoneRegex, (match: string) => match.replace('[ACTIVE]', '[COMPLETED]'));
+          const allPhasesDone = !roadmap.includes(`### Ph-${milestone}.`) || !roadmap.includes(`### Ph-${milestone}.\\d+: .*? \\[ACTIVE\\]`);
+          if (allPhasesDone) {
+            roadmap = roadmap.replace(
+              new RegExp(`(## Md-${milestone}: .*?) \\[ACTIVE\\]`),
+              `$1 [COMPLETED]`
+            );
           }
           writeFileSync(roadmapPath, roadmap, 'utf-8');
           console.log(`✓ roadmap.md: Ph-${milestone}.${phase} marked COMPLETED`);
