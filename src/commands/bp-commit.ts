@@ -64,7 +64,7 @@ function commitHandler(
 
   // ── Doc filtering ──────────────────────────────────────────────
   const commitDocs = config.workflow?.commitDocs !== false;
-  const docPatterns = [/^bp\//, /\.md$/, /^docs\//];
+  const docPatterns = [/^bp\//];
   const isDocFile = (f: string): boolean => docPatterns.some((p) => p.test(f));
 
   const skippedDocs: string[] = [];
