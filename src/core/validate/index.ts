@@ -176,6 +176,11 @@ function checkProposal(ast: any, content: string, context?: any): ValidationErro
     errs.push({ field: 'fill', message: 'No deliverables found (missing PR- items in ## Deliverables)' });
   }
   for (const pr of ast.deliverables || []) {
+    // Source: FR-{id} (bp/requirements.md) or Source: D-{id} (context.md)
+    const desc = (pr.description || '') + (pr.title || '');
+    if (!/Source:\s*(FR-\d+|D-\d+|NFR-\d+)\s*\(/.test(desc)) {
+      errs.push({ field: 'refs', message: `PR-${pr.id}: missing Source: annotation (e.g. Source: FR-1 (bp/requirements.md))` });
+    }
     // REFS: FR/NFR/D ids exist in requirements/context
     for (const ref of pr.refs || []) {
       if (ref.startsWith('FR-') || ref.startsWith('NFR-')) {
@@ -207,6 +212,11 @@ function checkDesign(ast: any, content: string, context?: any): ValidationError[
     }
   }
   for (const ds of ast.items || []) {
+    // Source: PR-{id} (proposal.md)
+    const desc = (ds.description || '') + (ds.title || '');
+    if (!/Source:\s*PR-\d+\s*\(/.test(desc)) {
+      errs.push({ field: 'refs', message: `DS-${ds.id}: missing Source: annotation (e.g. Source: PR-1 (proposal.md))` });
+    }
     // REFS: PR-N exists in proposal
     for (const ref of ds.refs || []) {
       if (ref.startsWith('PR-') && proposalRefs.length > 0 && !proposalRefs.includes(ref)) {

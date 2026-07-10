@@ -26,7 +26,7 @@ LineRest
 Integer
   = digits:[0-9]+ { return parseInt(digits.join("")); }
 
-_ = [	]*
+_ = [ 	]*
 __
   = [ \t\n\r]*
 

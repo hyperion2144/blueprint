@@ -79,12 +79,12 @@ describe('validateStepAdvance', () => {
   it('filled documents pass PEG validation', () => {
     const chRef = 'milestones/m1/phases/p1/changes/add-feature';
     mkdirSync(join(bpDir, chRef), { recursive: true });
-    writeFileSync(join(bpDir, chRef, 'proposal.md'), '# Proposal: add-feature\n\n## Intent\ntest\n\n## References\n- FR-1: test\n\n## Deliverables\n- PR-1: login  refs: FR-1\n  desc\n', 'utf-8');
-    writeFileSync(join(bpDir, chRef, 'design.md'), '# Design: add-feature\n\n## Design Items\n- DS-1: Comp\n  refs: PR-1\n  desc\n\n## Architecture\nsimple\n', 'utf-8');
+    writeFileSync(join(bpDir, chRef, 'proposal.md'), '# Proposal: add-feature\n\n## Intent\ntest\n\n## References\n- FR-1: test  (bp/requirements.md)\n\n## Deliverables\n- PR-1: login  refs: FR-1\n  Source: FR-1 (bp/requirements.md)\n  System SHALL login.\n  Verify: POST login.\n', 'utf-8');
+    writeFileSync(join(bpDir, chRef, 'design.md'), '# Design: add-feature\n\n## Design Items\n- DS-1: Comp\n  refs: PR-1\n  Source: PR-1 (proposal.md)\n  desc\n\n## Architecture\nsimple\n', 'utf-8');
     writeFileSync(join(bpDir, chRef, 'tasks.md'), '# Tasks: add-feature\n\n## Wave 1: Core\n- [ ] T-1: [type:behavior] do thing\n  - **refs**: DS-1\n  - **files**: src/core/feature.ts\n  - **spec_ref**: specs/x/spec.md\n  - **acceptance**: works\n', 'utf-8');
     // Planning step validates design.md and tasks.md with PEG
     const result = validateStepAdvance('change', 'planning', chRef, tmpDir);
-    expect(result.valid).toBe(true);
+    expect(result).toEqual({ valid: true, errors: [] });
   });
 
   it('steps without exit criteria pass by default', () => {

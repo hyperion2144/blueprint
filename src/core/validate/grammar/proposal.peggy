@@ -4,8 +4,13 @@ Proposal
   = "# Proposal:" __ name:LineRest NEWLINE
     __ intent:IntentSection
     __ refs:RefsSection?
-    __ deliverables:DeliverablesSection __ (.)* { return { name, intent, refs, deliverables: deliverables || [] }; }
+    __ extRefs:ExtRefsSection?
+    __ deliverables:DeliverablesSection __ (.)*
+    { return { name, intent, refs, extRefs: extRefs || [], deliverables: deliverables || [] }; }
 
+ExtRefsSection
+  = "## External References" NEWLINE lines:(_ !"- " !"## " !NEWLINE text:LineRest NEWLINE)*
+    { return lines.filter(l => l.text).map(l => l.text); }
 IntentSection
   = "## Intent" NEWLINE text:ContentBlock
 
@@ -28,7 +33,7 @@ DeliverablesSection
 
 DeliverableItem
   = __ "- PR-" id:Integer ": " title:DeliverableTitle restLine:RefsOnLine? NEWLINE desc:DescriptionBlock?
-    { return { id, title, refs: restLine?.refs || [] }; }
+    { return { id, title, refs: restLine?.refs || [], description: desc || "" }; }
 
 DeliverableTitle
   = chars:(!"refs:" [^\n\r])* { return chars.map(c => c[1]).join("").trim(); }
@@ -42,12 +47,13 @@ RefIdList
     { return [head].concat(tail.map(t => t[3])); }
 
 DescriptionBlock
-  = lines:(_ !"- " !"## " !NEWLINE text:LineRest NEWLINE)+
-    { return lines.map(l => l.text).join(" ").trim(); }
+  = lines:(_ !"- " !"## " !NEWLINE text:LineRest NEWLINE { return text; })+
+    { return lines.join(" ").trim(); }
 
 ContentBlock
-  = lines:(_ text:LineRest NEWLINE)+
-    { return lines.map(l => l.text).join("\n"); }
+  = lines:(_ text:LineRest NEWLINE { return text; })+
+    { return lines.join("\n"); }
+
 
 Integer
   = digits:[0-9]+ { return parseInt(digits.join("")); }
@@ -55,7 +61,7 @@ Integer
 LineRest
   = chars:[^\n\r]+ { return chars.join("").trim(); }
 
-_ = [	]*
+_ = [ 	]*
 __
   = [ \t\n\r]*
 

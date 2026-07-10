@@ -39,7 +39,7 @@ Integer
 LineRest
   = chars:[^\n\r]+ { return chars.join("").trim(); }
 
-_ = [	]*
+_ = [ 	]*
 __
   = [ \t\n\r]*
 

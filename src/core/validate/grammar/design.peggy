@@ -26,16 +26,15 @@ PRId
   = "PR-" id:Integer { return "PR-" + id; }
 
 DescriptionBlock
-  = lines:(_ !"- " !"## " !NEWLINE text:LineRest NEWLINE)+
-    { return lines.map(l => l.text).join("\n").trim(); }
+  = lines:(_ !"- " !"## " !NEWLINE text:LineRest NEWLINE { return text; })+
+    { return lines.join("\n").trim(); }
 
 Integer
   = digits:[0-9]+ { return parseInt(digits.join("")); }
 
 LineRest
   = chars:[^\n\r]+ { return chars.join("").trim(); }
-
-_ = [	]*
+_ = [ \t]*
 __
   = [ \t\n\r]*
 
