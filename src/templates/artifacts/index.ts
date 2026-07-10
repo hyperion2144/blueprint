@@ -61,18 +61,74 @@ export const DESIGN_TEMPLATE = `# Design: {{name}}
 
 ## Design Items
 
-<!-- Each DS-N is a component/module. refs: PR-N links to the proposal deliverable this item implements. Tasks will reference DS-N. -->
+<!-- Decompose the solution into numbered components. Each DS-N maps to proposal deliverables (PR-N). Tasks will reference DS-N. -->
 
-- DS-1: {{component-name}}  refs: PR-{{id}}, PR-{{id}}
-  {{responsibilities, interfaces, data flow}}
-- DS-2: {{component-name}}  refs: PR-{{id}}
-  {{responsibilities}}
+| # | Component | Proposal Refs | Description |
+|---|-----------|--------------|-------------|
+| DS-1 | {{name}} | PR-{{id}}, PR-{{id}} | {{responsibilities, interfaces}} |
+| DS-2 | {{name}} | PR-{{id}} | {{description}} |
 
 ---
 
-## Architecture
+## Context & Goals
 
-{{component diagram, data flow, module relationships}}
+<!-- Context/constraints + core design goals (≤3). Must align with proposal Intent and Must-haves. -->
+
+{{background-and-goals}}
+
+---
+
+## Technical Approach
+
+### Architecture Diagram
+
+<!-- ASCII art showing module relationships. Annotate: [NEW], [MODIFIED], [EXISTING]. -->
+
+\`\`\`text
+{{architecture-diagram}}
+\`\`\`
+
+### Core Data Structures
+
+<!-- Key types/interfaces introduced or modified. TypeScript interface format, brief description per type. -->
+
+{{data-structures}}
+
+### Data Flow
+
+<!-- Step-by-step data flow from trigger to effect. -->
+
+{{data-flow}}
+
+### Interface Design
+
+<!-- Public API signatures: function/method names, params (name+type+desc), return types, sync/async. -->
+
+{{api-signatures}}
+
+---
+
+## File Manifest
+
+<!-- All files to create or modify. -->
+
+| File Path | Description | Action |
+|-----------|-------------|--------|
+| \`{{file-path-1}}\` | {{description}} | Create |
+| \`{{file-path-2}}\` | {{description}} | Modify |
+
+---
+
+## Test Strategy
+
+### Unit Tests
+- <!-- Which modules need unit tests? What needs mocking? -->
+
+### Integration Tests
+- <!-- Which flows need integration tests? What fixtures needed? -->
+
+### TDD Tasks
+- <!-- List type:behavior tasks requiring RED→GREEN→REFACTOR -->
 
 ---
 
@@ -84,6 +140,15 @@ export const DESIGN_TEMPLATE = `# Design: {{name}}
 |----------|------|------|-----------------|
 | {{alt-name-1}} | {{pros}} | {{cons}} | {{reason}} |
 | {{alt-name-2}} | {{pros}} | {{cons}} | {{reason}} |
+
+---
+
+## Risk Assessment
+
+| Risk | Probability | Impact | Mitigation |
+|------|------------|--------|-----------|
+| {{risk-1}} | {{probability}} | {{impact}} | {{mitigation}} |
+| {{risk-2}} | {{probability}} | {{impact}} | {{mitigation}} |
 `;
 
 export const TASKS_TEMPLATE = `# Tasks: {{name}}
