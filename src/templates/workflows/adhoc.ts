@@ -19,10 +19,7 @@ If no name: ask the user for a descriptive kebab-case name.
 1. Run \`bp change new $1\` to create the change directory and register it as \`pending\`.
 2. Run \`bp continue change $1\` to activate (pending → proposal).
 
-The activation outputs the proposal workflow. Follow its instructions to fill \`proposal.md\`.
-
-### Step 3: Advance
-Run \`bp continue change $1\` — routes to plan.
+The activation outputs the proposal workflow. Follow its instructions — it guides you through filling \`proposal.md\` and advancing to plan.
 
 ## Output
 - \`bp/changes/$1/\` — change directory
