@@ -29,12 +29,16 @@ export const PROPOSAL_TEMPLATE = `# Proposal: {{name}}
 
 ## Deliverables
 
-<!-- Each PR-N is a deliverable item. Design Items (DS-N) will reference these. -->
+<!-- Each PR-N is a deliverable item. Include SHALL/MUST statement, how to verify, affected files. -->
 
 - PR-1: {{title}}  refs: FR-{{id}}, D-{{id}}
-  {{description}}
+  System SHALL {{observable behavior}}.
+  Verify: {{command, test, or manual step to confirm it works}}.
+  Files: {{file paths}}
 - PR-2: {{title}}  refs: FR-{{id}}
-  {{description}}
+  System SHALL {{observable behavior}}.
+  Verify: {{confirmation method}}.
+  Files: {{file paths}}
 
 ---
 

@@ -22,35 +22,38 @@ Run \`bp context plan\` to read state. Check if this is a phase change or adhoc 
 2. Read phase \`context.md\` — extract D IDs and decisions
 3. Run \`bp template proposal\` to get the proposal skeleton
 4. Write to \`proposal.md\`:
-   - **Intent** — what problem/capability, who affected
+   - **Intent** — what problem/capability, who affected, why now
    - **References** — list FR/NFR and D IDs that this proposal addresses
-   - **Deliverables** — list each deliverable as \`PR-1\`, \`PR-2\`... with \`refs: FR-{id}, D-{id}\`
+   - **Deliverables** — \`PR-1\`, \`PR-2\`... For EACH deliverable write:
+     - **SHALL/MUST statement** — what observable behavior this deliverable produces
+     - **How to verify** — how will you know it's done? (test, command output, manual step)
+     - **Affected files** — which files/areas this touches
+     - **refs: FR-{id}, D-{id}** — which requirements/decisions it implements
+     - Example:
+       \`\`\`
+       - PR-1: login endpoint  refs: FR-1, D-1
+         System SHALL accept email+password and return a JWT token.
+         Verify: POST /login with valid credentials returns 200 + token.
+         Files: src/auth/login.ts, src/auth/token.ts
+       - PR-2: password hashing  refs: FR-1
+         System SHALL hash passwords with bcrypt before storage.
+         Verify: password column contains bcrypt hash, not plaintext.
+         Files: src/auth/hash.ts
+       \`\`\`
    - **Scope** — what's included, what's excluded
 
-### Step 2B: Adhoc change — ask the user
-1. The change has no requirement references. **Ask the user** what they want to do:
+### Step 2B: Adhoc change — ask the user in detail
+1. The change has no requirement references. **Ask the user** — use multiple questions to get enough detail:
    - "What problem are you fixing or what feature are you adding?"
-   - "Describe the deliverable in a few sentences."
-   - "What's included vs out of scope?"
+   - "What exactly should happen? Describe the expected behavior step by step."
+   - "How will you know it's working? What test or command confirms it?"
+   - "What files or areas will this affect?"
+   - "What's NOT included (out of scope)?"
 2. Run \`bp template proposal\` to get the proposal skeleton
 3. Write to \`proposal.md\` based on what the user described:
    - **Intent** — based on user description
-   - **Deliverables** — list \`PR-1\`, \`PR-2\`... with descriptions (no refs needed)
+   - **Deliverables** — \`PR-1\`, \`PR-2\`... Each with SHALL/MUST statement, verification, affected files
    - **Scope** — what's included
-
-### Step 3: Commit
-\`\`\`bash
-bp commit "docs(proposal): fill [BP:CHANGE_NAME]" --files "<proposal-path>" --scope docs --record
-\`\`\`
-
-### Step 4: Advance
-Run \`bp continue change $1\` — routes to plan.
-
-## Guardrails
-- NEVER write implementation details in the proposal — that's for design.md
-- Phase changes MUST reference FR/NFR and D IDs in their deliverables
-- Adhoc changes do NOT reference requirements — use user description instead
-- If the proposal already has content, skip filling and advance`;
 
 export function getProposalSkillTemplate(): SkillTemplate {
   return {
