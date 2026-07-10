@@ -19,7 +19,7 @@ const instructions = `## Input
 
 \`bp commit\` handles three concerns in one call:
 1. **Commit** — stage files, conventional commit message, returns hash
-2. **Doc filtering** — when `commitDocs: false`, skips files under `bp/` directory
+2. **Doc filtering** — when \`commitDocs: false\`, skips files under \`bp/\` directory
 3. **Hash recording** — writes commit hash to tasks.md and/or state.md
 
 ## Steps

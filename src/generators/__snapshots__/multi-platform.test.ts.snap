@@ -1082,7 +1082,7 @@ hide: false
 
 \`bp commit\` handles three concerns in one call:
 1. **Commit** — stage files, conventional commit message, returns hash
-2. **Doc filtering** — when \`commitDocs: false\`, skips \`bp/\`, \`.md\`, \`docs/\` files
+2. **Doc filtering** — when \`commitDocs: false\`, skips files under \`bp/\` directory
 3. **Hash recording** — writes commit hash to tasks.md and/or state.md
 
 ## Steps
@@ -1147,7 +1147,7 @@ If you didn't use \`--task\`, manually add the commit hash as a comment:
 - Always use \`--files\` explicitly — never trust \`git add -A\` in automated workflows
 - Use \`--task\` whenever the commit completes a specific task
 - Use \`--record\` for milestone-level commits (ship, archive)
-- When \`commitDocs: false\`, doc changes are skipped but listed in \`skipped\` — review manually if needed
+- When \`commitDocs: false\`, files under \`bp/\` are excluded from the commit
 - Commit messages follow Conventional Commits strictly: \`type(scope): description\`",
   ".agent/skills/bp-config/SKILL.md": "---
 name: bp-config
@@ -4072,7 +4072,7 @@ description: Commit changes — conventional commits + hash recording to tasks.m
 
 \`bp commit\` handles three concerns in one call:
 1. **Commit** — stage files, conventional commit message, returns hash
-2. **Doc filtering** — when \`commitDocs: false\`, skips \`bp/\`, \`.md\`, \`docs/\` files
+2. **Doc filtering** — when \`commitDocs: false\`, skips files under \`bp/\` directory
 3. **Hash recording** — writes commit hash to tasks.md and/or state.md
 
 ## Steps
@@ -4137,7 +4137,7 @@ If you didn't use \`--task\`, manually add the commit hash as a comment:
 - Always use \`--files\` explicitly — never trust \`git add -A\` in automated workflows
 - Use \`--task\` whenever the commit completes a specific task
 - Use \`--record\` for milestone-level commits (ship, archive)
-- When \`commitDocs: false\`, doc changes are skipped but listed in \`skipped\` — review manually if needed
+- When \`commitDocs: false\`, files under \`bp/\` are excluded from the commit
 - Commit messages follow Conventional Commits strictly: \`type(scope): description\`",
   ".claude/commands/bp-config.md": "---
 name: bp:config
@@ -7087,7 +7087,7 @@ description: Commit changes — conventional commits + hash recording to tasks.m
 
 \`bp commit\` handles three concerns in one call:
 1. **Commit** — stage files, conventional commit message, returns hash
-2. **Doc filtering** — when \`commitDocs: false\`, skips \`bp/\`, \`.md\`, \`docs/\` files
+2. **Doc filtering** — when \`commitDocs: false\`, skips files under \`bp/\` directory
 3. **Hash recording** — writes commit hash to tasks.md and/or state.md
 
 ## Steps
@@ -7152,7 +7152,7 @@ If you didn't use \`--task\`, manually add the commit hash as a comment:
 - Always use \`--files\` explicitly — never trust \`git add -A\` in automated workflows
 - Use \`--task\` whenever the commit completes a specific task
 - Use \`--record\` for milestone-level commits (ship, archive)
-- When \`commitDocs: false\`, doc changes are skipped but listed in \`skipped\` — review manually if needed
+- When \`commitDocs: false\`, files under \`bp/\` are excluded from the commit
 - Commit messages follow Conventional Commits strictly: \`type(scope): description\`",
   ".omp/commands/bp-config.md": "---
 name: bp:config
