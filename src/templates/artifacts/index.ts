@@ -8,55 +8,45 @@
 
 export const PROPOSAL_TEMPLATE = `# Proposal: {{name}}
 
-> This document is a Change Proposal — align intent, scope, and approach before implementation. Complete each section; reviewers will evaluate this proposal before the design phase.
+> Change proposal — intent, references, deliverables. Fill each section.
 
 ---
 
 ## Intent
 
-<!-- What problem/capability? Who affected? What if not done? Type: bugfix/feature/debt/perf? Issue link? -->
+{{what, why, who affected}}
 
-{{intent}}
+---
+
+## References
+
+<!-- Phase change only: list FR/NFR and D IDs. Adhoc: remove section -->
+
+- FR-{{id}}: {{brief}}
+- D-{{id}}: {{brief}}
+
+---
+
+## Deliverables
+
+<!-- Each PR-N is a deliverable item. Design Items (DS-N) will reference these. -->
+
+- PR-1: {{title}}  refs: FR-{{id}}, D-{{id}}
+  {{description}}
+- PR-2: {{title}}  refs: FR-{{id}}
+  {{description}}
 
 ---
 
 ## Scope
 
-### In scope
-
-<!-- Items covered by this change. One per line, verb-first. -->
-
-{{in-scope-items}}
-
-### Out of scope
-
-<!-- Explicitly excluded changes with reason. Prevents scope creep. -->
-
-{{out-of-scope-items}}
+{{what's included}}
 
 ---
 
-## Approach
+## Out of Scope
 
-<!-- High-level technical direction: architecture layer, library choices, data flow, compatibility, testability. No detailed implementation — design doc handles that. -->
-
-{{approach}}
-
----
-
-## Must-haves
-
-<!-- 3-7 observable, verifiable must-haves. Format: "MUST/SHALL <condition>". Reviewers judge pass/fail from these. -->
-
-{{must-haves}}
-
----
-
-## Non-goals
-
-<!-- Non-goals: targets that might be incorrectly assumed in scope. Different from Out of scope. -->
-
-{{non-goals}}
+{{what's excluded}}
 `;
 
 export const DESIGN_TEMPLATE = `# Design: {{name}}
