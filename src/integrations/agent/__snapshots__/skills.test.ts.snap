@@ -1661,6 +1661,7 @@ Then run \`bp context plan\` and read all listed files.
 2. Run \`bp template tasks\`, list tasks:
    - Decompose each DS into T by independently testable behavior path
    - Each T gets \`refs: DS-{id}\`; multiple DS can merge into one T only if not separately testable
+   - Every DS must be referenced by at least one Task (validation checks)
    - RED→GREEN→REFACTOR is how to EXECUTE one behavior task, not how to split it
    - Behavior tasks require \`spec_ref\`; \`files\` field is REQUIRED
 3. Skip delta-specs (not needed for non-behavioral changes)
