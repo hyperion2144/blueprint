@@ -25,17 +25,18 @@ ${RESOLVE_PATHS}${CHANGE_TYPE_GUIDE}${READ_CONTEXT}${CLASSIFY_CHANGE}${CHANGE_NA
 
 1. Run \`bp template design\`, fill Design Items with DS-N numbering:
    - Read proposal.md → extract PR-1, PR-2 from ## Deliverables
-   - Decompose into DS-1, DS-2... each with \`refs: PR-{id}\`
-   - Every PR must be referenced by at least one DS (validation checks this)
-   - Write Architecture section
+   - Decompose into DS by module boundary (controller/service/repository — not one per function)
+   - Each DS gets \`refs: PR-{id}\`; multiple PRs can share one DS
+   - Every PR must be referenced by at least one DS (validation checks)
 2. Run \`bp template tasks\`, list tasks:
-   - Each task gets T-N, with \`refs: DS-{id}\`
-   - Every DS must be referenced by at least one Task (validation checks this)
-   - Behavior tasks require \`spec_ref\`
-   - \`files\` field is REQUIRED for every task (full relative paths)
+   - Decompose each DS into T by independently testable behavior path
+   - Each T gets \`refs: DS-{id}\`; multiple DS can merge into one T only if not separately testable
+   - Every DS must be referenced by at least one Task (validation checks)
+   - Behavior tasks require \`spec_ref\`; \`files\` field is REQUIRED
 3. Skip delta-specs (not needed for non-behavioral changes)
 4. **Leave all task boxes UNCHECKED** — apply marks them done
-5. Run \`bp continue\`
+5. 1 wave by default; add more only when layer dependencies exist
+6. Run \`bp continue\`
 
 **If FULL — you MUST dispatch the planner sub-agent. Do NOT write design/tasks/specs yourself:**
 
