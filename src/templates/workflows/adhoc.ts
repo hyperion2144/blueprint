@@ -30,3 +30,20 @@ The activation outputs the proposal workflow. Follow its instructions — it gui
 - To associate with a phase, use \`bp change new --phase <id>\`
 - Archived adhoc changes are stored under \`bp/archive/\`
 - Adhoc changes follow the same plan->apply->review->verify->archive cycle as phase changes`;
+
+export function getAdhocSkillTemplate(): SkillTemplate {
+  return {
+    name: 'bp-adhoc',
+    description: 'Create adhoc change — independent change unrelated to milestone/phase',
+    instructions,
+  };
+}
+
+export function getAdhocCommandTemplate(): CommandTemplate {
+  return {
+    description: 'Create adhoc change — independent change unrelated to milestone/phase',
+    category: 'Workflow',
+    tags: ['bp', 'adhoc', 'change'],
+    content: instructions,
+  };
+}

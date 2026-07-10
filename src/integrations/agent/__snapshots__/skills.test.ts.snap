@@ -1,0 +1,2215 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`generateAgentSkills > generates matching snapshot 1`] = `
+{
+  "adhoc": "---
+name: bp-adhoc
+description: Create adhoc change
+hide: false
+---
+
+## Input
+
+### Parameters
+- **\`[BP:CHANGE_NAME]\`** (required) — kebab-case name for the new adhoc change.
+- If no name is provided, ask the user: "What should we call this change? (kebab-case, e.g. fix-login-timeout)"
+
+### Prerequisites
+- bp project must be initialized
+
+## Steps
+
+### Step 1: Resolve change name
+If a name was provided: use it directly.
+If no name: ask the user for a descriptive kebab-case name.
+
+### Step 2: Create and activate
+1. Run \`bp change new [BP:CHANGE_NAME]\` to create the change directory and register it as \`pending\`.
+2. Run \`bp continue change [BP:CHANGE_NAME]\` to activate (pending → proposal).
+
+The activation outputs the proposal workflow. Follow its instructions — it guides you through filling \`proposal.md\` and advancing to plan.
+
+## Output
+- \`bp/changes/[BP:CHANGE_NAME]/\` — change directory
+- Updated \`state.md\` with new adhoc entry
+
+## Guardrails
+- Adhoc changes do NOT go through milestone/phase discuss/research-phase/split flow
+- To associate with a phase, use \`bp change new --phase <id>\`
+- Archived adhoc changes are stored under \`bp/archive/\`
+- Adhoc changes follow the same plan->apply->review->verify->archive cycle as phase changes",
+  "apply": "---
+name: bp-apply
+description: Code implementation
+hide: false
+---
+
+**You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
+
+## Input
+
+### Parameters
+- **\`[BP:CHANGE_NAME]\`** (required) — the change to implement. Provided by \`bp continue\` output or user.
+
+### Prerequisites
+- Plan phase complete: \`design.md\`, \`tasks.md\`, delta-specs ready
+
+## Steps
+
+### Resolve paths
+Run \`bp state\` for \`milestone\` and \`phase\`. Or run \`bp context <step>\` for complete path listing.
+
+Directory layout:
+  milestone dir:   bp/milestones/[BP:MILESTONE_ID]/
+  phase dir:       bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/
+  change dir:      bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/changes/[BP:CHANGE_NAME]/
+  |-- proposal.md, design.md, tasks.md, change-summary.md
+  |-- spec-review.md, quality-review.md, goal-review.md
+  |-- verification.md
+  adhoc change:    bp/changes/<change-name>/
+  archive dir:     bp/archive/[BP:MILESTONE_ID]/[BP:PHASE_ID]/
+
+Current change directory for this step:
+\`[BP:CHANGE_DIR]\`
+
+### Classify change
+Read \`tasks.md\` task types:
+- **Lightweight**: ALL tasks type: config|docs|refactor|scaffolding — no type:behavior
+- **Full**: any type:behavior task
+
+### Resolve change
+If \`[BP:CHANGE_NAME]\` is non-empty: use as change name directly.
+If empty: run \`bp state\`, read the \`active:\` or \`not_started:\` sections for change names.
+
+**Always specify a change name by running \`bp continue change <name>\`**.
+The orchestrator provides the change name — do not guess.
+
+**When multiple changes are active** (type=changes in bp state):
+- Each change listed in the \`active:\` section has its own independent step
+- Pick the one specified by the orchestrator
+- Run \`bp continue change <name>\` — the change name is always required
+
+**Dependency check**: If the change has \`depends_on\`, all dependencies must be archived (no longer in \`active:\`) before this change can advance.
+
+**Resolved path formulas**:
+- Phase change: \`bp/milestones/<milestone>/phases/<phase>/changes/<name>/\`
+- Adhoc change: \`bp/changes/<name>/\`
+- Run \`bp context apply\` for resolved paths in the \`dirs:\` section.
+
+Then run \`bp context apply\` and read all listed files.
+
+
+### Step: Wave analysis (MAIN AGENT)
+
+Read \`tasks.md\` (or \`review-task.md\` for fix mode). Parse into execution plan:
+
+1. **Extract waves**: read all \`## Wave N: <theme>\` sections. Keep wave order.
+
+2. **Build inter-wave dependency graph**:
+   - For each task, extract \`depends_on\` field
+   - If task in Wave B has \`depends_on\` referencing a task in Wave A → Wave B depends on Wave A
+   - Result: DAG where nodes = waves, edges = cross-wave depends_on
+
+3. **Generate execution plan**:
+   - Waves with NO unmet cross-wave dependencies → can run concurrently
+   - Waves WITH cross-wave dependencies → must wait for predecessor wave(s)
+
+4. **For each wave, prepare ONE sub-agent prompt**:
+   - Change name and path
+   - ALL tasks in this wave (ids, types, descriptions, files, acceptance, RED tests)
+   - ALL referenced specs (from spec_ref fields across tasks)
+   - Conventions
+   - Instruction: implement tasks in dependency order within the wave
+   - Instruction: after each task, commit with \`bp commit "<type>(<scope>): <description>" --files <changed-files> --task <id> --tasks-path <tasks.md path> --record\`
+   - Instruction: do NOT run tsc/vitest — main agent handles verify
+
+5. **Execute round by round**:
+   - Each round: dispatch all ready waves CONCURRENTLY (task tool, one agent per wave)
+   - Wait for all; then **verify each sub-agent's output** (git log, git diff, tasks.md marking, test pass)
+   - Then run full round verify (tsc + vitest) + mark \`[x]\` + commit
+   - Next round: waves unblocked after predecessor waves complete
+   - Repeat until all waves done
+
+
+### Step: Dispatch executor per wave
+
+**If LIGHTWEIGHT** — implement tasks yourself, one by one. After each: verify with \`npx vitest run <test-file>\`, then commit (auto-marks \`[x]\` + commit hash):
+\`\`\`bash
+bp commit "<type>(<scope>): <description>" --files "<changed-files>" --task <id> --tasks-path [BP:CHANGE_DIR]tasks.md --record
+\`\`\`
+
+**If FULL — dispatch executor sub-agents. Do NOT implement type:behavior tasks yourself:**
+
+For each wave in the current round:
+1. Run \`bp dispatch executor --change [BP:CHANGE_NAME]\` — outputs the sub-agent tool and its parameters.
+2. Call the tool it specifies. Set the sub-agent's prompt to:
+   - Change: [BP:CHANGE_NAME] (path from resolve step)
+   - Wave: <Wave N: theme> — implement ALL tasks in this wave
+   - Tasks: <full task list for this wave with ids, types, descriptions, files, acceptance, RED tests>
+   - Read: design.md, tasks.md (this wave only), delta-specs referenced by spec_ref fields, bp/conventions/coding-standards.md
+   - For type:behavior: RED test first → GREEN → REFACTOR
+   - After each task: run \`npx vitest run <test-file>\` to verify, then:
+     \`bp commit "<type>(<scope>): <description>" --files <changed-files> --task <id> --tasks-path <tasks.md path> --record\`
+   - Do NOT touch tasks outside this wave
+   - Return when all tasks in this wave are implemented and committed
+3. For concurrent waves in the same round: run \`bp dispatch executor\` once per wave, dispatch ALL in one task tool call (parallel).
+4. Wait for ALL wave sub-agents in this round to finish before proceeding to verify.
+
+### Step: Verify each sub-agent's output
+
+**After each wave finishes, verify the sub-agent actually implemented what it promised:**
+
+For each task in the completed wave:
+- **Check git log**: \`git log --oneline -5\` — confirm new commits exist with commit hashes.
+- **Check git diff**: \`git diff --stat HEAD~<N>\` — confirm files were actually changed (not just a no-op).
+- **Check tasks.md marking**: read \`[BP:CHANGE_DIR]tasks.md\` — confirm task \`[x]\` is checked AND \`<!-- commit: HASH -->\` annotation exists next to the task.
+- **Run task's tests**: \`npx vitest run <test-file>\` (from task's \`files\` field) — must pass.
+- **If lightweight** (you implemented tasks yourself): same checks — confirm your commits actually landed.
+
+Any task missing \`<!-- commit: -->\` annotation → re-run \`bp commit\` for that task manually:
+\`\`\`bash
+bp commit "<type>(<scope>): <description>" --files <changed-files> --task <id> --tasks-path [BP:CHANGE_DIR]tasks.md --record
+\`\`\`
+
+Any task with failing tests → re-dispatch the wave with failure details.
+
+After all tasks in the wave pass verification, proceed to round verify.
+
+### Step: Final implementation verify and change summary
+
+After ALL waves complete and all tests pass:
+- Run \`bp template change-summary --stdout\` to read the template, then write to \`[BP:CHANGE_DIR]change-summary.md\` using the Write tool. Fill with actual details.
+- Ensure all tasks.md checkboxes are \`[x]\`
+
+**CRITICAL: Implementation verification is NOT review.** After this step, run \`bp continue\` — it will advance to the review step. NEVER skip review and go directly to archive.
+
+### Commit & advance
+
+Read \`bp/project.yml\` — check \`workflow.commitDocs\` setting.
+
+**If \`commitDocs\` is \`false\`:** skip commit, run \`bp continue\` directly.
+
+**If \`commitDocs\` is \`true\` (or not set, default true):**
+\`\`\`bash
+bp commit "docs(docs): apply complete for [BP:CHANGE_NAME]" --files "<files>" --scope docs --record
+\`\`\`
+Run \`bp continue\` to proceed.
+
+
+## Guardrails
+- Each wave = ONE sub-agent; dispatch concurrent waves in one task tool call
+- Sub-agents implement and commit; main agent verifies
+- **After each wave: verify git log, tasks.md marking (\`[x]\` + \`<!-- commit: -->\`), and test pass** — no-op or incomplete tasks are treated as failures
+- NEVER skip implementation verify between rounds
+- **NEVER skip review.** "Implementation Verification" in tasks.md confirms the code compiles and tests pass — it does NOT replace the review step (\`/bp:review\`). After apply, always run \`bp continue\` to advance to review.
+- Summary mandatory: no advance without filled change-summary.md",
+  "archive": "---
+name: bp-archive
+description: Verify and archive
+hide: false
+---
+
+## Input
+
+### Parameters
+- **\`[BP:CHANGE_NAME]\`** (required) — the change to verify and archive. Provided by \`bp continue\` output or user.
+
+### Prerequisites
+- Review phase complete: spec-review.md, quality-review.md, goal-review.md
+- All review blockers resolved
+
+## Steps
+
+### Classify change
+Read \`tasks.md\` task types:
+- **Lightweight**: ALL tasks type: config|docs|refactor|scaffolding — no type:behavior
+- **Full**: any type:behavior task
+
+### Resolve change
+If \`[BP:CHANGE_NAME]\` is non-empty: use as change name directly.
+If empty: run \`bp state\`, read the \`active:\` or \`not_started:\` sections for change names.
+
+**Always specify a change name by running \`bp continue change <name>\`**.
+The orchestrator provides the change name — do not guess.
+
+**When multiple changes are active** (type=changes in bp state):
+- Each change listed in the \`active:\` section has its own independent step
+- Pick the one specified by the orchestrator
+- Run \`bp continue change <name>\` — the change name is always required
+
+**Dependency check**: If the change has \`depends_on\`, all dependencies must be archived (no longer in \`active:\`) before this change can advance.
+
+**Resolved path formulas**:
+- Phase change: \`bp/milestones/<milestone>/phases/<phase>/changes/<name>/\`
+- Adhoc change: \`bp/changes/<name>/\`
+- Run \`bp context archive\` for resolved paths in the \`dirs:\` section.
+
+Then run \`bp context archive\` and read all listed files.
+
+### Step 2: Run verification checks
+
+Run checks first — do NOT write verification.md yet:
+
+**All changes:**
+- Run \`npx tsc --noEmit\` — must pass
+- Run \`npx vitest run\` — must pass
+
+**Full changes additionally:**
+- Verify each delta-spec SHALL/MUST has a passing test
+- Verify TDD commit integrity: RED→GREEN→REFACTOR sequence for each type:behavior task
+
+### Step 3: Write verification.md + route
+
+**All checks passed:**
+1. Get template: \`bp template verification\`
+2. Write \`verification.md\` to the change directory
+3. Status: \`passed\`
+4. Continue through the workflow
+
+**Any check failed:**
+1. Write verification.md with \`gaps_found\`, listing what failed
+2. Route back using loopback commands:
+   - \`bp continue change [BP:CHANGE_NAME] --command reapply\` — re-implement (goes back to apply)
+   - \`bp continue change [BP:CHANGE_NAME] --command replan\` — re-design (goes back to plan)
+   - \`bp continue change [BP:CHANGE_NAME] --command fix\` — quick fix (goes back to apply)
+3. Do NOT archive — stop here
+
+### Step 4: Execute archival
+Run \`bp archive [BP:CHANGE_DIR]\`. The CLI handles: delta-spec merge, directory move to archive/, state.md update.
+verification.md is moved to archive together with the change.
+
+### Step 5: Verify merge result
+Check the global spec \`bp/specs/<domain>/spec.md\` (<domain> = directory under \`bp/specs/\`):
+- ADDED Requirements from delta are present
+- REMOVED Requirements from delta are gone
+- No duplicate \`### Requirement: xxx\` headers
+- If the CLI warned about a skipped domain, the delta-spec directory name didn't match any domain in \`bp/specs/\` — fix the domain name in the change's \`specs/\` directory and re-archive
+
+### Step 6: Commit + check if last change
+Run \`bp state\`, check the \`pending\` list.
+
+**If more pending changes remain:**
+\`\`\`bash
+bp commit "docs(archive): archive [BP:CHANGE_NAME]" \\
+  --files "bp/archive/[BP:MILESTONE_ID]/[BP:PHASE_ID]/[BP:CHANGE_NAME]/" \\
+  --scope docs --record
+\`\`\`
+
+**If this was the LAST change in the phase:**
+1. Write phase summary: \`bp template summary\` → \`bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/summary.md\`
+2. Commit archive + summary:
+\`\`\`bash
+bp commit "docs(archive): archive [BP:CHANGE_NAME], phase complete" \\
+  --files "bp/archive/[BP:MILESTONE_ID]/[BP:PHASE_ID]/[BP:CHANGE_NAME]/,bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/summary.md" \\
+  --scope docs --record
+\`\`\`
+
+### Step 7: Advance
+Run \`bp continue\` — routes to next change or ship-phase.
+
+## Guardrails
+- No sub-agent — run checks yourself
+- Verify FIRST, then write verification.md — if verification fails, do NOT archive
+- verification.md goes IN the change directory, archived together with the change
+- Commit --files points to \`bp/archive/\` directory (the archived location)
+- Last change in phase: must write summary.md before advancing
+- Test suite must pass completely — never archive a failing change",
+  "audit": "---
+name: bp-audit
+description: Human UAT verification
+hide: false
+---
+
+## Input
+
+### Parameters
+- **\`[BP:CHANGE_NAME]\`** — scope: \`change <name>\` | \`phase <id>\` | \`milestone <id>\`
+- Optional: \`--milestone <id>\` to scope phase search (defaults to active)
+
+### Prerequisites
+- Changes must be archived (bp/archive/ populated)
+- For phase/milestone scope: roadmap.md must exist
+
+## Steps
+
+### Step 1: Get context
+Run \`bp state\` to determine active milestone/phase. Determine audit scope from user input or ask.
+
+### Step 2: Generate skeleton + read artifacts
+Run \`bp audit change [BP:CHANGE_NAME]\` (or \`bp audit phase [BP:CHANGE_NAME]\` or \`bp audit milestone [BP:CHANGE_NAME]\` depending on scope) — the CLI creates a skeleton uat.md with frontmatter + available artifact list.
+
+Read every listed artifact for each change. At minimum:
+- \`proposal.md\` — intent, scope, must_haves
+- \`design.md\` — technical approach, key decisions
+- \`change-summary.md\` — what was delivered, verification results
+- \`tasks.md\` — task breakdown, type annotations
+
+### Step 3: Write UAT tests
+Get the template: \`bp template uat\`. Fill with real tests derived from the artifacts.
+
+**For each change, write 3-8 tests.** Guidelines:
+- Each test = one user-observable behavior (not implementation detail)
+- Concrete: specific action + expected outcome, verifiable in < 2 min
+- For type:behavior changes: describe the actual user interaction and expected result
+- For type:config/scaffolding: describe the downstream effect (e.g. "dev server starts", "build produces dist/")
+
+**Good:** "Push a box onto a yellow target: box turns green, 'Level Complete!' banner shows when all targets are filled"
+**Bad:** "File exists: src/core/move.ts" or "Requirement: contain \`package"
+
+### Step 4: Interactive UAT session
+Present tests one at a time:
+
+1. Show: "**Test N/M: <name>** — Expected: <behavior>"
+2. Ask: "Does it work? (yes/no/skip)"
+3. Record result: pass → Summary.passed++; issue → record verbatim in Gaps, infer severity
+4. Update Current Test to next pending
+
+**Severity inference** (never ask — infer from user's description):
+| User says | Infer |
+|-----------|-------|
+| crash, error, fails, unusable | blocker |
+| doesn't work, wrong, missing | major |
+| works but..., slow, weird | minor |
+| color, font, spacing, visual | cosmetic |
+
+Default: major.
+
+### Step 5: Handle issues — create a single fix change
+After UAT complete, if Gaps section has issues:
+
+1. Create ONE adhoc change covering all issues:
+   \`\`\`bash
+   bp change new uat-fixes --full --intent "fix all UAT gaps: <summary>"
+   \`\`\`
+
+2. Fill the proposal.md with ALL gaps:
+   - List each gap with its \`truth\` (expected behavior)
+   - \`reason\` (user's verbatim report)
+   - \`severity\`
+   - Suggested fix
+
+3. Run \`bp continue change uat-fixes\` to route through plan → apply → review → verify → archive.
+
+**If no issues**: mark uat.md status → complete.
+
+### Step 6: Advance
+- All tests pass → phase verified, no further action
+- Issues + fix change created → \`bp continue change uat-fixes\` to start fixing
+- Partial (skipped/blocked) → uat.md status → partial; resume later
+
+## Output
+- \`uat.md\` at change/phase/milestone directory with real, filled test cases
+- Adhoc changes for discovered issues (if any)
+
+## Guardrails
+- Always get template first: \`bp template uat\`, never write uat.md from scratch
+- Read all artifacts before writing tests — don't guess behavior from file names
+- Every test must be user-observable, not an implementation checklist
+- Record user responses verbatim in Gaps
+- Severity is inferred, never asked
+- After UAT, always suggest adhoc changes for gaps
+- \`bp change new <name> --full\` creates standalone adhoc changes outside the DAG",
+  "commit": "---
+name: bp-commit
+description: Commit changes
+hide: false
+---
+
+## Input
+
+### Parameters
+- **\`$ARGUMENTS\`** (required) — conventional commit message (e.g. "feat: add undo stack")
+- \`--files <list>\` — comma-separated file paths to stage (e.g. "src/core/move.ts,tests/unit/move.test.ts")
+- \`--scope <scope>\` — commit scope. See \`bp/conventions/coding.md\` for standard list (core, cli, test, docs, config, render, input, level, shell). Omit if unsure.
+- \`--task <id>\` — task ID to record hash against in tasks.md (e.g. "task-1.3")
+- \`--tasks-path <path>\` — explicit path to tasks.md (auto-detected if omitted)
+- \`--record\` — also append commit to state.md history
+- \`--amend\` — amend previous commit
+
+### Prerequisites
+- Git repo initialized
+- \`bp/project.yml\` with \`workflow.commitDocs\` config (default: true)
+
+## Core Behavior
+
+\`bp commit\` handles three concerns in one call:
+1. **Commit** — stage files, conventional commit message, returns hash
+2. **Doc filtering** — when \`commitDocs: false\`, skips \`bp/\`, \`.md\`, \`docs/\` files
+3. **Hash recording** — writes commit hash to tasks.md and/or state.md
+
+## Steps
+
+### Step 1: Determine files and scope
+After implementing a task or wave, collect:
+- Changed files (from git status or known output)
+- The task ID(s) being completed
+- A conventional commit message describing the change
+
+### Step 2: Run bp commit
+Run \`bp commit "<message>"\` with the appropriate flags:
+
+\`\`\`bash
+# Single task, record hash:
+bp commit "feat(core): implement move validation" \\
+  --files "src/core/move.ts,tests/unit/move.test.ts" \\
+  --scope core \\
+  --task task-1.3
+
+# Wave completion, no task recording:
+bp commit "feat(engine): add undo stack and history" \\
+  --files "src/core/move.ts,src/core/history.ts,tests/unit/move.test.ts,tests/unit/history.test.ts" \\
+  --scope engine
+
+# Amend previous commit:
+bp commit "fix: correct push boundary check" --amend
+\`\`\`
+
+### Step 3: Process CLI output
+The CLI returns structured output:
+
+\`\`\`
+{
+  "ok": true,
+  "message": "feat(core): implement move validation",
+  "hash": "a1b2c3d",
+  "files": 2,
+  "skipped": ["bp/state.md"],
+  "taskRecorded": { "task": "task-1.3", "hash": "a1b2c3d", "path": "bp/.../tasks.md" }
+}
+\`\`\`
+
+**Key fields:**
+- \`hash\` — short commit hash, use to annotate tasks.md
+- \`taskRecorded\` — confirms hash was written to tasks.md
+- \`skipped\` — doc files excluded when \`commitDocs: false\`
+
+### Step 4: Annotate tasks.md (if not using --task)
+If you didn't use \`--task\`, manually add the commit hash as a comment:
+
+\`\`\`markdown
+- [x] task-1.3: [type:behavior] Implement move validation <!-- commit: a1b2c3d -->
+\`\`\`
+
+## Output
+- Git commit with conventional commit message
+- Commit hash recorded in tasks.md (via \`--task\` or manual annotation)
+- Structured output for agent consumption
+
+## Guardrails
+- Always use \`--files\` explicitly — never trust \`git add -A\` in automated workflows
+- Use \`--task\` whenever the commit completes a specific task
+- Use \`--record\` for milestone-level commits (ship, archive)
+- When \`commitDocs: false\`, doc changes are skipped but listed in \`skipped\` — review manually if needed
+- Commit messages follow Conventional Commits strictly: \`type(scope): description\`",
+  "config": "---
+name: bp-config
+description: Interactive configuration
+hide: false
+---
+
+## Input
+
+### Parameters
+- **No parameters**: reads current config from \`bp/project.yml\`
+
+### Prerequisites
+- \`bp/project.yml\` must exist
+
+## Core Rule
+Use the \`ask\` tool to interact with the user. If not in interactive mode, instruct the user to use \`bp config set <key> <value>\` directly.
+
+## Steps
+
+### Step 1: Read current config
+Run \`bp config list\` — outputs full configuration as JSON. Display a compact summary to the user:
+- Workflow profile: <profile> | Model tier: <modelProfile or "not set">
+- Spec stack: <spec.stack>
+- Release template: <release.template>
+- Per-role models: <models>
+- Per-agent models: <agentModels>
+- Workflow toggles: <workflow toggles as a comma-separated list of active flags>
+
+### Step 2: Confirm scope
+Use the \`ask\` tool: "What would you like to do?"
+- **View current config only** — display and exit
+- **Reconfigure everything** — go through all sections in Step 3
+- **Reconfigure section by section** — pick which sections
+- **Change model configuration** — go to Step 3f directly
+
+### Step 3: Configure sections
+
+For each selected section, show the current value, explain options, and use \`ask\` to get a choice. After each confirmed choice, run \`bp config set <key> <value>\`.
+
+#### 3a. Workflow profile
+Options: \`standard\` (recommended), \`lite\`, \`strict\`
+\`\`\`
+bp config set profile <choice>
+\`\`\`
+
+#### 3b. Model tier
+Options: \`balanced\` (recommended), \`budget\`, \`quality\`, or **custom per-agent** (see below)
+\`\`\`
+bp config set modelProfile <choice>
+\`\`\`
+Model tier sets the default model for all 7 agents. You can override individual agents below.
+
+##### Profile-default overrides
+Override the default model for an agent derived from the tier:
+\`\`\`
+bp config set models.<agent> <model>
+\`\`\`
+Where \`<agent>\` is one of: \`researcher\`, \`planner\`, \`executor\`, \`reviewer\`, \`phase-researcher\`, \`codebase-mapper\`, \`spec-bootstrapper\`.
+
+##### Per-agent overrides
+For each agent (researcher, planner, executor, reviewer, phase-researcher, codebase-mapper, spec-bootstrapper), ask if custom model:
+\`\`\`
+bp config set agentModels.<agent> <model>
+\`\`\`
+This is the highest-priority override — it beats both the tier preset and \`models.*\`.
+
+#### 3c. Workflow toggles
+For each toggle, ask true/false:
+- \`workflow.research\` — enable project-level research step
+- \`workflow.plan_check\` — validate plan before execution
+- \`workflow.tdd\` — enforce RED→GREEN→REFACTOR for behavior tasks
+- \`workflow.triple_review\` — run spec/quality/goal reviews
+- \`workflow.commitDocs\` — auto-commit doc files with code changes
+
+\`\`\`
+bp config set workflow.<toggle> <true|false>
+\`\`\`
+
+#### 3d. Review, Change, Git, Release sections
+- \`review.gate\`: \`all-pass\` | \`severity\` | \`report-only\`
+- \`change.parallel\`: \`serial\` | \`dependency-graph\` | \`pipeline\`
+- \`git.branching\`: \`none\` | \`phase\` | \`milestone\`
+- \`release.template\`: \`standard\` | \`detailed\` | \`minimal\`
+
+For each selected section, show current values, ask for changes, run \`bp config set\`.
+
+### Step 4: Regenerate agent files
+If any model-related config changed (\`modelProfile\`, \`models.*\`, \`agentModels.*\`):
+\`\`\`
+bp update
+\`\`\`
+This regenerates \`.omp/agents/bp-*.md\` with the new model values.
+
+### Step 5: Summary
+Output a summary of all changes made. For each agent role, show the RESOLVED model:
+- researcher → <resolved>
+- planner → <resolved>
+- executor → <resolved>
+- reviewer → <resolved>
+- phase-researcher → <resolved>
+- codebase-mapper → <resolved>
+- spec-bootstrapper → <resolved>
+
+## Guardrails
+- Always read current config with \`bp config list\` before asking questions
+- Show current value AND allowed options for each setting
+- Never edit \`bp/project.yml\` directly — always use \`bp config set\`
+- After model changes, always run \`bp update\` to regenerate agent files
+- If the user only wants to view config, run \`bp config list\` and exit
+- Per-agent override (\`agentModels.<agent>\`) has the highest priority — document this clearly",
+  "continue": "---
+name: bp-continue
+description: Auto-advance
+hide: false
+---
+
+## Input
+
+### Parameters
+- **\`[BP:CHANGE_NAME]\`** — change name (optional). Use for change-level advancement: \`bp continue change <name>\`.
+- **\`--auto\`** flag — enable autonomous mode (auto-fill decisions without asking).
+
+### Two commands — two scopes
+
+| Command | Scope | When to use |
+|---------|-------|------------|
+| \`bp continue\` | Project-level / Phase-level | After init, grill, research, roadmap, discuss, research-phase, split, ship |
+| \`bp continue change <name>\` | Single change | Advance a specific change through plan → apply → review → verify → archive |
+
+### Prerequisites
+
+## Steps
+
+### Scenario A: Project-level advancement (\`bp continue\`)
+
+Use this after project-level steps (init, grill, research, roadmap, discuss, research-phase, split, ship).
+
+Run \`bp continue\`. The CLI:
+1. Reads \`active_context\` from state.md to determine what's current
+2. Validates the current step's exit conditions
+3. Advances state to the next step
+4. Outputs the next step's inline instructions
+
+Examples:
+- After \`bp init\` → \`bp continue\` routes to grill
+- After grill → routes to research
+- After research → routes to roadmap
+- After roadmap → routes to discuss (first phase)
+- After discuss → routes to research-phase
+- After research-phase → routes to split
+- After split → routes to plan (for first change)
+
+If \`bp continue\` says "No available next step" but the project has pending changes, switch to Scenario B for those changes.
+
+### Scenario B: Change-level advancement (\`bp continue change <name>\`)
+
+Use this to advance an individual change through its cycle. The change name comes from:
+- The \`bp continue\` output (which tells you which change to work on)
+- \`bp state\` output (lists pending changes with their status)
+- User explicitly naming a change
+
+**With a name**: run \`bp continue change <name>\`. The CLI advances that change's state and outputs the next step's inline instructions.
+
+**Without a name**: run \`bp state\`, read the pending changes list, and present options:
+
+\`\`\`
+Which change should I advance?
+
+1. <change-name> [planning] — ready for apply
+2. <change-name> [applying] — ready for review
+3. <change-name> [proposal] — ready for plan
+
+Pick a number or name.
+\`\`\`
+
+Then run \`bp continue change <selected-name>\`.
+
+### Scenario C: No pending work
+
+If both \`bp continue\` and all pending changes report "No available next step":
+
+\`\`\`
+All work is complete or blocked.
+
+Current state:
+- Project status: <status>
+- Active milestone: <name>
+- Pending changes: <list or "none">
+- Adhoc changes: <list or "none">
+
+Run \`bp state\` to inspect. To start new work:
+- \`bp state set-milestone [BP:MILESTONE_ID]\` then \`bp state set-phase [BP:PHASE_ID]\` to activate the next milestone/phase
+- \`bp change new [BP:CHANGE_NAME]\` for an adhoc change
+- \`bp continue\` after completing blocking prerequisites
+\`\`\`
+
+## Output
+Inline instructions for the next workflow step, including:
+- Current position and context
+- Next command name and slash command
+- Whether sub-agents are needed
+- Full step instructions (Input, Steps, Output, Guardrails)
+
+## Guardrails
+- **CRITICAL**: Check \`---END---\` marker exists at the end of output AND \`chars:\` value matches total received chars. If missing or mismatch, output was truncated — re-run \`bp continue\` to get the full output.
+- \`bp continue\` (no args) = project/phase level; \`bp continue change <name>\` = change level — do not mix them
+- Continue does NOT advance state if exit conditions are not met — it reports what's blocking
+- In loop mode (\`--auto\` flag): after completing this step, the loop controller checks \`bp/loop.md\` stop conditions before advancing further. Continue as normal — do not alter behavior based on loop context.
+- When multiple changes are pending, always present choices — do not silently pick one",
+  "discuss": "---
+name: bp-discuss
+description: Phase discussion
+hide: false
+---
+
+## Input
+
+### Parameters
+- **\`[BP:PHASE_ID]\`** (optional) — the phase to discuss (e.g. \`ph.1-core\`). If not provided, read from \`bp state\` to determine the active phase.
+
+### Prerequisites
+- Active milestone and phase must be set
+- \`bp/roadmap.md\` — contains phase definitions with goals and scope
+
+## Philosophy
+
+You are a **thinking partner**, not an interviewer. The user is the visionary — you capture decisions that downstream agents need. Your job is to identify and resolve gray areas, not to rehash what's already clear.
+
+**Express path: if there are no gray areas to discuss, skip the discussion and write a minimal context.md with only the phase identity and locked decisions.** Do not force conversation for the sake of conversation.
+
+## Steps
+
+### Step 0: Resolve the active phase
+If a phase ID was provided, use it directly. If not:
+
+1. Run \`bp state\` — read \`milestone\` and \`phase\` fields.
+2. If both are non-null, use them.
+3. If \`phase\` is null: run \`bp context discuss\` to get the roadmap path. Read roadmap.md, identify the current phase. Run \`bp state set-phase [BP:PHASE_ID]\` to activate it.
+4. If \`milestone\` is null: run \`bp state set-milestone [BP:MILESTONE_ID]\` first.
+
+Print the resolved phase identity:
+\`\`\`
+Phase: [BP:PHASE_ID]  |  Milestone: [BP:MILESTONE_ID]  |  Mode: <mvp || technical-layer>
+Goal: <phase-goal from roadmap>
+Deliverable: <executable artifact>
+\`\`\`
+
+### Step 1: Get context
+Run \`bp context discuss\` — outputs state and roadmap path. Read roadmap.md and extract ONLY the section for this phase.
+
+**Also read prior phase artifacts** (skip if this is the first phase):
+- Previous phase \`context.md\` — locked decisions that this phase builds on
+- Previous phase \`summary.md\` (if exists) — what was actually delivered
+- These ensure continuity: don't re-decide what was already settled, don't reinvent what was already built.
+
+Check if THIS phase's \`context.md\` already exists and load it to avoid re-asking.
+
+### Step 2: Identify gray areas
+Gray areas are **implementation decisions the user cares about** — things that could go multiple ways and would change the result. They are PHASE-SPECIFIC, not generic categories.
+
+Read the phase goal and scope from roadmap. Identify 2-6 concrete gray areas specific to THIS phase.
+
+**Do NOT ask about**: technical implementation details (researcher figures those out), architecture patterns (planner handles those), scope (roadmap defines this). Focus on user-facing and design-time decisions.
+
+### Step 3: Present gray areas and let user select
+\`\`\`
+Here's what I identified as gray areas for [BP:PHASE_ID]:
+
+1. <Area 1> — <one-line description>
+2. <Area 2> — <one-line description>
+...
+
+Are there any I missed? Which ones should we discuss? (Or "Skip discussion" if everything is clear)
+\`\`\`
+
+Use the \`ask\` tool. If user says everything is clear → skip to Step 5 (write minimal context.md).
+
+### Step 4: Discuss selected areas — one at a time
+For each selected area:
+
+1. **Announce**: \`Let's talk about [Area].\`
+2. **Ask 2-4 single questions using the \`ask\` tool** — each with 2-4 concrete options + recommended answer + brief tradeoff. Options must be concrete (not "Option A"). Include "You decide" when reasonable. After 2-4 questions, ask: "More questions about [area], or move to next?"
+3. **Record decisions** in D1/D2 format immediately after each area resolves
+4. **Scope creep guard**: If user mentions something outside this phase, note it as a deferred idea and return to the current area.
+
+### Step 5: Write context.md
+Get the template: \`bp template context\`. Write to \`bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/context.md\`.
+
+Ensure the full path exists:
+\`\`\`bash
+mkdir -p bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]
+\`\`\`
+
+If no gray areas were discussed (express path): write a minimal context.md with only the phase identity and "No gray areas — all decisions clear from roadmap and prior phases."
+
+Reference existing specs that this phase's decisions affect. If a decision changes a behavioral contract, note it as SPEC_CHANGE for plan phase.
+
+### Step 6: Commit
+\`\`\`bash
+bp commit "docs(phase): write context.md for [BP:PHASE_ID]" --files "bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/context.md" --scope docs --record
+\`\`\`
+
+### Step 7: Advance
+Run \`bp continue\` to proceed to research-phase.
+
+## Output
+- \`bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/context.md\` — phase-level implementation decisions with D1/D2 format
+
+## Guardrails
+- **Output goes in the phase directory** — NOT in bp/ root
+- **Scope to this phase ONLY** — other phases are discussed separately
+- **Express path**: skip discussion if everything is clear — don't force questions
+- Defer out-of-scope ideas, don't lose them
+- context.md is the single source of truth for this phase's implementation",
+  "fix-apply": "---
+name: bp-fix-apply
+description: Fix implementation
+hide: false
+---
+
+**You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
+
+## Input
+
+### Parameters
+- **\`[BP:CHANGE_NAME]\`** (required) — the change to fix. Entered via \`bp continue change <name> --command reapply\` or after fix-plan.
+
+### Prerequisites
+- review-task.md exists with fix tasks organized by wave
+- Original review files (spec-review.md, quality-review.md, goal-review.md) exist for context
+
+## Steps
+
+### Resolve paths
+Run \`bp state\` for \`milestone\` and \`phase\`. Or run \`bp context <step>\` for complete path listing.
+
+Directory layout:
+  milestone dir:   bp/milestones/[BP:MILESTONE_ID]/
+  phase dir:       bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/
+  change dir:      bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/changes/[BP:CHANGE_NAME]/
+  |-- proposal.md, design.md, tasks.md, change-summary.md
+  |-- spec-review.md, quality-review.md, goal-review.md
+  |-- verification.md
+  adhoc change:    bp/changes/<change-name>/
+  archive dir:     bp/archive/[BP:MILESTONE_ID]/[BP:PHASE_ID]/
+
+Current change directory for this step:
+\`[BP:CHANGE_DIR]\`
+
+### Resolve change
+If \`[BP:CHANGE_NAME]\` is non-empty: use as change name directly.
+If empty: run \`bp state\`, read the \`active:\` or \`not_started:\` sections for change names.
+
+**Always specify a change name by running \`bp continue change <name>\`**.
+The orchestrator provides the change name — do not guess.
+
+**When multiple changes are active** (type=changes in bp state):
+- Each change listed in the \`active:\` section has its own independent step
+- Pick the one specified by the orchestrator
+- Run \`bp continue change <name>\` — the change name is always required
+
+**Dependency check**: If the change has \`depends_on\`, all dependencies must be archived (no longer in \`active:\`) before this change can advance.
+
+**Resolved path formulas**:
+- Phase change: \`bp/milestones/<milestone>/phases/<phase>/changes/<name>/\`
+- Adhoc change: \`bp/changes/<name>/\`
+- Run \`bp context fix-apply\` for resolved paths in the \`dirs:\` section.
+
+Then run \`bp context fix-apply\` and read all listed files.
+
+
+
+### Step 3: Read review context
+
+Read \`review-task.md\` — each task maps to a review finding.
+Read the three review files to understand what findings need fixing.
+
+### Step 4: Wave analysis and dispatch
+
+### Step: Wave analysis (MAIN AGENT)
+
+Read \`tasks.md\` (or \`review-task.md\` for fix mode). Parse into execution plan:
+
+1. **Extract waves**: read all \`## Wave N: <theme>\` sections. Keep wave order.
+
+2. **Build inter-wave dependency graph**:
+   - For each task, extract \`depends_on\` field
+   - If task in Wave B has \`depends_on\` referencing a task in Wave A → Wave B depends on Wave A
+   - Result: DAG where nodes = waves, edges = cross-wave depends_on
+
+3. **Generate execution plan**:
+   - Waves with NO unmet cross-wave dependencies → can run concurrently
+   - Waves WITH cross-wave dependencies → must wait for predecessor wave(s)
+
+4. **For each wave, prepare ONE sub-agent prompt**:
+   - Change name and path
+   - ALL tasks in this wave (ids, types, descriptions, files, acceptance, RED tests)
+   - ALL referenced specs (from spec_ref fields across tasks)
+   - Conventions
+   - Instruction: implement tasks in dependency order within the wave
+   - Instruction: after each task, commit with \`bp commit "<type>(<scope>): <description>" --files <changed-files> --task <id> --tasks-path <tasks.md path> --record\`
+   - Instruction: do NOT run tsc/vitest — main agent handles verify
+
+5. **Execute round by round**:
+   - Each round: dispatch all ready waves CONCURRENTLY (task tool, one agent per wave)
+   - Wait for all; then **verify each sub-agent's output** (git log, git diff, tasks.md marking, test pass)
+   - Then run full round verify (tsc + vitest) + mark \`[x]\` + commit
+   - Next round: waves unblocked after predecessor waves complete
+   - Repeat until all waves done
+
+
+
+**Dispatch executor sub-agents in fix mode. Do NOT implement fixes yourself:**
+
+For each wave in the current round:
+1. Run \`bp dispatch executor --change [BP:CHANGE_NAME]\` — outputs the sub-agent tool and its parameters.
+2. Call the tool it specifies. Set the sub-agent's prompt to **fix mode**:
+   - Change: [BP:CHANGE_NAME] (path from resolve step)
+   - Mode: FIX — this wave addresses review findings
+   - Wave: <Wave N> — implement ALL fix tasks in this wave
+   - Tasks: <full task list from review-task.md with ids, types, referenced review findings>
+   - Read: review-task.md (this wave only), spec-review.md, quality-review.md, goal-review.md (for finding context), design.md (original design), bp/conventions/coding-standards.md
+   - Implement fixes in dependency order
+   - Each task addresses a specific review finding — ensure the fix resolves it
+   - After each task: run affected tests to verify, then:
+     \`bp commit "fix(<scope>): <description>" --files <changed-files> --task <id> --tasks-path <review-task.md path> --record\`
+   - Do NOT modify the original review files
+3. For concurrent waves in the same round: dispatch ALL in one task tool call (parallel).
+4. Wait for ALL wave sub-agents in this round to finish before verifying.
+
+
+### Step: Verify each sub-agent's fix output
+
+After each wave finishes, verify fixes actually landed:
+- **Check git log**: \`git log --oneline -5\` — confirm new commits
+- **Check tasks.md marking**: read \`[BP:CHANGE_DIR]review-task.md\` — confirm each fix task is \`[x]\` + \`<!-- commit: -->\`
+- **Run affected tests**: \`npx vitest run <test-file>\` — must pass
+- Any missing annotation → manually \`bp commit\` for that task
+
+### Step 5: Verify after each round
+
+After ALL waves in a round complete:
+\`\`\`bash
+npx tsc --noEmit
+npx vitest run
+\`\`\`
+
+If pass: mark tasks \`[x]\` in review-task.md.
+If fail: re-dispatch failing wave with error details.
+
+### Step 6: Final verify
+
+After all waves complete and all tests pass, verify:
+- Each BLOCKER finding is addressed by at least one committed fix
+- No regressions in unaffected code
+
+### Commit & advance
+
+Read \`bp/project.yml\` — check \`workflow.commitDocs\` setting.
+
+**If \`commitDocs\` is \`false\`:** skip commit, run \`bp continue\` directly.
+
+**If \`commitDocs\` is \`true\` (or not set, default true):**
+\`\`\`bash
+bp commit "docs(fix): fix-apply complete for [BP:CHANGE_NAME]" --files "<files>" --scope fix --record
+\`\`\`
+Run \`bp continue\` to proceed.
+
+
+## Guardrails
+- Executor runs in FIX MODE — reads review files for context, implements fixes per review-task.md
+- Same wave-based dispatch as apply, source is review-task.md
+- Advance routes to review (--fix) automatically
+- If fixes incomplete → BLOCKERs remain in next review → loop back",
+  "fix-plan": "---
+name: bp-fix-plan
+description: Fix design
+hide: false
+---
+
+**You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
+
+## Input
+
+### Parameters
+- **\`[BP:CHANGE_NAME]\`** (required) — the change to fix. Entered via \`bp continue change <name> --command replan\`.
+
+### Prerequisites
+- Review phase found design/architecture BLOCKERs
+- spec-review.md, quality-review.md, goal-review.md exist with findings
+
+## Steps
+
+### Resolve paths
+Run \`bp state\` for \`milestone\` and \`phase\`. Or run \`bp context <step>\` for complete path listing.
+
+Directory layout:
+  milestone dir:   bp/milestones/[BP:MILESTONE_ID]/
+  phase dir:       bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/
+  change dir:      bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/changes/[BP:CHANGE_NAME]/
+  |-- proposal.md, design.md, tasks.md, change-summary.md
+  |-- spec-review.md, quality-review.md, goal-review.md
+  |-- verification.md
+  adhoc change:    bp/changes/<change-name>/
+  archive dir:     bp/archive/[BP:MILESTONE_ID]/[BP:PHASE_ID]/
+
+Current change directory for this step:
+\`[BP:CHANGE_DIR]\`
+
+### Read context — MUST read before designing
+Read these to ensure alignment with prior decisions:
+- \`bp/requirements.md\` — project requirements, constraints, success criteria
+- \`bp/roadmap.md\` — this phase's goal, scope, and deliverables
+- \`bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/research.md\` — implementation research
+- \`bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/context.md\` — locked decisions from discuss phase
+
+Change files (relative to [BP:CHANGE_DIR]):
+- \`proposal.md\` — intent, scope, approach, must-haves
+- \`design.md\` — technical architecture, data flow, approach
+- \`tasks.md\` — task list with waves, types, acceptance criteria
+- \`specs/<domain>/spec.md\` — delta-specs for affected domain
+- \`change-summary.md\` — apply completion summary
+- \`verification.md\` — final verification report
+
+Never design in isolation — design must trace back to requirements and research.
+
+### Resolve change
+If \`[BP:CHANGE_NAME]\` is non-empty: use as change name directly.
+If empty: run \`bp state\`, read the \`active:\` or \`not_started:\` sections for change names.
+
+**Always specify a change name by running \`bp continue change <name>\`**.
+The orchestrator provides the change name — do not guess.
+
+**When multiple changes are active** (type=changes in bp state):
+- Each change listed in the \`active:\` section has its own independent step
+- Pick the one specified by the orchestrator
+- Run \`bp continue change <name>\` — the change name is always required
+
+**Dependency check**: If the change has \`depends_on\`, all dependencies must be archived (no longer in \`active:\`) before this change can advance.
+
+**Resolved path formulas**:
+- Phase change: \`bp/milestones/<milestone>/phases/<phase>/changes/<name>/\`
+- Adhoc change: \`bp/changes/<name>/\`
+- Run \`bp context fix-plan\` for resolved paths in the \`dirs:\` section.
+
+Then run \`bp context fix-plan\` and read all listed files.
+
+
+
+### Step 3: Read review findings
+
+Read the three review files in the change directory:
+- \`spec-review.md\` — spec coverage gaps, mismatches
+- \`quality-review.md\` — bugs, security, conventions
+- \`goal-review.md\` — unmet must_haves
+
+Extract all BLOCKER and FLAG findings with their file:line references.
+
+### Step 4: Dispatch planner sub-agent (fix mode)
+
+**If LIGHTWEIGHT** — write fix documents yourself:
+- Write \`review-design.md\` using \`bp template design\` — correct the architecture
+- Write \`review-task.md\` using \`bp template tasks\` — fix tasks for each BLOCKER
+
+**If FULL** — dispatch planner:
+
+1. Run \`bp dispatch planner --change [BP:CHANGE_NAME]\`
+2. Set the sub-agent prompt to **fix mode**:
+   - Task: produce review-design.md + review-task.md from review findings
+   - Read: spec-review.md, quality-review.md, goal-review.md
+   - For each BLOCKER finding: describe what was wrong, why the new approach fixes it
+   - Write review-design.md (title: "# Fix Design: [BP:CHANGE_NAME]")
+   - Write review-task.md (title: "# Fix Tasks: [BP:CHANGE_NAME]")
+     - Wave 1 = BLOCKER fixes, Wave 2 = FLAG fixes
+     - Each task references the review finding it addresses
+     - spec_ref points to review file + finding number
+   - Output: review-design.md + review-task.md (NOT design.md/tasks.md)
+
+### Step 5: Verify output
+
+- review-design.md addresses all BLOCKER findings
+- review-task.md has executable tasks for each finding
+- No template placeholders remain
+
+### Commit & advance
+
+Read \`bp/project.yml\` — check \`workflow.commitDocs\` setting.
+
+**If \`commitDocs\` is \`false\`:** skip commit, run \`bp continue\` directly.
+
+**If \`commitDocs\` is \`true\` (or not set, default true):**
+\`\`\`bash
+bp commit "docs(docs): fix plan for [BP:CHANGE_NAME]" --files "<files>" --scope docs --record
+\`\`\`
+Run \`bp continue\` to proceed.
+
+
+## Guardrails
+- Planner runs in FIX MODE — output is review-design.md + review-task.md, not design.md/tasks.md
+- Fix plan must reference specific review findings — not generic descriptions
+- Advance routes to fix-apply automatically",
+  "grill": "---
+name: bp-grill
+description: Requirements exploration — detailed questioning until shared understanding
+hide: false
+---
+
+## Input
+
+### Parameters
+- **\`$ARGUMENTS\`** (optional) — the product idea, feature concept, or brief to grill. If not provided, ask the user: "What are you building? Describe the idea in a few sentences."
+
+### Prerequisites
+- \`bp/requirements.md\` must exist (created by init)
+- \`bp/project.yml\` for project context
+
+## Steps
+
+### Step 1: Get context
+Run \`bp context grill\` — outputs state and requirements.md path. Read requirements.md.
+
+### Step 1b: Detect milestone state
+Read \`bp/requirements.md\`. If it already has a milestone section (\`## Md-\`):
+- This is a NEW milestone
+- Mark the current section: replace \`[CURRENT]\` with \`[COMPLETED]\` on the existing milestone heading
+- Prepend new section at TOP of requirements.md:
+  \`\`\`markdown
+  ## <new-milestone-id> [CURRENT]
+
+  ### Functional Requirements
+  (fill in below)
+  \`\`\`
+- Proceed to Step 2 for the NEW milestone's requirements
+
+**First time (no milestone sections):** Continue to Step 2 normally.
+
+### Step 2: Get the idea
+If the user provided an idea in the prompt, use it. If not, use the \`ask\` tool to get it:
+- One question: "What are you building? Describe the idea in a few sentences."
+- Input type, no options — let the user describe freely.
+
+### Step 3: Interview relentlessly about this idea
+
+Interview the user relentlessly about every aspect of the idea. All questions must tie back to the idea — clarify, refine, expand, stress-test it. Walk down each branch of the decision tree, resolving dependencies one-by-one.
+
+**For every question, use the \`ask\` tool.** Never use plain text.
+Each \`ask\` call: 2-5 concrete options, one recommended answer, brief tradeoff per option.
+
+**One question at a time.** Never batch. If the codebase or existing docs can answer the question, explore them instead of asking.
+
+Stop only when all decisions are resolved — no ambiguity remains.
+
+### Step 4: Record decisions incrementally
+After each consensus point, write it to \`bp/requirements.md\` immediately — do not batch at the end.
+
+### Step 4b: Write initial global spec skeleton
+Based on requirements, choose which domains need specs. A domain is a logical grouping of related behaviors ("the part that handles X"). Use the domains in \`bp/specs/\` created at init — if a needed domain doesn't exist, create it with \`mkdir -p bp/specs/<new-domain>\`. For each domain, write 2-5 high-level Requirements that capture the core behavioral contract using \`### Requirement:\` + \`#### Scenario: GIVEN/WHEN/THEN\` format.
+These are INITIAL specs — plan phase will refine them into delta-specs.
+
+### Step 5: Confirm consensus
+Review requirements.md. If any ambiguity remains, go back to Step 2. Mark only truly unresolved items as \`[TODO: decide]\`.
+
+### Step 5b: Confirm coding conventions
+Read \`bp/conventions/coding-standards.md\`. Present the key rules to the user in a compact summary (not full content). Use the \`ask\` tool:
+
+"Here are the coding conventions from your tech stack template:
+- <key rule 1>
+- <key rule 2>
+...
+Look good?"
+- yes (start with these, refine later)
+- customize (let's go through them)
+
+If customize: go through conventions section by section, one \`ask\` per section. Write the finalized version back to \`bp/conventions/coding-standards.md\`.
+
+### Step 6: Commit
+\`\`\`bash
+bp commit "docs: complete requirements and conventions" --files "bp/requirements.md,bp/conventions/coding-standards.md" --scope docs --record
+\`\`\`
+
+### Step 6b: UI design decision
+Ask the user:
+"Does this project involve a UI (web/mobile/desktop interface)? If yes, you can do a quick design direction before technical research."
+Options:
+- **design** — "Yes, let's define the design direction first" → run \`bp continue --command design\` (routes to /bp:design)
+- **skip** — "No, skip design and go to research" → run \`bp continue\` (routes to /bp:research as usual)
+- **later** — "I'll decide later, just go to research for now" → run \`bp continue\` (routes to /bp:research)
+
+Recommended: \`skip\` — design is optional and can be done anytime later.
+
+### Step 7: Advance
+If user chose "design": run \`bp continue --command design\` to proceed to the UI design phase.
+Otherwise: run \`bp continue\` to proceed to the research phase.
+
+## Output
+- \`bp/requirements.md\` — populated with agreed requirements
+- \`bp/conventions/coding-standards.md\` — confirmed coding conventions
+
+## Guardrails
+- No code is written during grill — pure exploration
+- Relentless: don't stop until every decision branch is resolved
+- One question per \`ask\` call; recommended answer always
+- Record decisions immediately, not at the end
+- Conventions ARE part of the project consensus — confirm them just like requirements
+- If truly stuck, mark \`[TODO: decide]\` and move on",
+  "init": "---
+name: bp-init
+description: Initialize bp project structure and generate platform files
+hide: false
+---
+
+## Input
+- User has already run \`bp init\`. All project settings (profile, spec stack, platform, release template) are configured.
+- \`bp/state.md\` and \`bp/project.yml\` exist and are fully configured.
+
+## Steps
+
+### Step 1: Check project type
+Run \`bp config list\` — read the \`context\` field. If it contains \`[BROWNFIELD]\`, this is an existing project.
+
+**Greenfield (no \`[BROWNFIELD]\` tag):**
+- "This is a greenfield project. All settings are configured. Let's start building."
+- Skip to Step 3.
+
+**Brownfield (\`[BROWNFIELD]\` tag present):**
+Continue to Step 2.
+
+### Step 2: Brownfield scan — specs from code, not templates
+**This is a brownfield project. All specs come from scanning the existing codebase — no pre-defined spec skeletons exist.**
+
+1. Read \`bp/codebase/stack.md\` and \`bp/codebase/architecture.md\` (created by init CLI scan of the existing project).
+2. Dispatch sub-agents:
+   - Run \`bp dispatch codebase-mapper\` — outputs the sub-agent tool and its parameters. Call it once. Prompt:
+     - Task: deep-analyze the entire codebase and produce all 7 documents
+     - Explore: tech stack, architecture, structure, conventions, testing, integrations, concerns
+     - Use the specific exploration commands listed in your agent prompt
+     - Output: ALL 7 files to \`bp/codebase/\`: stack.md, architecture.md, structure.md, conventions.md, testing.md, integrations.md, concerns.md
+     - Each file MUST include concrete file paths (\`src/services/user.ts\`), version numbers, code examples
+     - STRUCTURE.md MUST include "Where to Add New Code" section
+     - Commit all 7 files when done
+   - Run \`bp dispatch spec-bootstrapper\` — outputs the sub-agent tool and its parameters. Call it once. Prompt:
+     - Task: extract behavioral contracts from the existing source code
+     - Scan the source tree to discover domain boundaries (directories, modules, packages)
+     - For each domain, create \`bp/specs/<domain>/spec.md\` with real extracted Requirements + Scenarios
+     - Domain names come from the code structure — NOT from any pre-defined template
+     - Read: bp/conventions/coding-standards.md
+     - Commit all spec files when done
+
+### Step 3: Advance
+Run \`bp continue\`. The output routes to grill (for requirements exploration).
+
+## Guardrails
+- NEVER re-ask configuration questions — the init CLI already handled profile, spec stack, platform
+- NEVER run \`bp init\` or \`bp update\` — user did this already
+- Brownfield: specs come from code scanning via spec-bootstrapper. Domain names come from source tree structure. Do NOT create spec directories manually.
+- If greenfield: advance immediately, no questions needed",
+  "loop": "---
+name: bp-loop
+description: Autonomous loop
+hide: false
+---
+
+## Input
+
+### Parameters
+- **None needed** — reads state and loops through all steps
+- Optionally: \`$ARGUMENTS\` to loop on a specific change
+
+### Prerequisites
+- \`bp/state.md\` must exist
+- Loop mode works for ALL steps — every decision is made by AI
+
+## Core Rule
+
+**AUTO MODE: NEVER ask the user during loop execution.**
+
+Exception: **Step 0 (initialization)** may ask for stop conditions exactly once when no \`bp/loop.md\` exists.
+
+- Default to recommended options, prefer reasonable defaults over perfect precision
+- Use best engineering judgment based on available context
+
+## Steps
+
+### Step 0: Initialize or restore stop conditions
+
+1. Check if \`bp/loop.md\` exists.
+   - **Exists →** Read it. If \`status: running\`, resume loop from current state — skip to Step 1. If \`status: completed\` or other, report "Loop already completed. Delete bp/loop.md to restart." and exit.
+   - **Does not exist →** Ask user for stop conditions using the \`ask\` tool:
+
+   Question 1 (text): "What is the goal of this loop?" (default: "Complete all pending bp work")
+   Question 2 (text): "What stop condition must be met?" — A verifiable condition. Examples: "All phases shipped", "Change X archived and verified", "Project builds and all tests pass"
+   Question 3 (options): "How to verify the condition?" —
+     a) "Shell command (exit 0 = met)" — e.g. \`bp state show | jq -e '.status == "complete"'\`
+     b) "File check" — e.g. "file bp/archive/changes/X/summary.md exists"
+     c) "AI evaluation" — agent evaluates based on check description (least reliable, use only when no command possible)
+   Question 4 (number): "Maximum iterations before forced stop?" (default: 50)
+
+2. Generate \`bp/loop.md\` from the template (\`bp template loop.md --stdout\`), filling in user answers:
+   - \`{{goal}}\` ← Question 1
+   - \`{{stop_condition}}\` ← Question 2
+   - \`{{verification_command}}\` ← Question 3 (shell command or empty string for non-command modes)
+   - \`{{verification_check}}\` ← Question 3 (human-readable check description)
+   - \`{{max_iterations}}\` ← Question 4
+   - \`{{no_progress_threshold}}\` ← 5 (hardcoded default)
+   - Set \`iteration: 0\`, \`status: running\`, \`last_progress_at\` to current ISO timestamp
+
+3. Write the filled template to \`bp/loop.md\`.
+
+### Step 1: Read state and context
+Run \`bp state\` — confirm project/phase/change status.
+Run \`bp context <step>\` — read all listed artifacts for the current step.
+
+### Step 2: Check if current step is complete
+Read the current step's expected artifacts. Verify they exist and are not empty templates.
+
+**If complete →** Go to Step 4.
+
+**If not complete →** Continue to Step 3.
+
+### Step 3: Execute the current step
+Read the step instructions from \`read skill://bp-<step>\` or the slash command output. Execute WITHOUT asking:
+
+**Interactive steps (grill, discuss):**
+- Get the template first, read existing artifacts, fill with best judgment
+- Never ask which mode, how many phases, which change — decide yourself
+
+**Sub-agent steps (research, plan, apply, review):**
+- Dispatch sub-agents with proper context
+- Auto-classify change type (LIGHTWEIGHT vs FULL)
+- For parallel tasks: analyze depends_on, group independently
+
+**Orchestrator steps (roadmap, split, archive):**
+- Auto-determine structure based on requirements and research
+- Run CLI commands directly
+
+**CRITICAL: Never skip review.** The change lifecycle is ALWAYS plan → apply → review → archive. "Implementation Verification" in tasks.md is a code-quality check run DURING apply — it does NOT replace the separate review step (\`/bp:review\`). Even if the previous change already completed review→archive, the current change MUST go through its own review.
+
+### Step 4: Advance
+Run \`bp continue\` (or \`bp continue change <name>\` for change context).
+Check \`---END---\` marker and \`chars:\` value in output to confirm complete.
+
+If the output provides next step instructions → go back to Step 1.
+If output says "No available next step" → check for pending changes. If change-level work is pending, run \`bp continue change <name>\` instead.
+
+### Step 5: Check stop condition
+
+After each advance (Step 4), before going back to Step 1:
+
+1. **Increment iteration counter.** Read \`bp/loop.md\`, increment \`iteration\` by 1, update \`last_progress_at\` to current ISO timestamp. Write back.
+
+2. **Check hardcoded safety stops FIRST** (highest priority):
+   - A step failed and cannot be auto-resolved → **STOP.** Report what's blocking.
+   - Destructive action required (rm, force push, drop table) → **STOP.** Pause and report.
+   - \`iteration >= max_iterations\` → **STOP.** Report "Max iterations (N) reached. Consider increasing max_iterations or checking why condition was not met."
+   - No progress for \`no_progress_threshold\` consecutive iterations (same state output as previous iteration) → **STOP.** Report "No progress detected for N iterations."
+
+3. **Run custom stop condition verification:**
+   - **If \`command\` is set and non-empty:** Execute it via bash. Exit code 0 → condition MET → go to Step 6.
+   - **If \`command\` is empty but \`check\` is set:** Evaluate the check description. Read \`bp state show\` output + check file existence as described. Determine if condition is met. Use conservative judgment — only declare MET when unambiguously satisfied.
+   - **If both empty:** Treat as "no custom stop condition." Continue only on hardcoded conditions (step 5.2 above).
+
+4. **If \`bp continue\` returned "No available next step"** but the custom condition is NOT met:
+   - Warn: "No more bp steps remain, but stop condition '\`<stop_condition>\`' is not met. Waiting for external changes..."
+   - Pause 30 seconds, then re-check condition (go to step 5.2). Loop here until condition met or safety limit hit.
+
+5. **If stop condition NOT met** → go back to Step 1.
+
+### Step 6: Stop — report and finalize
+
+1. Set \`status: completed\` in \`bp/loop.md\`. Update \`last_progress_at\`.
+2. Report summary:
+
+\`\`\`
+[bp-loop] COMPLETED after N iterations.
+[bp-loop] Goal: <goal>
+[bp-loop] Stop condition met: <stop_condition>
+[bp-loop] Final state: <summary from bp state>
+\`\`\`
+
+3. Ask user: "Loop complete. Keep bp/loop.md for reference or delete it?" (options: Keep / Delete). Default to Keep if in auto mode.
+
+## Stop conditions (revised priority order)
+
+1. **Hardcoded safety stops** (highest priority):
+   - A step fails and cannot be auto-resolved → report and stop
+   - Destructive action required (rm, force push, drop table) → pause and report
+2. **Max iterations reached** → forced stop with warning
+3. **No progress detected** (consecutive identical state) → forced stop
+4. **Custom stop condition met** → normal completion (Step 6)
+5. **\`bp continue\` returns "No available next step"** and no custom condition → all work complete
+6. **\`bp continue\` returns "No available next step"** with custom condition → warn, poll condition until met or safety limit
+
+## Guardrails
+- NEVER use the \`ask\` tool during loop execution (Steps 1-5). Only Step 0 and Step 6 may use \`ask\`.
+- Check \`---END---\` marker + \`chars:\` value on every \`bp continue\` call
+- If truly stuck (contradictory specs, missing critical info), report blocker and stop
+- Auto mode values speed and completeness — prefer reasonable defaults over perfect precision
+- Read \`bp/loop.md\` at the start of every iteration (Step 5.1) to get current counters — never cache in memory
+- Write \`bp/loop.md\` after every iteration — enables resume if loop is interrupted",
+  "milestone": "---
+name: bp-milestone
+description: Milestone management
+hide: false
+---
+
+## Input
+
+### Parameters
+- **\\\`[BP:MILESTONE_ID]\\\`** (optional) — the milestone to switch to. If not provided, read from \\\`bp state\\\`.
+
+### Prerequisites
+- \\\`bp/roadmap.md\\\` must exist with defined milestones and phases
+- All changes in the current milestone must be archived before switching
+
+## Steps
+
+### Step 1: Get context
+Run \\\`bp state\\\` — read current milestone and phase.
+Run \\\`bp context roadmap\\\` — read roadmap.md.
+
+### Step 2: Check current milestone
+Run \\\`bp state\\\`. If the current milestone has all phases shipped, continue. If not, ask: "Current milestone still has in-progress phases. Archive milestone anyway? (yes/no)"
+
+### Step 3: Archive current milestone
+Run \\\`bp milestone archive [BP:MILESTONE_ID]\\\`. The CLI:
+
+1. Copies \\\`bp/milestones/[BP:MILESTONE_ID]/\\\` → \\\`bp/archive/milestones/[BP:MILESTONE_ID]/\\\`
+2. Removes the original milestone directory
+3. Records [date] Archived milestone [BP:MILESTONE_ID] in \\\`bp/state.md\\\` ## History section
+4. Updates state to milestone-shipped
+
+### Step 4: Switch to new milestone
+Run \\\`bp state set-milestone [BP:MILESTONE_ID]\\\`. This resets the active context to \\\`milestone-active\\\`.
+
+### Step 5: Advance
+Run \\\`bp continue\\\` — routes to \\\`/bp:grill\\\` for the new milestone. Do NOT set a phase — the new milestone hasn't been split into phases yet.
+
+## Guardrails
+- Always archive the PREVIOUS milestone before switching to a new one
+- Do NOT set a phase after switching — the new milestone needs grill first
+- If \\\`bp milestone archive\\\` errors (archive already exists), report to user and stop
+- Ensure all changes in the current milestone are archived before switching",
+  "plan": "---
+name: bp-plan
+description: Change design
+hide: false
+---
+
+**You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
+
+## Input
+
+### Parameters
+- **\`[BP:CHANGE_NAME]\`** (required) — the change to plan. Provided by \`bp continue\` output or user.
+
+### Prerequisites
+- Change \`proposal.md\` must be confirmed (not template)
+
+## Steps
+
+### Resolve paths
+Run \`bp state\` for \`milestone\` and \`phase\`. Or run \`bp context <step>\` for complete path listing.
+
+Directory layout:
+  milestone dir:   bp/milestones/[BP:MILESTONE_ID]/
+  phase dir:       bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/
+  change dir:      bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/changes/[BP:CHANGE_NAME]/
+  |-- proposal.md, design.md, tasks.md, change-summary.md
+  |-- spec-review.md, quality-review.md, goal-review.md
+  |-- verification.md
+  adhoc change:    bp/changes/<change-name>/
+  archive dir:     bp/archive/[BP:MILESTONE_ID]/[BP:PHASE_ID]/
+
+Current change directory for this step:
+\`[BP:CHANGE_DIR]\`
+
+## Change Types: Directory Guide
+
+Blueprint has two change types with different directory structures:
+
+| Type | How to create | Directory path |
+|------|--------------|----------------|
+| **Phase change** | \`bp change new <name> --milestone <mid> --phase <pid>\` | \`bp/milestones/<mid>/phases/<pid>/changes/<name>/\` |
+| **Adhoc change** | \`bp change new <name>\` (no milestone/phase) | \`bp/changes/<name>/\` |
+
+How to tell: check \`bp state\` output's \`ref:\` field. Starts with \`milestones/\` → **phase change**. Starts with \`changes/\` → **adhoc change**.
+
+### Read context — MUST read before designing
+Read these to ensure alignment with prior decisions:
+- \`bp/requirements.md\` — project requirements, constraints, success criteria
+- \`bp/roadmap.md\` — this phase's goal, scope, and deliverables
+- \`bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/research.md\` — implementation research
+- \`bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/context.md\` — locked decisions from discuss phase
+
+Change files (relative to [BP:CHANGE_DIR]):
+- \`proposal.md\` — intent, scope, approach, must-haves
+- \`design.md\` — technical architecture, data flow, approach
+- \`tasks.md\` — task list with waves, types, acceptance criteria
+- \`specs/<domain>/spec.md\` — delta-specs for affected domain
+- \`change-summary.md\` — apply completion summary
+- \`verification.md\` — final verification report
+
+Never design in isolation — design must trace back to requirements and research.
+
+### Classify change
+Read \`tasks.md\` task types:
+- **Lightweight**: ALL tasks type: config|docs|refactor|scaffolding — no type:behavior
+- **Full**: any type:behavior task
+
+### Resolve change
+If \`[BP:CHANGE_NAME]\` is non-empty: use as change name directly.
+If empty: run \`bp state\`, read the \`active:\` or \`not_started:\` sections for change names.
+
+**Always specify a change name by running \`bp continue change <name>\`**.
+The orchestrator provides the change name — do not guess.
+
+**When multiple changes are active** (type=changes in bp state):
+- Each change listed in the \`active:\` section has its own independent step
+- Pick the one specified by the orchestrator
+- Run \`bp continue change <name>\` — the change name is always required
+
+**Dependency check**: If the change has \`depends_on\`, all dependencies must be archived (no longer in \`active:\`) before this change can advance.
+
+**Resolved path formulas**:
+- Phase change: \`bp/milestones/<milestone>/phases/<phase>/changes/<name>/\`
+- Adhoc change: \`bp/changes/<name>/\`
+- Run \`bp context plan\` for resolved paths in the \`dirs:\` section.
+
+Then run \`bp context plan\` and read all listed files.
+
+### Step 3: Execute design
+
+**Domain guidance for planner sub-agent:**
+- A domain is a logical group of related behaviors (think "chapter" of specs)
+- Group by what behaviors relate to, NOT implementation layers
+- Use existing \`bp/specs/\` domains; create new ones only when behavior doesn't fit
+- Domain name = kebab-case (e.g. \`cli\`, \`user-auth\`, \`data-export\`)
+- 3-15 Requirements per domain
+
+**If LIGHTWEIGHT:**
+
+1. Run \`bp template design\`, fill Design Items with DS-N numbering:
+   - Read proposal.md → extract PR-1, PR-2 from ## Deliverables
+   - Decompose into DS-1, DS-2... each with \`refs: PR-{id}\`
+   - Every PR must be referenced by at least one DS (validation checks this)
+   - Write Architecture section
+2. Run \`bp template tasks\`, list tasks:
+   - Each task gets T-N, with \`refs: DS-{id}\`
+   - Every DS must be referenced by at least one Task (validation checks this)
+   - Behavior tasks require \`spec_ref\`
+   - \`files\` field is REQUIRED for every task (full relative paths)
+3. Skip delta-specs (not needed for non-behavioral changes)
+4. **Leave all task boxes UNCHECKED** — apply marks them done
+5. Run \`bp continue\`
+
+**If FULL — you MUST dispatch the planner sub-agent. Do NOT write design/tasks/specs yourself:**
+
+1. Run \`bp dispatch planner --change [BP:CHANGE_NAME]\` — outputs the sub-agent tool to call and its parameters.
+2. Call the tool it specifies. Set the sub-agent's prompt to:
+   **IMPORTANT: Do NOT include output file format or writing instructions in the prompt.** The sub-agent reads templates via \`bp template design\`, \`bp template tasks\`, \`bp template spec\` on its own. Only specify WHAT to produce, not HOW.
+   - Task: produce design.md, tasks.md (boxes UNCHECKED), delta-specs
+   - Delta-specs go UNDER the change's \`specs/\` directory, organized by **business domain**:
+     \`changes/<name>/specs/<domain>/spec.md\`
+   - One subdirectory per affected domain. One change can affect multiple domains.
+   - First, run \`ls bp/specs/\` to list existing domains. Use those names. If this change needs a new domain, create \`mkdir -p bp/specs/<new-domain>\` first.
+   - Domain = business domain (e.g. order-processing, user-auth), NOT technical layer (frontend, database)
+   - Archive merges each by matching directory name: \`changes/<name>/specs/<domain>/\` → \`bp/specs/<domain>/\`
+   - Read: requirements.md, roadmap.md (this phase), research.md, context.md, proposal.md, bp/specs/<domain>/spec.md (global spec for affected domain — domain = directory under bp/specs/), bp/conventions/coding-standards.md, specs/, conventions/
+   - Design must reference specific requirements and research decisions — not generic
+   - Delta-specs must use \`## ADDED Requirements\` / \`## MODIFIED Requirements\` / \`## REMOVED Requirements\` sections
+   - Each delta-spec Requirement must reference the global spec it modifies (if any)
+   - Output: design.md, tasks.md, specs/<domain>/spec.md
+### Step 4: Verify output
+Check produced files:
+- \`design.md\` — architecture, data flow, approach
+- \`tasks.md\` — type annotations, RED triples, wave grouping; **boxes must be UNCHECKED** (apply marks them)
+- \`specs/<domain>/spec.md\` — must have ≥1 non-template SHALL/MUST (reject if all \`<name>\`/\`<behavior>\` placeholders)
+- All must_haves from proposal.md covered
+- No contradictions with context.md
+
+### Commit & advance
+
+Read \`bp/project.yml\` — check \`workflow.commitDocs\` setting.
+
+**If \`commitDocs\` is \`false\`:** skip commit, run \`bp continue\` directly.
+
+**If \`commitDocs\` is \`true\` (or not set, default true):**
+\`\`\`bash
+bp commit "docs(docs): plan for [BP:CHANGE_NAME]" --files "<files>" --scope docs --record
+\`\`\`
+Run \`bp continue\` to proceed.
+
+
+## Guardrails
+- FULL: MUST dispatch planner sub-agent; do NOT write design/tasks/specs yourself
+- type:behavior tasks need RED→GREEN→REFACTOR triples
+- Delta-specs for behavior, not implementation — skip for LIGHTWEIGHT
+- tasks.md stays UNCHECKED after plan — apply marks each done
+- Too large to split? Return to split phase",
+  "proposal": "---
+name: bp-proposal
+description: Fill change proposal
+hide: false
+---
+
+## Input
+
+### Parameters
+- **\`[BP:CHANGE_NAME]\`** (required) — change name from \`bp state\` or user prompt.
+
+### Prerequisites
+- Change must be activated (status: \`proposal\`)
+- \`bp/requirements.md\` must exist (for phase changes)
+
+## Steps
+
+### Step 1: Determine change type
+Run \`bp context plan\` to read state. Check if this is a phase change or adhoc change.
+
+**Phase change** — has milestone and phase in context, and requirements.md / context.md exist.
+**Adhoc change** — no milestone/phase context.
+
+### Step 2A: Phase change — fill from requirements
+1. Read \`bp/requirements.md\` — extract FR/NFR IDs and descriptions
+2. Read phase \`context.md\` — extract D IDs and decisions
+3. Run \`bp template proposal\` to get the proposal skeleton
+4. Write to \`proposal.md\`:
+   - **Intent** — what problem/capability, who affected
+   - **References** — list FR/NFR and D IDs that this proposal addresses
+   - **Deliverables** — list each deliverable as \`PR-1\`, \`PR-2\`... with \`refs: FR-{id}, D-{id}\`
+   - **Scope** — what's included, what's excluded
+
+### Step 2B: Adhoc change — ask the user
+1. The change has no requirement references. **Ask the user** what they want to do:
+   - "What problem are you fixing or what feature are you adding?"
+   - "Describe the deliverable in a few sentences."
+   - "What's included vs out of scope?"
+2. Run \`bp template proposal\` to get the proposal skeleton
+3. Write to \`proposal.md\` based on what the user described:
+   - **Intent** — based on user description
+   - **Deliverables** — list \`PR-1\`, \`PR-2\`... with descriptions (no refs needed)
+   - **Scope** — what's included
+
+### Step 3: Commit
+\`\`\`bash
+bp commit "docs(proposal): fill [BP:CHANGE_NAME]" --files "<proposal-path>" --scope docs --record
+\`\`\`
+
+### Step 4: Advance
+Run \`bp continue change [BP:CHANGE_NAME]\` — routes to plan.
+
+## Guardrails
+- NEVER write implementation details in the proposal — that's for design.md
+- Phase changes MUST reference FR/NFR and D IDs in their deliverables
+- Adhoc changes do NOT reference requirements — use user description instead
+- If the proposal already has content, skip filling and advance",
+  "research": "---
+name: bp-research
+description: Project-level technical research
+hide: false
+---
+
+**You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
+
+## Input
+- \`bp/requirements.md\` must be complete (grill phase done)
+- \`bp/project.yml\` for technical constraints
+
+## Steps
+
+### Step 1: Check state and get context
+Run \`bp context research\` — outputs state and file manifest. Read all listed files before proceeding.
+
+### Step 1b: Detect if new milestone
+Run \`bp state\` to check current milestone ID. If \`bp/research/\` already has subdirectories (e.g. \`m1-core/\`):
+- This is a new milestone — previous research is already complete
+- Create new research directory: \`mkdir -p bp/research/<new-milestone-id>\`
+- Write research output to \`bp/research/<new-milestone-id>/<file>.md\`
+- Keep existing \`bp/research/m<prev-num>-*/\` directories intact (they serve as project history)
+- Proceed to Step 2 for the NEW milestone's research
+
+**First time (no subdirectories):** Write research to \`bp/research/\` directly.
+
+### Step 2: Dispatch research sub-agents
+1. Run \`bp dispatch researcher\` — outputs the sub-agent tool and its parameters.
+2. Call the tool it specifies 3 times in parallel (stack, architecture, pitfalls). Set each sub-agent's prompt to:
+   - Read requirements.md + project.yml; fetch template with \`bp template research-<dir>\`
+   - Read bp/specs/ for existing behavioral contracts — research must respect them
+   - If research reveals spec gaps, note them as SPEC_GAP for plan phase
+   - Output: research/<stack|architecture|pitfalls>.md
+
+### Step 3: Verify sub-agent output
+After all sub-agents complete, verify:
+- \`research/stack.md\` exists with tech stack comparison and recommendation
+- \`research/architecture.md\` exists with architecture evaluation
+- \`research/pitfalls.md\` exists with risk assessment
+- Write \`research/summary.md\` synthesizing all findings into one recommendation
+
+### Step 4: Commit
+\`\`\`bash
+bp commit "docs(research): complete technical research" --files "bp/research/stack.md,bp/research/architecture.md,bp/research/pitfalls.md,bp/research/summary.md" --scope research --record
+\`\`\`
+
+### Step 5: Advance
+Run \`bp continue\` to proceed to roadmap definition.
+
+## Output
+- \`research/stack.md\` — recommended tech stack with alternatives compared
+- \`research/architecture.md\` — recommended architecture with rationale
+- \`research/pitfalls.md\` — known risks and mitigation strategies
+- \`research/summary.md\` — consolidated research conclusion
+
+## Guardrails
+- Dispatch sub-agents in parallel — they are independent
+- Each must compare ≥2 alternatives
+- Mark speculative findings with confidence levels",
+  "research-phase": "---
+name: bp-research-phase
+description: Phase research
+hide: false
+---
+
+**You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
+
+## Input
+
+### Parameters
+- **\`[BP:PHASE_ID]\`** — phase ID (e.g. \`ph.1-core\`). If not provided, uses current phase from bp state.
+
+### Prerequisites
+- \`context.md\` must exist (discuss phase done)
+- Related specs, conventions, and external dependencies
+
+## Steps
+
+### Step 1: Check state and get context
+Run \`bp context research-phase\` — outputs state and file manifest. Read all listed files before proceeding.
+
+### Step 2: Dispatch phase researcher
+1. Run \`bp dispatch phase-researcher\` — outputs the sub-agent tool and its parameters.
+2. Call the tool it specifies. Set the sub-agent's prompt to:
+   - Task: research implementation paths for this phase
+   - Read: context.md, related specs/, conventions/
+   - Cross-reference context.md decisions against existing bp/specs/ — flag contradictions
+   - Identify which specs this phase's changes will modify (delta-spec targets)
+   - Output: research.md with recommended paths and TDD implications
+
+### Step 3: Verify output
+Confirm \`research.md\` was written by the sub-agent at \`bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/research.md\` with:
+- Recommended implementation paths with rationale
+- Known pitfalls and edge cases
+- TDD implications for the phase's changes
+
+Ensure the directory exists:
+\`\`\`bash
+mkdir -p bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]
+\`\`\`
+
+### Step 4: Commit
+\`\`\`bash
+bp commit "docs(phase): write research.md for [BP:PHASE_ID]" --files "bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/research.md" --scope docs --record
+\`\`\`
+
+### Step 5: Advance
+Run \`bp continue\` to proceed to the split phase.
+
+## Output
+- \`bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/research.md\` — phase-level implementation research
+
+## Guardrails
+- Research must respect context.md locked decisions
+- Surface trade-offs explicitly",
+  "review": "---
+name: bp-review
+description: Triple review
+hide: false
+---
+
+**You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
+
+## Input
+
+### Parameters
+- **\`[BP:CHANGE_NAME]\`** (required) — the change to review. Provided by \`bp continue\` output or user.
+- **\`--fix\`** (flag) — set when reviewing after fix-apply. Indicates this is a re-review of fixes.
+
+### Prerequisites
+- Apply phase complete: implementation code, tests, summary.md
+- If --fix: fix-apply phase complete, review-task.md and original review files exist
+
+## Steps
+
+### Step 0: Determine review mode
+
+Check if \`fix: true\` is present in the bp continue output.
+
+**Normal mode** (first review):
+- Proceed to Step 1 below — create three review files from scratch.
+
+**Fix mode** (re-review after fixes):
+- Read existing \`spec-review.md\`, \`quality-review.md\`, \`goal-review.md\`
+- Read \`review-task.md\` to understand what was fixed
+- Proceed to Step 5 (in-place update) — do NOT create new files.
+
+### Classify change
+Read \`tasks.md\` task types:
+- **Lightweight**: ALL tasks type: config|docs|refactor|scaffolding — no type:behavior
+- **Full**: any type:behavior task
+
+### Resolve change
+If \`[BP:CHANGE_NAME]\` is non-empty: use as change name directly.
+If empty: run \`bp state\`, read the \`active:\` or \`not_started:\` sections for change names.
+
+**Always specify a change name by running \`bp continue change <name>\`**.
+The orchestrator provides the change name — do not guess.
+
+**When multiple changes are active** (type=changes in bp state):
+- Each change listed in the \`active:\` section has its own independent step
+- Pick the one specified by the orchestrator
+- Run \`bp continue change <name>\` — the change name is always required
+
+**Dependency check**: If the change has \`depends_on\`, all dependencies must be archived (no longer in \`active:\`) before this change can advance.
+
+**Resolved path formulas**:
+- Phase change: \`bp/milestones/<milestone>/phases/<phase>/changes/<name>/\`
+- Adhoc change: \`bp/changes/<name>/\`
+- Run \`bp context review\` for resolved paths in the \`dirs:\` section.
+
+Then run \`bp context review\` and read all listed files.
+
+
+
+### Step 2: Execute review (Normal mode only)
+
+Issue numbering rules (used in all three review files):
+| Prefix | Source | Meaning | Loopback |
+|--------|--------|---------|----------|
+| R1, R2 | Spec Review | Specification non-compliance | reapply |
+| Q1, Q2 | Quality Review | Code quality issues | reapply |
+| G1, G2 | Goal Review | Goal not achieved | reapply |
+| D1, D2 | Any review | **Design/architecture flaw** — needs redesign, not code fix | **replan** |
+
+**D prefix identification**: Mark as D if the issue cannot be fixed by modifying code alone:
+1. SHALL/MUST requires a new module or architecture change
+2. Core abstraction/component responsibility is wrong
+3. Technology stack does not support requirements
+4. Data model does not support planned extensions
+
+Each finding gets a unique number (R1, R2, Q1, Q2, G1, G2, D1, D2...) written in the checklist/Issues table, AND a corresponding \`- [ ]\` entry in the \`## Issues\` section at the bottom.
+
+**Verdict constraint — strict rule for ALL modes:**
+- Spec Review: if any row in Constraint Checklist is FAIL, or any Issues entry exists → overall MUST be FAIL or NEEDS_REVISION
+- Quality Review: if any issue exists (BLOCKER/MAJOR/MINOR/INFO), or any Issues entry exists → overall MUST be FAIL or NEEDS_REVISION
+- Goal Review: if any goal is PARTIAL or NOT_ACHIEVED, or any Issues entry exists → overall MUST be FAIL or NEEDS_REVISION
+**In short: any problem → not PASS. Only write PASS when truly clean.**
+
+1. Run \`bp template spec-review\` → read template → fill it → write to \`spec-review.md\`
+2. Run \`bp template quality-review\` → read template → fill it → write to \`quality-review.md\`
+3. Run \`bp template goal-review\` → read template → fill it → write to \`goal-review.md\`
+4. Use the numbering rules above (R/Q/G/D prefixes) when filling
+5. \`tsc\` + \`vitest\` must pass before writing reviews; include evidence in the review files
+6. Leave all \`## Issues\` entries as \`- [ ]\` (unchecked) — they are checked during re-review. If no issues exist, leave the \`## Issues\` section empty (heading only, do NOT write \`NO_ISSUES_FOUND\`).
+7. All three files MUST be written — never skip a review file
+
+**If FULL — dispatch reviewer sub-agent. DO NOT write review files yourself.**
+1. Run \`bp dispatch reviewer --change [BP:CHANGE_NAME]\` — this outputs the sub-agent tool name and parameters
+2. **Call that tool.** Do NOT read/write review files. The sub-agent handles everything:
+   - Runs spec-review → quality-review → goal-review sequentially
+   - Uses templates (\`bp template spec-review\` etc.) to produce properly formatted files
+   - Applies numbering rules (R/Q/G/D prefixes, D identification criteria, Issues section)
+   - Commits all three files
+3. **Wait for the sub-agent to complete.** Only then read the output files at Step 3 below.
+4. If the sub-agent fails or times out, re-run \`bp dispatch reviewer --change [BP:CHANGE_NAME]\` and call the tool again.
+
+### Step 3: Collect and classify issues
+Read all three review files. Extract all \`## Issues\` entries.
+
+**Check for reference chain completeness** (proposal→design→tasks):
+- Read \`proposal.md\` → list all PR-{id}
+- Read \`design.md\` → list DS-{id} and their refs: PR-{id}
+- Read \`tasks.md\` → list T-{id} and their refs: DS-{id}
+- Any PR not referenced by any DS → issue (replan)
+- Any DS not referenced by any task → issue (reapply)
+
+**Check for D-prefixed issues** (design/architecture problems):
+- Search for \`- [ ] D\` in all three files
+- If any D issue exists → design flaw identified
+
+### Step 4: Route based on findings
+
+**If any D issue found** → **replan** (design loopback):
+\`\`\`bash
+bp continue change [BP:CHANGE_NAME] --command replan
+\`\`\`
+The design needs to be reworked before code fixes make sense.
+
+**If only R/Q/G issues found and any report is FAIL or NEEDS_REVISION** → **reapply** (code fix loopback):
+\`\`\`bash
+bp continue change [BP:CHANGE_NAME] --command reapply
+\`\`\`
+
+**If all three reports PASS** → commit review files → advance to archive.
+\`\`\`bash
+bp commit "docs(review): triple review for [BP:CHANGE_NAME]" --files "spec-review.md,quality-review.md,goal-review.md" --scope review --record
+\`\`\`
+
+### Review loopback
+
+If any review report is FAIL or NEEDS_REVISION, ALL non-PASS findings must be addressed.
+Determine loopback type:
+
+**reapply (code fix)**: implementation bugs → fix code
+  1. **Write \`review-task.md\`** (main agent does this):
+     - Get template: \`bp template tasks --stdout\`
+     - Replace title: \`# Fix Tasks: [BP:CHANGE_NAME]\`
+     - Write one task per non-PASS finding from ALL THREE review files:
+       - spec-review.md: FAIL constraints, N/A gaps with file:line
+       - quality-review.md: BLOCKER, MAJOR, MINOR issues with file:line
+       - goal-review.md: PARTIAL, NOT_ACHIEVED goals with file:line
+     - Wave 1 = BLOCKER + FAIL (must fix), Wave 2 = MAJOR + PARTIAL (should fix), Wave 3 = MINOR + INFO + NOT_APPLICABLE gaps
+     - Each task references the review finding it addresses (e.g. \`spec_ref: spec-review.md#2\`)
+     - Use same task format as tasks.md (type, description, files, acceptance, RED test, depends_on)
+  2. **Run the loopback CLI command**: \`bp continue change <name> --command reapply\`
+     - This advances the state machine to \`change-fix-applying\`
+     - The command outputs the fix-apply workflow instructions
+  3. **Follow the instructions** from the CLI output
+  4. After fix-apply completes → \`bp continue change <name>\` → re-review with --fix
+
+**replan (design fix)**: architecture/approach wrong → redesign
+  1. **Run the loopback CLI command**: \`bp continue change <name> --command replan\`
+     - This advances the state machine to \`change-fix-planning\`
+     - The command outputs the fix-plan workflow instructions
+  2. **Follow the instructions** from the CLI output
+  3. After fix-apply completes → \`bp continue change <name>\` → re-review with --fix
+
+Re-review (--fix): do NOT create new review files. In the ORIGINAL files, mark resolved findings by changing "[ ]" to "[x]" in the \`## Issues\` section. Append new findings with continued numbering.
+If any report is still FAIL or NEEDS_REVISION → loop back. If all PASS → advance to archive.
+
+
+
+### Step 5: In-place re-review (Fix mode only)
+
+Read original review files + review-task.md. The issues in the original review files should still have \`- [ ]\` entries.
+
+**Mark fixed issues:**
+- For each issue referenced in review-task.md as fixed → find in \`## Issues\` and change \`- [ ]\` to \`- [x]\`
+ - Do NOT modify the report content above Issues (no "fixed" or status annotations in report text — only change the checkbox [ ] to [x])
+
+**New issues found:**
+- Continue numbering from the existing highest number
+- Add new entries to the report content AND to \`## Issues\` as \`- [ ]\`
+- New D issues → use D prefix, continue D numbering
+
+**After in-place update:**
+- Check if \`## Issues\` has any remaining \`- [ ]\` → if yes, write new review-task.md → loop back
+- If all \`- [x]\` → commit → advance to archive
+",
+  "roadmap": "---
+name: bp-roadmap
+description: Roadmap definition
+hide: false
+---
+
+## Input
+
+### Parameters
+- **No parameters**: operate on the current project
+
+### Prerequisites
+- \`bp/requirements.md\` — complete requirements
+- \`bp/research/\` — technical research results (if available)
+
+## Steps
+
+### Step 1: Get context
+Run \`bp context roadmap\` — outputs state, requirements.md, and research/ paths. Read all listed files.
+
+### Step 2: Detect roadmap state
+Read \`bp/roadmap.md\`. Check if it already has defined milestones.
+
+**First time (no milestones defined):**
+Continue to Step 3.
+
+**Adding a new milestone (roadmap already exists):**
+- Mark all existing milestones as completed in the roadmap. Add \`[COMPLETED]\` tag after the milestone name:
+  \`\`\`diff
+  - ## M1-core: Core Features
+  + ## M1-core: Core Features [COMPLETED]
+  \`\`\`
+- Append new milestone(s) BELOW the existing milestones, keeping them separated by \`---\`
+- Keep planning mode consistent — if M1 was technical-layer, M2 should be too
+- Phase count for new milestone: determine by requirements scope
+- Create directories for the new milestone ONLY:
+  \`\`\`bash
+  mkdir -p bp/milestones/$1/phases/[BP:PHASE_ID]
+  \`\`\`
+
+### Step 3: Choose planning mode (first time only)
+Ask the user which planning mode shapes **phases within each milestone**:
+
+- **MVP mode** (product-facing): each phase delivers user-facing value — ph.1 thinnest end-to-end → ph.2 expand → ph.3 polish
+- **Technical-layer mode** (infrastructure/CLI): each phase produces a runnable/testable artifact — ph.1 data+core logic → ph.2 API+integration → ph.3 hardening
+
+Use the \`ask\` tool. Record the choice at the top of roadmap.md: \`> Planning mode: <mvp || technical-layer>\`
+
+### Step 4: Define Milestones
+Get the roadmap template: \`bp template roadmap\`. Fill with milestones and phases per the mode chosen above.
+
+**Default: 1 milestone = the entire project.** Milestones are product releases, NOT development phases. Only add M2+ when the user explicitly wants iterative releases (v1.0 → v2.0) and each milestone independently delivers value.
+
+### Step 5: Create ALL milestone-phase directories at once (first time only)
+
+**CRITICAL: Create every milestone and phase directory NOW, in ONE batch.**
+Do NOT create them one at a time as you advance — the state machine will fail to proceed.
+
+List all milestone-phase pairs from your roadmap, then create them ALL:
+
+\`\`\`bash
+# Example: M1-core with ph.1-engine, ph.2-api; M2-expansion with ph.1-plugins
+mkdir -p bp/milestones/M1-core/phases/ph.1-engine
+mkdir -p bp/milestones/M1-core/phases/ph.2-api
+mkdir -p bp/milestones/M2-expansion/phases/ph.1-plugins
+\`\`\`
+
+Without these directories, the state machine cannot advance past roadmap.
+Verify with: \`ls -R bp/milestones/\` — every milestone-phase must have a directory.
+
+### Step 6: Validate coverage
+- All requirements.md scope covered by milestones and phases
+- Phase dependencies form a DAG (no cycles)
+- Each phase has a concrete, verifiable deliverable (not "design complete" — must be executable)
+- Phase count per milestone: small 1-2, medium 2-3, large 3-4
+- First phase is always the thinnest possible end-to-end path
+
+### Step 7: Commit
+\`\`\`bash
+bp commit "docs(roadmap): define milestones and phases" --files "bp/roadmap.md" --scope roadmap --record
+\`\`\`
+
+### Step 8: Advance
+**First milestone:**
+\`\`\`bash
+bp state set-milestone $1
+bp state set-phase [BP:PHASE_ID]
+\`\`\`
+
+**New milestone (M1 already archived):**
+\`\`\`bash
+bp state set-milestone $1
+\`\`\`
+Do NOT set a phase — the new milestone needs grill → research → split first.
+
+\`\`\`bash
+bp continue
+\`\`\`
+
+## Output
+- \`bp/roadmap.md\` — structured roadmap with milestone and phase tables
+- \`bp/milestones/[BP:MILESTONE_ID]/\` — per-milestone directories
+
+## Guardrails
+- **Default: 1 milestone.** No "foundation", "setup", "scaffolding" — M1 = shippable product.
+- **Create ALL milestone-phase directories at once.** Do NOT defer — the state machine checks for directory existence.
+- Mode (MVP/technical-layer) shapes **phases within a milestone**, not the milestones themselves.
+- First phase = thinnest end-to-end path (always phase 1, never phase 0).
+- **Adding new milestone**: mark old ones as [COMPLETED], append new ones below, don't overwrite.
+- **New milestone**: do NOT set-phase — grill/research/split will be done first.
+- **Naming rules**: milestone IDs MUST use \`M<number>-<kebab-case>\` (e.g. \`M1-core\`). Phase IDs MUST use \`ph.<number>-<kebab-case>\` (e.g. \`ph.1-core\`).",
+  "ship": "---
+name: bp-ship
+description: Ship
+hide: false
+---
+
+## Input
+
+### Parameters
+- **No parameters**: auto-detects unpublished changes from archive history
+
+### Prerequisites
+- All phase changes archived
+- Git remote configured (for PR creation)
+- \`gh\` CLI authenticated
+
+## Steps
+
+### Step 1: Get context + check unpublished changes
+Run \`bp ship\` — the CLI:
+1. Reads \`state.md\` archive history for entries NOT marked \`[published]\`
+2. Builds a PR body from the configured release template (\`bp/project.yml → release.template\`)
+3. Outputs the unpublished changes count, change names, and body preview
+
+Template options (set in \`bp/project.yml → release.template\`):
+- **standard**: Summary + Changes + Verification
+- **detailed**: + User Stories + Key Decisions + Risks
+- **minimal**: Summary + Changes only
+
+### Step 2: Ask — PR or Release?
+Use the \`ask\` tool with two options:
+1. **Create PR** — generate PR on GitHub with the template body
+2. **Create Release** — tag a version + create GitHub Release
+
+### Step 3: If PR
+1. Write the PR body to a temp file
+2. Create PR via \`gh pr create\`:
+   \`\`\`bash
+   gh pr create --title "Phase: [BP:PHASE_ID]" --body-file <tmp-file> --base main
+   \`\`\`
+3. After PR created, mark changes as published in \`state.md\` archive history:
+   - Append \`[published]\` to each entry in the \`## History\` section
+
+### Step 4: If Release
+1. Read current version from \`package.json\` (or \`bp/project.yml\`)
+2. Suggest version bump with \`ask\` tool:
+   - **patch** (e.g. 0.4.1 → 0.4.2): bug fixes only
+   - **minor** (e.g. 0.4.1 → 0.5.0): new features, backward compatible (recommended)
+   - **major** (e.g. 0.4.1 → 1.0.0): breaking changes
+3. Update \`package.json\` version
+4. Create git tag + commit: \`git tag -a v<version> -m "v<version>" && git push --tags\`
+5. Create GitHub Release: \`gh release create v<version> --title "v<version>" --notes "<body>"\`
+6. Mark changes as published in \`state.md\` archive history
+
+### Step 5: Mark published
+For each change that was shipped, edit \`bp/state.md\` → \`## History\` section:
+- Change \`[2026-07-01] Archived change-name (M1 / ph.1)\`
+- To \`[2026-07-01] Archived change-name (M1 / ph.1) [published]\`
+
+## Output
+- GitHub PR (if PR chosen)
+- Git tag + GitHub Release (if Release chosen)
+- Updated \`state.md\` with \`[published]\` markers
+
+## Guardrails
+- Always check \`state.md\` history for unpublished changes before shipping
+- Release template is configured in \`bp/project.yml\` — do not override without asking
+- Version bump: recommend minor for feature releases, patch for fixes
+- After publishing, mark changes \`[published]\` immediately — never leave them unmarked
+- \`gh\` CLI must be authenticated before creating PRs or releases",
+  "split": "---
+name: bp-split
+description: Change splitting
+hide: false
+---
+
+## Input
+
+### Parameters
+- **No parameters**: operate on the current phase from \`bp state\`
+
+### Prerequisites
+- \`context.md\` — phase decisions and constraints
+- \`research.md\` — implementation research
+
+## Steps
+
+### Step 1: Get context
+Run \`bp context split\` — outputs state, context.md, and research.md paths. Read all listed files.
+
+### Step 2: Create ALL changes at once
+
+Decompose the phase scope into independently implementable Change units:
+- Each change is a vertical slice (not layer-by-layer)
+- Identify dependencies → dependency graph (must be a DAG)
+- Each change gets a descriptive kebab-case name
+
+**CRITICAL: Create ALL changes in ONE batch before proceeding.**
+Do NOT create them incrementally — the dependency graph needs all nodes to exist first.
+
+\`\`\`bash
+# Create all changes for this phase at once (N = number of changes determined by scope):
+bp change new <change-1> --milestone [BP:MILESTONE_ID] --phase [BP:PHASE_ID]
+bp change new <change-2> --milestone [BP:MILESTONE_ID] --phase [BP:PHASE_ID]
+# ... repeat for all changes
+\`\`\`
+
+### Step 3: Document dependency graph
+For each change with dependencies, run:
+\`\`\`bash
+bp state set-deps [BP:PHASE_ID] --deps <dep1,dep2>
+\`\`\`
+
+Example: \`bp state set-deps c2 --deps c1\` means c2 depends on c1 (c1 must complete first).
+
+Verify with \`bp state\` — check each change's \`depends_on\` matches the DAG.
+
+### Step 4: Validation checklist
+Before advancing, verify:
+- [ ] Each change is a vertical slice (delivers end-to-end value)
+- [ ] Dependency graph is a DAG (no cycles)
+- [ ] Change count: 3-8
+- [ ] No purely sequential changes (merge them into one)
+- [ ] Every change has a directory with proposal.md template
+
+### Step 5: Commit
+\`\`\`bash
+bp commit "docs(split): create change proposals for [BP:PHASE_ID]" --files "bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/changes/" --scope docs --record
+\`\`\`
+
+### Step 6: Advance
+Run \`bp continue\` to proceed to change planning.
+
+## Output
+- \`bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/changes/[BP:PHASE_ID]/\` — one directory per change
+- Updated \`state.md\` with change dependency graph
+
+## Guardrails
+- Changes must be vertical slices — each delivers end-to-end value
+- Dependency graph must be a DAG — no cycles
+- 3-8 changes per phase is the sweet spot
+- Merge purely sequential changes into one",
+}
+`;
