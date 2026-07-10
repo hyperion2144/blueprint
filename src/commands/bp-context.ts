@@ -52,7 +52,7 @@ function contextHandler(step: string) {
   }
   if (result.changeArtifacts && result.changeArtifacts.length > 0) {
     lines.push('artifacts:');
-    for (const a of result.changeArtifacts) lines.push(`  ${a}`);
+    for (const a of result.changeArtifacts) lines.push(`  ${typeof a === 'string' ? a : (a as any).path ?? a}`);
   }
   if (result.requirements && result.requirements.length > 0) {
     lines.push('requirements:');
