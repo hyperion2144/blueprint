@@ -55,69 +55,24 @@ export const PROPOSAL_TEMPLATE = `# Proposal: {{name}}
 
 export const DESIGN_TEMPLATE = `# Design: {{name}}
 
-> This document is the Change Design — written after proposal approval, describing how to implement. Each section has fill-in guidance. After this document, proceed to task breakdown.
+> Change design — component decomposition with DS-N numbering. Each Design Item references proposal deliverables (PR-N).
 
 ---
 
-## Context & Goals
+## Design Items
 
-<!-- Context/constraints + core design goals (≤3). Must align with proposal Intent and Must-haves. -->
+<!-- Each DS-N is a component/module. refs: PR-N links to the proposal deliverable this item implements. Tasks will reference DS-N. -->
 
-{{background-and-goals}}
-
----
-
-## Technical Approach
-
-### Architecture Diagram
-
-<!-- ASCII art showing module relationships. Annotate: [NEW], [MODIFIED], [EXISTING]. -->
-
-\`\`\`text
-{{architecture-diagram}}
-\`\`\`
-
-### Core Data Structures
-
-<!-- Key types/interfaces introduced or modified. TypeScript interface format, brief description per type. -->
-
-{{data-structures}}
-
-### Data Flow
-
-<!-- Step-by-step data flow from trigger to effect. -->
-
-{{data-flow}}
-
-### Interface Design
-
-<!-- Public API signatures: function/method names, params (name+type+desc), return types, sync/async. -->
-
-{{api-signatures}}
+- DS-1: {{component-name}}  refs: PR-{{id}}, PR-{{id}}
+  {{responsibilities, interfaces, data flow}}
+- DS-2: {{component-name}}  refs: PR-{{id}}
+  {{responsibilities}}
 
 ---
 
-## File Manifest
+## Architecture
 
-<!-- All files to create or modify. -->
-
-| File Path | Description | Action |
-|-----------|-------------|--------|
-| \`{{file-path-1}}\` | {{description}} | Create |
-| \`{{file-path-2}}\` | {{description}} | Modify |
-
----
-
-## Test Strategy
-
-### Unit Tests
-- <!-- Which modules need unit tests? What needs mocking? -->
-
-### Integration Tests
-- <!-- Which flows need integration tests? What fixtures needed? -->
-
-### TDD Tasks
-- <!-- List type:behavior tasks requiring RED→GREEN→REFACTOR -->
+{{component diagram, data flow, module relationships}}
 
 ---
 
@@ -129,15 +84,6 @@ export const DESIGN_TEMPLATE = `# Design: {{name}}
 |----------|------|------|-----------------|
 | {{alt-name-1}} | {{pros}} | {{cons}} | {{reason}} |
 | {{alt-name-2}} | {{pros}} | {{cons}} | {{reason}} |
-
----
-
-## Risk Assessment
-
-| Risk | Probability | Impact | Mitigation |
-|------|------------|--------|-----------|
-| {{risk-1}} | {{probability}} | {{impact}} | {{mitigation}} |
-| {{risk-2}} | {{probability}} | {{impact}} | {{mitigation}} |
 `;
 
 export const TASKS_TEMPLATE = `# Tasks: {{name}}
