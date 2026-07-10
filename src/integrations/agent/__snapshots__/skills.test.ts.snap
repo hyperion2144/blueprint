@@ -1758,6 +1758,9 @@ Run \`bp context plan\` to read state. Check if this is a phase change or adhoc 
          Verify: password column contains bcrypt hash, not plaintext.
          Files: src/auth/hash.ts
        \`\`\`
+   - **PR splitting** — split by user-visible capability, not by implementation layer.
+     "User can login" = PR-1, "User can reset password" = PR-2.
+     Keep ≤ 5 PRs per change.
    - **Scope** — what's included, what's excluded
 
 ### Step 2B: Adhoc change — ask the user in detail

@@ -29,7 +29,14 @@ export const PROPOSAL_TEMPLATE = `# Proposal: {{name}}
 
 ## Deliverables
 
-<!-- Each PR-N is a deliverable item. Include SHALL/MUST statement, how to verify, affected files. -->
+<!--
+PR splitting guidance:
+- Each PR = one observable deliverable (not one file, not one method).
+- Split by user-visible capability, not by implementation layer.
+- If you can describe it as "User can X" → that's one PR.
+- If two capabilities depend on the same underlying change, they can share a PR.
+- Keep PR count ≤ 5 per change. If more, consider splitting the change.
+-->
 
 - PR-1: {{title}}  refs: FR-{{id}}, D-{{id}}
   System SHALL {{observable behavior}}.
@@ -39,7 +46,6 @@ export const PROPOSAL_TEMPLATE = `# Proposal: {{name}}
   System SHALL {{observable behavior}}.
   Verify: {{confirmation method}}.
   Files: {{file paths}}
-
 ---
 
 ## Scope
