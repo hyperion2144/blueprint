@@ -22,10 +22,17 @@ export const PROPOSAL_TEMPLATE = `# Proposal: {{name}}
 
 <!-- Phase change only: list FR/NFR and D IDs. Adhoc: remove section -->
 
-- FR-{{id}}: {{brief}}
-- D-{{id}}: {{brief}}
+- FR-{{id}}: {{brief}}  (bp/requirements.md)
+- D-{{id}}: {{brief}}  (context.md)
 
 ---
+
+## External References
+
+<!-- Key specs, documents, or APIs referenced by this proposal. -->
+
+- specs/{{domain}}/spec.md: {{relevant sections}}
+
 
 ## Deliverables
 
@@ -36,16 +43,17 @@ PR splitting guidance:
 - If you can describe it as "User can X" → that's one PR.
 - If two capabilities depend on the same underlying change, they can share a PR.
 - Keep PR count ≤ 5 per change. If more, consider splitting the change.
--->
-
 - PR-1: {{title}}  refs: FR-{{id}}, D-{{id}}
+  Source: FR-{{id}} (bp/requirements.md)
   System SHALL {{observable behavior}}.
   Verify: {{command, test, or manual step to confirm it works}}.
   Files: {{file paths}}
 - PR-2: {{title}}  refs: FR-{{id}}
+  Source: D-{{id}} (context.md)
   System SHALL {{observable behavior}}.
   Verify: {{confirmation method}}.
   Files: {{file paths}}
+
 ---
 
 ## Scope
@@ -73,12 +81,12 @@ Decomposition guidance:
 - One PR may need multiple DS if it spans layers (e.g. HTTP + logic + data).
 - Multiple PRs may share one DS if they belong to the same module.
 -->
-
 - DS-1: {{component-name}}  refs: PR-{{id}}, PR-{{id}}
   {{core responsibilities, interfaces, data flow}}
+  Source: PR-{{id}} (proposal.md)
 - DS-2: {{component-name}}  refs: PR-{{id}}
   {{responsibilities}}
-
+  Source: PR-{{id}} (proposal.md)
 ---
 
 ## Context & Goals
@@ -113,20 +121,37 @@ Decomposition guidance:
 
 ### Interface Design
 
-<!-- Public API signatures: function/method names, params (name+type+desc), return types, sync/async. -->
+<!-- Each interface: method, path, request/response structure, parameters. Copy from spec if defined. -->
 
-{{api-signatures}}
+#### {{endpoint}} \`{{HTTP_METHOD}} {{path}}\`
+- **Headers**: {{headers}}
+- **Request body**: 
+  \`\`\`json
+  {{request example}}
+  \`\`\`
+- **Response**: 
+  \`\`\`json
+  {{response example}}
+  \`\`\`
+- **Errors**: {{error codes}}
+- **Source**: specs/{{domain}}/spec.md SHALL-{{id}}
+
+## External Dependencies
+
+<!-- External APIs/services used. Full URL + auth + parameters. -->
+
+| Service | Base URL | Auth | Request | Response | Used By | Source |
+|---------|----------|------|---------|----------|---------|--------|
+| {{name}} | \`{{https://api.example.com}}\` | {{Bearer Token}} | {{params}} | {{response}} | DS-{{id}} | FR-{{id}} |
 
 ---
 
 ## File Manifest
 
-<!-- All files to create or modify. -->
-
-| File Path | Description | Action |
-|-----------|-------------|--------|
-| \`{{file-path-1}}\` | {{description}} | Create |
-| \`{{file-path-2}}\` | {{description}} | Modify |
+| File Path | Description | Action | Source |
+|-----------|-------------|--------|--------|
+| \`{{file-path-1}}\` | {{description}} | Create | DS-{{id}} |
+| \`{{file-path-2}}\` | {{description}} | Modify | DS-{{id}} |
 
 ---
 

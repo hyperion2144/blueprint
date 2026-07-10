@@ -23,8 +23,9 @@ Run \`bp context plan\` to read state. Check if this is a phase change or adhoc 
 3. Run \`bp template proposal\` to get the proposal skeleton
 4. Write to \`proposal.md\`:
    - **Intent** — what problem/capability, who affected, why now
-   - **References** — list FR/NFR and D IDs that this proposal addresses
-   - **Deliverables** — \`PR-1\`, \`PR-2\`... For EACH deliverable write:
+   - **References** — list FR/NFR and D IDs with source file paths:
+     \`FR-1: login  (bp/requirements.md)\`, \`D-1: JWT  (context.md)\`
+   - **External References** — list specs or docs this proposal references
      - **SHALL/MUST statement** — what observable behavior this deliverable produces
      - **How to verify** — how will you know it's done? (test, command output, manual step)
      - **Affected files** — which files/areas this touches

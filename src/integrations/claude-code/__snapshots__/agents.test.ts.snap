@@ -367,7 +367,12 @@ Run \`bp template design\`. Fill the template:
    - Multiple PRs may map to the same DS if they share a module
    - Every PR must be referenced by at least one DS (validation checks)
    - Each DS gets \`refs: PR-{id}, PR-{id}\`
-3. Write Architecture + Alternatives sections
+4. Write each section with source annotations:
+   - Each DS item → \`Source: PR-{id} (proposal.md)\`
+   - Interface contracts from spec → copy exactly, mark \`Source: specs/{domain}/spec.md SHALL-{id}\`
+   - External APIs → fill External Dependencies table with full URL + auth
+   - Architecture/Data Flow based on proposal → \`Source: PR-{id} "{{title}}"\`
+5. Write Architecture + Alternatives sections
 
 ### Step 3: Break down into executable tasks
 
@@ -405,6 +410,9 @@ Check before finishing:
 - specs/<domain>/spec.md has ≥1 non-template SHALL/MUST (reject all \`<name>\`/\`<behavior>\` placeholders)
 - No contradictions with context.md decisions
 - All files written in the correct directory (check with \`ls\`)
+- Every Design Item has \`Source: PR-{id}\` annotation
+- Interface Design lists complete method, path, request/response, source spec
+- External Dependencies table filled with full URL + auth for all third-party APIs
 
 ## Deviation Rules
 
