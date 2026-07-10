@@ -54,6 +54,7 @@ Run \`bp context plan\` to read state. Check if this is a phase change or adhoc 
    - **Intent** — based on user description
    - **Deliverables** — \`PR-1\`, \`PR-2\`... Each with SHALL/MUST statement, verification, affected files
    - **Scope** — what's included
+`;
 
 export function getProposalSkillTemplate(): SkillTemplate {
   return {
