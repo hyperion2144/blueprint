@@ -78,13 +78,19 @@ function commitHandler(
     }
   }
 
-  if (skippedDocs.length > 0) {
-    const result: CommitResult = {
-      ok: true,
-      note: `commit_docs is disabled. Skipped doc files: ${skippedDocs.join(', ')}`,
-      skipped: skippedDocs,
-    };
-    // Only warn, don't abort — still commit code files below
+  // If commitDocs is disabled and all specified files are docs: skip entirely
+  if (!commitDocs && skippedDocs.length > 0 && codeFiles.length === 0) {
+    console.log([
+      `config: commit_docs is disabled in bp/project.yml`,
+      `skipped: ${skippedDocs.join(', ')}`,
+      'hint: No files to commit. Advance with bp continue.',
+    ].join('\n'));
+    return;
+  }
+
+  // If commitDocs is disabled and some code files exist: commit only code
+  if (!commitDocs && skippedDocs.length > 0 && codeFiles.length > 0) {
+    console.log(`note: commit_docs is disabled. Skipping doc files: ${skippedDocs.join(', ')}`);
   }
 
   if (codeFiles.length === 0 && allFiles.length > 0) {
