@@ -61,7 +61,12 @@ export const DESIGN_TEMPLATE = `# Design: {{name}}
 
 ## Design Items
 
-<!-- Decompose the solution into numbered components. Each DS-N maps to proposal deliverables (PR-N). Tasks will reference DS-N. -->
+<!--
+Decomposition guidance:
+- DS = module boundary (controller, service, repository — not one per function).
+- One PR may need multiple DS if it spans layers (e.g. HTTP + logic + data).
+- Multiple PRs may share one DS if they belong to the same module.
+-->
 
 - DS-1: {{component-name}}  refs: PR-{{id}}, PR-{{id}}
   {{core responsibilities, interfaces, data flow}}
@@ -173,7 +178,12 @@ export const TASKS_TEMPLATE = `# Tasks: {{name}}
 
 ## Wave 1: {{theme}}
 
-<!-- Each task is T-N. refs: DS-N links to design item. behavior types require spec_ref. -->
+<!--
+Decomposition guidance:
+- T = one independently testable behavior path per task. If a DS has 3 endpoints → 3 tasks.
+- Multiple DS merge into one T only when they cannot compile/test separately.
+- 1 wave by default. Add Wave 2, 3 only when layer dependencies exist (model→service→api).
+-->
 
 - [ ] T-1: [type:{{type}}] {{title}}
   - **refs**: DS-{{id}}
