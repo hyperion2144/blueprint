@@ -19,7 +19,7 @@ export function register(program: any): void {
     .description('Commit changes with conventional commit format, record hash to tasks.md')
     .option('--files <list>', 'comma-separated file paths to stage')
     .option('--scope <scope>', 'commit scope (e.g. engine, cli)')
-    .option('--task <id>', 'task ID to record hash against (e.g. task-1.1)')
+    .option('--task <id>', 'task ID to record hash against (e.g. T-1)')
     .option('--tasks-path <path>', 'path to tasks.md (auto-detected if omitted)')
     .option('--record', 'append commit to state.md history')
     .option('--amend', 'amend previous commit')
@@ -230,8 +230,7 @@ function recordTaskHash(
       return undefined;
     }
     let content = readFileSync(tasksPath, 'utf-8');
-    // Match task line: "- [x] task-1.1: ...", "- [ ] **task-3-1**: ...", or "- [ ] task-3-1: ..."
-    // taskId may be wrapped in ** (bold) in tasks.md
+    // Match task line: "- [x] T-1: ...", "- [ ] **T-1**: ...", or "- [ ] T-1: ..."
     const taskPattern = new RegExp(
       `^(- \\[[ x]\\] \\*{0,2}${escapeRegex(taskId)}\\*{0,2}[^\\n]*)`,
       'm',

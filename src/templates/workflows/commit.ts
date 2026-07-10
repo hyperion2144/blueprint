@@ -6,7 +6,7 @@ const instructions = `## Input
 - **\`$ARGUMENTS\`** (required) — conventional commit message (e.g. "feat: add undo stack")
 - \`--files <list>\` — comma-separated file paths to stage (e.g. "src/core/move.ts,tests/unit/move.test.ts")
 - \`--scope <scope>\` — commit scope. See \`bp/conventions/coding.md\` for standard list (core, cli, test, docs, config, render, input, level, shell). Omit if unsure.
-- \`--task <id>\` — task ID to record hash against in tasks.md (e.g. "task-1.3")
+- \`--task <id>\` — task ID to record hash against in tasks.md (e.g. "T-1")
 - \`--tasks-path <path>\` — explicit path to tasks.md (auto-detected if omitted)
 - \`--record\` — also append commit to state.md history
 - \`--amend\` — amend previous commit
@@ -38,7 +38,7 @@ Run \`bp commit "<message>"\` with the appropriate flags:
 bp commit "feat(core): implement move validation" \\
   --files "src/core/move.ts,tests/unit/move.test.ts" \\
   --scope core \\
-  --task task-1.3
+  --task T-1
 
 # Wave completion, no task recording:
 bp commit "feat(engine): add undo stack and history" \\
@@ -59,7 +59,7 @@ The CLI returns structured output:
   "hash": "a1b2c3d",
   "files": 2,
   "skipped": ["bp/state.md"],
-  "taskRecorded": { "task": "task-1.3", "hash": "a1b2c3d", "path": "bp/.../tasks.md" }
+  "taskRecorded": { "task": "T-1", "hash": "a1b2c3d", "path": "bp/.../tasks.md" }
 }
 \`\`\`
 
@@ -72,7 +72,7 @@ The CLI returns structured output:
 If you didn't use \`--task\`, manually add the commit hash as a comment:
 
 \`\`\`markdown
-- [x] task-1.3: [type:behavior] Implement move validation <!-- commit: a1b2c3d -->
+- [x] T-1: [type:behavior] Implement move validation <!-- commit: a1b2c3d -->
 \`\`\`
 
 ## Output

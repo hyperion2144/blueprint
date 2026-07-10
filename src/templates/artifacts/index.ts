@@ -63,10 +63,10 @@ export const DESIGN_TEMPLATE = `# Design: {{name}}
 
 <!-- Decompose the solution into numbered components. Each DS-N maps to proposal deliverables (PR-N). Tasks will reference DS-N. -->
 
-| # | Component | Proposal Refs | Description |
-|---|-----------|--------------|-------------|
-| DS-1 | {{name}} | PR-{{id}}, PR-{{id}} | {{responsibilities, interfaces}} |
-| DS-2 | {{name}} | PR-{{id}} | {{description}} |
+- DS-1: {{component-name}}  refs: PR-{{id}}, PR-{{id}}
+  {{core responsibilities, interfaces, data flow}}
+- DS-2: {{component-name}}  refs: PR-{{id}}
+  {{responsibilities}}
 
 ---
 
@@ -153,7 +153,7 @@ export const DESIGN_TEMPLATE = `# Design: {{name}}
 
 export const TASKS_TEMPLATE = `# Tasks: {{name}}
 
-> This document breaks the design into executable tasks grouped by wave. Each task includes description, files (required), acceptance criteria, optional depends_on and spec_ref. type:behavior tasks must include RED test descriptions (GIVEN/WHEN/THEN format).
+> This document breaks the design into executable tasks grouped by wave. Each task includes refs to design items (DS-N), spec_ref, files, and acceptance criteria. type:behavior tasks must include RED test descriptions (GIVEN/WHEN/THEN format).
 
 ---
 
@@ -171,37 +171,16 @@ export const TASKS_TEMPLATE = `# Tasks: {{name}}
 
 ---
 
-## Wave 1: {{wave-1-theme}}
+## Wave 1: {{theme}}
 
-<!--
-A wave is an independently verifiable unit of work. Tasks within a wave may have dependencies but the wave is self-contained.
-Each wave completion enables verification (tsc + test pass).
--->
+<!-- Each task is T-N. refs: DS-N links to design item. behavior types require spec_ref. -->
 
-- [ ] task-{{id-1}}: [type:{{type}}] {{title}}
-  - **description**: {{What to do, approach, files/APIs to reference}}
-  - **files**: {{required. Full relative paths from project root, e.g. src/core/engine.ts. Comma-separated.}}
+- [ ] T-1: [type:{{type}}] {{title}}
+  - **refs**: DS-{{id}}
+  - **files**: {{full relative paths from project root, comma-separated}}
+  - **spec_ref**: specs/{{domain}}/spec.md <!-- required for behavior type -->
   - **acceptance**: {{observable, assertable acceptance criteria}}
-  - **depends_on**: [task-{{id-x}}] <!-- optional: predecessor -->
-  - **spec_ref**: specs/{{domain}}/spec.md <!-- optional: linked spec -->
-  {{if behavior}}
-  - ***RED test***:
-    \`\`\`
-    GIVEN {{precondition}}
-    WHEN {{trigger action}}
-    THEN {{expected result}}
-    \`\`\`
-  {{/if}}
-
----
-
-## Wave 2: {{wave-2-theme}}
-
-- [ ] task-{{id-3}}: [type:{{type}}] {{title}}
-  - **description**: {{What to do}}
-  - **files**: {{required. Full relative paths, comma-separated.}}
-  - **acceptance**: {{acceptance criteria}}
-  - **depends_on**: [task-{{id-1}}] <!-- optional -->
+  - **depends_on**: [T-{{id}}] <!-- optional -->
   {{if behavior}}
   - ***RED test***:
     \`\`\`
