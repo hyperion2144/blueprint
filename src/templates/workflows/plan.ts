@@ -31,7 +31,7 @@ ${RESOLVE_PATHS}${CHANGE_TYPE_GUIDE}${READ_CONTEXT}${CLASSIFY_CHANGE}${CHANGE_NA
 2. Run \`bp template tasks\`, list tasks:
    - Decompose each DS into T by independently testable behavior path
    - Each T gets \`refs: DS-{id}\`; multiple DS can merge into one T only if not separately testable
-   - Every DS must be referenced by at least one Task (validation checks)
+   - RED→GREEN→REFACTOR is how to EXECUTE one behavior task, not how to split it
    - Behavior tasks require \`spec_ref\`; \`files\` field is REQUIRED
 3. Skip delta-specs (not needed for non-behavioral changes)
 4. **Leave all task boxes UNCHECKED** — apply marks them done

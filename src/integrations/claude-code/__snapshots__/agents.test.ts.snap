@@ -377,6 +377,7 @@ Run \`bp template tasks\`. Fill the template:
 2. Decompose each DS into tasks (T-N). T = independently testable behavior:
    - Each public behavior path of a DS gets its own T
    - Multiple DS may merge into one T only if they cannot compile/test separately
+   - TDD (RED→GREEN→REFACTOR) describes how to EXECUTE one task — do NOT split RED/GREEN/REFACTOR into separate tasks
    - Every DS must be referenced by at least one task (validation checks)
 3. Group tasks into waves only when intermediate verification adds value:
    - 1 wave is the default; add more waves only when tasks have layer dependencies
