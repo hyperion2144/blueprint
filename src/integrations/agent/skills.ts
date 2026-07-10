@@ -16,6 +16,7 @@ import { WORKFLOW_REGISTRY, type WorkflowStep } from '../../templates/workflows/
  *   无上下文 (init/grill/…) → 保持 $1 原样
  */
 const STEP_PARAM: Record<string, string> = {
+  design: '',
   milestone: '[BP:MILESTONE_ID]',
   discuss: '[BP:PHASE_ID]',
   'research-phase': '[BP:PHASE_ID]',
@@ -54,6 +55,7 @@ function skillDescription(step: string): string {
     research: 'Project-level technical research',
     roadmap: 'Roadmap definition',
     milestone: 'Milestone management',
+    design: 'UI design direction',
     discuss: 'Phase discussion',
     'research-phase': 'Phase research',
     split: 'Change splitting',
@@ -75,7 +77,7 @@ function skillDescription(step: string): string {
   return map[step] ?? '';
 }
 
-const STEPS = ['init', 'grill', 'research', 'roadmap', 'milestone', 'discuss', 'research-phase', 'split', 'adhoc', 'plan', 'apply', 'review', 'archive', 'proposal', 'ship', 'continue', 'audit', 'loop', 'config', 'commit', 'fix-plan', 'fix-apply'];
+const STEPS = ['init', 'design', 'grill', 'research', 'roadmap', 'milestone', 'discuss', 'research-phase', 'split', 'adhoc', 'plan', 'apply', 'review', 'archive', 'proposal', 'ship', 'continue', 'audit', 'loop', 'config', 'commit', 'fix-plan', 'fix-apply'];
 
 export function generateAgentSkills(_config: ProjectConfig): { path: string; content: string }[] {
   return STEPS.map((step) => {

@@ -25,6 +25,7 @@ export const STEP_DEFS: CommandDef[] = [
   { step: 'research', name: 'bp:research', description: 'Project-level technical research — parallel multi-direction investigation', usesAgent: true, agents: ['researcher'] },
   { step: 'roadmap', name: 'bp:roadmap', description: 'Roadmap definition — split project into Milestones × Phases', usesAgent: false, agents: [] },
   { step: 'milestone', name: 'bp:milestone', description: '[milestone-id] — Milestone management — switch/create milestones, set current phase', usesAgent: false, agents: [], argumentHint: '[milestone-id]' },
+  { step: 'design', name: 'bp:design', description: 'UI design direction — define aesthetic, color, typography, layout', usesAgent: true, agents: ['designer'], argumentHint: '' },
   { step: 'discuss', name: 'bp:discuss', description: 'Phase discussion — capture implementation decisions into context.md', usesAgent: false, agents: [] },
   { step: 'research-phase', name: 'bp:research-phase', description: 'Phase research — implementation path investigation', usesAgent: true, agents: ['researcher'] },
   { step: 'split', name: 'bp:split', description: 'Change splitting — dependency graph + N changes', usesAgent: false, agents: [] },

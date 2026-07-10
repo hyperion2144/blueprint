@@ -29,6 +29,7 @@ function skillDescription(step: string): string {
     research: 'Project-level technical research — parallel multi-direction investigation',
     roadmap: 'Roadmap definition — split project into Milestones × Phases',
     milestone: 'Milestone management — switch/create milestones, set current phase',
+    design: 'UI design direction — define aesthetic, color, typography, layout',
     discuss: 'Phase discussion — capture implementation decisions into context.md',
     'research-phase': 'Phase research — implementation path investigation',
     split: 'Change splitting — dependency graph + N changes',
@@ -48,7 +49,7 @@ function skillDescription(step: string): string {
   return map[step] ?? '';
 }
 
-const STEPS = ['init', 'grill', 'research', 'roadmap', 'milestone', 'discuss', 'research-phase', 'split', 'adhoc', 'plan', 'apply', 'review', 'archive', 'proposal', 'ship', 'continue', 'audit', 'loop', 'config', 'commit'] as const;
+const STEPS = ['init', 'design', 'grill', 'research', 'roadmap', 'milestone', 'discuss', 'research-phase', 'split', 'adhoc', 'plan', 'apply', 'review', 'archive', 'proposal', 'ship', 'continue', 'audit', 'loop', 'config', 'commit'] as const;
 
 export const SKILL_DEFS: SkillDef[] = STEPS.map((step) => ({
   step,
