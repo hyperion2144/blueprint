@@ -2267,28 +2267,20 @@ Get the roadmap template: \`bp template roadmap\`. Fill with milestones and phas
 
 **Default: 1 milestone = the entire project.** Milestones are product releases, NOT development phases. Only add M2+ when the user explicitly wants iterative releases (v1.0 → v2.0) and each milestone independently delivers value.
 
-### Step 5: Create milestone directory and first phase directory
+### Step 5: Create milestone directory and first phase directory only
 
-Create the milestone root directory:
-
-\`\`\`bash
-mkdir -p bp/milestones/M1-core
-\`\`\`
-
-Then create the FIRST phase directory (ph.1):
+List all milestone-phase pairs defined in your roadmap, then create ONLY the first phase directory.
+The remaining directories are created on-demand when the agent advances to each phase.
 
 \`\`\`bash
+# Example: M1-core with ph.1-engine, ph.2-api, ph.3-plugins
 mkdir -p bp/milestones/M1-core/phases/ph.1-engine
+# ph.2-api and ph.3-plugins are NOT created yet — they will be created
+# on-demand when the agent reaches each phase.
 \`\`\`
 
-**Phases beyond ph.1 are created on-demand** — when the agent advances to the next phase, run:
-\`\`\`bash
-mkdir -p bp/milestones/M1-core/phases/ph.2-api
-\`\`\`
-
-Then use \`bp:add-phase\` to add the phase to the roadmap and update the phase tree.
-
-Verify the milestone exists: \`ls bp/milestones/\` — at least one milestone directory must exist.
+At least one phase directory must exist for the state machine to advance.
+Verify with: \`ls bp/milestones/\` — milestone root must exist.
 
 ### Step 6: Validate coverage
 - All requirements.md scope covered by milestones and phases
@@ -2324,7 +2316,8 @@ bp continue
 - \`bp/milestones/[BP:MILESTONE_ID]/\` — per-milestone directories
 
 ## Guardrails
-- **Create milestone root directory in roadmap step. Create phase directories on-demand** when advancing to each phase — don't pre-create all phases.
+- **Default: 1 milestone.** No "foundation", "setup", "scaffolding" — M1 = shippable product.
+- **Create milestone root + first phase directory in roadmap step. Remaining phase directories are created on-demand** when advancing to each phase.
 - Mode (MVP/technical-layer) shapes **phases within a milestone**, not the milestones themselves.
 - First phase = thinnest end-to-end path (always phase 1, never phase 0).
 - **Adding new milestone**: mark old ones as [COMPLETED], append new ones below, don't overwrite.
