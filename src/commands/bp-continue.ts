@@ -232,10 +232,14 @@ function continueHandler(options?: { auto?: boolean; command?: string }): void {
       formatContinueResult(finalResult, isAuto, state);
       return;
     }
-    // No more phases → suggest ship milestone
+    // No more phases — ask user what to do
     console.log([
-      '# bp continue — hint',
-      'hint: No next phase in roadmap. Current milestone has no remaining phases defined. Use /bp:ship to ship when ready, or /bp:add-phase to add more phases.',
+      '# bp continue — phase complete (no next phase)',
+      `phase: ${state.project.current_phase}`,
+      'hint: Current milestone has no remaining phases. Ask the user:',
+      '  - Proceed to next milestone? → Run: bp state set-milestone <next-id>',
+      '  - Ship current milestone? → Run: /bp:ship',
+      '  - Add more phases? → Run: /bp:add-phase',
     ].join('\n'));
     return;
   }
