@@ -2106,10 +2106,10 @@ Read \`bp/roadmap.md\`. Check if it already has defined milestones.
 Continue to Step 3.
 
 **Adding a new milestone (roadmap already exists):**
-- Mark all existing milestones as completed in the roadmap. Add \`[COMPLETED]\` tag after the milestone name:
+- Mark all existing milestones as completed in the roadmap. Change \`[ACTIVE]\` → \`[COMPLETED]\`:
   \`\`\`diff
-  - ## M1-core: Core Features
-  + ## M1-core: Core Features [COMPLETED]
+  - ## Md-1: Core Features [ACTIVE]
+  + ## Md-1: Core Features [COMPLETED]
   \`\`\`
 - Append new milestone(s) BELOW the existing milestones, keeping them separated by \`---\`
 - Keep planning mode consistent — if M1 was technical-layer, M2 should be too
@@ -2189,7 +2189,7 @@ bp continue
 - First phase = thinnest end-to-end path (always phase 1, never phase 0).
 - **Adding new milestone**: mark old ones as [COMPLETED], append new ones below, don't overwrite.
 - **New milestone**: do NOT set-phase — grill/research/split will be done first.
-- **Naming rules**: milestone IDs MUST use \`M<number>-<kebab-case>\` (e.g. \`M1-core\`). Phase IDs MUST use \`ph.<number>-<kebab-case>\` (e.g. \`ph.1-core\`).",
+- **Naming rules**: milestone directory IDs MUST use \`M<number>-<kebab-case>\` (e.g. \`M1-core\`). Phase directory IDs MUST use \`ph.<number>-<kebab-case>\` (e.g. \`ph.1-core\`). Roadmap headings use \`Md-{id}\` and \`Ph-{mid}.{pid}\` with integer IDs extracted from directory names.",
   "ship": "---
 name: bp-ship
 description: Ship

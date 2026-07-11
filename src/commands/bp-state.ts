@@ -72,7 +72,7 @@ function showState() {
     const roadmapPath = join(bpDir, 'roadmap.md');
     if (existsSync(roadmapPath)) {
       const content = readFileSync(roadmapPath, 'utf-8');
-      const msMatches = content.match(/^##\s+(M\d+[^\n]*)/gm);
+      const msMatches = content.match(/^##\s+(Md-\d+[^\n]*)/gm);
       if (msMatches) {
         roadmap = msMatches.map((m: string) => {
           const name = m.replace(/^##\s+/, '').trim();

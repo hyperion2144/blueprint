@@ -148,32 +148,40 @@ function archiveHandler(changePath: string) {
   try {
     const roadmapPath = join(bpDir, 'roadmap.md');
     if (existsSync(roadmapPath)) {
-      // Try to extract milestone/phase from change path first, fall back to state
-      let milestone: string | null = null;
-      let phase: string | null = null;
+      // Extract milestone/phase from change path, fall back to state
+      let milestoneDir: string | null = null;
+      let phaseDir: string | null = null;
       const pathMatch = changePath.match(/milestones\/([^/]+)\/phases\/([^/]+)\/changes\//);
       if (pathMatch) {
-        milestone = pathMatch[1];
-        phase = pathMatch[2];
+        milestoneDir = pathMatch[1];
+        phaseDir = pathMatch[2];
       } else {
         const state = loadState(bpDir);
-        milestone = state.project.current_milestone;
-        phase = state.project.current_phase;
+        milestoneDir = state.project.current_milestone;
+        phaseDir = state.project.current_phase;
       }
-      if (milestone && phase) {
-        let roadmap = readFileSync(roadmapPath, 'utf-8');
-        const phasePattern = new RegExp(`(### Ph-${milestone}\\.${phase}: .*?) \\[ACTIVE\\]`);
-        if (phasePattern.test(roadmap)) {
-          roadmap = roadmap.replace(phasePattern, `$1 [COMPLETED]`);
-          const allPhasesDone = !roadmap.includes(`### Ph-${milestone}.`) || !roadmap.includes(`### Ph-${milestone}.\\d+: .*? \\[ACTIVE\\]`);
-          if (allPhasesDone) {
-            roadmap = roadmap.replace(
-              new RegExp(`(## Md-${milestone}: .*?) \\[ACTIVE\\]`),
-              `$1 [COMPLETED]`
-            );
+      if (milestoneDir && phaseDir) {
+        // Extract integer IDs from directory names: M2-claude-code → 2, ph.1-engine → 1
+        const msMatch = milestoneDir.match(/^M(\d+)/i);
+        const phMatch = phaseDir.match(/^ph\.(\d+)/i);
+        if (msMatch && phMatch) {
+          const mid = msMatch[1];
+          const pid = phMatch[1];
+          let roadmap = readFileSync(roadmapPath, 'utf-8');
+          const phasePattern = new RegExp(`(### Ph-${mid}\\.${pid}: .*?) \\[ACTIVE\\]`);
+          if (phasePattern.test(roadmap)) {
+            roadmap = roadmap.replace(phasePattern, `$1 [COMPLETED]`);
+            // Check if all phases under this milestone are COMPLETED
+            const allDone = !roadmap.includes(`### Ph-${mid}.`) || !roadmap.includes(`### Ph-${mid}.\\d+: .*? \\[ACTIVE\\]`);
+            if (allDone) {
+              roadmap = roadmap.replace(
+                new RegExp(`(## Md-${mid}: .*?) \\[ACTIVE\\]`),
+                `$1 [COMPLETED]`
+              );
+            }
+            writeFileSync(roadmapPath, roadmap, 'utf-8');
+            console.log(`✓ roadmap.md: Ph-${mid}.${pid} marked COMPLETED`);
           }
-          writeFileSync(roadmapPath, roadmap, 'utf-8');
-          console.log(`✓ roadmap.md: Ph-${milestone}.${phase} marked COMPLETED`);
         }
       }
     }

@@ -569,40 +569,24 @@ export const REQUIREMENTS_TEMPLATE = `# Requirements: {{name}}
 export const ROADMAP_TEMPLATE = `# Roadmap: {{name}}
 
 > Planning mode: {{mode}}
-> Milestones are major delivery checkpoints, not feature buckets. Each milestone represents a complete, demonstrable, shippable state.
-> Naming: milestone M<number>-<kebab>, phase ph.<number>-<kebab>
 
----
+## Md-1: {{milestone-name}} [NOT_STARTED]
 
-## Milestones
-
-### {{milestone-id}}: {{milestone-name}}
-- **Goal**: {{what this milestone delivers — a complete, usable state}}
-- **Mode**: {{mvp | technical-layer}}
-- **Success Criteria**:
-  - {{verifiable criterion}}
-  - {{verifiable criterion}}
-
-#### Phases
-
-| ID | Goal | Depends On | Changes | Deliverable |
-|----|------|-----------|---------|------------|
-| ph.1-{{name}} | {{goal}} | - | {{count}} | {{executable artifact}} |
-| ph.2-{{name}} | {{goal}} | ph.1 | {{count}} | {{executable artifact}} |
-
-#### ph.1-{{name}}
-- **Goal**: {{what this phase delivers}}
+### Ph-1.1: {{first-phase-name}} [NOT_STARTED]
+- **Goal**: {{what this phase delivers — a demonstrable, shippable artifact}}
 - **Deliverable**: {{runnable binary, deployed endpoint, test suite passing, etc.}}
 - **Inputs**: {{specs, conventions, docs}}
 - **Outputs**: {{code, specs, docs}}
 
----
+### Ph-1.2: {{second-phase-name}} [NOT_STARTED]
+- **Goal**: {{what this phase delivers}}
+- **Deliverable**: {{runnable artifact}}
+- **Inputs**: {{specs, conventions, docs}}
+- **Outputs**: {{code, specs, docs}}
 
-## Dependency Graph
-\`\`\`text
-{{milestone-dependencies}}
-\`\`\`
-`;
+> Add more phases (Ph-1.3, Ph-1.4, ...) and milestones (Md-2, Md-3, ...) below as separate sections.
+> Use \`[NOT_STARTED]\`, \`[ACTIVE]\`, or \`[COMPLETED]\` status tags.
+> Directory naming: milestones/{Md-id}/phases/{Ph-mid.pid}/changes/. Create all directories at once.`;
 
 export const RESEARCH_STACK_TEMPLATE = `# Tech Stack Research: {{name}}
 
