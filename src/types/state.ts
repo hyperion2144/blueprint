@@ -105,6 +105,7 @@ export const STATE_TRANSITIONS: StateTransition[] = [
 
   // Phase 间流转
   { from: 'change-archived', command: 'next-change', to: 'phase-ready', slashCommand: '' },
+  { from: 'phase-ready', command: 'next-phase', to: 'phase-start', slashCommand: '' },
 
   // Phase change (not adhoc) — same as adhoc-proposal, routes to plan
   { from: 'change-proposal', command: 'plan', to: 'change-planning', slashCommand: '/bp:plan', subagent: true },

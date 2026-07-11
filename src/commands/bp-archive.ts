@@ -99,6 +99,9 @@ function archiveHandler(changePath: string) {
           state.active_context = { type: 'adhoc', ref: 'changes/' + nextAdhoc.name, step: nextAdhoc.status };
         } else if (nextChange) {
           state.active_context = { type: 'change', ref: 'changes/' + nextChange.name, step: nextChange.status };
+        } else if (isPhaseChange && msId && phId) {
+          // Last change in phase — stay at phase level, mark ready for next phase
+          state.active_context = { type: 'phase', ref: `milestones/${msId}/phases/${phId}`, step: 'ready' };
         } else {
           state.active_context = { type: 'project', ref: null, step: 'archived' };
           state.project.status = 'change-archived';
@@ -184,6 +187,14 @@ function archiveHandler(changePath: string) {
           }
         }
       }
+    }
+  } catch { /* non-critical */ }
+  // 8. Check if phase is complete — output hint about next phase
+  try {
+    const currentState = loadState(bpDir);
+    if (currentState.active_context.step === 'ready' && currentState.active_context.type === 'phase') {
+      console.log(`\n✓ Phase ${currentState.project.current_phase} complete.`);
+      console.log('  Run `bp continue` to check for available next steps, or ask user whether to proceed to the next phase.');
     }
   } catch { /* non-critical */ }
 }

@@ -421,6 +421,22 @@ export function checkPhaseCompletion(
   return errs;
 }
 
+/**
+ * Parse a roadmap.md file and return the AST.
+ * Used by bp-continue to find the next phase.
+ */
+export function parseRoadmapFile(roadmapPath: string): { milestones: any[] } | null {
+  if (!existsSync(roadmapPath)) return null;
+  const parser = loadGrammar('roadmap');
+  if (!parser) return null;
+  try {
+    const content = readFileSync(roadmapPath, 'utf-8');
+    return parser.parse(content) as { milestones: any[] };
+  } catch {
+    return null;
+  }
+}
+
 // ── Grammar name map ───────────────────────────────────────────────
 
 const grammarMap: Record<string, string> = {

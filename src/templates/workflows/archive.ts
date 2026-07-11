@@ -70,8 +70,16 @@ bp commit "docs(archive): archive $1, phase complete" \\
   --scope docs --record
 \`\`\`
 
-### Step 7: Advance
-Run \`bp continue\` — routes to next change or ship-phase.
+### Step 7: Advance (last change only — ask user)
+
+**If the archived change was the LAST in its phase:**
+1. The CLI outputs: \`✓ Phase [name] complete.\`
+2. Ask the user: "Phase X is complete. Proceed to the next phase?"
+   - **yes** → run \`bp continue --auto\` (auto-advances to next phase's discuss)
+   - **later** → done for now. Run \`bp state set-phase <next-id>\` manually to enter next phase.
+
+**If more changes remain:**
+Run \`bp continue\` to proceed to the next change's planning.
 
 ## Guardrails
 - No sub-agent — run checks yourself

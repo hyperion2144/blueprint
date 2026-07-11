@@ -4,14 +4,14 @@
 
 import { join, basename } from 'node:path';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { determineNextStep, determineChangeNextStep, STEP_TO_WORKFLOW, expandTemplateVars } from '../core/continue.js';
-import { loadState, updateState } from '../core/state-file.js';
-import { validateStepAdvance } from '../core/state-validator.js';
-import { parseAndValidate, checkCoverage } from '../core/validate/index.js';
+import { parseAndValidate, checkCoverage, parseRoadmapFile } from '../core/validate/index.js';
 import { getTransition } from '../core/state-machine.js';
-import type { ContinueResult } from '../core/continue.js';
-import type { ChangeStatus, StateFile } from '../types/index.js';
 import { WORKFLOW_REGISTRY, type WorkflowStep } from '../templates/workflows/registry.js';
+import type { ChangeStatus, StateFile } from '../types/index.js';
+import type { ContinueResult } from '../core/continue.js';
+import { loadState, updateState } from '../core/state-file.js';
+import { determineNextStep, determineChangeNextStep, STEP_TO_WORKFLOW, expandTemplateVars } from '../core/continue.js';
+import { validateStepAdvance } from '../core/state-validator.js';
 
 export function register(program: any): void {
   const cmd = program
@@ -498,9 +498,29 @@ function continueChangeHandler(name: string, options?: { auto?: boolean; command
     }
   }
 }
-
 function findNextPhase(bpDir: string, milestoneId: string | null, currentPhase: string): string | null {
-  if (!milestoneId) return null;
+  if (!milestoneId || !currentPhase) return null;
+
+  const msNum = parseInt(milestoneId.match(/^M(\d+)/i)?.[1] ?? '');
+  const phNum = parseInt(currentPhase.match(/^ph\.(\d+)/i)?.[1] ?? '');
+  if (!msNum || !phNum) return null;
+
+  const roadmapPath = join(bpDir, 'roadmap.md');
+  if (!existsSync(roadmapPath)) return null;
+  const ast = parseRoadmapFile(roadmapPath);
+  if (!ast?.milestones) return null;
+
+  const milestone = ast.milestones.find((m: any) => m.id === msNum);
+  if (!milestone?.phases) return null;
+
+  const phaseIdx = milestone.phases.findIndex((p: any) => {
+    const pid = parseInt(p.id.split('.')[1] ?? '');
+    return pid === phNum;
+  });
+  if (phaseIdx < 0 || phaseIdx >= milestone.phases.length - 1) return null;
+
+  const nextPid = parseInt(milestone.phases[phaseIdx + 1].id.split('.')[1] ?? '');
+  if (!nextPid) return null;
 
   const phasesDir = join(bpDir, 'milestones', milestoneId, 'phases');
   if (!existsSync(phasesDir)) return null;
@@ -508,19 +528,9 @@ function findNextPhase(bpDir: string, milestoneId: string | null, currentPhase: 
   try {
     const dirs = readdirSync(phasesDir, { withFileTypes: true })
       .filter((d) => d.isDirectory())
-      .map((d) => d.name)
-      .filter((name) => /^ph\.\d+/.test(name))
-      .sort((a, b) => {
-        const aNum = parseInt(a.match(/ph\.(\d+)/)?.[1] ?? '0');
-        const bNum = parseInt(b.match(/ph\.(\d+)/)?.[1] ?? '0');
-        return aNum - bNum;
-      });
-
-    const idx = dirs.findIndex((d) => d === currentPhase);
-    if (idx >= 0 && idx < dirs.length - 1) {
-      return dirs[idx + 1];
-    }
-  } catch { /* ignore */ }
-
-  return null;
+      .map((d) => d.name);
+    return dirs.find((d) => d.startsWith(`ph.${nextPid}-`)) || null;
+  } catch {
+    return null;
+  }
 }
