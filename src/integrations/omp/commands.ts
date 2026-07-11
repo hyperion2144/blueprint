@@ -43,6 +43,7 @@ export const STEP_DEFS: CommandDef[] = [
   { step: 'config', name: 'bp:config', description: 'Interactive configuration — set workflow, model, conventions, etc.', usesAgent: false, agents: [] },
   { step: 'fix-plan', name: 'bp:fix-plan', description: '[change-name] — Fix design — correct architecture/approach based on review BLOCKERs', usesAgent: true, agents: ['planner'], argumentHint: '[change-name]' },
   { step: 'fix-apply', name: 'bp:fix-apply', description: '[change-name] — Fix implementation — wave-based dispatch for review finding fixes', usesAgent: true, agents: ['executor'], argumentHint: '[change-name]' },
+  { step: 'upgrade', name: 'bp:upgrade', description: 'Upgrade output files — check unarchived files against templates + PEG grammars, auto-fix format mismatches', usesAgent: true, agents: [], argumentHint: '[--scope] [--dry-run]' },
 ];
 
 function fallbackBody(def: CommandDef): string {
