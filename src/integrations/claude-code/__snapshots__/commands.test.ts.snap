@@ -2328,7 +2328,7 @@ argument-hint: "[--scope] [--dry-run]"
 ## Input
 
 ### Parameters
-- **\`--scope <scope>\`** — scope: \`change\` (current change only, default), \`phase\` (all changes in current phase), \`milestone\` (full milestone), \`project\` (everything)
+- **\`--scope <scope>\`** — scope: \`change\` (current change only, default), \`phase\` (current phase + its changes), \`milestone\` (full milestone), \`project\` (everything)
 - **\`--dry-run\`** — only list mismatches, don't edit files
 - **\`--fix\`** — auto-fix mismatches (default when not \`--dry-run\`)
 
@@ -2338,28 +2338,51 @@ argument-hint: "[--scope] [--dry-run]"
 
 ## Core Behavior
 
-\`bp:upgrade\` reads the template for each output file type (proposal, design, tasks, etc.), scans unarchived change directories in the current scope, compares each file against its template format, then adjusts mismatches.
+\`bp:upgrade\` reads the template for each output file type (proposal, design, tasks, etc.), scans output files at all levels covered by the scope, compares each file against its template format, then adjusts mismatches.
 
 **File types checked** (use \`bp template <type> --stdout\` to retrieve template):
 
-| File | Template Type | Scope |
+| File | Template Type | Level |
 |------|-------------|-------|
 | \`proposal.md\` | proposal | change |
 | \`design.md\` | design | change |
 | \`tasks.md\` | tasks | change |
-| \`context.md\` | context | change |
+| \`verification.md\` | verification | change |
 | \`spec-review.md\` | spec-review | change |
 | \`quality-review.md\` | quality-review | change |
 | \`goal-review.md\` | goal-review | change |
-| \`verification.md\` | verification | change |
 | \`uat.md\` | uat | change |
+| \`context.md\` | context | phase |
+| \`research.md\` | research | phase |
+| \`summary.md\` | summary | phase |
+| \`phase-research.md\` | phase-research | phase |
+| \`change-summary.md\` | change-summary | phase |
 | \`roadmap.md\` | roadmap | project |
 | \`requirements.md\` | requirements | project |
+| \`research/stack.md\` | research-stack | project |
+| \`research/architecture.md\` | research-architecture | project |
+| \`research/pitfalls.md\` | research-pitfalls | project |
+| \`loop.md\` | loop.md | project |
+| \`codebase/stack.md\` | codebase-stack | project |
+| \`codebase/architecture.md\` | codebase-architecture | project |
+| \`codebase/structure.md\` | codebase-structure | project |
+| \`codebase/conventions.md\` | codebase-conventions | project |
+| \`codebase/testing.md\` | codebase-testing | project |
+| \`codebase/integrations.md\` | codebase-integrations | project |
+| \`codebase/concerns.md\` | codebase-concerns | project |
 
 > Types without a \`bp template\` entry (e.g. \`review-task.md\`) have no format spec — skip them with a note.
-> Project-level files (roadmap.md, requirements.md) are checked once, not per change.
 
-**Output files per change:** \`proposal.md\`, \`design.md\`, \`tasks.md\`, \`context.md\`, \`verification.md\`, \`spec-review.md\`, \`quality-review.md\`, \`goal-review.md\`.
+### Scope → Level mapping
+
+When \`--scope\` is set, include files from these levels:
+
+| Scope | Change-level | Phase-level | Project-level |
+|-------|-------------|-------------|---------------|
+| \`change\` (default) | only current change | — | — |
+| \`phase\` | all changes in current phase | current phase | — |
+| \`milestone\` | all changes in milestone | all phases in milestone | — |
+| \`project\` | all unarchived changes | all non-empty phases | always |
 
 ## Steps
 
@@ -2367,23 +2390,28 @@ argument-hint: "[--scope] [--dry-run]"
 Run \`bp context\` and read \`bp/state.md\`. Determine current milestone, phase, and active changes.
 
 ### Step 2: Build file list by scope
-Use the \`read\` tool to list \`bp/milestones/\` directory tree. For each unarchived change (status ≠ archived), collect all output files present.
+Based on the scope, list the directories and collect output files.
+
+**Level directories:**
+
+| Level | Directory pattern |
+|-------|------------------|
+| change | \`bp/milestones/{milestone}/phases/{phase}/changes/{change}/\` |
+| phase | \`bp/milestones/{milestone}/phases/{phase}/\` |
+| project | \`bp/\` |
 
 **Scope rules:**
-- \`change\` (default): only the current active change directory
-- \`phase\`: all changes in the current phase's changes/ directory
-- \`milestone\`: all phases + changes in the current milestone
-- \`project\`: every milestone, phase, and change
+- \`change\`: read files only from the current change directory
+- \`phase\`: read files from the current phase directory AND all its change subdirectories
+- \`milestone\`: read files from ALL phases in the current milestone (phase dirs + their change dirs)
+- \`project\`: read files from \`bp/\` (project root), ALL milestone phase dirs, and all change dirs
 
 **Exclude:** archived changes (check \`changes.md\` or state status).
 
-### Step 2b: Collect project-level files
-Regardless of scope, also check these project-level files for format compliance:
-- \`bp/roadmap.md\` — against roadmap template
-- \`bp/requirements.md\` (if exists) — against requirements template
+For each level directory in scope, check if the expected output files exist (use the table above to know which files belong to which level). Collect only files that are present.
 
 ### Step 3: Retrieve template per file type
-For each file type found, run:
+For each unique file type found, run:
 
 \`\`\`bash
 bp template <type> --stdout
@@ -2397,9 +2425,9 @@ Read the template output to understand the expected structure:
 - Item prefixes (\`PR-{id}\`, \`DS-{id}\`, \`T-{id}\`, \`UC-{id}\`, etc.)
 - Source annotation format (\`Source: FR-{id} (bp/requirements.md)\`)
 - Refs format (\`refs: PR-{id}\`, \`refs: DS-{id}\`)
-- Status markers (\`[NOT_STARTED|ACTIVE|COMPLETED]\` on roadmap headings)
+- Status markers (\`[NOT_STARTED|ACTIVE|COMPLETED]\` on roadmap headings, \`[PASS|FLAG|BLOCKER]\` on reviews)
 - Task checkbox format (\`- [ ] T-{id}: [type:xxx] title\`)
-- Review format (\`[PASS|FLAG|BLOCKER]\` for review findings)
+- Bullet format for design items, table format for change-summary, etc.
 
 ### Step 4: Compare each file against template
 For each output file:
@@ -2410,7 +2438,7 @@ For each output file:
 5. **Status markers** — are checklist markers and status tags correct? (\`[PASS|FLAG|BLOCKER]\`, \`- [ ] T-{id}:\`)
 6. **Source annotations** — do design items have \`Source: PR-{id} (proposal.md)\`? Do proposal items have \`Source: FR-{id} (bp/requirements.md)\`?
 
-Maintain a list of all format deltas found, organized by file.
+Maintain a list of all format deltas found, organized by file and level (change / phase / project).
 
 ### Step 5: Apply fixes (unless --dry-run)
 For each format delta:
@@ -2427,9 +2455,9 @@ bp commit "fix(upgrade): align <filename> to current template" --files "<filepat
 | Requirement text (FR/NFR descriptions, acceptance criteria) | Section headings (levels, naming) |
 | Task descriptions, spec_ref, acceptance | Item ID prefixes (PR- → PR-, task- → T-) |
 | Design decisions, file manifests, architecture notes | Refs format (\`refs: PR-1\` style) |
-| Source annotations (already present) | Status markers (checkboxes, [PASS/FLAG]) |
-| User-written context and reasoning | Source annotations (add missing Source: lines) |
-| Verbatim quoted identifiers and file paths | Section ordering (if template demands a specific order) |
+| Context text, research findings, design preview content | Status markers (checkboxes, [PASS/FLAG]) |
+| Source annotations (already present) | Source annotations (add missing Source: lines) |
+| User-written reasoning and decisions | Section ordering (if template demands a specific order) |
 
 **Do NOT:**
 - Add placeholder content (\`{{placeholder}}\`) from templates
@@ -2440,24 +2468,24 @@ bp commit "fix(upgrade): align <filename> to current template" --files "<filepat
 ### Step 6: Handle files with no spec
 - If \`bp template <type> --stdout\` fails: skip the file, note it as "no spec"
 - If edit keeps producing undesirable results after 3 attempts: stop, flag for manual review
-- Files with neither template nor grammar (\`review-task.md\`, \`change-summary.md\`): skip with "no spec"
+- Files with no template entry (\`review-task.md\`): skip with "no spec"
 
 ### Step 7: Report results
-Summarize per scope level:
+Summarize per level, showing for each:
 - Files checked vs skipped (with reason)
 - Mismatches found vs fixed
 - Files flagged for manual review (repeated failure)
 - Files skipped due to no spec (no template entry)
 
 ## Output
-- Updated output files across all unarchived changes
+- Updated output files across all levels in scope
 - Git commits per fix with \`fix(upgrade)\` message prefix
-- Summary report with per-file status
+- Summary report grouped by level (change / phase / project)
 
 ## Guardrails
-- **Default scope is \`change\`** — run without \`--scope\` to only touch the current change. Use \`project\` only when you intend a full upgrade.
-- **Never rewrite archived changes** — only touch files in unarchived changes.
-- **Never overwrite semantic content** — preserve all user-written requirements, descriptions, and decisions (see exact table in Step 5).
+- **Default scope is \`change\`** — run without \`--scope\` to only touch the current change's files. Use broader scopes deliberately.
+- **Never rewrite archived changes** — only touch files in unarchived changes and their parent phases.
+- **Never overwrite semantic content** — preserve all user-written content (see exact table in Step 5).
 - **One commit per file** — clear audit trail for each format fix.
 - **Dry-run first** — use \`--dry-run\` to preview changes before applying.
 - **Templates are the source of truth** for format — don't modify templates to match files.",
