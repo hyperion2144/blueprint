@@ -46,10 +46,12 @@ function skillDescription(step: string): string {
     commit: 'Commit changes — conventional commits + hash recording to tasks.md',
     proposal: 'Fill change proposal — intent, scope, approach, must-haves, non-goals',
     upgrade: 'Upgrade output files — check unarchived files against templates + PEG grammars, auto-fix format mismatches',
+    'add-phase': 'Add phase — insert a new phase into the current milestone, renumber subsequent phases, rename directories, update roadmap and state',
   };
   return map[step] ?? '';
 }
-const STEPS = ['init', 'design', 'grill', 'research', 'roadmap', 'milestone', 'discuss', 'research-phase', 'split', 'adhoc', 'plan', 'apply', 'review', 'archive', 'proposal', 'ship', 'continue', 'audit', 'loop', 'config', 'commit', 'upgrade'] as const;
+
+const STEPS = ['init', 'design', 'grill', 'research', 'roadmap', 'milestone', 'discuss', 'research-phase', 'split', 'adhoc', 'plan', 'apply', 'review', 'archive', 'proposal', 'ship', 'continue', 'audit', 'loop', 'config', 'commit', 'upgrade', 'add-phase'] as const;
 
 export const SKILL_DEFS: SkillDef[] = STEPS.map((step) => ({
   step,

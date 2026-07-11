@@ -41,6 +41,7 @@ const STEPS: ClaudeCommandDef[] = [
   { step: 'fix-plan', name: 'bp:fix-plan', description: 'Fix design — correct architecture/approach based on review BLOCKERs', argumentHint: '[change-name]' },
   { step: 'fix-apply', name: 'bp:fix-apply', description: 'Fix implementation — wave-based dispatch for review finding fixes', argumentHint: '[change-name]' },
   { step: 'upgrade', name: 'bp:upgrade', description: 'Upgrade output files — check unarchived files against templates + PEG grammars, auto-fix format mismatches', argumentHint: '[--scope] [--dry-run]' },
+  { step: 'add-phase', name: 'bp:add-phase', description: 'Add phase — insert a new phase into the current milestone, renumber subsequent phases, rename directories, update roadmap and state', argumentHint: '' },
 ];
 
 export function generateClaudeCommand(def: ClaudeCommandDef): string {

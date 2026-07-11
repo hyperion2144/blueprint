@@ -74,10 +74,12 @@ function skillDescription(step: string): string {
     'fix-plan': 'Fix design',
     'fix-apply': 'Fix implementation',
     upgrade: 'Upgrade output files — check unarchived files against templates + PEG grammars, auto-fix format mismatches',
+    'add-phase': 'Add phase — insert a new phase into the current milestone, renumber subsequent phases, rename directories, update roadmap and state',
   };
   return map[step] ?? '';
 }
-const STEPS = ['init', 'design', 'grill', 'research', 'roadmap', 'milestone', 'discuss', 'research-phase', 'split', 'adhoc', 'plan', 'apply', 'review', 'archive', 'proposal', 'ship', 'continue', 'audit', 'loop', 'config', 'commit', 'fix-plan', 'fix-apply', 'upgrade'];
+
+const STEPS = ['init', 'design', 'grill', 'research', 'roadmap', 'milestone', 'discuss', 'research-phase', 'split', 'adhoc', 'plan', 'apply', 'review', 'archive', 'proposal', 'ship', 'continue', 'audit', 'loop', 'config', 'commit', 'fix-plan', 'fix-apply', 'upgrade', 'add-phase'];
 
 export function generateAgentSkills(_config: ProjectConfig): { path: string; content: string }[] {
   return STEPS.map((step) => {
