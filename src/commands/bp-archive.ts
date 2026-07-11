@@ -99,12 +99,11 @@ function archiveHandler(changePath: string) {
           state.active_context = { type: 'adhoc', ref: 'changes/' + nextAdhoc.name, step: nextAdhoc.status };
         } else if (nextChange) {
           state.active_context = { type: 'change', ref: 'changes/' + nextChange.name, step: nextChange.status };
-        } else if (isPhaseChange && msId && phId) {
+        } else if ((isPhaseChange && msId && phId) || (state.project.current_milestone && state.project.current_phase)) {
           // Last change in phase — stay at phase level, mark ready for next phase
-          state.active_context = { type: 'phase', ref: `milestones/${msId}/phases/${phId}`, step: 'ready' };
-        } else {
-          state.active_context = { type: 'project', ref: null, step: 'archived' };
-          state.project.status = 'change-archived';
+          const mid = (isPhaseChange && msId) ? msId : state.project.current_milestone;
+          const pid = (isPhaseChange && phId) ? phId : state.project.current_phase;
+          state.active_context = { type: 'phase', ref: `milestones/${mid}/phases/${pid}`, step: 'ready' };
         }
       }
     });
