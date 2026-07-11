@@ -235,7 +235,7 @@ function continueHandler(options?: { auto?: boolean; command?: string }): void {
     // No more phases → suggest ship milestone
     console.log([
       '# bp continue — hint',
-      'hint: All phases in this milestone shipped. Run /bp:milestone <next-id> to start the next milestone, or /bp:ship to ship this one.',
+      'hint: No next phase in roadmap. Current milestone has no remaining phases defined. Use /bp:ship to ship when ready, or /bp:add-phase to add more phases.',
     ].join('\n'));
     return;
   }
