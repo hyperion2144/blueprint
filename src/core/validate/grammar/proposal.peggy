@@ -26,6 +26,8 @@ RefId
   = "FR-" id:Integer { return "FR-" + id; }
   / "NFR-" id:Integer { return "NFR-" + id; }
   / "D-" id:Integer { return "D-" + id; }
+  / "D" digits:$[0-9]+ { error('"D' + digits + '": missing dash — use "D-' + digits + '"'); }
+  / text:$[^,: \t\n\r]+ { error('"' + text + '": ref must start with FR-/NFR-/D-'); }
 
 DeliverablesSection
   = "## Deliverables" NEWLINE items:DeliverableItem*

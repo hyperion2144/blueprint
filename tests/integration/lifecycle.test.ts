@@ -524,9 +524,9 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     expectBlocked(cli('continue', 'change', 'change-a'), 'FR-99', 'not found');
     expectState('adhoc', 'proposal', 'milestone-active', 'proposal');
 
-    // refs with wrong format (refs: XYZ instead of FR-N) -> DeliverableItem fails to parse -> empty deliverables -> semantic error
+    // refs with wrong format (refs: XYZ instead of FR-N) -> PEG error from RefId catch-all
     write(`${dir}/proposal.md`, '# Proposal: t\n\n## Intent\ntest\n\n## Deliverables\n- PR-1: x  refs: XYZ\n  Source: FR-1 (bp/requirements.md)\n  desc\n');
-    expectBlocked(cli('continue', 'change', 'change-a'), 'No deliverables found');
+    expectBlocked(cli('continue', 'change', 'change-a'), 'ref must start with FR-/NFR-/D-');
 
     // PR with non-numeric ID -> DeliverableItem fails on Integer -> empty deliverables -> semantic error
     write(`${dir}/proposal.md`, '# Proposal: t\n\n## Intent\ntest\n\n## Deliverables\n- PR-X: x  refs: FR-1\n  Source: FR-1 (bp/requirements.md)\n  desc\n');
@@ -585,13 +585,13 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     expectBlocked(cli('continue', 'change', 'change-a'), 'missing Source: annotation');
     expectState('adhoc', 'planning', 'milestone-active', 'planning');
 
-    // refs with wrong prefix (refs: FR-1 instead of PR-N) -> DesignItem fails -> no items -> semantic error
+    // refs with wrong prefix (refs: FR-1 instead of PR-N) -> PEG error from PRId catch-all
     write(`${dir}/design.md`, '# Design: t\n\n## Design Items\n- DS-1: x\n  refs: FR-1\n  Source: PR-1 (proposal.md)\n  desc\n');
-    expectBlocked(cli('continue', 'change', 'change-a'), 'No design items');
+    expectBlocked(cli('continue', 'change', 'change-a'), 'ref must start with PR-');
 
-    // refs with completely wrong format -> DesignItem fails -> no items -> semantic error
+    // refs with completely wrong format -> PEG error from PRId catch-all
     write(`${dir}/design.md`, '# Design: t\n\n## Design Items\n- DS-1: x\n  refs: XYZ\n  Source: PR-1 (proposal.md)\n  desc\n');
-    expectBlocked(cli('continue', 'change', 'change-a'), 'No design items');
+    expectBlocked(cli('continue', 'change', 'change-a'), 'ref must start with PR-');
 
     // DS with non-numeric ID -> Integer fails -> no items -> semantic error
     write(`${dir}/design.md`, '# Design: t\n\n## Design Items\n- DS-X: x\n  refs: PR-1\n  Source: PR-1 (proposal.md)\n  desc\n');

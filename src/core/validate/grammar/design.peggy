@@ -24,6 +24,8 @@ PRList
 
 PRId
   = "PR-" id:Integer { return "PR-" + id; }
+  / "PR" digits:$[0-9]+ { error('"PR' + digits + '": missing dash — use "PR-' + digits + '"'); }
+  / text:$[^,: \t\n\r]+ { error('"' + text + '": ref must start with PR-'); }
 
 DescriptionBlock
   = lines:(_ !"- " !"## " text:LineRest NEWLINE { return text; } / NEWLINE { return ""; })+
