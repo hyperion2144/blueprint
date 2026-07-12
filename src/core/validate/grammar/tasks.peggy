@@ -27,8 +27,14 @@ TaskItem
     { error('"T-' + text + '": ID must be numeric (e.g. "T-1")'); }
 
 FieldLine
-  = __ "- **" key:FieldKey "**:" _ val:(LineRest / "") NEWLINE
-    { return { key, val }; }
+  = __ "- **" key:FieldKey "**:" _ firstLine:LineRest NEWLINE
+    restLines:(__ !"- **" !"## " !"- [" text:LineRest NEWLINE)*
+    {
+      const val = [firstLine, ...restLines.map(r => r.text)].join("\n");
+      return { key, val };
+    }
+  / __ "- **" key:FieldKey "**:" _ (LineRest / "") NEWLINE
+    { return { key, val: "" }; }
 
 FieldKey
   = "refs" { return "refs"; }

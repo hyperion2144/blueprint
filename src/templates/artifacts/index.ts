@@ -224,7 +224,8 @@ Decomposition guidance:
   - **refs**: DS-{{id}}
   - **files**: {{full relative paths from project root, comma-separated}}
   - **spec_ref**: specs/{{domain}}/spec.md <!-- required for behavior type -->
-  - **acceptance**: {{observable, assertable acceptance criteria}}
+  - **acceptance**:
+    {{observable, assertable acceptance criteria (GIVEN/WHEN/THEN or bullet list)}}
   - **depends_on**: [T-{{id}}] <!-- optional -->
   {{if behavior}}
   - ***RED test***:
