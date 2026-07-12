@@ -24,6 +24,7 @@ FixTaskItem
       for (const f of fields) fmap[f.key] = f.val;
       return { id, type: typeName, title, checked: checkbox === 'x', fields: fmap };
     }
+  / __ "- [" checkbox:CheckState "] FT-" text:$[^ :\n\r]+ { error('"FT-' + text + '": ID must be numeric (e.g. "FT-1")'); }
 
 FixFieldLine
   = __ "- **" key:FixFieldKey "**: " val:LineRest NEWLINE
@@ -39,7 +40,12 @@ CheckState
   / "x" { return 'x'; }
 
 TypeName
-  = "behavior" / "config" / "refactor" / "docs" / "scaffolding"
+  = "behavior" { return "behavior"; }
+  / "config" { return "config"; }
+  / "refactor" { return "refactor"; }
+  / "docs" { return "docs"; }
+  / "scaffolding" { return "scaffolding"; }
+  / text:$[^\]\n\r]+ { error('"' + text + '": invalid task type — must be one of: behavior/config/refactor/docs/scaffolding'); }
 
 BlankLine
   = NEWLINE

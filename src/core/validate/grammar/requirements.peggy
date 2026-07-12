@@ -18,6 +18,7 @@ SectionHeading
       const statusMatch = t.match(/\[(CURRENT|COMPLETED|PENDING)\]$/);
       return { prefix, id, title: statusMatch ? t.slice(0, statusMatch.index).trim() : t, status: statusMatch ? statusMatch[1] : null };
     }
+  / "## " prefix:("FR-" / "NFR-") text:$[^ :\n\r]+ { error('"' + prefix + text + '": ID must be numeric (e.g. "' + prefix + '1")'); }
 
 Status
   = "CURRENT" / "COMPLETED" / "PENDING"

@@ -264,11 +264,11 @@ export const CONTEXT_TEMPLATE = `# Context: {{name}}
 <!-- Numbered decisions: D1, D2, ... Each decision records what was chosen and why. -->
 
 ## D-1: {{decision-title}}
-- Status: {{accepted | rejected | deferred}}
+- Status: {{ACCEPTED | REJECTED | DEFERRED}}
 - Reason: {{why this decision was made}}
 
 ## D-2: {{decision-title}}
-- Status: {{accepted | rejected | deferred}}
+- Status: {{ACCEPTED | REJECTED | DEFERRED}}
 - Reason: {{why}}
 ---
 

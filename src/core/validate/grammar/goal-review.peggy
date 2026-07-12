@@ -24,7 +24,9 @@ CheckState = " " { return ' '; } / "x" { return 'x'; }
 
 Gap = ( !"##" LineRest NEWLINE / NEWLINE )*
 tableRow = __ "|" text:(!"\n" .)* NEWLINE
-goalRow = __ "| G" id:Integer " |" text:(!"\n" .)* NEWLINE
+goalRow
+  = __ "| G" id:Integer " |" text:(!"\n" .)* NEWLINE
+  / __ "| G" text:$[^ |\n\r]+ { error('"G' + text + '": ID must be numeric (e.g. "G1")'); }
 
 
 Integer = digits:[0-9]+ { return parseInt(digits.join("")); }

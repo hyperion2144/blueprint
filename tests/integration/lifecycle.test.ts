@@ -277,8 +277,9 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     write('bp/requirements.md', '# Requirements: test\n\n');
     expectBlocked(cli('continue'), 'No requirements found');
 
-    // FR with non-numeric ID -> PEG parse error
+    // FR with non-numeric ID -> PEG error
     write('bp/requirements.md', '# Requirements: test\n\n## FR-X: login\n- Priority: high\n');
+    expectBlocked(cli('continue'), 'ID must be numeric');
     expectBlocked(cli('continue'), 'Parse error');
     expectState('project', 'grill', 'grill');
 
@@ -349,8 +350,9 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     expectBlocked(cli('continue'), 'Parse error');
     expectState('project', 'roadmap', 'roadmap');
 
-    // Md with non-numeric ID -> PEG parse error
+    // Md-X (non-numeric) -> PEG error
     write('bp/roadmap.md', '# Roadmap: test\n\n## Md-X: A [ACTIVE]\n\n### Ph-1.1: X [NOT_STARTED]\n');
+    expectBlocked(cli('continue'), 'ID must be numeric');
     expectBlocked(cli('continue'), 'Parse error');
     expectState('project', 'roadmap', 'roadmap');
 
@@ -404,9 +406,9 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     expectBlocked(cli('continue'), 'No decisions found');
     expectState('phase', 'discuss', 'milestone-active');
 
-    // D with non-numeric ID -> text in body, not parsed as decision -> No decisions found (not PEG error because text fallback accepts body lines)
+    // D with non-numeric ID -> PEG error
     write(`${dir}/context.md`, '# Context: test\n\n## D-X: x\n- Status: ok\n- Reason: y\n');
-    expectBlocked(cli('continue'), 'No decisions found');
+    expectBlocked(cli('continue'), 'ID must be numeric');
     expectState('phase', 'discuss', 'milestone-active');
 
     // D numbering skip (D-1, D-3)
@@ -528,9 +530,9 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     write(`${dir}/proposal.md`, '# Proposal: t\n\n## Intent\ntest\n\n## Deliverables\n- PR-1: x  refs: XYZ\n  Source: FR-1 (bp/requirements.md)\n  desc\n');
     expectBlocked(cli('continue', 'change', 'change-a'), 'ref must start with FR-/NFR-/D-');
 
-    // PR with non-numeric ID -> DeliverableItem fails on Integer -> empty deliverables -> semantic error
+    // PR with non-numeric ID -> PEG error
     write(`${dir}/proposal.md`, '# Proposal: t\n\n## Intent\ntest\n\n## Deliverables\n- PR-X: x  refs: FR-1\n  Source: FR-1 (bp/requirements.md)\n  desc\n');
-    expectBlocked(cli('continue', 'change', 'change-a'), 'No deliverables found');
+    expectBlocked(cli('continue', 'change', 'change-a'), 'ID must be numeric');
     // PR numbering skip (PR-1, PR-3)
     write(`${dir}/proposal.md`, '# Proposal: t\n\n## Intent\ntest\n\n## Deliverables\n- PR-1: a  refs: FR-1\n  Source: FR-1 (bp/requirements.md)\n  d\n- PR-3: b  refs: FR-2\n  Source: FR-2 (bp/requirements.md)\n  d\n');
     expectBlocked(cli('continue', 'change', 'change-a'), 'PR-3', 'expected PR-2');
@@ -594,9 +596,9 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     expectBlocked(cli('continue', 'change', 'change-a'), 'ref must start with PR-');
 
     // DS with non-numeric ID -> Integer fails -> no items -> semantic error
+    // DS with non-numeric ID -> PEG error
     write(`${dir}/design.md`, '# Design: t\n\n## Design Items\n- DS-X: x\n  refs: PR-1\n  Source: PR-1 (proposal.md)\n  desc\n');
-    expectBlocked(cli('continue', 'change', 'change-a'), 'No design items');
-
+    expectBlocked(cli('continue', 'change', 'change-a'), 'ID must be numeric');
     // DS numbering skip (DS-1, DS-3)
     write(`${dir}/design.md`, '# Design: t\n\n## Design Items\n- DS-1: a\n  refs: PR-1\n  Source: PR-1 (proposal.md)\n  d\n- DS-3: b\n  refs: PR-2\n  Source: PR-2 (proposal.md)\n  d\n');
     expectBlocked(cli('continue', 'change', 'change-a'), 'DS-3', 'expected DS-2');
@@ -635,9 +637,9 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
 
 
     // T with non-numeric ID -> Integer fails -> TaskItem fails -> no tasks -> semantic error
+    // T with non-numeric ID -> PEG error
     write(`${dir}/tasks.md`, '# Tasks: t\n\n## Wave 1: C\n- [ ] T-X: [type:behavior] impl\n  - **refs**: DS-1\n  - **files**: x.ts\n  - **spec_ref**: s.md\n  - **acceptance**: ok\n');
-    expectBlocked(cli('continue', 'change', 'change-a'), 'No tasks found');
-    expectState('adhoc', 'planning', 'milestone-active', 'planning');
+    expectBlocked(cli('continue', 'change', 'change-a'), 'ID must be numeric');
     // T numbering skip (T-1, T-3)
     write(`${dir}/tasks.md`, '# Tasks: t\n\n## Wave 1: C\n- [ ] T-1: [type:behavior] a\n  - **refs**: DS-1\n  - **files**: x.ts\n  - **spec_ref**: s.md\n  - **acceptance**: ok\n- [ ] T-3: [type:behavior] b\n  - **refs**: DS-2\n  - **files**: y.ts\n  - **spec_ref**: s.md\n  - **acceptance**: ok\n');
     expectBlocked(cli('continue', 'change', 'change-a'), 'T-3', 'expected T-2');

@@ -13,6 +13,7 @@ DesignItem
     refsLine:RefsLine
     desc:DescriptionBlock?
     { return { id, title, refs: refsLine, description: desc }; }
+  / __ "- DS-" text:$[^ :\n\r]+ { error('"DS-' + text + '": ID must be numeric (e.g. "DS-1")'); }
 
 RefsLine
   = __ "refs: " refs:PRList NEWLINE

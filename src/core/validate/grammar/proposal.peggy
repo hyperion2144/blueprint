@@ -36,6 +36,7 @@ DeliverablesSection
 DeliverableItem
   = __ "- PR-" id:Integer ": " title:DeliverableTitle restLine:RefsOnLine? NEWLINE desc:DescriptionBlock?
     { return { id, title, refs: restLine?.refs || [], description: desc || "" }; }
+  / __ "- PR-" text:$[^ :\n\r]+ { error('"PR-' + text + '": ID must be numeric (e.g. "PR-1")'); }
 
 DeliverableTitle
   = chars:(!"refs:" [^\n\r])* { return chars.map(c => c[1]).join("").trim(); }

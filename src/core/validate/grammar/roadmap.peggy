@@ -10,6 +10,7 @@ MilestoneSection
   = Gap "## Md-" id:Integer ": " title:TitleLine " [" status:MstoneStatus "]" NEWLINE
     Gap phases:PhaseSection+
     { return { id, title, status, phases }; }
+  / Gap "## Md-" text:$[^ :\n\r]+ { error('"Md-' + text + '": milestone ID must be numeric (e.g. "Md-1")'); }
 
 MstoneStatus
   = "NOT_STARTED" / "ACTIVE" / "COMPLETED"
@@ -18,6 +19,8 @@ PhaseSection
   = Gap "### Ph-" mid:Integer "." pid:Integer ": " title:TitleLine " [" status:PStatus "]" NEWLINE
     body:PhaseBody?
     { return { id: mid + '.' + pid, title, status, body: body || "" }; }
+  / Gap "### Ph-" text:$[^ .\n\r]+ { error('"Ph-' + text + '": milestone ID must be numeric (e.g. "Ph-1.1")'); }
+  / Gap "### Ph-" mid:Integer "." text:$[^ :\n\r]+ { error('"Ph-' + mid + '.' + text + '": phase ID must be numeric (e.g. "Ph-1.' + mid + '")'); }
 PStatus
   = "NOT_STARTED" / "ACTIVE" / "COMPLETED"
 PhaseBody

@@ -21,7 +21,9 @@ IssueItem = __ "- [" checkbox:CheckState "] " prefix:("Q"/"D") id:Integer " — 
   { return { id: prefix + id, text, checked: checkbox === 'x' }; }
 
 CheckState = " " { return ' '; } / "x" { return 'x'; }
-issueRow = __ "| Q" id:Integer " |" __ severity:Severity " |" text:(!"\n" .)* NEWLINE
+issueRow
+  = __ "| Q" id:Integer " |" __ severity:Severity " |" text:(!"\n" .)* NEWLINE
+  / __ "| Q" text:$[^ |\n\r]+ { error('"Q' + text + '": ID must be numeric (e.g. "Q1")'); }
 conventionRow = __ "| " text:(!"\n" .)* NEWLINE
 Severity = "BLOCKER" / "MAJOR" / "MINOR" / "INFO"
 

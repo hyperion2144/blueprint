@@ -34,8 +34,9 @@ CheckState
   / "x" { return 'x'; }
 
 // Table parsing — simplified
-tableRow = __ "|" text:(!"\n" .)* NEWLINE
-constraintRow = __ "| " prefix:IssuePrefix id:Integer " |" text:(!"\n" .)* NEWLINE
+constraintRow
+  = __ "| " prefix:IssuePrefix id:Integer " |" text:(!"\n" .)* NEWLINE
+  / __ "| " prefix:IssuePrefix text:$[^ |\n\r]+ { error('"' + prefix + text + '": ID must be numeric (e.g. "' + prefix + '1")'); }
 
 Integer
   = digits:[0-9]+ { return parseInt(digits.join("")); }

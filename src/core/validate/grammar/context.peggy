@@ -16,6 +16,7 @@ Decision
     "- Reason: " reason:LineRest NEWLINE
     references:RefLine?
     { return { id, title, status, reason }; }
+  / "## D-" text:$[^:\n]+ { error('"D-' + text.split(':')[0].trim() + '": ID must be numeric (e.g. "D-1")'); }
 
 RefLine
   = "- References: " text:LineRest NEWLINE
