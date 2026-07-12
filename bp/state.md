@@ -1,15 +1,29 @@
 ---
 project:
   name: blueprint
-  status: change-archived
-  current_milestone: m2-claude-code
-  current_phase: ph.4-multi-platform-test
+  status: milestone-active
+  current_milestone: M1-initial
+  current_phase: ph.1-engine
 active_context:
   type: phase
-  ref: milestones/m2-claude-code/phases/ph.4-multi-platform-test
-  step: ready
-changes: []
+  ref: milestones/M1-initial/phases/ph.1-engine
+  step: split
+changes:
+  - name: change-a
+    status: pending
+    depends_on: []
+  - name: change-b
+    status: pending
+    depends_on: []
+  - name: change-c
+    status: pending
+    depends_on: []
+  - name: change-d
+    status: pending
+    depends_on: []
 adhoc: []
+completed: []
+released: []
 ---
 
 # blueprint — 状态机

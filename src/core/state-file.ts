@@ -6,7 +6,7 @@
 import { join } from 'node:path';
 import { z } from 'zod';
 import { readFrontmatterFile, stringifyFrontmatter } from '../parser/frontmatter.js';
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, openSync, closeSync, unlinkSync } from 'node:fs';
 import type { StateFile, ChangeState } from '../types/index.js';
 
 const STATE_FILE = 'state.md';
@@ -88,11 +88,33 @@ export function saveState(bpDir: string, state: StateFile): void {
   writeFileSync(statePath(bpDir), output, 'utf-8');
 }
 
-/** 修改 state 并写回 */
+/** 修改 state 并写回（带文件锁防并发 — 解决多个进程同时写 state.md 导致数据丢失） */
 export function updateState(bpDir: string, updater: (state: StateFile) => void): void {
-  const state = loadState(bpDir);
-  updater(state);
-  saveState(bpDir, state);
+  const lockPath = join(bpDir, '.state.lock');
+  const MAX_WAIT = 3000;
+  const POLL_INTERVAL = 50;
+  const start = Date.now();
+
+  // Spin-wait for exclusive file lock
+  while (Date.now() - start < MAX_WAIT) {
+    try {
+      const fd = openSync(lockPath, 'wx');
+      closeSync(fd);
+      break;
+    } catch {
+      if (Date.now() - start >= MAX_WAIT) break;
+      const until = Date.now() + POLL_INTERVAL;
+      while (Date.now() < until) { /* spin */ }
+    }
+  }
+
+  try {
+    const state = loadState(bpDir);
+    updater(state);
+    saveState(bpDir, state);
+  } finally {
+    try { unlinkSync(lockPath); } catch { /* best effort cleanup */ }
+  }
 }
 
 /** 检查 state.md 是否存在 */
