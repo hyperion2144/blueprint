@@ -1,112 +1,199 @@
-# Blueprint — Spec-Driven Development Workflow
+# Blueprint
 
-Blueprint is a spec-driven development CLI for AI coding agents. Write behavioral specs once, let agents implement against them across the full project lifecycle.
+**Spec-driven development workflow for AI coding agents.**
+
+Write behavioral specs once, let agents implement against them across the full project lifecycle. Structured validation at every gate, PEG grammar-checked artifacts, auto-advancing state machine.
 
 ## Why
 
-AI coding agents are powerful but unpredictable — requirements exist only in chat history. Blueprint aligns on specs before writing code, executes heavy work in fresh-context sub-agents, and persists state across sessions through structured artifacts.
+AI coding agents are powerful but unpredictable — requirements exist only in chat history, context rots across long sessions, and there's no repeatable workflow. Blueprint solves this:
 
-## Core Principles
+- **Spec alignment before code.** Requirements, design decisions, and behavioral contracts are captured as structured artifacts, not chat.
+- **Fresh-context sub-agents.** Heavy work (research, planning, implementation, review) delegates to spawned sub-agents with clean context — no rot.
+- **State machine CLI.** `bp continue` auto-advances through the workflow. The CLI is the single source of truth; agents orchestrate, not implement.
+- **PEG-validated artifacts.** Every output document is checked against a formal grammar — format errors are caught before they propagate.
+- **Delta-spec merge.** Change-level behavioral contracts merge into global specs on archive with SHA-256 fingerprinting.
 
-1. **Dual nested loops** — Phase loop (discuss→research-phase→split→change loop→ship) ⊃ Change loop (plan→apply→review→archive)
-2. **CLI as single source of truth** — all interaction through `bp` commands; agents orchestrate, don't implement
-3. **Fresh-context sub-agents** — heavy work (research/plan/apply/review) runs in fresh context to prevent context rot
-4. **Delta-spec mechanism** — change-level behavioral contracts merged into global specs on archive
-5. **TDD enforced** — type:behavior tasks follow RED→GREEN→REFACTOR
-6. **Tech stack templates** — init with domain-organized specs and conventions per stack
-
-## Entity Hierarchy
+## Core Concepts
 
 ```
 Project → Milestone → Phase → Change
 ```
 
-- **Milestone** = release cycle ("M1-core", "M2-expansion")
-- **Phase** = work unit within a milestone ("ph.1-board-engine")
-- **Change** = implementation unit (goes through plan→apply→review→archive)
-- **Adhoc Change** = independent change outside milestone/phase
+| Entity | Description |
+|--------|-------------|
+| **Milestone** | Release cycle ("M2-api", "M3-dashboard") |
+| **Phase** | Work unit within a milestone ("ph.1-board-engine") |
+| **Change** | Implementation unit — goes through plan→apply→review→archive |
+| **Adhoc Change** | Independent change outside a milestone/phase |
 
-## CLI Commands
+Workflow is a **dual nested loop**:
+
+```
+Phase loop:  discuss → research-phase → split → [change loop] → ship
+Change loop: proposal → plan → apply → review → archive
+```
+
+## Quick Start
+
+```bash
+npm install -g @hyperion2144/blueprint
+mkdir my-project && cd my-project
+bp init
+```
+
+```bash
+# Auto-advance through every step
+bp continue
+
+# Advance a specific change
+bp continue change <name>
+```
+
+## CLI Reference
 
 | Command | Description |
 |---------|-------------|
-| `bp init` | Initialize project structure with tech stack specs |
-| `bp update` | Regenerate platform files (commands, agents, hook) |
-| `bp continue` | Auto-advance project to next step |
+| `bp init` | Initialize project structure with interactive wizard (tech stack, profile, conventions) |
+| `bp continue` | Auto-advance project to the next step |
 | `bp continue change <name>` | Advance a specific change |
-| `bp change new <name>` | Create a new change |
-| `bp state` | View current state and pending work |
-| `bp config [list\|set]` | View/modify configuration |
-| `bp context <step>` | Output file manifest for a step |
-| `bp template <type>` | Generate artifact template |
-| `bp list` | List milestones/phases/changes/archive |
-| `bp archive <change>` | Archive a completed change |
-| `bp commit <msg>` | Commit with conventional format, auto-mark tasks |
-| `bp dispatch <role>` | Output sub-agent dispatch instructions |
+| `bp change new <name>` | Create a new adhoc change |
+| `bp state` | View current state, step, pending work |
+| `bp state set-milestone <id>` | Switch active milestone |
+| `bp list` | List milestones, phases, changes, archive |
+| `bp context <step>` | Output file manifest + state + specs for agent context injection |
+| `bp template <type>` | Generate a file template (proposal, design, tasks, etc.) |
+| `bp config [list\|set]` | View or modify project configuration |
+| `bp archive <change>` | Archive a completed change — delta-merge specs + code backfill |
+| `bp commit <msg>` | Commit with conventional format, record commit hash in tasks.md |
+| `bp dispatch <role>` | Output platform-specific sub-agent dispatch instructions |
 | `bp ship` | Create PR or Release from unpublished changes |
-| `bp audit` | Human UAT verification |
+| `bp audit` | Generate human UAT verification document from change deliverables |
+| `bp milestone archive <id>` | Archive completed milestone |
+| `bp add-phase <name>` | Insert a new phase into the current milestone |
+| `bp upgrade` | Regenerate all platform files to match latest templates |
+| `bp update` | (alias for upgrade) |
+| `bp:loop` | Autonomous loop — full unattended execution |
+
+## Validation System
+
+Every artifact is validated at **PEG grammar level** before the state machine allows advancement. 15 formal grammars cover the full document set:
+
+| Document | PEG file | Validation dimensions |
+|----------|----------|----------------------|
+| **proposal.md** | `proposal.peggy` | PR IDs sequential, refs format (FR-/NFR-/D-), Source annotation |
+| **design.md** | `design.peggy` | DS IDs sequential, refs format (PR-), refs: on separate indented line |
+| **tasks.md** | `tasks.peggy` | T IDs sequential, type validation (behavior/config/refactor/docs/scaffolding), multi-line acceptance |
+| **context.md** | `context.peggy` | D IDs sequential, decision status + reason |
+| **requirements.md** | `requirements.peggy` | FR/NFR IDs sequential |
+| **roadmap.md** | `roadmap.peggy` | Md/Ph IDs sequential, correct nesting |
+| **spec-review.md** | `spec-review.peggy` | R IDs sequential |
+| **quality-review.md** | `quality-review.peggy` | Q IDs sequential |
+| **goal-review.md** | `goal-review.peggy` | G IDs sequential |
+| **uat.md** | `uat.peggy` | UC IDs sequential |
+| **verification.md** | `verification.peggy` | Structure verification |
+| **review-task.md** | `review-task.peggy` | FT IDs sequential, type validation |
+| 3 research docs | `research-summary.peggy` + `phase-research.peggy` + `change-summary.peggy` | Structural validation |
+
+**Coverage chain**: `checkCoverage(PR → DS → T)` verifies every deliverable has a corresponding design item, every design has a corresponding task. Cross-phase integration is validated before apply.
+
+**Exit gates**: Each step pre-validates before advancing. All checks produce specific error messages pinpointing the exact line and format violation.
+
+## Templates
+
+27 artifact templates, generated by `bp template <type>`:
+
+| Category | Templates |
+|----------|-----------|
+| **Change** | proposal, design, tasks, verification, spec-review, quality-review, goal-review, uat |
+| **Phase** | context, research, summary, phase-research, change-summary |
+| **Project** | roadmap, requirements, spec, global-spec |
+| **Research** | research-stack, research-architecture, research-pitfalls |
+| **Codebase** | codebase-summary, codebase-actions, codebase-directory, codebase-structure, codebase-interfaces, codebase-dataflow, codebase-constants |
+| **Design** | design-preview, review-design, review-tasks |
+| **Other** | loop.md |
+
+Platform files (agents, commands, hooks) are generated from TypeScript source:
+
+```bash
+bp update    # regenerates all platform files
+```
 
 ## Workflow
 
-### Project-level flow
+### Project Loop
+
 ```
-init → grill → research → roadmap → discuss → research-phase → split → [change cycle] → ship
+init → grill → research → roadmap → discuss → research-phase → split → [change loop] → ship
 ```
 
-Advance with: `bp continue`
+Each step advances via `bp continue`. The CLI tracks state in `bp/state.md`.
 
-### Change-level flow
+### Change Loop
+
 ```
 proposal → plan → apply → review → archive
 ```
 
-Advance with: `bp continue change <name>`
+- **proposal**: Define PR items with refs to requirements (FR-N) and decisions (D-N)
+- **plan**: Create design items (DS-N) with refs to PR items, then task items (T-N) with types
+- **apply**: Wave-based execution with parallel sub-agents, TDD for behavior tasks
+- **review**: Triple review — spec review + quality review + goal review
+- **archive**: Delta-spec merge + code backfill + state cleanup
 
-### Adhoc change
-```
-bp change new <name> → proposal → plan → apply → review → archive
-```
+### Loop Diagram
 
-### Autonomous loop
+```mermaid
+flowchart TD
+    A[/bp init/] --> B[/bp grill/]
+    B --> C[/bp research/]
+    C --> D[/bp roadmap/]
+    D --> E[Phase Loop]
+    E --> F[/bp discuss/]
+    F --> G[/bp research-phase/]
+    G --> H[/bp split/]
+    H --> I[/bp proposal/]
+    I --> J[/bp plan/]
+    J --> K[/bp apply/]
+    K --> L[/bp review/]
+    L --> M[/bp archive/]
+    M --> N{More changes?}
+    N -->|Yes| I
+    N -->|No| O{More phases?}
+    O -->|Yes| F
+    O -->|No| P[/bp ship/]
+    P --> Q[Done]
 ```
-bp:loop — auto-advance through all steps without user input
-```
-
-## Template Architecture
-
-Commands (`.omp/commands/`) and agents (`.omp/agents/`) are generated from TypeScript source. Templates live in `src/templates/`:
-
-```
-src/templates/
-├── types.ts                  — Template interfaces
-├── workflows/                — 19 step workflow definitions
-├── artifacts/index.ts        — Output document templates
-├── agents/index.ts           — 7 agent system prompts
-└── spec-stacks/              — Tech stack spec templates
-```
-
-Run `bp update` to regenerate all 27 platform files from source.
 
 ## Configuration
 
-Key settings in `bp/project.yml`:
+`bp/project.yml`:
 
 | Key | Description | Default |
 |-----|-------------|---------|
-| `profile` | Workflow strictness | `standard` |
-| `platform` | Target platform | `omp` |
+| `profile` | Workflow strictness: `lite`, `standard`, `strict` | `standard` |
+| `platform` | Target agent platform: `omp`, `claude-code`, `agent` | `omp` |
 | `spec.stack` | Tech stack spec template | `generic` |
-| `workflow.tdd` | Enforce TDD for behavioral tasks | `true` |
-| `workflow.commitDocs` | Auto-commit doc files with code | `false` |
-| `release.template` | PR body template | `standard` |
-| `review.gate` | Review gate mode | `all-pass` |
+| `workflow.tdd` | Enforce RED→GREEN→REFACTOR for behavior tasks | `true` |
+| `workflow.commitDocs` | Auto-commit doc changes with code | `false` |
+| `review.gate` | Review gate mode: `all-pass`, `any-pass` | `all-pass` |
+| `release.template` | PR body template: `standard`, `detailed` | `standard` |
+
+### Profiles
+
+| Profile | TDD | Sub-agents | Review gate |
+|---------|-----|------------|-------------|
+| **Lite** | Optional | Sequential | Any pass |
+| **Standard** | Enforced | Parallel (3 agents) | All pass |
+| **Strict** | Enforced | Parallel + regression check | All pass + manual UAT |
 
 ## Tech Stack
 
-- Language: TypeScript
+- Language: TypeScript (strict, ESM, ES2022)
 - Runtime: Node.js ≥ 20
-- Test: Vitest
-- Target platform: OMP
+- Tests: Vitest (155+)
+- Validation: PEG grammars via Peggy
+- State persistence: Zod-validated Markdown with `flock` concurrency locking
 
 ## Install
 
@@ -114,66 +201,22 @@ Key settings in `bp/project.yml`:
 npm install -g @hyperion2144/blueprint
 ```
 
-## Usage
+Requires Node.js ≥ 20.
 
-Start a new project:
+## Development
+
 ```bash
-mkdir my-project && cd my-project
-bp init          # interactive wizard: profile, tech stack, conventions
+git clone https://github.com/hyperion2144/blueprint.git
+cd blueprint
+npm install
+npm run build
+npm test
 ```
 
-Browse existing codebase:
 ```bash
-cd existing-project
-bp init --brownfield   # auto-detects tech stack, bootstraps specs
+# Quick CLI smoke test
+node bin/cli.js state
 ```
-
-## Recommended Loop
-
-```mermaid
-flowchart TD
-    A[/bp:init/] --> B{Greenfield?}
-    B -->|Yes| C[/bp:grill/]
-    B -->|Brownfield| C
-    C --> D[/bp:research/]
-    D --> E[/bp:roadmap/]
-    E --> F[Phase Loop]
-    F --> G[/bp:discuss/]
-    G --> H[/bp:research-phase/]
-    H --> I[/bp:split/]
-    I --> J[/bp:proposal &lt;name&gt;/]
-    J --> K[/bp:plan/]
-    K --> L[/bp:apply/]
-    L --> M[/bp:review/]
-    M --> N[/bp:archive/]
-    N --> O{More changes?}
-    O -->|Yes| J
-    O -->|No| P{More phases?}
-    P -->|Yes| G
-    P -->|No| Q[/bp:ship/]
-    Q --> R[Done]
-
-    F -.->|Switch milestone| S[/bp:state set-milestone/]
-    S -.-> E
-
-    L -.->|Debug| T[/bp:audit/]
-    M -.->|Debug| T
-```
-
-### Step by step
-
-1. **`/bp:init`** — project setup, tech stack selection, spec bootstrap
-2. **Reach consensus** — `/bp:grill` → `/bp:research` → `/bp:roadmap`
-3. **Phase loop** — `/bp:discuss` → `/bp:research-phase` → `/bp:split`
-4. **Change loop** — `/bp:proposal` → `/bp:plan` → `/bp:apply` → `/bp:review` → `/bp:archive`
-5. **All done** — `/bp:ship`
-
-### Tips
-
-- **Continue shorthand**: most steps auto-advance with `/bp:continue`
-- **Auto mode**: `/bp:loop` for unattended execution
-- **Switch milestone**: `/bp:state set-milestone <id>` then `/bp:continue`
-- **Debug**: `/bp:audit` at any point to verify deliverables
 
 ## License
 
