@@ -3,9 +3,9 @@
 
 PhaseResearch
   = "# Research:" __ name:LineRest NEWLINE
-    __ scope:ScopeSection
-    __ rec:RecommendationSection
-    __ risks:RisksSection?
+    Gap scope:ScopeSection
+    Gap rec:RecommendationSection
+    Gap risks:RisksSection?
     __ (.)*
     { return { name, scope, recommendation: rec, risks: risks || [] }; }
 
@@ -28,6 +28,8 @@ RiskItem
 ContentBlock
   = lines:(_ !"## " !NEWLINE text:LineRest NEWLINE { return text; })+
     { return lines.join("\n"); }
+
+Gap = ( !"##" LineRest NEWLINE / NEWLINE )*
 
 LineRest
   = chars:[^\n\r]+ { return chars.join("").trim(); }

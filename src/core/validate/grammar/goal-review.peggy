@@ -2,10 +2,10 @@
 
 GoalReview
   = "# Goal Review:" __ name:LineRest NEWLINE
-    __ verdictLine
-    __ table:GoalTable
-    __ assessment
-    __ issues:IssuesSection? __ (.)*
+    Gap verdictLine
+    Gap table:GoalTable
+    Gap assessment
+    Gap issues:IssuesSection? __ (.)*
     { return { name, issues: issues || [] }; }
 verdictLine = "## Overall: " ("PASS" / "FAIL" / "NEEDS_REVISION") NEWLINE
 
@@ -21,6 +21,8 @@ IssueItem = __ "- [" checkbox:CheckState "] " prefix:("G"/"D") id:Integer " — 
 line = __ !"##" text:LineRest NEWLINE
 
 CheckState = " " { return ' '; } / "x" { return 'x'; }
+
+Gap = ( !"##" LineRest NEWLINE / NEWLINE )*
 tableRow = __ "|" text:(!"\n" .)* NEWLINE
 goalRow = __ "| G" id:Integer " |" text:(!"\n" .)* NEWLINE
 

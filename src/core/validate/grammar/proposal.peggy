@@ -2,10 +2,10 @@
 
 Proposal
   = "# Proposal:" __ name:LineRest NEWLINE
-    __ intent:IntentSection
-    __ refs:RefsSection?
-    __ extRefs:ExtRefsSection?
-    __ deliverables:DeliverablesSection __ (.)*
+    Gap intent:IntentSection
+    Gap refs:RefsSection?
+    Gap extRefs:ExtRefsSection?
+    Gap deliverables:DeliverablesSection __ (.)*
     { return { name, intent, refs, extRefs: extRefs || [], deliverables: deliverables || [] }; }
 
 ExtRefsSection
@@ -54,6 +54,8 @@ ContentBlock
   = lines:(_ !"## " !NEWLINE text:LineRest NEWLINE { return text; })+
     { return lines.join("\n"); }
 
+
+Gap = ( !"##" LineRest NEWLINE / NEWLINE )*
 
 Integer
   = digits:[0-9]+ { return parseInt(digits.join("")); }

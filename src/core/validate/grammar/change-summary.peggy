@@ -3,9 +3,9 @@
 
 ChangeSummary
   = "# Change Summary:" __ name:LineRest NEWLINE
-    __ intent:IntentSection
-    __ commits:CommitsSection
-    __ files:FilesSection
+    Gap intent:IntentSection
+    Gap commits:CommitsSection
+    Gap files:FilesSection
     __ (.)*
     { return { name, intent, commits, files }; }
 
@@ -32,6 +32,8 @@ FileItem
 ContentBlock
   = lines:(_ !"## " !NEWLINE text:LineRest NEWLINE { return text; })+
     { return lines.join("\n"); }
+
+Gap = ( !"##" LineRest NEWLINE / NEWLINE )*
 
 LineRest
   = chars:[^\n\r]+ { return chars.join("").trim(); }

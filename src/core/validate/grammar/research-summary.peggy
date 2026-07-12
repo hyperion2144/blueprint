@@ -3,8 +3,8 @@
 
 ResearchSummary
   = "# Summary:" __ name:LineRest NEWLINE
-    __ rec:RecommendationSection
-    __ rat:RationaleSection
+    Gap rec:RecommendationSection
+    Gap rat:RationaleSection
     __ (.)*
     { return { name, recommendation: rec, rationale: rat }; }
 
@@ -19,6 +19,8 @@ RationaleSection
 ContentBlock
   = lines:(_ !"## " !NEWLINE text:LineRest NEWLINE { return text; })+
     { return lines.join("\n"); }
+
+Gap = ( !"##" LineRest NEWLINE / NEWLINE )*
 
 LineRest
   = chars:[^\n\r]+ { return chars.join("").trim(); }

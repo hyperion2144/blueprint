@@ -2,9 +2,9 @@
 
 SpecReview
   = "# Spec Review:" __ name:LineRest NEWLINE
-    __ verdictLine
-    __ table:ConstraintTable
-    __ issues:IssuesSection? __ (.)*
+    Gap verdictLine
+    Gap table:ConstraintTable
+    Gap issues:IssuesSection? __ (.)*
     { return { name, issues: issues || [] }; }
 verdictLine
   = "## Overall: " verdict:( "PASS" / "FAIL" / "NEEDS_REVISION") NEWLINE
@@ -14,8 +14,9 @@ ConstraintTable
   = "## Constraint Checklist" NEWLINE (HeaderRow / BlankLine)* constraintRow+
 HeaderRow
   = __ "|" !(" " (IssuePrefix Integer)) text:(!"\n" .)* NEWLINE
-BlankLine
-  = NEWLINE
+BlankLine = NEWLINE
+
+Gap = ( !"##" LineRest NEWLINE / NEWLINE )*
 
 IssuesSection
   = "## Issues" NEWLINE issues:IssueItem*

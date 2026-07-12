@@ -2,9 +2,9 @@
 
 QualityReview
   = "# Quality Review:" __ name:LineRest NEWLINE
-    __ verdictLine
-    __ table:IssueTable
-    __ issues:IssuesSection? __ (.)*
+    Gap verdictLine
+    Gap table:IssueTable
+    Gap issues:IssuesSection? __ (.)*
     { return { name, issues: issues || [] }; }
 
 verdictLine = "## Overall: " ("PASS" / "FAIL" / "NEEDS_REVISION") NEWLINE
@@ -12,6 +12,8 @@ IssueTable = "## Issues" NEWLINE (HeaderRow / BlankLine)* issueRow+ __ conventio
 conventionTable = "## Convention Compliance" NEWLINE conventionRow+
 BlankLine = NEWLINE
 HeaderRow = __ "|" !(" " ("Q"/"D") Integer) text:(!"\n" .)* NEWLINE
+
+Gap = ( !"##" LineRest NEWLINE / NEWLINE )*
 
 IssuesSection = "## Issues" NEWLINE issues:IssueItem* { return issues; }
 
