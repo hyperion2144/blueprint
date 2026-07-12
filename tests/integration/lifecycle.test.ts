@@ -566,9 +566,9 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     expectBlocked(cli('continue', 'change', 'change-a'), 'Parse error');
     expectState('adhoc', 'planning', 'milestone-active', 'planning');
 
-    // DS without refs: line -> DesignItem fails (RefsLine required) -> no items -> semantic error
+    // DS without refs: line -> PEG error from RefsLine catch-all
     write(`${dir}/design.md`, '# Design: t\n\n## Design Items\n- DS-1: x\n  desc\n');
-    expectBlocked(cli('continue', 'change', 'change-a'), 'No design items');
+    expectBlocked(cli('continue', 'change', 'change-a'), 'Expected "refs: PR-N" on its own indented line');
 
     // no DS items
     write(`${dir}/design.md`, '# Design: t\n\n## Design Items\n\ntext\n');

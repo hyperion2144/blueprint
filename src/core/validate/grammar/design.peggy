@@ -17,6 +17,8 @@ DesignItem
 RefsLine
   = __ "refs: " refs:PRList NEWLINE
     { return refs; }
+  / __ text:LineRest NEWLINE
+    { error('Expected "refs: PR-N" on its own indented line after the DS title (found: "' + text + '")'); }
 
 PRList
   = head:PRId tail:(__ "," __ PRId)*

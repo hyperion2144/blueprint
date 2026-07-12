@@ -211,15 +211,16 @@ function peg$parse(input, options) {
   function peg$f1(items) {    return items;  }
   function peg$f2(id, title, refsLine, desc) {    return { id, title, refs: refsLine, description: desc };  }
   function peg$f3(refs) {    return refs;  }
-  function peg$f4(head, tail) {    return [head].concat(tail.map(t => t[3]));  }
-  function peg$f5(id) {    return "PR-" + id;  }
-  function peg$f6(digits) {    error('"PR' + digits + '": missing dash — use "PR-' + digits + '"');  }
-  function peg$f7(text) {    error('"' + text + '": ref must start with PR-');  }
-  function peg$f8(text) {    return text;  }
-  function peg$f9() {    return "";  }
-  function peg$f10(lines) {    return lines.join("\n").trim();  }
-  function peg$f11(digits) {    return parseInt(digits.join(""));  }
-  function peg$f12(chars) {    return chars.join("").trim();  }
+  function peg$f4(text) {    error('Expected "refs: PR-N" on its own indented line after the DS title (found: "' + text + '")');  }
+  function peg$f5(head, tail) {    return [head].concat(tail.map(t => t[3]));  }
+  function peg$f6(id) {    return "PR-" + id;  }
+  function peg$f7(digits) {    error('"PR' + digits + '": missing dash — use "PR-' + digits + '"');  }
+  function peg$f8(text) {    error('"' + text + '": ref must start with PR-');  }
+  function peg$f9(text) {    return text;  }
+  function peg$f10() {    return "";  }
+  function peg$f11(lines) {    return lines.join("\n").trim();  }
+  function peg$f12(digits) {    return parseInt(digits.join(""));  }
+  function peg$f13(chars) {    return chars.join("").trim();  }
   let peg$currPos = options.peg$currPos | 0;
   let peg$savedPos = peg$currPos;
   const peg$posDetailsCache = [{ line: 1, column: 1 }];
@@ -579,6 +580,24 @@ function peg$parse(input, options) {
       peg$currPos = s0;
       s0 = peg$FAILED;
     }
+    if (s0 === peg$FAILED) {
+      s0 = peg$currPos;
+      s1 = peg$parse__();
+      s2 = peg$parseLineRest();
+      if (s2 !== peg$FAILED) {
+        s3 = peg$parseNEWLINE();
+        if (s3 !== peg$FAILED) {
+          peg$savedPos = s0;
+          s0 = peg$f4(s2);
+        } else {
+          peg$currPos = s0;
+          s0 = peg$FAILED;
+        }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+    }
 
     return s0;
   }
@@ -640,7 +659,7 @@ function peg$parse(input, options) {
         }
       }
       peg$savedPos = s0;
-      s0 = peg$f4(s1, s2);
+      s0 = peg$f5(s1, s2);
     } else {
       peg$currPos = s0;
       s0 = peg$FAILED;
@@ -664,7 +683,7 @@ function peg$parse(input, options) {
       s2 = peg$parseInteger();
       if (s2 !== peg$FAILED) {
         peg$savedPos = s0;
-        s0 = peg$f5(s2);
+        s0 = peg$f6(s2);
       } else {
         peg$currPos = s0;
         s0 = peg$FAILED;
@@ -713,7 +732,7 @@ function peg$parse(input, options) {
         }
         if (s2 !== peg$FAILED) {
           peg$savedPos = s0;
-          s0 = peg$f6(s2);
+          s0 = peg$f7(s2);
         } else {
           peg$currPos = s0;
           s0 = peg$FAILED;
@@ -754,7 +773,7 @@ function peg$parse(input, options) {
         }
         if (s1 !== peg$FAILED) {
           peg$savedPos = s0;
-          s1 = peg$f7(s1);
+          s1 = peg$f8(s1);
         }
         s0 = s1;
       }
@@ -809,7 +828,7 @@ function peg$parse(input, options) {
           s7 = peg$parseNEWLINE();
           if (s7 !== peg$FAILED) {
             peg$savedPos = s2;
-            s2 = peg$f8(s6);
+            s2 = peg$f9(s6);
           } else {
             peg$currPos = s2;
             s2 = peg$FAILED;
@@ -831,7 +850,7 @@ function peg$parse(input, options) {
       s3 = peg$parseNEWLINE();
       if (s3 !== peg$FAILED) {
         peg$savedPos = s2;
-        s3 = peg$f9();
+        s3 = peg$f10();
       }
       s2 = s3;
     }
@@ -879,7 +898,7 @@ function peg$parse(input, options) {
               s7 = peg$parseNEWLINE();
               if (s7 !== peg$FAILED) {
                 peg$savedPos = s2;
-                s2 = peg$f8(s6);
+                s2 = peg$f9(s6);
               } else {
                 peg$currPos = s2;
                 s2 = peg$FAILED;
@@ -901,7 +920,7 @@ function peg$parse(input, options) {
           s3 = peg$parseNEWLINE();
           if (s3 !== peg$FAILED) {
             peg$savedPos = s2;
-            s3 = peg$f9();
+            s3 = peg$f10();
           }
           s2 = s3;
         }
@@ -911,7 +930,7 @@ function peg$parse(input, options) {
     }
     if (s1 !== peg$FAILED) {
       peg$savedPos = s0;
-      s1 = peg$f10(s1);
+      s1 = peg$f11(s1);
     }
     s0 = s1;
 
@@ -1035,7 +1054,7 @@ function peg$parse(input, options) {
     }
     if (s1 !== peg$FAILED) {
       peg$savedPos = s0;
-      s1 = peg$f11(s1);
+      s1 = peg$f12(s1);
     }
     s0 = s1;
 
@@ -1070,7 +1089,7 @@ function peg$parse(input, options) {
     }
     if (s1 !== peg$FAILED) {
       peg$savedPos = s0;
-      s1 = peg$f12(s1);
+      s1 = peg$f13(s1);
     }
     s0 = s1;
 
