@@ -47,11 +47,11 @@ RefIdList
     { return [head].concat(tail.map(t => t[3])); }
 
 DescriptionBlock
-  = lines:(_ !"- " !"## " !NEWLINE text:LineRest NEWLINE { return text; })+
+  = lines:(_ !"- " !"## " text:LineRest NEWLINE { return text; } / NEWLINE { return ""; })+
     { return lines.join(" ").trim(); }
 
 ContentBlock
-  = lines:(_ !"## " !NEWLINE text:LineRest NEWLINE { return text; })+
+  = lines:(_ !"## " text:LineRest NEWLINE { return text; } / NEWLINE { return ""; })+
     { return lines.join("\n"); }
 
 

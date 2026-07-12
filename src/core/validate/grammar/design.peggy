@@ -26,7 +26,7 @@ PRId
   = "PR-" id:Integer { return "PR-" + id; }
 
 DescriptionBlock
-  = lines:(_ !"- " !"## " !NEWLINE text:LineRest NEWLINE { return text; })+
+  = lines:(_ !"- " !"## " text:LineRest NEWLINE { return text; } / NEWLINE { return ""; })+
     { return lines.join("\n").trim(); }
 
 Integer
