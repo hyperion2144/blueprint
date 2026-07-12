@@ -506,6 +506,11 @@ export function checkCoverage(
 
   // PRs referenced by DSs
   const prInDs = new Set<string>();
+  for (const ds of designAst?.items || []) {
+    for (const ref of ds.refs || []) {
+      if (ref.startsWith('PR-')) prInDs.add(ref);
+    }
+  }
   // DSs referenced by tasks
   const dsInT = new Set<string>();
   for (const t of tasksAst?.tasks || []) {
@@ -520,15 +525,6 @@ export function checkCoverage(
   for (const prId of prIds) {
     if (!prInDs.has(prId)) {
       errs.push({ field: 'coverage', message: `${prId} is not referenced by any Design Item` });
-    }
-  }
-
-  // DSs referenced by tasks
-  for (const t of tasksAst?.tasks || []) {
-    const refVal = t.fields?.refs;
-    const refs = typeof refVal === 'string' ? [refVal] : (refVal || []);
-    for (const ref of refs) {
-      if (ref.startsWith('DS-')) dsInT.add(ref);
     }
   }
 

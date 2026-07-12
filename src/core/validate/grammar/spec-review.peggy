@@ -4,15 +4,18 @@ SpecReview
   = "# Spec Review:" __ name:LineRest NEWLINE
     __ verdictLine
     __ table:ConstraintTable
-    __ issues:IssuesSection?
+    __ issues:IssuesSection? __ (.)*
     { return { name, issues: issues || [] }; }
-
 verdictLine
   = "## Overall: " verdict:( "PASS" / "FAIL" / "NEEDS_REVISION") NEWLINE
     { /* consumed */ }
 
 ConstraintTable
-  = "## Constraint Checklist" NEWLINE tableRow* constraintRow+
+  = "## Constraint Checklist" NEWLINE (HeaderRow / BlankLine)* constraintRow+
+HeaderRow
+  = __ "|" !(" " (IssuePrefix Integer)) text:(!"\n" .)* NEWLINE
+BlankLine
+  = NEWLINE
 
 IssuesSection
   = "## Issues" NEWLINE issues:IssueItem*

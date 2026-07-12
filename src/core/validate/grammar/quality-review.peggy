@@ -4,14 +4,14 @@ QualityReview
   = "# Quality Review:" __ name:LineRest NEWLINE
     __ verdictLine
     __ table:IssueTable
-    __ issues:IssuesSection?
+    __ issues:IssuesSection? __ (.)*
     { return { name, issues: issues || [] }; }
 
 verdictLine = "## Overall: " ("PASS" / "FAIL" / "NEEDS_REVISION") NEWLINE
-
-IssueTable = "## Issues" NEWLINE tableRow* issueRow+ conventionTable?
-
-conventionTable = "## Convention Compliance" NEWLINE tableRow* conventionRow+
+IssueTable = "## Issues" NEWLINE (HeaderRow / BlankLine)* issueRow+ __ conventionTable?
+conventionTable = "## Convention Compliance" NEWLINE conventionRow+
+BlankLine = NEWLINE
+HeaderRow = __ "|" !(" " ("Q"/"D") Integer) text:(!"\n" .)* NEWLINE
 
 IssuesSection = "## Issues" NEWLINE issues:IssueItem* { return issues; }
 
@@ -19,12 +19,8 @@ IssueItem = __ "- [" checkbox:CheckState "] " prefix:("Q"/"D") id:Integer " — 
   { return { id: prefix + id, text, checked: checkbox === 'x' }; }
 
 CheckState = " " { return ' '; } / "x" { return 'x'; }
-
-tableRow = __ "|" text:(!"\n" .)* NEWLINE
-issueRow = __ "| Q" id:Integer " |" severity:Severity " |" text:(!"\n" .)* NEWLINE
+issueRow = __ "| Q" id:Integer " |" __ severity:Severity " |" text:(!"\n" .)* NEWLINE
 conventionRow = __ "| " text:(!"\n" .)* NEWLINE
-severityRow = __ "| Q" id:Integer " |" severity:Severity " |" text:(!"\n" .)* NEWLINE
-
 Severity = "BLOCKER" / "MAJOR" / "MINOR" / "INFO"
 
 Integer = digits:[0-9]+ { return parseInt(digits.join("")); }

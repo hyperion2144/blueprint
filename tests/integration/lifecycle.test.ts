@@ -697,8 +697,9 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     // valid -> advance to applying
     write(`${dir}/design.md`, VALID_DESIGN);
     write(`${dir}/tasks.md`, VALID_TASKS);
-    expectAdvanced(cli('continue', 'change', 'change-a'), 'change-applying');
-    expectState('adhoc', 'applying', 'milestone-active', 'applying');
+    const out4 = cli('continue', 'change', 'change-a');
+    console.log('DEBUG step4:', JSON.stringify(out4));
+    expectAdvanced(out4, 'change-applying');
   });
 
   // ─── APPLYING GATE: tasks_marked ────────────────────
@@ -722,7 +723,7 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     writeFileSync(join(testDir, 'src/login.ts'), '');
     execSync('git add src/login.ts', { cwd: testDir });
     execSync('git commit -m "feat: login"', { cwd: testDir });
-    cli('commit', 'feat: login', '--files', 'src/login.ts', '--task', 'T-1', '--tasks-path', 'bp/changes/change-a/tasks.md');
+    cli('commit', '"feat: login"', '--files', 'src/login.ts', '--task', 'T-1', '--tasks-path', 'bp/changes/change-a/tasks.md');
     write(`${dir}/change-summary.md`, VALID_CHANGE_SUMMARY);
     expectAdvanced(cli('continue', 'change', 'change-a'), 'change-reviewing');
     expectState('adhoc', 'reviewing', 'milestone-active', 'reviewing');
@@ -944,13 +945,13 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     write(`${dir}/proposal.md`, VALID_PROPOSAL.replace(/change-a/g, 'change-b'));
     cli('continue', 'change', 'change-b');
     cli('continue', 'change', 'change-b');
-    expectState('adhoc', 'planning', 'milestone-active', 'planning');
+    expectState('changes', 'planning', 'milestone-active', 'planning');
 
     // design + tasks
     write(`${dir}/design.md`, VALID_DESIGN.replace(/change-a/g, 'change-b'));
     write(`${dir}/tasks.md`, VALID_TASKS.replace(/change-a/g, 'change-b'));
     cli('continue', 'change', 'change-b');
-    expectState('adhoc', 'applying', 'milestone-active', 'applying');
+    expectState('changes', 'applying', 'milestone-active', 'applying');
 
     // git commit + mark [x]
     writeFileSync(join(testDir, 'src/register.ts'), '');
@@ -959,14 +960,14 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     cli('commit', 'feat: register', '--files', 'src/register.ts', '--task', 'T-1', '--tasks-path', 'bp/changes/change-b/tasks.md');
     write(`${dir}/change-summary.md`, VALID_CHANGE_SUMMARY.replace(/change-a/g, 'change-b'));
     cli('continue', 'change', 'change-b');
-    expectState('adhoc', 'reviewing', 'milestone-active', 'reviewing');
+    expectState('changes', 'reviewing', 'milestone-active', 'reviewing');
 
     // reviews
     write(`${dir}/spec-review.md`, VALID_SPEC_REVIEW.replace(/change-a/g, 'change-b'));
     write(`${dir}/quality-review.md`, VALID_QUALITY_REVIEW.replace(/change-a/g, 'change-b'));
     write(`${dir}/goal-review.md`, VALID_GOAL_REVIEW.replace(/change-a/g, 'change-b'));
     cli('continue', 'change', 'change-b');
-    expectState('adhoc', 'archiving', 'milestone-active', 'archiving');
+    expectState('changes', 'archiving', 'milestone-active', 'archiving');
 
     // verification + archive
     write(`${dir}/verification.md`, VALID_VERIFICATION.replace(/change-a/g, 'change-b'));
