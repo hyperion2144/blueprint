@@ -81,10 +81,12 @@ Decomposition guidance:
 - One PR may need multiple DS if it spans layers (e.g. HTTP + logic + data).
 - Multiple PRs may share one DS if they belong to the same module.
 -->
-- DS-1: {{component-name}}  refs: PR-{{id}}, PR-{{id}}
+- DS-1: {{component-name}}
+  refs: PR-{{id}}, PR-{{id}}
   {{core responsibilities, interfaces, data flow}}
   Source: PR-{{id}} (proposal.md)
-- DS-2: {{component-name}}  refs: PR-{{id}}
+- DS-2: {{component-name}}
+  refs: PR-{{id}}
   {{responsibilities}}
   Source: PR-{{id}} (proposal.md)
 ---
