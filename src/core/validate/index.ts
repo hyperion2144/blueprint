@@ -181,6 +181,11 @@ function checkProposal(ast: any, content: string, context?: any): ValidationErro
     if (!/Source:\s*(FR-\d+|D-\d+|NFR-\d+)\s*\(/.test(desc)) {
       errs.push({ field: 'refs', message: `PR-${pr.id}: missing Source: annotation (e.g. Source: FR-1 (bp/requirements.md))` });
     }
+    // PR must reference at least one requirement/decision (phase changes only)
+    // Adhoc changes have no requirements context, so refs are optional
+    if (context && (!pr.refs || pr.refs.length === 0)) {
+      errs.push({ field: 'refs', message: `PR-${pr.id}: no refs found. Add refs: FR-{id} or refs: D-{id} to the item line.` });
+    }
     // REFS: FR/NFR/D ids exist in requirements/context
     for (const ref of pr.refs || []) {
       if (ref.startsWith('FR-') || ref.startsWith('NFR-')) {
@@ -196,7 +201,6 @@ function checkProposal(ast: any, content: string, context?: any): ValidationErro
       }
     }
   }
-  return errs;
 }
 
 function checkDesign(ast: any, content: string, context?: any): ValidationError[] {
