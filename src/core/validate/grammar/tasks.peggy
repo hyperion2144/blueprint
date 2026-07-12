@@ -28,9 +28,15 @@ TaskItem
 
 FieldLine
   = __ "- **" key:FieldKey "**:" _ firstLine:LineRest NEWLINE
-    restLines:(__ !"- **" !"## " !"- [" text:LineRest NEWLINE)*
+    restLines:(__ !"- **" !"## " !"- [" text:LineRest NEWLINE { return text; })*
     {
-      const val = [firstLine, ...restLines.map(r => r.text)].join("\n");
+      const val = [firstLine, ...restLines].join("\n");
+      return { key, val };
+    }
+  / __ "- **" key:FieldKey "**:" _ NEWLINE
+    restLines:(__ !"- **" !"## " !"- [" text:LineRest NEWLINE { return text; })*
+    {
+      const val = restLines.join("\n");
       return { key, val };
     }
   / __ "- **" key:FieldKey "**:" _ (LineRest / "") NEWLINE
