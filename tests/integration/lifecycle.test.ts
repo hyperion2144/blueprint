@@ -40,14 +40,22 @@ function expectAdvanced(output: string, step: string): void {
   expect(output).toMatch(new RegExp(`step: ${step}|-> ${step}`));
 }
 
-function expectState(type: string, step: string, status?: string, changeStatus?: string): void {
+function expectState(type: string, step: string, status?: string, changeStatus?: string, changeName?: string): void {
   const s = getState();
   expect(s.active_context.type).toBe(type);
-  expect(s.active_context.step).toBe(step);
+  if (type === 'changes') {
+    // In changes mode, step is '' and changes are tracked in contexts
+    expect(s.active_context.step).toBe('');
+    if (changeName && changeStatus) {
+      expect(s.active_context.contexts?.[changeName]?.step).toBe(changeStatus);
+    }
+  } else {
+    expect(s.active_context.step).toBe(step);
+  }
   if (status) expect(s.project.status).toBe(status);
-  if (changeStatus) {
+  if (changeStatus && type !== 'changes') {
     const entries = s.adhoc || s.changes || [];
-    expect(entries[0]?.status).toBe(changeStatus);
+    expect(entries.find((c: any) => c.name === (changeName || entries[0]?.name))?.status).toBe(changeStatus);
   }
 }
 
@@ -937,7 +945,6 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     expect(s.active_context.step).toBe('pending');
   });
 
-  // ─── CHANGE-B (valid files only, compressed) ────────
   it('change-b: full lifecycle with valid files', () => {
     const dir = 'bp/changes/change-b';
 
@@ -945,29 +952,29 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     write(`${dir}/proposal.md`, VALID_PROPOSAL.replace(/change-a/g, 'change-b'));
     cli('continue', 'change', 'change-b');
     cli('continue', 'change', 'change-b');
-    expectState('changes', 'planning', 'milestone-active', 'planning');
+    expectState('changes', '', 'milestone-active', 'planning', 'change-b');
 
     // design + tasks
     write(`${dir}/design.md`, VALID_DESIGN.replace(/change-a/g, 'change-b'));
     write(`${dir}/tasks.md`, VALID_TASKS.replace(/change-a/g, 'change-b'));
     cli('continue', 'change', 'change-b');
-    expectState('changes', 'applying', 'milestone-active', 'applying');
+    expectState('changes', '', 'milestone-active', 'applying', 'change-b');
 
     // git commit + mark [x]
     writeFileSync(join(testDir, 'src/register.ts'), '');
     execSync('git add src/register.ts', { cwd: testDir });
     execSync('git commit -m "feat: register"', { cwd: testDir });
-    cli('commit', 'feat: register', '--files', 'src/register.ts', '--task', 'T-1', '--tasks-path', 'bp/changes/change-b/tasks.md');
+    cli('commit', '"feat: register"', '--files', 'src/register.ts', '--task', 'T-1', '--tasks-path', 'bp/changes/change-b/tasks.md');
     write(`${dir}/change-summary.md`, VALID_CHANGE_SUMMARY.replace(/change-a/g, 'change-b'));
     cli('continue', 'change', 'change-b');
-    expectState('changes', 'reviewing', 'milestone-active', 'reviewing');
+    expectState('changes', '', 'milestone-active', 'reviewing', 'change-b');
 
     // reviews
     write(`${dir}/spec-review.md`, VALID_SPEC_REVIEW.replace(/change-a/g, 'change-b'));
     write(`${dir}/quality-review.md`, VALID_QUALITY_REVIEW.replace(/change-a/g, 'change-b'));
     write(`${dir}/goal-review.md`, VALID_GOAL_REVIEW.replace(/change-a/g, 'change-b'));
     cli('continue', 'change', 'change-b');
-    expectState('changes', 'archiving', 'milestone-active', 'archiving');
+    expectState('changes', '', 'milestone-active', 'archiving', 'change-b');
 
     // verification + archive
     write(`${dir}/verification.md`, VALID_VERIFICATION.replace(/change-a/g, 'change-b'));
@@ -976,7 +983,8 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     expect(out).toContain('Phase ph.1-auth complete');
 
     const s = getState();
-    expect(s.adhoc).toEqual([]);
+    expect(s.adhoc.length).toBe(0);
+    expect(s.changes.length).toBe(0);
     expect(s.active_context.type).toBe('phase');
     expect(s.active_context.step).toBe('ready');
   });
