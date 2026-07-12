@@ -458,21 +458,12 @@ function peg$parse(input, options) {
       if (s2 !== peg$FAILED) {
         s3 = [];
         s4 = peg$parseDesignItem();
-        if (s4 !== peg$FAILED) {
-          while (s4 !== peg$FAILED) {
-            s3.push(s4);
-            s4 = peg$parseDesignItem();
-          }
-        } else {
-          s3 = peg$FAILED;
+        while (s4 !== peg$FAILED) {
+          s3.push(s4);
+          s4 = peg$parseDesignItem();
         }
-        if (s3 !== peg$FAILED) {
-          peg$savedPos = s0;
-          s0 = peg$f1(s3);
-        } else {
-          peg$currPos = s0;
-          s0 = peg$FAILED;
-        }
+        peg$savedPos = s0;
+        s0 = peg$f1(s3);
       } else {
         peg$currPos = s0;
         s0 = peg$FAILED;

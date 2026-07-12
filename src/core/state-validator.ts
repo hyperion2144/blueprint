@@ -32,7 +32,7 @@ interface StepExitCriteria {
 const EXIT_CRITERIA: StepExitCriteria[] = [
   // project/roadmap-defined → must have roadmap (PEG validated) + milestone directories
   {
-    type: 'project', step: 'roadmap-defined',
+    type: 'project', step: 'roadmap',
     checks: [
       { path: 'roadmap.md', description: 'roadmap.md is not properly formatted. Use ## Md-N: title [STATUS] and ### Ph-M.P: title [STATUS].', checkMode: 'peg_validate', pegType: 'roadmap' },
       { path: 'milestones/', description: 'No milestone directories found. Create bp/milestones/<id>/phases/<pid>/ for each milestone.' },
@@ -52,9 +52,9 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
       { path: 'requirements.md', description: 'requirements.md is not properly formatted. Use ## FR-N: title or ## NFR-N: title sections.', checkMode: 'peg_validate', pegType: 'requirements' },
     ],
   },
-  // project/researched → must have research output
+  // project/research → must have research output
   {
-    type: 'project', step: 'researched',
+    type: 'project', step: 'research',
     checks: [
       { path: 'research/summary.md', description: 'research/summary.md is not properly formatted. Use ## Recommendation and ## Rationale.', checkMode: 'peg_validate', pegType: 'research-summary' },
     ],

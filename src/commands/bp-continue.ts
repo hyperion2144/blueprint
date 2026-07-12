@@ -462,9 +462,15 @@ function continueChangeHandler(name: string, options?: { auto?: boolean; command
     if (propResult?.ast && desResult?.ast && taskResult?.ast) {
       const covErrors = checkCoverage(propResult.ast, desResult.ast, taskResult.ast);
       if (covErrors.length > 0) {
-        console.log(['# bp continue — blocked', 'error: reference chain incomplete'].concat(
-          covErrors.map(e => '  ' + e.message)
-        ).concat(['hint: Ensure every PR is referenced by a DS, and every DS by a Task.']).join('\n'));
+        console.log([
+          '# bp continue — blocked',
+          'error: exit conditions not met',
+          'note: MUST read instructions below, check ---END--- marker exists.',
+          `step: ${state.active_context.step}`,
+          `type: ${state.active_context.type}`,
+          'reasons: ' + covErrors.map(e => e.message).join('; '),
+          'hint: Ensure every PR is referenced by a DS, and every DS by a Task.',
+        ].join('\n'));
         return;
       }
     }

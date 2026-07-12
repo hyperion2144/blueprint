@@ -5,7 +5,7 @@ Design
     __ items:DesignItemsSection __ (.)* { return { name, items: items || [] }; }
 
 DesignItemsSection
-  = "## Design Items" NEWLINE items:DesignItem+
+  = "## Design Items" NEWLINE items:DesignItem*
     { return items; }
 
 DesignItem

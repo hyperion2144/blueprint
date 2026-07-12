@@ -8,8 +8,7 @@ const bpDir = join(tmpDir, 'bp');
 
 const stateMdContent = `---
 project:
-  name: test-project
-  status: roadmap-defined
+  status: roadmap
   current_milestone: m1
   current_phase: null
 active_context:
@@ -38,16 +37,16 @@ afterEach(() => {
 });
 
 describe('validateStepAdvance', () => {
-  it('project roadmap-defined fails without roadmap.md', () => {
-    const result = validateStepAdvance('project', 'roadmap-defined', null, tmpDir);
+  it('project roadmap fails without roadmap.md', () => {
+    const result = validateStepAdvance('project', 'roadmap', null, tmpDir);
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('roadmap.md'))).toBe(true);
   });
 
-  it('project roadmap-defined passes with roadmap.md', () => {
+  it('project roadmap passes with roadmap.md', () => {
     writeFileSync(join(bpDir, 'roadmap.md'), '# Roadmap: test\n\n## Md-1: Core [ACTIVE]\n\n### Ph-1.1: Engine [NOT_STARTED]\n', 'utf-8');
     mkdirSync(join(bpDir, 'milestones', 'm1'), { recursive: true });
-    const result = validateStepAdvance('project', 'roadmap-defined', null, tmpDir);
+    const result = validateStepAdvance('project', 'roadmap', null, tmpDir);
     expect(result.valid).toBe(true);
   });
 

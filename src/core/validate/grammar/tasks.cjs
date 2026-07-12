@@ -527,21 +527,12 @@ function peg$parse(input, options) {
             if (s5 !== peg$FAILED) {
               s6 = [];
               s7 = peg$parseTaskItem();
-              if (s7 !== peg$FAILED) {
-                while (s7 !== peg$FAILED) {
-                  s6.push(s7);
-                  s7 = peg$parseTaskItem();
-                }
-              } else {
-                s6 = peg$FAILED;
+              while (s7 !== peg$FAILED) {
+                s6.push(s7);
+                s7 = peg$parseTaskItem();
               }
-              if (s6 !== peg$FAILED) {
-                peg$savedPos = s0;
-                s0 = peg$f1(s2, s4, s6);
-              } else {
-                peg$currPos = s0;
-                s0 = peg$FAILED;
-              }
+              peg$savedPos = s0;
+              s0 = peg$f1(s2, s4, s6);
             } else {
               peg$currPos = s0;
               s0 = peg$FAILED;
@@ -615,21 +606,12 @@ function peg$parse(input, options) {
                     if (s10 !== peg$FAILED) {
                       s11 = [];
                       s12 = peg$parseFieldLine();
-                      if (s12 !== peg$FAILED) {
-                        while (s12 !== peg$FAILED) {
-                          s11.push(s12);
-                          s12 = peg$parseFieldLine();
-                        }
-                      } else {
-                        s11 = peg$FAILED;
+                      while (s12 !== peg$FAILED) {
+                        s11.push(s12);
+                        s12 = peg$parseFieldLine();
                       }
-                      if (s11 !== peg$FAILED) {
-                        peg$savedPos = s0;
-                        s0 = peg$f2(s3, s5, s7, s9, s11);
-                      } else {
-                        peg$currPos = s0;
-                        s0 = peg$FAILED;
-                      }
+                      peg$savedPos = s0;
+                      s0 = peg$f2(s3, s5, s7, s9, s11);
                     } else {
                       peg$currPos = s0;
                       s0 = peg$FAILED;

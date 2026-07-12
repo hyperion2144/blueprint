@@ -12,12 +12,12 @@ Tasks
     }
 
 WaveSection
-  = "## Wave " id:Integer ": " title:LineRest NEWLINE tasks:TaskItem+
+  = "## Wave " id:Integer ": " title:LineRest NEWLINE tasks:TaskItem*
     { return { wave: id, theme: title, tasks }; }
 
 TaskItem
   = __ "- [" checkbox:CheckState "] T-" id:Integer ": [type:" typeName:TypeName "] " title:LineRest NEWLINE
-    fields:FieldLine+
+    fields:FieldLine*
     { 
       const fmap = {};
       for (const f of fields) fmap[f.key] = f.val;

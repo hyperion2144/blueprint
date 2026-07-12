@@ -28,7 +28,7 @@ RefId
   / "D-" id:Integer { return "D-" + id; }
 
 DeliverablesSection
-  = "## Deliverables" NEWLINE items:DeliverableItem+
+  = "## Deliverables" NEWLINE items:DeliverableItem*
     { return items; }
 
 DeliverableItem

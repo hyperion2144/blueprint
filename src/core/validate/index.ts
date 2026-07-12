@@ -169,7 +169,7 @@ function checkRequirements(ast: any, content: string): ValidationError[] {
     }
     if (s.prefix === 'FR-') frIds.push(s.id);
     else if (s.prefix === 'NFR-') nfrIds.push(s.id);
-    if (!['CURRENT', 'COMPLETED', 'PENDING'].includes(s.status)) {
+    if (s.status && !['CURRENT', 'COMPLETED', 'PENDING'].includes(s.status)) {
       errs.push({ field: 'enum', message: `${s.prefix}${s.id}: status must be CURRENT/COMPLETED/PENDING, got "${s.status}"` });
     }
   }
@@ -366,9 +366,25 @@ function checkRoadmap(ast: any, content: string): ValidationError[] {
   if (!ast?.milestones || ast.milestones.length === 0) {
     errs.push({ field: 'fill', message: 'No milestones found' });
   }
+  // Md sequential numbering
+  const mdIds = (ast?.milestones || []).map((m: any) => m.id);
+  for (let i = 0; i < mdIds.length; i++) {
+    if (mdIds[i] !== i + 1) {
+      errs.push({ field: 'numbering', message: `Md-${mdIds[i]}: expected Md-${i + 1} (sequential numbering required)` });
+      break;
+    }
+  }
   for (const m of ast.milestones || []) {
     if (!['NOT_STARTED', 'ACTIVE', 'COMPLETED'].includes(m.status)) {
       errs.push({ field: 'enum', message: `Md-${m.id}: status must be NOT_STARTED/ACTIVE/COMPLETED` });
+    }
+    // Ph sequential numbering within milestone
+    const phIds = (m.phases || []).map((p: any) => parseInt(p.id.split('.')[1] ?? '0'));
+    for (let i = 0; i < phIds.length; i++) {
+      if (phIds[i] !== i + 1) {
+        errs.push({ field: 'numbering', message: `Ph-${m.id}.${phIds[i]}: expected Ph-${m.id}.${i + 1} (sequential numbering required)` });
+        break;
+      }
     }
     for (const p of m.phases || []) {
       if (!['NOT_STARTED', 'ACTIVE', 'COMPLETED'].includes(p.status)) {
