@@ -2,7 +2,7 @@
 
 Design
   = "# Design:" __ name:LineRest NEWLINE
-    __ items:DesignItemsSection __ (.)* { return { name, items: items || [] }; }
+    Gap items:DesignItemsSection __ (.)* { return { name, items: items || [] }; }
 
 DesignItemsSection
   = "## Design Items" NEWLINE items:DesignItem*
@@ -31,6 +31,8 @@ DescriptionBlock
   = lines:(_ !"- " !"## " text:LineRest NEWLINE { return text; } / NEWLINE { return ""; })+
     { return lines.join("\n").trim(); }
 
+
+Gap = ( !"##" LineRest NEWLINE / NEWLINE )*
 Integer
   = digits:[0-9]+ { return parseInt(digits.join("")); }
 

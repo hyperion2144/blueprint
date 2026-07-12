@@ -7,15 +7,15 @@ Roadmap
     { return { name, milestones }; }
 
 MilestoneSection
-  = __ "## Md-" id:Integer ": " title:TitleLine " [" status:MstoneStatus "]" NEWLINE
-    __ phases:PhaseSection+
+  = Gap "## Md-" id:Integer ": " title:TitleLine " [" status:MstoneStatus "]" NEWLINE
+    Gap phases:PhaseSection+
     { return { id, title, status, phases }; }
 
 MstoneStatus
   = "NOT_STARTED" / "ACTIVE" / "COMPLETED"
 
 PhaseSection
-  = __ "### Ph-" mid:Integer "." pid:Integer ": " title:TitleLine " [" status:PStatus "]" NEWLINE
+  = Gap "### Ph-" mid:Integer "." pid:Integer ": " title:TitleLine " [" status:PStatus "]" NEWLINE
     body:PhaseBody?
     { return { id: mid + '.' + pid, title, status, body: body || "" }; }
 PStatus
@@ -23,6 +23,8 @@ PStatus
 PhaseBody
   = lines:(_ !"### " !"## " text:LineRest NEWLINE { return text; })+
     { return lines.join("\n").trim(); }
+
+Gap = ( !"##" LineRest NEWLINE / NEWLINE )*
 TitleLine
   = chars:(! " [" char:[^\n\r])+ { return chars.map(c => c[1]).join("").trim(); }
 

@@ -2,7 +2,7 @@
 
 Verification
   = "# Verification:" __ name:LineRest NEWLINE
-    __ statusLine
+    Gap statusLine
     __ items:CheckItem*
     { return { name, items: items.filter(i => i !== null) }; }
 
@@ -18,6 +18,8 @@ CheckItem
     { return { checked: checkbox === 'x', text }; }
   / NEWLINE { return null; }
   / __ text:LineRest NEWLINE { return null; }
+
+Gap = ( !"##" LineRest NEWLINE / NEWLINE )*
 
 CheckState
   = " " { return ' '; }
