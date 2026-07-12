@@ -125,14 +125,28 @@ export function parseAndValidate(
       errors.push(...checkTasks(ast, content, context));
       break;
     case 'spec-review':
+      errors.push(...checkReviewNumbering(ast, 'R'));
+      break;
     case 'quality-review':
+      errors.push(...checkReviewNumbering(ast, 'Q'));
+      break;
     case 'goal-review':
-      break; // basic FORM + FILL for now
+      errors.push(...checkReviewNumbering(ast, 'G'));
+      break;
     case 'verification':
       errors.push(...checkVerification(ast, content));
       break;
     case 'roadmap':
       errors.push(...checkRoadmap(ast, content));
+      break;
+    case 'research-summary':
+      errors.push(...checkResearchSummary(ast, content));
+      break;
+    case 'phase-research':
+      errors.push(...checkPhaseResearch(ast, content));
+      break;
+    case 'change-summary':
+      errors.push(...checkChangeSummary(ast, content));
       break;
   }
 
@@ -146,12 +160,29 @@ function checkRequirements(ast: any, content: string): ValidationError[] {
   if (!ast?.sections || ast.sections.length === 0) {
     errs.push({ field: 'fill', message: 'No requirements found (missing FR-/NFR- sections)' });
   }
+  // Sequential FR/NFR numbering
+  const frIds: number[] = [];
+  const nfrIds: number[] = [];
   for (const s of ast.sections || []) {
     if (!s.title || s.title.length === 0) {
       errs.push({ field: 'fill', message: `${s.prefix}${s.id}: title is empty` });
     }
+    if (s.prefix === 'FR-') frIds.push(s.id);
+    else if (s.prefix === 'NFR-') nfrIds.push(s.id);
     if (!['CURRENT', 'COMPLETED', 'PENDING'].includes(s.status)) {
       errs.push({ field: 'enum', message: `${s.prefix}${s.id}: status must be CURRENT/COMPLETED/PENDING, got "${s.status}"` });
+    }
+  }
+  for (let i = 0; i < frIds.length; i++) {
+    if (frIds[i] !== i + 1) {
+      errs.push({ field: 'numbering', message: `FR-${frIds[i]}: expected FR-${i + 1} (sequential numbering required)` });
+      break;
+    }
+  }
+  for (let i = 0; i < nfrIds.length; i++) {
+    if (nfrIds[i] !== i + 1) {
+      errs.push({ field: 'numbering', message: `NFR-${nfrIds[i]}: expected NFR-${i + 1} (sequential numbering required)` });
+      break;
     }
   }
   return errs;
@@ -162,9 +193,18 @@ function checkContext(ast: any, content: string): ValidationError[] {
   if (!ast?.decisions || ast.decisions.length === 0) {
     errs.push({ field: 'fill', message: 'No decisions found (missing D- sections)' });
   }
+  // Sequential D numbering
+  const dIds: number[] = [];
   for (const d of ast.decisions || []) {
+    dIds.push(d.id);
     if (!['ACCEPTED', 'REJECTED', 'DEFERRED'].includes(d.status)) {
       errs.push({ field: 'enum', message: `D-${d.id}: status must be ACCEPTED/REJECTED/DEFERRED, got "${d.status}"` });
+    }
+  }
+  for (let i = 0; i < dIds.length; i++) {
+    if (dIds[i] !== i + 1) {
+      errs.push({ field: 'numbering', message: `D-${dIds[i]}: expected D-${i + 1} (sequential numbering required)` });
+      break;
     }
   }
   return errs;
@@ -174,6 +214,14 @@ function checkProposal(ast: any, content: string, context?: any): ValidationErro
   const errs: ValidationError[] = [];
   if (!ast?.deliverables || ast.deliverables.length === 0) {
     errs.push({ field: 'fill', message: 'No deliverables found (missing PR- items in ## Deliverables)' });
+  }
+  // Sequential PR numbering
+  const prIds = (ast?.deliverables || []).map((p: any) => p.id);
+  for (let i = 0; i < prIds.length; i++) {
+    if (prIds[i] !== i + 1) {
+      errs.push({ field: 'numbering', message: `PR-${prIds[i]}: expected PR-${i + 1} (sequential numbering required)` });
+      break;
+    }
   }
   for (const pr of ast.deliverables || []) {
     // Source: FR-{id} (bp/requirements.md) or Source: D-{id} (context.md)
@@ -210,6 +258,14 @@ function checkDesign(ast: any, content: string, context?: any): ValidationError[
   if (!ast?.items || ast.items.length === 0) {
     errs.push({ field: 'fill', message: 'No design items found (missing DS- in ## Design Items)' });
   }
+  // Sequential DS numbering
+  const dsIds = (ast?.items || []).map((d: any) => d.id);
+  for (let i = 0; i < dsIds.length; i++) {
+    if (dsIds[i] !== i + 1) {
+      errs.push({ field: 'numbering', message: `DS-${dsIds[i]}: expected DS-${i + 1} (sequential numbering required)` });
+      break;
+    }
+  }
   const proposalRefs: string[] = [];
   if (context?.proposalMd) {
     const prop = parseAndValidate('proposal', context.proposalMd);
@@ -241,6 +297,14 @@ function checkTasks(ast: any, content: string, context?: any): ValidationError[]
   if (!ast?.tasks || ast.tasks.length === 0) {
     errs.push({ field: 'fill', message: 'No tasks found (missing T- items with checkboxes)' });
   }
+  // Sequential T numbering
+  const tIds = (ast?.tasks || []).map((t: any) => t.id);
+  for (let i = 0; i < tIds.length; i++) {
+    if (tIds[i] !== i + 1) {
+      errs.push({ field: 'numbering', message: `T-${tIds[i]}: expected T-${i + 1} (sequential numbering required)` });
+      break;
+    }
+  }
   const designRefs: string[] = [];
   if (context?.designMd) {
     const des = parseAndValidate('design', context.designMd);
@@ -254,11 +318,13 @@ function checkTasks(ast: any, content: string, context?: any): ValidationError[]
     if (!['behavior', 'config', 'refactor', 'docs', 'scaffolding'].includes(t.type)) {
       errs.push({ field: 'enum', message: `T-${t.id}: type must be behavior/config/refactor/docs/scaffolding, got "${t.type}"` });
     }
-    // REFS: DS-N exists in design
+    // refs must start with DS-N
     if (refs.length > 0) {
       for (const ref of refs) {
         if (ref.startsWith('DS-') && designRefs.length > 0 && !designRefs.includes(ref)) {
           errs.push({ field: 'refs', message: `T-${t.id} refs ${ref} not found in design.md` });
+        } else if (!ref.startsWith('DS-') && !ref.startsWith('DS')) {
+          errs.push({ field: 'refs', message: `T-${t.id}: refs must start with DS-N, got "${ref}"` });
         }
       }
     } else {
@@ -269,6 +335,18 @@ function checkTasks(ast: any, content: string, context?: any): ValidationError[]
     }
     if (!f.files) {
       errs.push({ field: 'fill', message: `T-${t.id}: missing files field` });
+    } else if (typeof f.files === 'string' && f.files.trim().length === 0) {
+      errs.push({ field: 'fill', message: `T-${t.id}: files field is empty` });
+    } else if (typeof f.files === 'string') {
+      // File path format validation
+      const paths = f.files.split(',').map((p: string) => p.trim()).filter(Boolean);
+      for (const p of paths) {
+        if (p.startsWith('/')) {
+          errs.push({ field: 'files', message: `T-${t.id}: file path "${p}" must be relative, not absolute` });
+        } else if (/\s/.test(p)) {
+          errs.push({ field: 'files', message: `T-${t.id}: file path "${p}" contains spaces - use hyphens` });
+        }
+      }
     }
   }
   return errs;
@@ -297,6 +375,72 @@ function checkRoadmap(ast: any, content: string): ValidationError[] {
         errs.push({ field: 'enum', message: `Ph-${m.id}.${p.id}: status must be NOT_STARTED/ACTIVE/COMPLETED` });
       }
     }
+  }
+  return errs;
+}
+
+function checkReviewNumbering(ast: any, prefix: string): ValidationError[] {
+  const errs: ValidationError[] = [];
+  const issues = ast?.issues || [];
+  for (const issue of issues) {
+    if (!issue.id) continue;
+    const idStr = String(issue.id);
+    if (!idStr.startsWith(prefix)) continue;
+    const num = parseInt(idStr.slice(prefix.length));
+    if (isNaN(num)) {
+      errs.push({ field: 'numbering', message: `${issue.id}: id must be numeric after ${prefix}` });
+    }
+  }
+  // Sequential numbering: extract numbers and check
+ const numbers: number[] = [];
+  for (const issue of issues) {
+    if (!issue.id) continue;
+    const idStr = String(issue.id);
+    if (!idStr.startsWith(prefix)) continue;
+    const num = parseInt(idStr.slice(prefix.length));
+    if (!isNaN(num)) numbers.push(num);
+  }
+  for (let i = 0; i < numbers.length; i++) {
+    if (numbers[i] !== i + 1) {
+      errs.push({ field: 'numbering', message: `${prefix}${numbers[i]}: expected ${prefix}${i + 1} (sequential numbering required)` });
+      break;
+    }
+  }
+  return errs;
+}
+
+function checkResearchSummary(ast: any, content: string): ValidationError[] {
+  const errs: ValidationError[] = [];
+  if (!ast?.recommendation || ast.recommendation.trim().length === 0) {
+    errs.push({ field: 'fill', message: 'Missing ## Recommendation section (or empty)' });
+  }
+  if (!ast?.rationale || ast.rationale.trim().length === 0) {
+    errs.push({ field: 'fill', message: 'Missing ## Rationale section (or empty)' });
+  }
+  return errs;
+}
+
+function checkPhaseResearch(ast: any, content: string): ValidationError[] {
+  const errs: ValidationError[] = [];
+  if (!ast?.scope || ast.scope.trim().length === 0) {
+    errs.push({ field: 'fill', message: 'Missing ## Research Scope section (or empty)' });
+  }
+  if (!ast?.recommendation || ast.recommendation.trim().length === 0) {
+    errs.push({ field: 'fill', message: 'Missing ## Recommendation section (or empty)' });
+  }
+  return errs;
+}
+
+function checkChangeSummary(ast: any, content: string): ValidationError[] {
+  const errs: ValidationError[] = [];
+  if (!ast?.intent || ast.intent.trim().length === 0) {
+    errs.push({ field: 'fill', message: 'Missing ## Intent section (or empty)' });
+  }
+  if (!ast?.commits || ast.commits.length === 0) {
+    errs.push({ field: 'fill', message: 'Missing ## Commits section (or empty) or no commits listed' });
+  }
+  if (!ast?.files || ast.files.length === 0) {
+    errs.push({ field: 'fill', message: 'Missing ## Output Files section (or empty) or no files listed' });
   }
   return errs;
 }
@@ -445,7 +589,7 @@ export function parseRoadmapFile(roadmapPath: string): { milestones: any[] } | n
 
 // ── Grammar name map ───────────────────────────────────────────────
 
-const grammarMap: Record<string, string> = {
+export const grammarMap: Record<string, string> = {
   'requirements': 'requirements',
   'context': 'context',
   'proposal': 'proposal',
@@ -458,4 +602,8 @@ const grammarMap: Record<string, string> = {
   'quality-review': 'quality-review',
   'goal-review': 'goal-review',
   'roadmap': 'roadmap',
+  'research-summary': 'research-summary',
+  'phase-research': 'phase-research',
+  'change-summary': 'change-summary',
 };
+

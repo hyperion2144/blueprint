@@ -30,47 +30,47 @@ interface StepExitCriteria {
  * When CLI attempts to advance from a step, these conditions are checked.
  */
 const EXIT_CRITERIA: StepExitCriteria[] = [
-  // project/roadmap-defined → must have roadmap + milestone directories
+  // project/roadmap-defined → must have roadmap (PEG validated) + milestone directories
   {
     type: 'project', step: 'roadmap-defined',
     checks: [
-      { path: 'roadmap.md', description: 'roadmap.md not found. Complete roadmap step first.' },
+      { path: 'roadmap.md', description: 'roadmap.md is not properly formatted. Use ## Md-N: title [STATUS] and ### Ph-M.P: title [STATUS].', checkMode: 'peg_validate', pegType: 'roadmap' },
       { path: 'milestones/', description: 'No milestone directories found. Create bp/milestones/<id>/phases/<pid>/ for each milestone.' },
     ],
   },
-  // milestone/active → must have requirements.md
+  // milestone/active → must have requirements.md (PEG validated)
   {
     type: 'milestone', step: 'active',
     checks: [
-      { path: 'requirements.md', description: 'requirements.md not found' },
+      { path: 'requirements.md', description: 'requirements.md is not properly formatted. Use ## FR-N: title or ## NFR-N: title sections.', checkMode: 'peg_validate', pegType: 'requirements' },
     ],
   },
-  // project/grill → requirements.md must be complete (not template)
+  // project/grill → requirements.md must be PEG-validated
   {
     type: 'project', step: 'grill',
     checks: [
-      { path: 'requirements.md', description: 'requirements.md is still a template. Fill it before continuing.' },
+      { path: 'requirements.md', description: 'requirements.md is not properly formatted. Use ## FR-N: title or ## NFR-N: title sections.', checkMode: 'peg_validate', pegType: 'requirements' },
     ],
   },
   // project/researched → must have research output
   {
     type: 'project', step: 'researched',
     checks: [
-      { path: 'research/summary.md', description: 'research/summary.md not found. Complete the research step first.' },
+      { path: 'research/summary.md', description: 'research/summary.md is not properly formatted. Use ## Recommendation and ## Rationale.', checkMode: 'peg_validate', pegType: 'research-summary' },
     ],
   },
-  // phase/discuss → must have context.md in phase dir
+  // phase/discuss → context.md must be PEG-validated
   {
     type: 'phase', step: 'discuss',
     checks: [
-      { path: 'context.md', description: 'context.md not found or still a template. Complete the discuss step for this phase.' },
+      { path: 'context.md', description: 'context.md is not properly formatted. Use ## D-N: title with - Status: and - Reason: lines.', checkMode: 'peg_validate', pegType: 'context' },
     ],
   },
-  // phase/research → must have research.md in phase dir
+  // phase/research → research.md must be PEG-validated
   {
     type: 'phase', step: 'research',
     checks: [
-      { path: 'research.md', description: 'research.md not found or still a template. Complete research-phase for this phase.' },
+      { path: 'research.md', description: 'research.md is not properly formatted. Use ## Research Scope and ## Recommendation.', checkMode: 'peg_validate', pegType: 'phase-research' },
     ],
   },
   // phase/split → must have changes directories under the phase
@@ -154,18 +154,18 @@ const EXIT_CRITERIA: StepExitCriteria[] = [
     ],
   },
 
-  // Change at archiving — must have change-summary.md and verification.md
+  // Change at archiving — must have change-summary.md (PEG validated) and verification.md
   {
     type: 'change', step: 'archiving',
     checks: [
-      { path: 'change-summary.md', description: 'change-summary.md not found. Run \`bp template change-summary\` to generate it.' },
+      { path: 'change-summary.md', description: 'change-summary.md is not properly formatted. Use ## Intent, ## Commits, ## Output Files sections.', checkMode: 'peg_validate', pegType: 'change-summary' },
       { path: 'verification.md', description: 'verification.md is not properly formatted. Check status.', checkMode: 'peg_validate', pegType: 'verification' },
     ],
   },
   {
     type: 'adhoc', step: 'archiving',
     checks: [
-      { path: 'change-summary.md', description: 'change-summary.md not found. Run \`bp template change-summary\` to generate it.' },
+      { path: 'change-summary.md', description: 'change-summary.md is not properly formatted. Use ## Intent, ## Commits, ## Output Files sections.', checkMode: 'peg_validate', pegType: 'change-summary' },
       { path: 'verification.md', description: 'verification.md is not properly formatted. Check status.', checkMode: 'peg_validate', pegType: 'verification' },
     ],
   },

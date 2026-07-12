@@ -261,16 +261,13 @@ export const CONTEXT_TEMPLATE = `# Context: {{name}}
 
 <!-- Numbered decisions: D1, D2, ... Each decision records what was chosen and why. -->
 
-### D1: {{decision-title}}
-- **Decision**: {{what we decided}}
-- **Rationale**: {{why}}
-- **Alternatives considered**: {{what else we evaluated}}
+## D-1: {{decision-title}}
+- Status: {{accepted | rejected | deferred}}
+- Reason: {{why this decision was made}}
 
-### D2: {{decision-title}}
-- **Decision**: {{what we decided}}
-- **Rationale**: {{why}}
-- **Alternatives considered**: {{what else we evaluated}}
-
+## D-2: {{decision-title}}
+- Status: {{accepted | rejected | deferred}}
+- Reason: {{why}}
 ---
 
 ## Interface Contracts
@@ -302,6 +299,18 @@ export const CONTEXT_TEMPLATE = `# Context: {{name}}
 <!-- Explicitly excluded from this phase. -->
 
 {{non-goals}}
+`;
+
+export const PHASE_RESEARCH_TEMPLATE = `# Research: {{name}}
+
+## Research Scope
+{{what was researched}}
+
+## Recommendation
+{{recommended implementation path}}
+
+## Risks
+- {{risk-1}}: {{mitigation}}
 `;
 
 export const RESEARCH_TEMPLATE = `# Research: {{name}}
@@ -345,6 +354,15 @@ export const RESEARCH_TEMPLATE = `# Research: {{name}}
 
 - {{question-1}}
 - {{question-2}}
+`;
+
+export const RESEARCH_SUMMARY_TEMPLATE = `# Summary: {{name}}
+
+## Recommendation
+{{recommended approach, one paragraph}}
+
+## Rationale
+{{why this approach, key trade-offs considered}}
 `;
 
 export const SUMMARY_TEMPLATE = `# Summary: {{name}}
@@ -500,70 +518,38 @@ export const GOAL_REVIEW_TEMPLATE = `# Goal Review: {{name}}
 
 export const CHANGE_SUMMARY_TEMPLATE = `# Change Summary: {{name}}
 
-> Auto-generated summary after all waves complete.
-
----
-
 ## Intent
 {{intent}}
 
-## Must-haves Status
-| Must-have | Status |
-|-----------|--------|
-| {{must-have-1}} | ✅ |
-
 ## Commits
-| Hash | Message |
-|------|--------|
-| \`{{hash-1}}\` | {{message-1}} |
+- {{hash-1}}: {{message-1}}
 
 ## Output Files
-| File | Action |
-|------|--------|
-| {{file}} | {{action}} |
-
-## Key Decisions
-- {{decision}}
-
-## Verification Results
-- Type check: {{typecheck}}
-- Tests: {{tests}}
-- Lint: {{lint}}
+- {{file-1}}: {{action-1}}
 `;
 
 export const REQUIREMENTS_TEMPLATE = `# Requirements: {{name}}
 
 > Populated during grill phase. New milestones append to the top, completed milestones remain as history.
-> Format: \`## M<number>-<name> [CURRENT | COMPLETED]\` — one section per milestone.
 
 ---
 
-## {{milestone-id}} [CURRENT]
+## FR-1: {{requirement-title}}
+- Priority: {{critical | high | medium | low}}
+- {{description: what the system should do}}
+- Acceptance: {{how to verify}}
 
-### Functional Requirements
+## FR-2: {{requirement-title}}
+- Priority: {{critical | high | medium | low}}
+- {{description}}
+- Acceptance: {{how to verify}}
 
-#### FR-1: {{requirement-title}}
-- **Description**: {{what the system should do}}
-- **Priority**: {{critical | high | medium | low}}
-- **Acceptance criteria**: {{how to verify}}
+## NFR-1: {{category (performance, security, usability, etc.)}}
+- {{constraint or quality attribute}}
 
-#### FR-2: {{requirement-title}}
-- **Description**: {{what the system should do}}
-- **Priority**: {{critical | high | medium | low}}
-- **Acceptance criteria**: {{how to verify}}
-
-### Non-Functional Requirements
-
-#### NFR-1: {{category (performance, security, usability, etc.)}}
-- **Description**: {{constraint or quality attribute}}
-
-### Constraints
+## Constraints
 - {{constraint-1}}
 - {{constraint-2}}
-
-### Success Criteria
-- [ ] {{criterion-1}}
-- [ ] {{criterion-2}}
 `;
 
 export const ROADMAP_TEMPLATE = `# Roadmap: {{name}}
@@ -586,7 +572,7 @@ export const ROADMAP_TEMPLATE = `# Roadmap: {{name}}
 
 > Add more phases (Ph-1.3, Ph-1.4, ...) and milestones (Md-2, Md-3, ...) below as separate sections.
 > Use \`[NOT_STARTED]\`, \`[ACTIVE]\`, or \`[COMPLETED]\` status tags.
-> Directory naming: milestones/{Md-id}/phases/{Ph-mid.pid}/changes/. Create all directories at once.`;
+> Directory naming: milestones/{Md-id}/phases/{Ph-mid.pid}/changes/. Create milestone root + first phase directory only. Remaining dirs created on-demand.`;
 
 export const RESEARCH_STACK_TEMPLATE = `# Tech Stack Research: {{name}}
 
@@ -1260,32 +1246,6 @@ export const CODEBASE_PITFALLS_TEMPLATE = `# Pitfalls: {{name}}
 | {{dep-1}} | {{version}} | {{latest}} | {{risk}} |
 `;
 
-export const PHASE_RESEARCH_TEMPLATE = `# Phase Research: {{name}}
-
-> Implementation path investigation for a specific phase.
-
----
-
-## Research Scope
-{{scope}}
-
-## Recommended Approach
-**Recommendation**: {{recommendation}}
-
-**Rationale**: {{rationale}}
-
-## Alternatives Considered
-| Approach | Pros | Cons | Verdict |
-|----------|------|------|--------|
-| {{alt-1}} | {{pros}} | {{cons}} | {{verdict}} |
-
-## Known Pitfalls
-- {{pitfall-1}}
-- {{pitfall-2}}
-
-## TDD Implications
-- {{tdd-note-1}}
-`;
 
 export const UAT_TEMPLATE = `---
 status: testing

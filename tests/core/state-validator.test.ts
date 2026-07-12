@@ -45,7 +45,7 @@ describe('validateStepAdvance', () => {
   });
 
   it('project roadmap-defined passes with roadmap.md', () => {
-    writeFileSync(join(bpDir, 'roadmap.md'), '# Roadmap\n\nContent here', 'utf-8');
+    writeFileSync(join(bpDir, 'roadmap.md'), '# Roadmap: test\n\n## Md-1: Core [ACTIVE]\n\n### Ph-1.1: Engine [NOT_STARTED]\n', 'utf-8');
     mkdirSync(join(bpDir, 'milestones', 'm1'), { recursive: true });
     const result = validateStepAdvance('project', 'roadmap-defined', null, tmpDir);
     expect(result.valid).toBe(true);
