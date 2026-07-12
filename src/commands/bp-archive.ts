@@ -86,7 +86,12 @@ function archiveHandler(changePath: string) {
         delete state.active_context.contexts[changeName];
         const remaining = Object.keys(state.active_context.contexts);
         if (remaining.length === 0) {
-          state.active_context = { type: 'project', ref: null, step: state.project.status };
+          // No remaining parallel contexts — check if we're in a milestone/phase to mark ready
+          if (state.project.current_milestone && state.project.current_phase) {
+            state.active_context = { type: 'phase', ref: `milestones/${state.project.current_milestone}/phases/${state.project.current_phase}`, step: 'ready' };
+          } else {
+            state.active_context = { type: 'project', ref: null, step: state.project.status };
+          }
         } else if (remaining.length === 1) {
           const last = state.active_context.contexts[remaining[0]];
           state.active_context = { type: last.type, ref: last.ref, step: last.step };

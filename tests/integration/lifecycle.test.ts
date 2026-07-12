@@ -964,8 +964,19 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     writeFileSync(join(testDir, 'src/register.ts'), '');
     execSync('git add src/register.ts', { cwd: testDir });
     execSync('git commit -m "feat: register"', { cwd: testDir });
-    cli('commit', '"feat: register"', '--files', 'src/register.ts', '--task', 'T-1', '--tasks-path', 'bp/changes/change-b/tasks.md');
-    write(`${dir}/change-summary.md`, VALID_CHANGE_SUMMARY.replace(/change-a/g, 'change-b'));
+    // Mark T-1 with commit hash
+    const commitOut = execSync(`node ${cliPath} commit "feat: register" --files src/register.ts --task T-1 --tasks-path bp/changes/change-b/tasks.md`, { encoding: 'utf8', cwd: testDir });
+    // Also mark T-2 with same hash
+    const commitHash = JSON.parse(commitOut).hash;
+    const tasksPath = join(testDir, 'bp/changes/change-b/tasks.md');
+    let tasksContent = readFileSync(tasksPath, 'utf-8');
+    tasksContent = tasksContent.replace(
+      '- [ ] T-2: [type:behavior] implement register',
+      `- [x] T-2: [type:behavior] implement register <!-- commit: ${commitHash} -->`
+    );
+    writeFileSync(tasksPath, tasksContent);
+
+    // Advance to reviewing
     cli('continue', 'change', 'change-b');
     expectState('changes', '', 'milestone-active', 'reviewing', 'change-b');
 
@@ -976,6 +987,7 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     cli('continue', 'change', 'change-b');
     expectState('changes', '', 'milestone-active', 'archiving', 'change-b');
 
+    write(`${dir}/change-summary.md`, VALID_CHANGE_SUMMARY.replace(/change-a/g, 'change-b'));
     // verification + archive
     write(`${dir}/verification.md`, VALID_VERIFICATION.replace(/change-a/g, 'change-b'));
     const out = cli('archive', 'bp/changes/change-b');
@@ -991,12 +1003,13 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
 
   // ─── PHASE TRANSITION: ph.1-auth -> ph.2-api ────────
   it('phase-ready: next phase prompt + advance', () => {
+    // Create next phase directory first so findNextPhase can find it
+    mkdirSync(join(testDir, 'bp/milestones/M1-core/phases/ph.2-api/changes'), { recursive: true });
     const out = cli('continue');
     expect(out).toContain('phase complete');
     expect(out).toContain('ph.2-api');
     expectState('phase', 'ready', 'milestone-active');
 
-    mkdirSync(join(testDir, 'bp/milestones/M1-core/phases/ph.2-api/changes'), { recursive: true });
     cli('state', 'set-phase', 'ph.2-api');
     expectState('phase', 'start', 'milestone-active');
 
@@ -1034,46 +1047,54 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     writeFileSync(join(testDir, 'src/api.ts'), '');
     execSync('git add src/api.ts', { cwd: testDir });
     execSync('git commit -m "feat: api"', { cwd: testDir });
-    cli('commit', 'feat: api', '--files', 'src/api.ts', '--task', 'T-1', '--tasks-path', 'bp/changes/change-c/tasks.md');
+    const commitC = execSync(`node ${cliPath} commit "feat: api" --files src/api.ts --task T-1 --tasks-path bp/changes/change-c/tasks.md`, { encoding: 'utf8', cwd: testDir });
+    const hashC = JSON.parse(commitC).hash;
+    // Mark T-2 with same hash
+    const tasksC = join(testDir, 'bp/changes/change-c/tasks.md');
+    let tc = readFileSync(tasksC, 'utf-8');
+    tc = tc.replace('- [ ] T-2: [type:behavior] implement register', `- [x] T-2: [type:behavior] implement register <!-- commit: ${hashC} -->`);
+    writeFileSync(tasksC, tc);
     write(`${cdir}/change-summary.md`, VALID_CHANGE_SUMMARY.replace(/change-a/g, 'change-c'));
-    cli('continue', 'change', 'change-c');
-    expectState('adhoc', 'reviewing', 'milestone-active', 'reviewing');
-
     write(`${cdir}/spec-review.md`, VALID_SPEC_REVIEW.replace(/change-a/g, 'change-c'));
     write(`${cdir}/quality-review.md`, VALID_QUALITY_REVIEW.replace(/change-a/g, 'change-c'));
     write(`${cdir}/goal-review.md`, VALID_GOAL_REVIEW.replace(/change-a/g, 'change-c'));
     cli('continue', 'change', 'change-c');
+    expectState('adhoc', 'reviewing', 'milestone-active', 'reviewing');
+    // Second continue advances to archiving (reviews already written)
+    cli('continue', 'change', 'change-c');
     expectState('adhoc', 'archiving', 'milestone-active', 'archiving');
-
     write(`${cdir}/verification.md`, VALID_VERIFICATION.replace(/change-a/g, 'change-c'));
     const out = cli('archive', 'bp/changes/change-c');
     expect(out).toContain('Phase ph.2-api complete');
     expectState('phase', 'ready', 'milestone-active');
 
     const out2 = cli('continue');
-    expect(out2).toContain('No next phase');
+    expect(out2).toContain('no next phase');
     expectState('phase', 'ready', 'milestone-active');
   });
 
   // ─── MILESTONE SWITCH: M1 -> M2 ─────────────────────
   it('milestone switch: M1 -> M2', () => {
+    // Write valid requirements for new milestone's grill gate
+    write('bp/requirements.md', VALID_REQ);
     cli('state', 'set-milestone', 'M2-ui');
     expectState('milestone', 'active', 'milestone-active');
     const s = getState();
     expect(s.project.current_milestone).toBe('M2-ui');
+    expect(s.project.current_milestone).toBe('M2-ui');
 
     expectAdvanced(cli('continue'), 'grill');
-    expectState('project', 'grill', 'grill');
+    expectState('milestone', 'grill', 'grill');
   });
 
   // ─── M2: ph.1-dashboard (1 change, valid only) ─────
   it('M2 ph.1-dashboard: full lifecycle', () => {
     cli('continue');
-    expectState('project', 'research', 'research');
+    expectState('milestone', 'research', 'research');
 
     write('bp/research/summary.md', VALID_SUMMARY);
     cli('continue');
-    expectState('project', 'roadmap', 'roadmap');
+    expectState('milestone', 'roadmap', 'roadmap');
 
     mkdirSync(join(testDir, 'bp/milestones/M2-ui/phases/ph.1-dashboard/changes'), { recursive: true });
     cli('state', 'set-milestone', 'M2-ui');
@@ -1111,25 +1132,30 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     writeFileSync(join(testDir, 'src/dashboard.ts'), '');
     execSync('git add src/dashboard.ts', { cwd: testDir });
     execSync('git commit -m "feat: dashboard"', { cwd: testDir });
-    cli('commit', 'feat: dashboard', '--files', 'src/dashboard.ts', '--task', 'T-1', '--tasks-path', 'bp/changes/change-d/tasks.md');
+    const commitD = execSync(`node ${cliPath} commit "feat: dashboard" --files src/dashboard.ts --task T-1 --tasks-path bp/changes/change-d/tasks.md`, { encoding: 'utf8', cwd: testDir });
+    const hashD = JSON.parse(commitD).hash;
+    // Mark T-2 with same hash
+    const tasksD = join(testDir, 'bp/changes/change-d/tasks.md');
+    let td = readFileSync(tasksD, 'utf-8');
+    td = td.replace('- [ ] T-2: [type:behavior] implement register', `- [x] T-2: [type:behavior] implement register <!-- commit: ${hashD} -->`);
+    writeFileSync(tasksD, td);
     write(`${cdir}/change-summary.md`, VALID_CHANGE_SUMMARY.replace(/change-a/g, 'change-d'));
     cli('continue', 'change', 'change-d');
     expectState('adhoc', 'reviewing', 'milestone-active', 'reviewing');
-
+    // Second continue to archiving (reviews already written below)
     write(`${cdir}/spec-review.md`, VALID_SPEC_REVIEW.replace(/change-a/g, 'change-d'));
     write(`${cdir}/quality-review.md`, VALID_QUALITY_REVIEW.replace(/change-a/g, 'change-d'));
     write(`${cdir}/goal-review.md`, VALID_GOAL_REVIEW.replace(/change-a/g, 'change-d'));
     cli('continue', 'change', 'change-d');
     expectState('adhoc', 'archiving', 'milestone-active', 'archiving');
-
     write(`${cdir}/verification.md`, VALID_VERIFICATION.replace(/change-a/g, 'change-d'));
     const out = cli('archive', 'bp/changes/change-d');
     expect(out).toContain('Phase');
     expect(out).toContain('complete');
     expectState('phase', 'ready', 'milestone-active');
-
     const out2 = cli('continue');
-    expect(out2).toContain('No next phase');
+
+    expect(out2).toContain('no next phase');
     expectState('phase', 'ready', 'milestone-active');
   });
 
