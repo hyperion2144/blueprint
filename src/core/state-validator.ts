@@ -380,7 +380,30 @@ function checkExitCondition(bpDir: string, check: ExitCheck, resolvedPath?: stri
     }
     const content = readFileSync(fullPath, 'utf-8');
     try {
-      const result = parseAndValidate(check.pegType, content);
+      // For proposal type, pass requirements/context as context for refs validation
+      let context: any = undefined;
+      if (check.pegType === 'proposal') {
+        // Only require refs when project has requirements.md (phase change)
+        const reqPath = join(bpDir, 'requirements.md');
+        if (existsSync(reqPath)) {
+          context = { requirementsMd: readFileSync(reqPath, 'utf-8') };
+          const ctxPath = join(bpDir, 'milestones', '..', '..'); // simplified
+          // Try to find context.md in active phase
+          const stateMd = join(bpDir, 'state.md');
+          if (existsSync(stateMd)) {
+            const stateContent = readFileSync(stateMd, 'utf-8');
+            const currentPhase = stateContent.match(/current_phase:\s*(\S+)/);
+            const currentMs = stateContent.match(/current_milestone:\s*(\S+)/);
+            if (currentPhase && currentMs) {
+              const ctxFile = join(bpDir, 'milestones', currentMs[1], 'phases', currentPhase[1], 'context.md');
+              if (existsSync(ctxFile)) {
+                context.contextMd = readFileSync(ctxFile, 'utf-8');
+              }
+            }
+          }
+        }
+      }
+      const result = parseAndValidate(check.pegType, content, context);
       if (!result.valid) {
         return `${check.path}: ${result.errors.map((e: any) => e.message).join('; ')}`;
       }
@@ -411,7 +434,6 @@ export function validateStepAdvance(
   const criteria = EXIT_CRITERIA.find(
     (c) => c.type === contextType && c.step === normalizedStep,
   );
-
   if (!criteria) {
     // No explicit exit criteria = pass by default
     return { valid: true, errors: [] };

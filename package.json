@@ -1,14 +1,14 @@
 {
   "name": "@hyperion2144/blueprint",
   "version": "0.5.0",
-  "description": "Blueprint — spec-driven development workflow for AI coding agents",
+  "description": "Blueprint \u2014 spec-driven development workflow for AI coding agents",
   "type": "module",
   "bin": {
     "bp": "bin/cli.js"
   },
   "scripts": {
     "build:grammar": "ls src/core/validate/grammar/*.peggy 2>/dev/null | while read f; do b=\"${f%.peggy}\"; echo \"compile $(basename $f)\"; npx peggy -o \"${b}.cjs\" --format commonjs \"$f\"; done",
-    "build": "npm run build:grammar && tsup && cp bin/cli.js bin/bp.js",
+    "build": "npm run build:grammar && tsup && mkdir -p bin/grammar && cp src/core/validate/grammar/*.cjs bin/grammar/ && cp bin/cli.js bin/bp.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",

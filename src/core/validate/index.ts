@@ -190,7 +190,8 @@ function checkProposal(ast: any, content: string, context?: any): ValidationErro
     for (const ref of pr.refs || []) {
       if (ref.startsWith('FR-') || ref.startsWith('NFR-')) {
         if (context?.requirementsMd) {
-          const found = context.requirementsMd.includes(`## ${ref}:`);
+          // Check for FR-N: or FR-N in any format (list item or heading)
+          const found = context.requirementsMd.includes(` ${ref}:`) || context.requirementsMd.includes(`## ${ref}:`);
           if (!found) errs.push({ field: 'refs', message: `PR-${pr.id} refs ${ref} not found in requirements.md` });
         }
       } else if (ref.startsWith('D-')) {
@@ -201,6 +202,7 @@ function checkProposal(ast: any, content: string, context?: any): ValidationErro
       }
     }
   }
+  return errs;
 }
 
 function checkDesign(ast: any, content: string, context?: any): ValidationError[] {

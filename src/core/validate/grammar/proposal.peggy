@@ -51,7 +51,7 @@ DescriptionBlock
     { return lines.join(" ").trim(); }
 
 ContentBlock
-  = lines:(_ text:LineRest NEWLINE { return text; })+
+  = lines:(_ !"## " !NEWLINE text:LineRest NEWLINE { return text; })+
     { return lines.join("\n"); }
 
 
