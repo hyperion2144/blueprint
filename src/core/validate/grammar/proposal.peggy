@@ -34,16 +34,17 @@ DeliverablesSection
     { return items; }
 
 DeliverableItem
-  = __ "- PR-" id:Integer ": " title:DeliverableTitle restLine:RefsOnLine? NEWLINE desc:DescriptionBlock?
-    { return { id, title, refs: restLine?.refs || [], description: desc || "" }; }
+  = __ "- PR-" id:Integer ": " title:LineRest NEWLINE
+    refsLine:RefsLine
+    desc:DescriptionBlock?
+    { return { id, title, refs: refsLine, description: desc || "" }; }
   / __ "- PR-" text:$[^ :\n\r]+ { error('"PR-' + text + '": ID must be numeric (e.g. "PR-1")'); }
 
-DeliverableTitle
-  = chars:(!"refs:" [^\n\r])* { return chars.map(c => c[1]).join("").trim(); }
-
-RefsOnLine
-  = "refs:" __ refs:RefIdList
-    { return { refs }; }
+RefsLine
+  = __ "refs: " refs:RefIdList NEWLINE
+    { return refs; }
+  / __ text:LineRest NEWLINE
+    { error('Expected "refs: FR-N, D-N" on its own indented line after the PR title (found: "' + text + '")'); }
 
 RefIdList
   = head:RefId tail:(__ "," __ RefId)*

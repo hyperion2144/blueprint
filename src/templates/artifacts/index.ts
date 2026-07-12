@@ -43,12 +43,14 @@ PR splitting guidance:
 - If you can describe it as "User can X" → that's one PR.
 - If two capabilities depend on the same underlying change, they can share a PR.
 - Keep PR count ≤ 5 per change. If more, consider splitting the change.
-- PR-1: {{title}}  refs: FR-{{id}}, D-{{id}}
+- PR-1: {{title}}
+  refs: FR-{{id}}, D-{{id}}
   Source: FR-{{id}} (bp/requirements.md)
   System SHALL {{observable behavior}}.
   Verify: {{command, test, or manual step to confirm it works}}.
   Files: {{file paths}}
-- PR-2: {{title}}  refs: FR-{{id}}
+- PR-2: {{title}}
+  refs: FR-{{id}}
   Source: D-{{id}} (context.md)
   System SHALL {{observable behavior}}.
   Verify: {{confirmation method}}.

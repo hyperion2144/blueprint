@@ -119,11 +119,13 @@ const VALID_PROPOSAL = `# Proposal: change-a
 test
 
 ## Deliverables
-- PR-1: login  refs: FR-1
+- PR-1: login
+  refs: FR-1
   Source: FR-1 (bp/requirements.md)
   System SHALL login.
   Verify: POST login.
-- PR-2: register  refs: FR-2
+- PR-2: register
+  refs: FR-2
   Source: FR-2 (bp/requirements.md)
   System SHALL register.
   Verify: POST register.
@@ -512,29 +514,29 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     expectState('adhoc', 'proposal', 'milestone-active', 'proposal');
 
     // PR without Source
-    write(`${dir}/proposal.md`, '# Proposal: t\n\n## Intent\ntest\n\n## Deliverables\n- PR-1: x  refs: FR-1\n  desc\n');
+    write(`${dir}/proposal.md`, '# Proposal: t\n\n## Intent\ntest\n\n## Deliverables\n- PR-1: x\n  refs: FR-1\n  desc\n');
     expectBlocked(cli('continue', 'change', 'change-a'), 'missing Source');
     expectState('adhoc', 'proposal', 'milestone-active', 'proposal');
 
     // PR without refs (phase change)
     write(`${dir}/proposal.md`, '# Proposal: t\n\n## Intent\ntest\n\n## Deliverables\n- PR-1: x\n  Source: FR-1 (bp/requirements.md)\n  desc\n');
-    expectBlocked(cli('continue', 'change', 'change-a'), 'no refs found');
+    expectBlocked(cli('continue', 'change', 'change-a'), 'Expected "refs: FR-N, D-N"');
     expectState('adhoc', 'proposal', 'milestone-active', 'proposal');
 
     // PR refs nonexistent FR-99
-    write(`${dir}/proposal.md`, '# Proposal: t\n\n## Intent\ntest\n\n## Deliverables\n- PR-1: x  refs: FR-99\n  Source: FR-99 (bp/requirements.md)\n  desc\n');
+    write(`${dir}/proposal.md`, '# Proposal: t\n\n## Intent\ntest\n\n## Deliverables\n- PR-1: x\n  refs: FR-99\n  Source: FR-99 (bp/requirements.md)\n  desc\n');
     expectBlocked(cli('continue', 'change', 'change-a'), 'FR-99', 'not found');
     expectState('adhoc', 'proposal', 'milestone-active', 'proposal');
 
     // refs with wrong format (refs: XYZ instead of FR-N) -> PEG error from RefId catch-all
-    write(`${dir}/proposal.md`, '# Proposal: t\n\n## Intent\ntest\n\n## Deliverables\n- PR-1: x  refs: XYZ\n  Source: FR-1 (bp/requirements.md)\n  desc\n');
+    write(`${dir}/proposal.md`, '# Proposal: t\n\n## Intent\ntest\n\n## Deliverables\n- PR-1: x\n  refs: XYZ\n  Source: FR-1 (bp/requirements.md)\n  desc\n');
     expectBlocked(cli('continue', 'change', 'change-a'), 'ref must start with FR-/NFR-/D-');
 
     // PR with non-numeric ID -> PEG error
-    write(`${dir}/proposal.md`, '# Proposal: t\n\n## Intent\ntest\n\n## Deliverables\n- PR-X: x  refs: FR-1\n  Source: FR-1 (bp/requirements.md)\n  desc\n');
+    write(`${dir}/proposal.md`, '# Proposal: t\n\n## Intent\ntest\n\n## Deliverables\n- PR-X: x\n  refs: FR-1\n  Source: FR-1 (bp/requirements.md)\n  desc\n');
     expectBlocked(cli('continue', 'change', 'change-a'), 'ID must be numeric');
     // PR numbering skip (PR-1, PR-3)
-    write(`${dir}/proposal.md`, '# Proposal: t\n\n## Intent\ntest\n\n## Deliverables\n- PR-1: a  refs: FR-1\n  Source: FR-1 (bp/requirements.md)\n  d\n- PR-3: b  refs: FR-2\n  Source: FR-2 (bp/requirements.md)\n  d\n');
+    write(`${dir}/proposal.md`, '# Proposal: t\n\n## Intent\ntest\n\n## Deliverables\n- PR-1: a\n  refs: FR-1\n  Source: FR-1 (bp/requirements.md)\n  d\n- PR-3: b\n  refs: FR-2\n  Source: FR-2 (bp/requirements.md)\n  d\n');
     expectBlocked(cli('continue', 'change', 'change-a'), 'PR-3', 'expected PR-2');
     expectState('adhoc', 'proposal', 'milestone-active', 'proposal');
 
