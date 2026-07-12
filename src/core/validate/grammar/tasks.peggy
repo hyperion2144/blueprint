@@ -25,7 +25,7 @@ TaskItem
     }
 
 FieldLine
-  = __ "- **" key:FieldKey "**: " val:LineRest NEWLINE
+  = __ "- **" key:FieldKey "**:" _ val:(LineRest / "") NEWLINE
     { return { key, val }; }
 
 FieldKey

@@ -453,13 +453,38 @@ function continueChangeHandler(name: string, options?: { auto?: boolean; command
 
     // Coverage check: PR→DS→T chain completeness
     const changeDir = join(bpDir, ref);
+    const designContent = existsSync(join(changeDir, 'design.md')) ? readFileSync(join(changeDir, 'design.md'), 'utf-8') : undefined;
     const [propResult, desResult, taskResult] = ['proposal', 'design', 'tasks'].map(type => {
       const path = join(changeDir, `${type}.md`);
       if (!existsSync(path)) return null;
       const content = readFileSync(path, 'utf-8');
-      return parseAndValidate(type, content);
+      const ctx: any = {};
+      if (type === 'tasks' && designContent) ctx.designMd = designContent;
+      if (type === 'design') {
+        const propPath = join(changeDir, 'proposal.md');
+        if (existsSync(propPath)) ctx.proposalMd = readFileSync(propPath, 'utf-8');
+      }
+      return parseAndValidate(type, content, Object.keys(ctx).length > 0 ? ctx : undefined);
     });
     if (propResult?.ast && desResult?.ast && taskResult?.ast) {
+      // Also report any checkTasks/checkDesign errors that parseAndValidate found
+      const allErrors = [
+        ...(propResult?.errors || []),
+        ...(desResult?.errors || []),
+        ...(taskResult?.errors || []),
+      ];
+      if (allErrors.length > 0) {
+        console.log([
+          '# bp continue — blocked',
+          'error: exit conditions not met',
+          'note: MUST read instructions below, check ---END--- marker exists.',
+          `step: ${state.active_context.step}`,
+          `type: ${state.active_context.type}`,
+          'reasons: ' + allErrors.map(e => e.message).join('; '),
+          'hint: Ensure every PR is referenced by a DS, and every DS by a Task.',
+        ].join('\n'));
+        return;
+      }
       const covErrors = checkCoverage(propResult.ast, desResult.ast, taskResult.ast);
       if (covErrors.length > 0) {
         console.log([
@@ -474,7 +499,7 @@ function continueChangeHandler(name: string, options?: { auto?: boolean; command
         return;
       }
     }
-  }
+    }
 
   const result = determineChangeNextStep(bpDir, name);
   if ('error' in result) {

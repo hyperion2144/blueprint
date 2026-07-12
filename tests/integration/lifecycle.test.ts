@@ -645,10 +645,9 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     expectBlocked(cli('continue', 'change', 'change-a'), 'refs must start with DS-N');
     expectState('adhoc', 'planning', 'milestone-active', 'planning');
 
-    // refs with DS-X (non-numeric)
+    // refs with DS-X (non-numeric) -> checkTasks catches non-numeric DS- prefix
     write(`${dir}/tasks.md`, '# Tasks: t\n\n## Wave 1: C\n- [ ] T-1: [type:behavior] a\n  - **refs**: DS-X\n  - **files**: x.ts\n  - **spec_ref**: s.md\n  - **acceptance**: ok\n');
-    expectBlocked(cli('continue', 'change', 'change-a'), 'refs must start with DS-N');
-    expectState('adhoc', 'planning', 'milestone-active', 'planning');
+    expectBlocked(cli('continue', 'change', 'change-a'), 'must match DS-N format');
 
     // files empty
     write(`${dir}/tasks.md`, '# Tasks: t\n\n## Wave 1: C\n- [ ] T-1: [type:behavior] a\n  - **refs**: DS-1\n  - **files**: \n  - **spec_ref**: s.md\n  - **acceptance**: ok\n');
@@ -657,8 +656,7 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
 
     // behavior without spec_ref
     write(`${dir}/tasks.md`, '# Tasks: t\n\n## Wave 1: C\n- [ ] T-1: [type:behavior] a\n  - **refs**: DS-1\n  - **files**: x.ts\n  - **acceptance**: ok\n');
-    expectBlocked(cli('continue', 'change', 'change-a'), 'spec_ref required');
-    expectState('adhoc', 'planning', 'milestone-active', 'planning');
+    expectBlocked(cli('continue', 'change', 'change-a'), 'behavior type requires spec_ref');
 
     // acceptance empty
     write(`${dir}/tasks.md`, '# Tasks: t\n\n## Wave 1: C\n- [ ] T-1: [type:behavior] a\n  - **refs**: DS-1\n  - **files**: x.ts\n  - **spec_ref**: s.md\n  - **acceptance**: \n');
@@ -679,13 +677,12 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
   it('planning gate: coverage chain checks', () => {
     const dir = 'bp/changes/change-a';
 
-    // DS refs nonexistent PR-99
+    // DS refs nonexistent PR-99 -> checkDesign catches it (PR-99 not in proposal)
     write(`${dir}/design.md`, '# Design: t\n\n## Design Items\n- DS-1: a\n  refs: PR-99\n  Source: PR-99 (proposal.md)\n  d\n');
     write(`${dir}/tasks.md`, VALID_TASKS);
-    expectBlocked(cli('continue', 'change', 'change-a'), 'reference chain incomplete');
+    expectBlocked(cli('continue', 'change', 'change-a'), 'PR-99');
     expectState('adhoc', 'planning', 'milestone-active', 'planning');
 
-    // T refs nonexistent DS-99
     write(`${dir}/design.md`, VALID_DESIGN);
     write(`${dir}/tasks.md`, '# Tasks: t\n\n## Wave 1: C\n- [ ] T-1: [type:behavior] a\n  - **refs**: DS-99\n  - **files**: x.ts\n  - **spec_ref**: s.md\n  - **acceptance**: ok\n');
     expectBlocked(cli('continue', 'change', 'change-a'), 'DS-99');

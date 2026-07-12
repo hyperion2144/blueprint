@@ -318,12 +318,21 @@ function checkTasks(ast: any, content: string, context?: any): ValidationError[]
     if (!['behavior', 'config', 'refactor', 'docs', 'scaffolding'].includes(t.type)) {
       errs.push({ field: 'enum', message: `T-${t.id}: type must be behavior/config/refactor/docs/scaffolding, got "${t.type}"` });
     }
-    // refs must start with DS-N
+    // Validate refs format
     if (refs.length > 0) {
       for (const ref of refs) {
-        if (ref.startsWith('DS-') && designRefs.length > 0 && !designRefs.includes(ref)) {
-          errs.push({ field: 'refs', message: `T-${t.id} refs ${ref} not found in design.md` });
-        } else if (!ref.startsWith('DS-') && !ref.startsWith('DS')) {
+        // Check if ref starts with DS-N numeric pattern
+        const isDsNumeric = /^DS-\d+$/.test(ref);
+        if (isDsNumeric) {
+          // Valid DS-N format — check if exists in design (when design context available)
+          if (designRefs.length > 0 && !designRefs.includes(ref)) {
+            errs.push({ field: 'refs', message: `T-${t.id} refs ${ref} not found in design.md` });
+          }
+        } else if (ref.startsWith('DS-')) {
+          // DS-prefixed but non-numeric (e.g. DS-X)
+          errs.push({ field: 'refs', message: `T-${t.id}: refs must match DS-N format (numeric ID), got "${ref}"` });
+        } else if (!ref.startsWith('DS')) {
+          // Doesn't start with DS at all (e.g. PR-1, XYZ)
           errs.push({ field: 'refs', message: `T-${t.id}: refs must start with DS-N, got "${ref}"` });
         }
       }
@@ -333,10 +342,10 @@ function checkTasks(ast: any, content: string, context?: any): ValidationError[]
     if (t.type === 'behavior' && !f.spec_ref) {
       errs.push({ field: 'refs', message: `T-${t.id}: behavior type requires spec_ref` });
     }
-    if (!f.files) {
-      errs.push({ field: 'fill', message: `T-${t.id}: missing files field` });
-    } else if (typeof f.files === 'string' && f.files.trim().length === 0) {
+    if (typeof f.files === 'string' && f.files.trim().length === 0) {
       errs.push({ field: 'fill', message: `T-${t.id}: files field is empty` });
+    } else if (!f.files) {
+      errs.push({ field: 'fill', message: `T-${t.id}: missing files field` });
     } else if (typeof f.files === 'string') {
       // File path format validation
       const paths = f.files.split(',').map((p: string) => p.trim()).filter(Boolean);
@@ -347,6 +356,11 @@ function checkTasks(ast: any, content: string, context?: any): ValidationError[]
           errs.push({ field: 'files', message: `T-${t.id}: file path "${p}" contains spaces - use hyphens` });
         }
       }
+    }
+    if (typeof f.acceptance === 'string' && f.acceptance.trim().length === 0) {
+      errs.push({ field: 'fill', message: `T-${t.id}: acceptance field is empty` });
+    } else if (!f.acceptance) {
+      errs.push({ field: 'fill', message: `T-${t.id}: missing acceptance field` });
     }
   }
   return errs;
@@ -492,9 +506,13 @@ export function checkCoverage(
 
   // PRs referenced by DSs
   const prInDs = new Set<string>();
-  for (const ds of designAst?.items || []) {
-    for (const ref of ds.refs || []) {
-      if (ref.startsWith('PR-')) prInDs.add(ref);
+  // DSs referenced by tasks
+  const dsInT = new Set<string>();
+  for (const t of tasksAst?.tasks || []) {
+    const refVal = t.fields?.refs;
+    const refs = typeof refVal === 'string' ? [refVal] : (refVal || []);
+    for (const ref of refs) {
+      if (ref.startsWith('DS-')) dsInT.add(ref);
     }
   }
 
@@ -506,9 +524,10 @@ export function checkCoverage(
   }
 
   // DSs referenced by tasks
-  const dsInT = new Set<string>();
   for (const t of tasksAst?.tasks || []) {
-    for (const ref of t.refs || []) {
+    const refVal = t.fields?.refs;
+    const refs = typeof refVal === 'string' ? [refVal] : (refVal || []);
+    for (const ref of refs) {
       if (ref.startsWith('DS-')) dsInT.add(ref);
     }
   }
@@ -522,7 +541,6 @@ export function checkCoverage(
 
   return errs;
 }
-
 /**
  * Check D: phase completion — all D-N related tasks must be [x]
  */
