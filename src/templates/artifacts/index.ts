@@ -77,12 +77,6 @@ export const DESIGN_TEMPLATE = `# Design: {{name}}
 
 ## Design Items
 
-<!--
-Decomposition guidance:
-- DS = module boundary (controller, service, repository — not one per function).
-- One PR may need multiple DS if it spans layers (e.g. HTTP + logic + data).
-- Multiple PRs may share one DS if they belong to the same module.
--->
 - DS-1: {{component-name}}
   refs: PR-{{id}}, PR-{{id}}
   {{core responsibilities, interfaces, data flow}}
