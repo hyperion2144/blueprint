@@ -776,7 +776,7 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     expectState('adhoc', 'reviewing', 'milestone-active', 'reviewing');
     // no constraint rows
     write(`${dir}/spec-review.md`, '# Spec Review: t\n\n## Overall: PASS\n\n## Constraint Checklist\n| # | C | S |\n');
-    expectBlocked(cli('continue', 'change', 'change-a'), 'Parse error');
+    expectBlocked(cli('continue', 'change', 'change-a'), 'has no data rows');
     expectState('adhoc', 'reviewing', 'milestone-active', 'reviewing');
 
     // valid spec-review, but no quality-review
@@ -815,7 +815,7 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
 
     // no issue rows
     write(`${dir}/quality-review.md`, '# Quality Review: t\n\n## Overall: PASS\n\n## Issues\n| # | S | D |\n');
-    expectBlocked(cli('continue', 'change', 'change-a'), 'Parse error');
+    expectBlocked(cli('continue', 'change', 'change-a'), 'has no data rows');
     expectState('adhoc', 'reviewing', 'milestone-active', 'reviewing');
 
     // invalid severity CRITICAL
@@ -859,7 +859,7 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
 
     // no goal rows
     write(`${dir}/goal-review.md`, '# Goal Review: t\n\n## Overall: PASS\n\n## Goal Checklist\n| # | G | S |\n\n## Completeness Assessment\nok\n');
-    expectBlocked(cli('continue', 'change', 'change-a'), 'Parse error');
+    expectBlocked(cli('continue', 'change', 'change-a'), 'has no data rows');
     expectState('adhoc', 'reviewing', 'milestone-active', 'reviewing');
 
     // missing ## Completeness Assessment

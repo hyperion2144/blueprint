@@ -12,10 +12,10 @@ verdictLine
     { /* consumed */ }
 
 ConstraintTable
-  = "## Constraint Checklist" NEWLINE (HeaderRow / BlankLine)* constraintRow+
+  = "## Constraint Checklist" NEWLINE (HeaderRow / BlankLine)* constraintRow*
 
 EdgeCaseTable
-  = "## Edge Case Coverage" NEWLINE edgeCaseRow+
+  = "## Edge Case Coverage" NEWLINE edgeCaseRow*
 edgeCaseRow
   = __ "|" text:(!"\n" .)* NEWLINE
 

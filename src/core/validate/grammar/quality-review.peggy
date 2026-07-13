@@ -8,8 +8,8 @@ QualityReview
     { return { name, issues: issues || [] }; }
 
 verdictLine = "## Overall: " ("PASS" / "FAIL" / "NEEDS_REVISION") NEWLINE
-IssueTable = "## Issues" NEWLINE (HeaderRow / BlankLine)* issueRow+ __ conventionTable?
-conventionTable = "## Convention Compliance" NEWLINE conventionRow+
+IssueTable = "## Issues" NEWLINE (HeaderRow / BlankLine)* issueRow* __ conventionTable*
+conventionTable = "## Convention Compliance" NEWLINE conventionRow*
 BlankLine = NEWLINE
 HeaderRow = __ "|" !(" " ("Q"/"D") Integer) text:(!"\n" .)* NEWLINE
 

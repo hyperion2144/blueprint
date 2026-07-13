@@ -126,12 +126,24 @@ export function parseAndValidate(
       break;
     case 'spec-review':
       errors.push(...checkReviewNumbering(ast, 'R'));
+      if (!/\| R\d+ \|/.test(content)) {
+        errors.push({ field: 'fill', message: 'Constraint Checklist has no data rows. Add at least one "| R1 | ..." row.' });
+      }
       break;
     case 'quality-review':
       errors.push(...checkReviewNumbering(ast, 'Q'));
+      if (!/\| Q\d+ \|/.test(content)) {
+        errors.push({ field: 'fill', message: 'Issues table has no data rows. Add at least one "| Q1 | ..." row.' });
+      }
       break;
     case 'goal-review':
       errors.push(...checkReviewNumbering(ast, 'G'));
+      if (!/\| G\d+ \|/.test(content)) {
+        errors.push({ field: 'fill', message: 'Goal Checklist has no data rows. Add at least one "| G1 | ..." row.' });
+      }
+      if (!/## Completeness Assessment/.test(content)) {
+        errors.push({ field: 'fill', message: 'Missing required section "## Completeness Assessment" in goal review.' });
+      }
       break;
     case 'verification':
       errors.push(...checkVerification(ast, content));

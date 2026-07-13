@@ -10,8 +10,9 @@ GoalReview
 
 verdictLine = "## Overall: " ("PASS" / "FAIL" / "NEEDS_REVISION") NEWLINE
 
-GoalTable = "## Goal Checklist" NEWLINE (HeaderRow / BlankLine)* goalRow+
+GoalTable = "## Goal Checklist" NEWLINE (HeaderRow / BlankLine)* goalRow*
 assessment = "## Completeness Assessment" NEWLINE line+
+           / "## " text:LineRest NEWLINE { error('Missing required section "## Completeness Assessment" in goal review (found "' + text + '"). Include a "## Completeness Assessment" section before Issues.'); }
 HeaderRow = __ "|" !(" " ("G"/"D") Integer) text:(!"\n" .)* NEWLINE
 BlankLine = NEWLINE
 IssuesSection = "## Issues" NEWLINE issues:IssueItem* { return issues; }

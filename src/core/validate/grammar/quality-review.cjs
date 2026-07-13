@@ -537,7 +537,7 @@ function peg$parse(input, options) {
   }
 
   function peg$parseIssueTable() {
-    let s0, s1, s2, s3, s4, s5, s6;
+    let s0, s1, s2, s3, s4, s5, s6, s7;
 
     s0 = peg$currPos;
     if (input.substr(peg$currPos, 9) === peg$c5) {
@@ -564,26 +564,19 @@ function peg$parse(input, options) {
         }
         s4 = [];
         s5 = peg$parseissueRow();
-        if (s5 !== peg$FAILED) {
-          while (s5 !== peg$FAILED) {
-            s4.push(s5);
-            s5 = peg$parseissueRow();
-          }
-        } else {
-          s4 = peg$FAILED;
+        while (s5 !== peg$FAILED) {
+          s4.push(s5);
+          s5 = peg$parseissueRow();
         }
-        if (s4 !== peg$FAILED) {
-          s5 = peg$parse__();
-          s6 = peg$parseconventionTable();
-          if (s6 === peg$FAILED) {
-            s6 = null;
-          }
-          s1 = [s1, s2, s3, s4, s5, s6];
-          s0 = s1;
-        } else {
-          peg$currPos = s0;
-          s0 = peg$FAILED;
+        s5 = peg$parse__();
+        s6 = [];
+        s7 = peg$parseconventionTable();
+        while (s7 !== peg$FAILED) {
+          s6.push(s7);
+          s7 = peg$parseconventionTable();
         }
+        s1 = [s1, s2, s3, s4, s5, s6];
+        s0 = s1;
       } else {
         peg$currPos = s0;
         s0 = peg$FAILED;
@@ -612,21 +605,12 @@ function peg$parse(input, options) {
       if (s2 !== peg$FAILED) {
         s3 = [];
         s4 = peg$parseconventionRow();
-        if (s4 !== peg$FAILED) {
-          while (s4 !== peg$FAILED) {
-            s3.push(s4);
-            s4 = peg$parseconventionRow();
-          }
-        } else {
-          s3 = peg$FAILED;
+        while (s4 !== peg$FAILED) {
+          s3.push(s4);
+          s4 = peg$parseconventionRow();
         }
-        if (s3 !== peg$FAILED) {
-          s1 = [s1, s2, s3];
-          s0 = s1;
-        } else {
-          peg$currPos = s0;
-          s0 = peg$FAILED;
-        }
+        s1 = [s1, s2, s3];
+        s0 = s1;
       } else {
         peg$currPos = s0;
         s0 = peg$FAILED;
