@@ -774,7 +774,6 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     write(`${dir}/spec-review.md`, '# Spec Review: t\n\n## Overall: PASS\n');
     expectBlocked(cli('continue', 'change', 'change-a'), 'Parse error');
     expectState('adhoc', 'reviewing', 'milestone-active', 'reviewing');
-
     // no constraint rows
     write(`${dir}/spec-review.md`, '# Spec Review: t\n\n## Overall: PASS\n\n## Constraint Checklist\n| # | C | S |\n');
     expectBlocked(cli('continue', 'change', 'change-a'), 'Parse error');
