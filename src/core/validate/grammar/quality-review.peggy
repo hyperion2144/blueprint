@@ -24,7 +24,9 @@ CheckState = " " { return ' '; } / "x" { return 'x'; }
 issueRow
   = __ "| Q" id:Integer " |" __ severity:Severity " |" text:(!"\n" .)* NEWLINE
   / __ "| Q" text:$[^ |\n\r]+ { error('"Q' + text + '": ID must be numeric (e.g. "Q1")'); }
-conventionRow = __ "| " text:(!"\n" .)* NEWLINE
+conventionRow
+  = __ "| " text:(!"\n" .)* NEWLINE
+  / __ "|" text:(!"\n" .)* NEWLINE
 Severity = "BLOCKER" / "MAJOR" / "MINOR" / "INFO"
 
 Integer = digits:[0-9]+ { return parseInt(digits.join("")); }

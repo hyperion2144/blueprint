@@ -1,9 +1,10 @@
-// Spec review grammar — constraint table + issues
+// Spec review grammar — constraint table + edge cases + issues
 
 SpecReview
   = "# Spec Review:" __ name:LineRest NEWLINE
     Gap verdictLine
     Gap table:ConstraintTable
+    Gap edgeCase:EdgeCaseTable?
     Gap issues:IssuesSection? __ (.)*
     { return { name, issues: issues || [] }; }
 verdictLine
@@ -12,6 +13,12 @@ verdictLine
 
 ConstraintTable
   = "## Constraint Checklist" NEWLINE (HeaderRow / BlankLine)* constraintRow+
+
+EdgeCaseTable
+  = "## Edge Case Coverage" NEWLINE edgeCaseRow+
+edgeCaseRow
+  = __ "|" text:(!"\n" .)* NEWLINE
+
 HeaderRow
   = __ "|" !(" " (IssuePrefix Integer)) text:(!"\n" .)* NEWLINE
 BlankLine = NEWLINE
@@ -44,7 +51,7 @@ Integer
 LineRest
   = chars:[^\n\r]+ { return chars.join("").trim(); }
 
-_ = [ 	]*
+_ = [ \t]*
 __
   = [ \t\n\r]*
 

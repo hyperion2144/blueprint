@@ -1,4 +1,4 @@
-// Goal review grammar — goal checklist table + issues section
+// Goal review grammar — goal checklist table + assessment + issues section
 
 GoalReview
   = "# Goal Review:" __ name:LineRest NEWLINE
@@ -7,6 +7,7 @@ GoalReview
     Gap assessment
     Gap issues:IssuesSection? __ (.)*
     { return { name, issues: issues || [] }; }
+
 verdictLine = "## Overall: " ("PASS" / "FAIL" / "NEEDS_REVISION") NEWLINE
 
 GoalTable = "## Goal Checklist" NEWLINE (HeaderRow / BlankLine)* goalRow+
@@ -27,7 +28,6 @@ tableRow = __ "|" text:(!"\n" .)* NEWLINE
 goalRow
   = __ "| G" id:Integer " |" text:(!"\n" .)* NEWLINE
   / __ "| G" text:$[^ |\n\r]+ { error('"G' + text + '": ID must be numeric (e.g. "G1")'); }
-
 
 Integer = digits:[0-9]+ { return parseInt(digits.join("")); }
 LineRest = chars:[^\n\r]+ { return chars.join("").trim(); }
