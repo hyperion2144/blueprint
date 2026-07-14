@@ -9,9 +9,20 @@ import { join } from 'node:path';
 import { loadConfig } from '../core/config.js';
 import { loadState } from '../core/state-file.js';
 
+interface IsolationInfo {
+  type: 'auto' | 'param' | 'none';
+  /** Spawn tool field name when type=param */
+  field?: string;
+  /** Field value when type=param */
+  fieldValue?: string;
+  /** Human description of isolation behavior */
+  description: string;
+}
+
 interface DispatchFormat {
   tool: string;
   params: Record<string, string>;
+  isolation: IsolationInfo;
 }
 
 /** Agent role → artifact template IDs for output files */
@@ -32,6 +43,37 @@ const FORMATS: Record<string, DispatchFormat> = {
       agent: 'bp-<role>',
       role: '<role>',
       assignment: '<prompt>',
+    },
+    isolation: {
+      type: 'param',
+      field: 'isolated',
+      fieldValue: 'true',
+      description: 'Pass "isolated: true" per task item — OMP automatically creates an isolated worktree for the sub-agent.',
+    },
+  },
+  'claude-code': {
+    tool: 'agent',
+    params: {
+      subagent_type: 'bp-<role>',
+      prompt: '<prompt>',
+    },
+    isolation: {
+      type: 'param',
+      field: 'worktree',
+      fieldValue: '<change>-<wave>',
+      description: 'Pass "worktree: <change>-<wave>" — Claude Code automatically creates an isolated worktree at .claude/worktrees/ and cleans up on completion.',
+    },
+  },
+  agent: {
+    tool: 'task',
+    params: {
+      agent: 'bp-<role>',
+      role: '<role>',
+      assignment: '<prompt>',
+    },
+    isolation: {
+      type: 'none',
+      description: 'No built-in isolation. Orchestrator must manually create a git worktree (git worktree add) and include "cd <worktree>" in the sub-agent prompt. Merge back and clean up after completion.',
     },
   },
 };
@@ -69,7 +111,6 @@ function dispatchHandler(role: string, options: { change?: string; dir: string }
 
     if (changeName) {
       const state = loadState(bpDir);
-      // Find the change in state to determine actual path
       const change = state.changes.find((c) => c.name === changeName);
       const adhoc = state.adhoc.find((c) => c.name === changeName);
       const actualChange = change || adhoc;
@@ -82,8 +123,23 @@ function dispatchHandler(role: string, options: { change?: string; dir: string }
       }
     }
 
+    // Isolation info
     lines.push('');
-    lines.push('The sub-agent reads its own system prompt (see .omp/agents/).');
+    lines.push('### Isolation');
+    if (fmt.isolation.type === 'param') {
+      lines.push(`- Support: yes`);
+      lines.push(`- Mechanism: pass \`${fmt.isolation.field}: ${fmt.isolation.fieldValue}\` to the \`${fmt.tool}\` tool`);
+      lines.push(`- ${fmt.isolation.description}`);
+    } else if (fmt.isolation.type === 'auto') {
+      lines.push(`- Support: auto (platform isolates sub-agents by default)`);
+      lines.push(`- ${fmt.isolation.description}`);
+    } else {
+      lines.push(`- Support: no`);
+      lines.push(`- ${fmt.isolation.description}`);
+    }
+
+    lines.push('');
+    lines.push('The sub-agent reads its own system prompt (see platform agent file).');
 
     // Template instructions
     const templates = ROLE_TEMPLATES[role];

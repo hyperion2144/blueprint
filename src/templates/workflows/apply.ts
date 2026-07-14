@@ -24,8 +24,29 @@ bp commit "<type>(<scope>): <description>" --files "<changed-files>" --task <id>
 **If FULL — dispatch executor sub-agents. Do NOT implement type:behavior tasks yourself:**
 
 For each wave in the current round:
-1. Run \`bp dispatch executor --change $1\` — outputs the sub-agent tool and its parameters.
-2. Call the tool it specifies. Set the sub-agent's prompt to:
+1. Run \`bp dispatch executor --change $1\` — outputs the sub-agent tool, its parameters, and isolation information.
+2. **Check the isolation type from the dispatch output:**
+
+   **If \`isolation.type=param\`** (OMP, Claude Code):
+   - Pass the isolation field to the spawn tool:
+     - OMP (\`task\` tool): add \`isolated: true\` to the task item
+     - Claude Code (\`agent\` tool): add \`worktree: exec-$1-wave<N>\` to the agent call
+   - The platform automatically creates an isolated worktree; no manual setup needed.
+
+   **If \`isolation.type=none\`** (generic agent platform):
+   - Create a dedicated git worktree before spawning:
+     \`\`\`bash
+     git worktree add ../exec-$1-wave<N> -b exec-$1-wave<N>
+     \`\`\`
+   - Include \`cd ../exec-$1-wave<N>\` at the start of the sub-agent's prompt so all work happens in the worktree.
+   - After the sub-agent finishes:
+     \`\`\`bash
+     git merge exec-$1-wave<N> --ff-only
+     git branch -d exec-$1-wave<N>
+     git worktree remove ../exec-$1-wave<N>
+     \`\`\`
+
+3. Call the tool it specifies. Set the sub-agent's prompt to:
    - Change: $1 (path from resolve step)
    - Wave: <Wave N: theme> — implement ALL tasks in this wave
    - Tasks: <full task list for this wave with ids, types, descriptions, files, acceptance, RED tests>
@@ -35,8 +56,8 @@ For each wave in the current round:
      \`bp commit "<type>(<scope>): <description>" --files <changed-files> --task <id> --tasks-path <tasks.md path> --record\`
    - Do NOT touch tasks outside this wave
    - Return when all tasks in this wave are implemented and committed
-3. For concurrent waves in the same round: run \`bp dispatch executor\` once per wave, dispatch ALL in one task tool call (parallel).
-4. Wait for ALL wave sub-agents in this round to finish before proceeding to verify.
+4. For concurrent waves in the same round: run \`bp dispatch executor\` once per wave, dispatch ALL in one task tool call (parallel). Each wave gets its own isolation.
+5. Wait for ALL wave sub-agents in this round to finish before proceeding to verify.
 
 ### Step: Verify each sub-agent's output
 
