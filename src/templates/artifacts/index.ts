@@ -262,11 +262,17 @@ export const CONTEXT_TEMPLATE = `# Context: {{name}}
 
 ## D-1: {{decision-title}}
 - Status: {{ACCEPTED | REJECTED | DEFERRED}}
+- Decision: {{what was decided}}
 - Reason: {{why this decision was made}}
+- Alternatives: {{what else was considered}}
+- References: {{FR-N, D-N}}
 
 ## D-2: {{decision-title}}
 - Status: {{ACCEPTED | REJECTED | DEFERRED}}
+- Decision: {{what was decided}}
 - Reason: {{why}}
+- Alternatives: {{what else was considered}}
+- References: {{FR-N, D-N}}
 ---
 
 ## Interface Contracts

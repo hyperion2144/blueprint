@@ -101,7 +101,10 @@ const VALID_CONTEXT = `# Context: ph.1-auth
 
 ## D-1: use JWT
 - Status: ACCEPTED
+- Decision: use JWT tokens
 - Reason: standard auth approach
+- Alternatives: session cookies
+- References: FR-3
 `;
 
 const VALID_PHASE_RESEARCH = `# Research: ph.1-auth
@@ -414,7 +417,7 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     expectState('phase', 'discuss', 'milestone-active');
 
     // D numbering skip (D-1, D-3)
-    write(`${dir}/context.md`, '# Context: test\n\n## D-1: x\n- Status: ACCEPTED\n- Reason: y\n\n## D-3: z\n- Status: ACCEPTED\n- Reason: w\n');
+    write(`${dir}/context.md`, '# Context: test\n\n## D-1: x\n- Status: ACCEPTED\n- Decision: x\n- Reason: y\n\n## D-3: z\n- Status: ACCEPTED\n- Decision: z\n- Reason: w\n');
     expectBlocked(cli('continue'), 'D-3', 'expected D-2');
 
     // valid -> advance to research
@@ -1110,7 +1113,7 @@ describe('Full Lifecycle: init -> M1 -> M2', () => {
     const pdir = 'bp/milestones/M2-ui/phases/ph.1-dashboard';
     const cdir = 'bp/changes/change-d';
 
-    write(`${pdir}/context.md`, '# Context: ph.1-dashboard\n\n## D-1: ui framework\n- Status: ACCEPTED\n- Reason: best option\n');
+    write(`${pdir}/context.md`, '# Context: ph.1-dashboard\n\n## D-1: ui framework\n- Status: ACCEPTED\n- Decision: ui framework\n- Reason: best option\n');
     cli('continue');
     expectState('phase', 'research', 'milestone-active');
 

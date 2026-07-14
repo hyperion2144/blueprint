@@ -13,13 +13,21 @@ ContextLine
 Decision
   = "## D-" id:Integer ": " title:LineRest NEWLINE
     "- Status: " status:LineRest NEWLINE
-    "- Reason: " reason:LineRest NEWLINE
-    references:RefLine?
-    { return { id, title, status, reason }; }
+    decline:DecisionLine NEWLINE
+    reasonLine:ReasonLine NEWLINE
+    alternativeLine:AltLine?
+    referenceLine:RefLine?
+    { return { id, title, status, decision: decline, reason: reasonLine, alternatives: alternativeLine || "", references: referenceLine || "" }; }
   / "## D-" text:$[^:\n]+ { error('"D-' + text.split(':')[0].trim() + '": ID must be numeric (e.g. "D-1")'); }
 
+DecisionLine
+  = "- Decision: " text:LineRest { return text; }
+ReasonLine
+  = "- Reason: " text:LineRest { return text; }
+AltLine
+  = "- Alternatives: " text:LineRest { return text; }
 RefLine
-  = "- References: " text:LineRest NEWLINE
+  = "- References: " text:LineRest { return text; }
 
 LineRest
   = chars:[^\n\r]+ { return chars.join("").trim(); }
@@ -27,7 +35,7 @@ LineRest
 Integer
   = digits:[0-9]+ { return parseInt(digits.join("")); }
 
-_ = [ 	]*
+_ = [ \t]*
 __
   = [ \t]*
 

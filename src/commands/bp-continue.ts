@@ -534,38 +534,51 @@ function continueChangeHandler(name: string, options?: { auto?: boolean; command
   }
 }
 function findNextPhase(bpDir: string, milestoneId: string | null, currentPhase: string): string | null {
-  if (!milestoneId || !currentPhase) return null;
+  if (!milestoneId || !currentPhase) {
+    console.warn('[bp] findNextPhase: missing milestoneId or currentPhase');
+    return null;
+  }
 
   const msNum = parseInt(milestoneId.match(/^M(\d+)/i)?.[1] ?? '');
   const phNum = parseInt(currentPhase.match(/^ph\.(\d+)/i)?.[1] ?? '');
-  if (!msNum || !phNum) return null;
+  if (!msNum || !phNum) {
+    console.warn(`[bp] findNextPhase: cannot parse milestone ID "${milestoneId}" or phase ID "${currentPhase}"`);
+    return null;
+  }
 
   const roadmapPath = join(bpDir, 'roadmap.md');
-  if (!existsSync(roadmapPath)) return null;
+  if (!existsSync(roadmapPath)) {
+    console.warn(`[bp] findNextPhase: roadmap.md not found at ${roadmapPath}`);
+    return null;
+  }
   const ast = parseRoadmapFile(roadmapPath);
-  if (!ast?.milestones) return null;
+  if (!ast?.milestones) {
+    console.warn(`[bp] findNextPhase: roadmap.md parse failed or has no milestones`);
+    return null;
+  }
 
   const milestone = ast.milestones.find((m: any) => m.id === msNum);
-  if (!milestone?.phases) return null;
+  if (!milestone?.phases || milestone.phases.length === 0) {
+    console.warn(`[bp] findNextPhase: milestone Md-${msNum} not found in roadmap or has no phases`);
+    return null;
+  }
 
   const phaseIdx = milestone.phases.findIndex((p: any) => {
     const pid = parseInt(p.id.split('.')[1] ?? '');
     return pid === phNum;
   });
-  if (phaseIdx < 0 || phaseIdx >= milestone.phases.length - 1) return null;
-
-  const nextPid = parseInt(milestone.phases[phaseIdx + 1].id.split('.')[1] ?? '');
-  if (!nextPid) return null;
-
-  const phasesDir = join(bpDir, 'milestones', milestoneId, 'phases');
-  if (!existsSync(phasesDir)) return null;
-
-  try {
-    const dirs = readdirSync(phasesDir, { withFileTypes: true })
-      .filter((d) => d.isDirectory())
-      .map((d) => d.name);
-    return dirs.find((d) => d.startsWith(`ph.${nextPid}-`)) || null;
-  } catch {
+  if (phaseIdx < 0) {
+    console.warn(`[bp] findNextPhase: phase ph.${phNum} not found in milestone Md-${msNum} phases`);
     return null;
   }
+  if (phaseIdx >= milestone.phases.length - 1) {
+    console.warn(`[bp] findNextPhase: ph.${phNum} is the last phase in milestone Md-${msNum} — no more phases to advance to`);
+    return null;
+  }
+
+  // Next phase exists in roadmap — construct its directory name from the parsed title
+  const nextPhase = milestone.phases[phaseIdx + 1];
+  const nextId = `ph.${nextPhase.id.split('.')[1]}`;
+  const slug = (nextPhase.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return slug ? `${nextId}-${slug}` : nextId;
 }
