@@ -1351,7 +1351,7 @@ export const ARTIFACT_TEMPLATES: Record<string, string> = {
   design: DESIGN_TEMPLATE,
   tasks: TASKS_TEMPLATE,
   context: CONTEXT_TEMPLATE,
-  research: RESEARCH_TEMPLATE,
+  'research-doc': RESEARCH_TEMPLATE,
   summary: SUMMARY_TEMPLATE,
   verification: VERIFICATION_TEMPLATE,
   'spec-review': SPEC_REVIEW_TEMPLATE,
