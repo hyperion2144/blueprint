@@ -27,6 +27,12 @@ export function register(program: any): void {
 
 function newChange(name: string, options: { dir: string; full?: boolean; intent?: string; milestone?: string; phase?: string }) {
   const bpDir = join(process.cwd(), options.dir);
+  // Validate change name — prevent path traversal and shell injection
+  const NAME_RE = /^[a-z0-9][a-z0-9._-]{0,62}$/;
+  if (!NAME_RE.test(name)) {
+    console.error(`✗ Invalid change name "${name}". Use 1-63 chars: a-z, 0-9, '.', '_', '-'.`);
+    process.exit(1);
+  }
   const date = new Date().toISOString().slice(0, 10);
 
   // Phase-scoped: creates under milestones/<mid>/phases/<pid>/changes/<name>/

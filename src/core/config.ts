@@ -9,7 +9,7 @@ import { Document } from 'yaml';
 const CONFIG_FILE = 'project.yml';
 
 /** zod schema for project.yml */
-const ProjectConfigSchema = z.object({
+export const ProjectConfigSchema = z.object({
   version: z.number(),
   platform: z.array(z.string()),
   profile: z.enum(['lite', 'standard', 'strict']),

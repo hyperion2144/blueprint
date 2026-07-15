@@ -4,7 +4,7 @@
 
 import { join, basename } from 'node:path';
 import { existsSync, readdirSync, readFileSync, writeFileSync, copyFileSync, mkdirSync } from 'node:fs';
-import { execSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { loadState, updateState } from '../core/state-file.js';
 import { mergeAndWrite } from '../core/delta-merge.js';
 import { extractFromGitDiff, writeExtractionToSpec } from '../core/code-extract.js';
@@ -148,7 +148,11 @@ function archiveHandler(changePath: string) {
   // 6. Remove old path from git tracking (best-effort)
   try {
     const gitPath = changePath.replace(/\\/g, '/');
-    execSync(`git rm -r "${gitPath}" || true`, { cwd: process.cwd() });
+    if (!gitPath.startsWith('bp/')) {
+      console.error(`✗ Invalid change path: "${gitPath}" — must start with bp/`);
+      process.exit(1);
+    }
+    spawnSync('git', ['rm', '-r', gitPath], { cwd: process.cwd() });
   } catch { /* non-critical */ }
 
   // 7. Auto-mark roadmap phase as COMPLETED
@@ -179,7 +183,8 @@ function archiveHandler(changePath: string) {
           if (phasePattern.test(roadmap)) {
             roadmap = roadmap.replace(phasePattern, `$1 [COMPLETED]`);
             // Check if all phases under this milestone are COMPLETED
-            const allDone = !roadmap.includes(`### Ph-${mid}.`) || !roadmap.includes(`### Ph-${mid}.\\d+: .*? \\[ACTIVE\\]`);
+            const milestonePhaseActive = new RegExp(`### Ph-${mid}\\.\\d+: .*? \\[ACTIVE\\]`, 's');
+            const allDone = !milestonePhaseActive.test(roadmap);
             if (allDone) {
               roadmap = roadmap.replace(
                 new RegExp(`(## Md-${mid}: .*?) \\[ACTIVE\\]`),

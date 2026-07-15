@@ -5,7 +5,7 @@
 import { join } from 'node:path';
 import { existsSync, readdirSync, mkdirSync, copyFileSync, rmSync, readFileSync, writeFileSync } from 'node:fs';
 import { loadState, saveState } from '../core/state-file.js';
-import { execSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 
 export function register(program: any): void {
   const cmd = program.command('milestone').description('Milestone management (archive)');
@@ -33,7 +33,11 @@ function archiveHandler(id: string): void {
 
   // Update git
   try {
-    execSync(`git rm -r "bp/milestones/${id}" || true`, { cwd: process.cwd() });
+    if (!/^[A-Za-z0-9._-]+$/.test(id)) {
+      console.error(`✗ Invalid milestone id: "${id}"`);
+      process.exit(1);
+    }
+    spawnSync('git', ['rm', '-r', `bp/milestones/${id}`], { cwd: process.cwd() });
   } catch { /* non-critical */ }
 
   // Record in state.md history

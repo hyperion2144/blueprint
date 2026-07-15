@@ -30,23 +30,8 @@ import { getFixApplySkillTemplate, getFixApplyCommandTemplate } from './fix-appl
 import { getUpgradeSkillTemplate, getUpgradeCommandTemplate } from './upgrade';
 import { getAddPhaseSkillTemplate, getAddPhaseCommandTemplate } from './add-phase';
 
-import type { SkillTemplate, CommandTemplate } from '../types';
-
-/** All workflow steps in dependency order */
-export const ALL_WORKFLOW_STEPS = [
-  'init', 'grill', 'research', 'roadmap', 'milestone',
-  'design',
-  'discuss', 'research-phase', 'split', 'adhoc',
-  'plan', 'apply', 'review', 'archive',
-  'fix-plan', 'fix-apply', 'upgrade', 'add-phase',
-];
-export type WorkflowStep = (typeof ALL_WORKFLOW_STEPS)[number];
-
 /** Registry mapping step name → template getters */
-export const WORKFLOW_REGISTRY: Record<WorkflowStep, {
-  skill: () => SkillTemplate;
-  command: () => CommandTemplate;
-}> = {
+export const WORKFLOW_REGISTRY = {
   init:      { skill: getInitSkillTemplate,      command: getInitCommandTemplate },
   design:     { skill: getDesignSkillTemplate,     command: getDesignCommandTemplate },
   grill:     { skill: getGrillSkillTemplate,     command: getGrillCommandTemplate },
@@ -72,4 +57,7 @@ export const WORKFLOW_REGISTRY: Record<WorkflowStep, {
   'fix-apply': { skill: getFixApplySkillTemplate, command: getFixApplyCommandTemplate },
   upgrade:   { skill: getUpgradeSkillTemplate,   command: getUpgradeCommandTemplate },
   'add-phase': { skill: getAddPhaseSkillTemplate, command: getAddPhaseCommandTemplate },
-};
+} as const;
+
+export type WorkflowStep = keyof typeof WORKFLOW_REGISTRY;
+

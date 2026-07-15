@@ -3,7 +3,7 @@
  */
 
 import { join } from 'node:path';
-import { loadConfig, updateConfig } from '../core/config.js';
+import { loadConfig, updateConfig, ProjectConfigSchema } from '../core/config.js';
 
 export function register(program: any): void {
   const cmd = program
@@ -36,32 +36,40 @@ function configList(options?: any, cmd?: any) {
 function configSet(key: string, value: string) {
   const bpDir = findBlueprintDir();
 
+  // Read current config and apply change in memory first
+  const currentConfig = loadConfig(bpDir);
+
+  // Support dot-separated path e.g. "profile" or "workflow.research"
+  const parts = key.split('.');
+  let target: any = currentConfig;
+  for (let i = 0; i < parts.length - 1; i++) {
+    if (!target[parts[i]]) target[parts[i]] = {};
+    target = target[parts[i]];
+  }
+  const lastKey = parts[parts.length - 1];
+  const typedValue = parseTypedValue(value);
+  target[lastKey] = typedValue;
+
+  // Validate in-memory before writing
+  const result = ProjectConfigSchema.safeParse(currentConfig);
+  if (!result.success) {
+    const firstError = result.error.errors[0];
+    console.error(`✗ Invalid config value for "${key}": ${firstError.message}`, '');
+    process.exit(1);
+  }
+
+  // Validation passed — persist
   updateConfig(bpDir, (config) => {
-    // 支持用点分隔路径，如 "profile" 或 "workflow.research"
-    const parts = key.split('.');
-    let target: any = config;
-
-    for (let i = 0; i < parts.length - 1; i++) {
-      if (!target[parts[i]]) target[parts[i]] = {};
-      target = target[parts[i]];
+    const parts2 = key.split('.');
+    let t: any = config;
+    for (let i = 0; i < parts2.length - 1; i++) {
+      if (!t[parts2[i]]) t[parts2[i]] = {};
+      t = t[parts2[i]];
     }
-
-    const lastKey = parts[parts.length - 1];
-
-    // 尝试解析数值和布尔值
-    const typedValue = parseTypedValue(value);
-    target[lastKey] = typedValue;
+    t[parts2[parts2.length - 1]] = typedValue;
   });
 
   console.log(`✓ ${key} = ${value}`);
-
-  // Validate by re-reading with Zod schema
-  try {
-    loadConfig(bpDir);
-  } catch (e) {
-    console.error(`✗ Invalid config value: ${e instanceof Error ? e.message : String(e)}`);
-    process.exit(1);
-  }
 }
 
 function parseTypedValue(value: string): unknown {

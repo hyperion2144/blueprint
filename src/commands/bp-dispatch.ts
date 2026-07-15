@@ -19,10 +19,29 @@ interface IsolationInfo {
   description: string;
 }
 
+/** Platform-specific isolation info for executor role only */
+const EXECUTOR_ISOLATION: Record<string, IsolationInfo> = {
+  omp: {
+    type: 'param',
+    field: 'isolated',
+    fieldValue: 'true',
+    description: 'Pass "isolated: true" per task item — OMP automatically creates an isolated worktree for the sub-agent.',
+  },
+  'claude-code': {
+    type: 'param',
+    field: 'worktree',
+    fieldValue: '<change>-<wave>',
+    description: 'Pass "worktree: <change>-<wave>" — Claude Code automatically creates an isolated worktree at .claude/worktrees/ and cleans up on completion.',
+  },
+  agent: {
+    type: 'none',
+    description: 'No built-in isolation. Orchestrator must manually create a git worktree (git worktree add) and include "cd <worktree>" in the sub-agent prompt. Merge back and clean up after completion.',
+  },
+};
+
 interface DispatchFormat {
   tool: string;
   params: Record<string, string>;
-  isolation: IsolationInfo;
 }
 
 /** Agent role → artifact template IDs for output files */
@@ -44,24 +63,12 @@ const FORMATS: Record<string, DispatchFormat> = {
       role: '<role>',
       assignment: '<prompt>',
     },
-    isolation: {
-      type: 'param',
-      field: 'isolated',
-      fieldValue: 'true',
-      description: 'Pass "isolated: true" per task item — OMP automatically creates an isolated worktree for the sub-agent.',
-    },
   },
   'claude-code': {
     tool: 'agent',
     params: {
       subagent_type: 'bp-<role>',
       prompt: '<prompt>',
-    },
-    isolation: {
-      type: 'param',
-      field: 'worktree',
-      fieldValue: '<change>-<wave>',
-      description: 'Pass "worktree: <change>-<wave>" — Claude Code automatically creates an isolated worktree at .claude/worktrees/ and cleans up on completion.',
     },
   },
   agent: {
@@ -70,10 +77,6 @@ const FORMATS: Record<string, DispatchFormat> = {
       agent: 'bp-<role>',
       role: '<role>',
       assignment: '<prompt>',
-    },
-    isolation: {
-      type: 'none',
-      description: 'No built-in isolation. Orchestrator must manually create a git worktree (git worktree add) and include "cd <worktree>" in the sub-agent prompt. Merge back and clean up after completion.',
     },
   },
 };
@@ -126,16 +129,22 @@ function dispatchHandler(role: string, options: { change?: string; dir: string }
     // Isolation info
     lines.push('');
     lines.push('### Isolation');
-    if (fmt.isolation.type === 'param') {
+    const isolation: IsolationInfo = role === 'executor'
+      ? (EXECUTOR_ISOLATION[platform] ?? { type: 'none', description: 'No isolation configured for this platform.' })
+      : { type: 'none', description: 'Read-only role — no isolation needed.' };
+    if (isolation.type === 'param') {
       lines.push(`- Support: yes`);
-      lines.push(`- Mechanism: pass \`${fmt.isolation.field}: ${fmt.isolation.fieldValue}\` to the \`${fmt.tool}\` tool`);
-      lines.push(`- ${fmt.isolation.description}`);
-    } else if (fmt.isolation.type === 'auto') {
+      lines.push(`- Type: param`);
+      lines.push(`- Mechanism: pass \`${isolation.field}: ${isolation.fieldValue}\` to the \`${fmt.tool}\` tool`);
+      lines.push(`- ${isolation.description}`);
+    } else if (isolation.type === 'auto') {
       lines.push(`- Support: auto (platform isolates sub-agents by default)`);
-      lines.push(`- ${fmt.isolation.description}`);
+      lines.push(`- Type: auto`);
+      lines.push(`- ${isolation.description}`);
     } else {
       lines.push(`- Support: no`);
-      lines.push(`- ${fmt.isolation.description}`);
+      lines.push(`- Type: none`);
+      lines.push(`- Read-only role — no isolation needed.`);
     }
 
     lines.push('');

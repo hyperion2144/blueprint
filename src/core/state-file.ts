@@ -6,7 +6,7 @@
 import { join } from 'node:path';
 import { z } from 'zod';
 import { readFrontmatterFile, stringifyFrontmatter } from '../parser/frontmatter.js';
-import { readFileSync, writeFileSync, existsSync, openSync, closeSync, unlinkSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, openSync, closeSync, unlinkSync, statSync } from 'node:fs';
 import type { StateFile, ChangeState } from '../types/index.js';
 
 const STATE_FILE = 'state.md';
@@ -63,46 +63,62 @@ export function statePath(bpDir: string): string {
   return join(bpDir, STATE_FILE);
 }
 
-/** 读取并验证 state.md。若未初始化则输出错误并退出。 */
+/** 读取并验证 state.md。若未初始化则抛异常。 */
 export function loadState(bpDir: string): StateFile {
   const path = statePath(bpDir);
   if (!existsSync(path)) {
-    console.error('bp project not initialized. Run `bp init` first.');
-    process.exit(1);
+    throw new Error('bp project not initialized. Run `bp init` first.');
   }
   const result = readFrontmatterFile(path);
   return StateFileSchema.parse(result.data) as unknown as StateFile;
 }
 
-/** 写入 state.md（frontmatter + body） */
+/** Write state.md (frontmatter + body) */
 export function saveState(bpDir: string, state: StateFile): void {
-  // 保留现有 body，只更新 frontmatter
+  // Preserve existing body, only update frontmatter
   let body: string;
-  try {
-    const existing = readFrontmatterFile(statePath(bpDir));
-    body = existing.content;
-  } catch {
+  const stateMdPath = statePath(bpDir);
+  if (!existsSync(stateMdPath)) {
     body = generateStateBody(state);
+  } else {
+    try {
+      const existing = readFrontmatterFile(stateMdPath);
+      body = existing.content;
+    } catch {
+      throw new Error('state.md is corrupted; refusing to overwrite. Run `bp state validate` for details.');
+    }
   }
   const output = stringifyFrontmatter(state as unknown as Record<string, unknown>, body);
-  writeFileSync(statePath(bpDir), output, 'utf-8');
+  writeFileSync(stateMdPath, output, 'utf-8');
 }
-
-/** 修改 state 并写回（带文件锁防并发 — 解决多个进程同时写 state.md 导致数据丢失） */
+/** Modify state and write back with exclusive file lock to prevent concurrent writes */
 export function updateState(bpDir: string, updater: (state: StateFile) => void): void {
   const lockPath = join(bpDir, '.state.lock');
   const MAX_WAIT = 3000;
   const POLL_INTERVAL = 50;
+  const STALE_LOCK_MS = 10_000;
   const start = Date.now();
+  let fd: number | null = null;
 
-  // Spin-wait for exclusive file lock
+  // Spin-wait for exclusive file lock, holding the FD open for the critical section
   while (Date.now() - start < MAX_WAIT) {
     try {
-      const fd = openSync(lockPath, 'wx');
-      closeSync(fd);
+      fd = openSync(lockPath, 'wx');
       break;
     } catch {
-      if (Date.now() - start >= MAX_WAIT) break;
+      // Check for stale lock
+      try {
+        const { mtimeMs } = statSync(lockPath);
+        if (Date.now() - mtimeMs > STALE_LOCK_MS) {
+          unlinkSync(lockPath);
+          continue;
+        }
+      } catch {
+        // Lock vanished or stat failed — retry
+      }
+      if (Date.now() - start >= MAX_WAIT) {
+        throw new Error('Failed to acquire state lock within 3 seconds. Another process may be holding bp/.state.lock.');
+      }
       const until = Date.now() + POLL_INTERVAL;
       while (Date.now() < until) { /* spin */ }
     }
@@ -113,6 +129,9 @@ export function updateState(bpDir: string, updater: (state: StateFile) => void):
     updater(state);
     saveState(bpDir, state);
   } finally {
+    if (fd !== null) {
+      try { closeSync(fd); } catch { /* best effort */ }
+    }
     try { unlinkSync(lockPath); } catch { /* best effort cleanup */ }
   }
 }

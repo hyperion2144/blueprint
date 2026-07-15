@@ -16,8 +16,8 @@ export interface CodeExtraction {
 
 export interface ExtractResult {
   extractions: CodeExtraction[];
-  /** 提取是否成功（无 git 仓库时返回空） */
   available: boolean;
+  reason?: string;
 }
 
 /**
@@ -52,7 +52,6 @@ export function extractFromGitDiff(
 /** 获取 git diff（unstaged + staged + 最近 commit） */
 function getGitDiff(repoDir: string): string | null {
   try {
-    // 获取工作区与 HEAD 的 diff
     const diff = execSync('git diff HEAD', {
       cwd: repoDir,
       encoding: 'utf-8',
@@ -60,7 +59,6 @@ function getGitDiff(repoDir: string): string | null {
     });
     if (diff.trim()) return diff;
 
-    // 如果没有 unstaged，获取最近 commit 的 diff
     const lastCommit = execSync('git diff HEAD~1 HEAD', {
       cwd: repoDir,
       encoding: 'utf-8',
@@ -86,31 +84,32 @@ function detectDomains(changeDir: string): string[] {
   }
 }
 
-/** 从 diff 中提取行为关键词 */
+/** Extract behavior keywords from diff */
 function extractBehaviors(diff: string, _domain: string): string[] {
   const behaviors: string[] = [];
   const lines = diff.split('\n');
 
   for (const line of lines) {
-    // 检测新增的行为模式（简化版）
     if (line.startsWith('+') && !line.startsWith('+++')) {
       const content = line.slice(1).trim();
-      // 检测 RFC 2119 关键词
+      // Skip comment lines
+      if (content.startsWith('//') || content.startsWith('/*') || content.startsWith('*') || content.startsWith('#')) continue;
+      // Skip lines containing string literals with RFC2119 keywords
+      if (content.includes('"') || content.includes("'") || content.includes('`')) continue;
+      // Detect RFC 2119 keywords as standalone words
       if (/\b(SHALL|MUST|SHOULD|MAY)\b/.test(content)) {
         behaviors.push(content);
       }
-      // 检测函数/方法定义（行为入口）
-      if (/^(export\s+)?(async\s+)?function\s+/.test(content) || 
-          /^(export\s+)?class\s+/.test(content)) {
-        behaviors.push(`新增: ${content}`);
+      // Only emit export declarations as behavior entries
+      if (/^export\s+(function|class|const|type|interface)\s+/.test(content)) {
+        behaviors.push(content);
       }
     }
   }
 
   return behaviors;
 }
-
-/** 从 diff 中提取约束关键词 */
+/** Extract constraint keywords from diff */
 function extractConstraints(diff: string, _domain: string): string[] {
   const constraints: string[] = [];
   const lines = diff.split('\n');
@@ -118,13 +117,17 @@ function extractConstraints(diff: string, _domain: string): string[] {
   for (const line of lines) {
     if (line.startsWith('+') && !line.startsWith('+++')) {
       const content = line.slice(1).trim();
-      // 检测验证逻辑
-      if (/^(throw|assert|if\s*\()/.test(content) && !content.startsWith('//')) {
-        constraints.push(`约束: ${content}`);
+      // Skip comment lines (//, /*, *, #)
+      if (content.startsWith('//') || content.startsWith('/*') || content.startsWith('*') || content.startsWith('#')) continue;
+      // Skip lines containing string literals
+      if (content.includes('"') || content.includes("'") || content.includes('`')) continue;
+      // Detect validation logic (word boundary on throw/assert/if)
+      if (/^(throw|assert|if)\b/.test(content)) {
+        constraints.push(content);
       }
-      // 检测类型注解（接口约束）
-      if (/^(export\s+)?(interface|type)\s+/.test(content)) {
-        constraints.push(`类型约束: ${content}`);
+      // Detect type annotations (interface/type constraints)
+      if (/^export\s+(interface|type)\s+/.test(content)) {
+        constraints.push(content);
       }
     }
   }

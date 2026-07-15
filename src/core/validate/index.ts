@@ -8,8 +8,7 @@
  * - REFS: cross-references exist in linked documents
  * - COVERAGE: no orphan references (PR→DS→T chain complete)
  */
-
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
@@ -84,7 +83,9 @@ export function parseAndValidate(
   if (!grammarName) return { valid: true, errors: [] }; // no grammar defined
 
   const parser = loadGrammar(grammarName);
-  if (!parser) return { valid: true, errors: [] }; // grammar not yet written
+  if (!parser) {
+    return { valid: false, errors: [{ field: 'form', message: `PEG grammar not available for document type "${type}". Grammar file "${grammarName}.cjs" not found or failed to load.` }] as ValidationError[] };
+  }
 
   const errors: ValidationError[] = [];
 
@@ -424,6 +425,7 @@ function checkRoadmap(ast: any, content: string): ValidationError[] {
 function checkReviewNumbering(ast: any, prefix: string): ValidationError[] {
   const errs: ValidationError[] = [];
   const issues = ast?.issues || [];
+  const numbers: number[] = [];
   for (const issue of issues) {
     if (!issue.id) continue;
     const idStr = String(issue.id);
@@ -431,17 +433,11 @@ function checkReviewNumbering(ast: any, prefix: string): ValidationError[] {
     const num = parseInt(idStr.slice(prefix.length));
     if (isNaN(num)) {
       errs.push({ field: 'numbering', message: `${issue.id}: id must be numeric after ${prefix}` });
+    } else {
+      numbers.push(num);
     }
   }
-  // Sequential numbering: extract numbers and check
- const numbers: number[] = [];
-  for (const issue of issues) {
-    if (!issue.id) continue;
-    const idStr = String(issue.id);
-    if (!idStr.startsWith(prefix)) continue;
-    const num = parseInt(idStr.slice(prefix.length));
-    if (!isNaN(num)) numbers.push(num);
-  }
+  // Sequential numbering check
   for (let i = 0; i < numbers.length; i++) {
     if (numbers[i] !== i + 1) {
       errs.push({ field: 'numbering', message: `${prefix}${numbers[i]}: expected ${prefix}${i + 1} (sequential numbering required)` });
@@ -569,10 +565,9 @@ export function checkPhaseCompletion(
     const changesDir = join(phaseDir, 'changes');
     if (!existsSync(changesDir)) continue;
 
-    const changeDirs = require('fs').readdirSync(changesDir, { withFileTypes: true })
+    const changeDirs = readdirSync(changesDir, { withFileTypes: true })
       .filter((d: any) => d.isDirectory())
       .map((d: any) => d.name);
-
     let dCompleted = true;
     const incompleteTasks: string[] = [];
 

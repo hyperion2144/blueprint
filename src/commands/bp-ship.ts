@@ -145,17 +145,28 @@ function parseArchiveHistory(bpDir: string): Array<{
 
     const entries: Array<{ change: string; milestone: string; phase: string; date: string; published: boolean }> = [];
     const lines = historySection[1].split('\n');
-
     for (const line of lines) {
       // Format: - [2026-07-01] Archived ch-name (milestone / phase) [published]
-      const match = line.match(/-\s*\[([^\]]+)\]\s*Archived\s+([^\s(]+)\s*\(([^)]+)\)\s*(?:\[published\])?/);
-      if (match) {
-        const changeName = match[2].replace(/`/g, '');
+      const changeMatch = line.match(/-\s*\[([^\]]+)\]\s*Archived\s+([^\s(]+)\s*\(([^)]+)\)\s*(?:\[published\])?/);
+      if (changeMatch) {
+        const changeName = changeMatch[2].replace(/`/g, '');
         entries.push({
-          date: match[1],
+          date: changeMatch[1],
           change: changeName,
-          milestone: match[3].split('/')[0]?.trim() ?? '',
-          phase: match[3].split('/')[1]?.trim() ?? '',
+          milestone: changeMatch[3].split('/')[0]?.trim() ?? '',
+          phase: changeMatch[3].split('/')[1]?.trim() ?? '',
+          published: line.includes('[published]'),
+        });
+        continue;
+      }
+      // Format: - [2026-07-01] Archived milestone `M1`
+      const msMatch = line.match(/-\s*\[([^\]]+)\]\s*Archived\s+milestone\s+`?([^\s`]+)`?/);
+      if (msMatch) {
+        entries.push({
+          date: msMatch[1],
+          change: `milestone-${msMatch[2]}`,
+          milestone: msMatch[2],
+          phase: '',
           published: line.includes('[published]'),
         });
       }

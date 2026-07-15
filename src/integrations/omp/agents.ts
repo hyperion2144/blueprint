@@ -69,6 +69,13 @@ export const AGENT_DEFS: AgentDef[] = [
     tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'],
     spawns: '*',
   },
+  // bp-designer — UI/UX design direction
+  {
+    role: 'designer',
+    description: 'UI/UX design — define aesthetic, color, typography, layout',
+    tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash', 'generate_image'],
+    spawns: '*',
+  },
   // bp-spec-bootstrapper — extract behavioral contracts from code
   {
     role: 'spec-bootstrapper',
