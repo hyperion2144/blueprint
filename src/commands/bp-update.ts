@@ -51,7 +51,7 @@ function cleanupStaleFiles(baseDir: string, generatedPaths: string[]): void {
   const generatedSet = new Set(generatedPaths.map(p => p.replace(/^\.\//, '')));
 
   // V2 step names for directory-based check (.agent/skills/ entries don't match generatedSet directly)
-  const v2Steps: Record<string, true> = { init: true, roadmap: true, propose: true, plan: true, apply: true, review: true, archive: true, continue: true };
+  const v2Steps: Record<string, true> = { init: true, roadmap: true, propose: true, plan: true, apply: true, review: true, archive: true, continue: true, ff: true, loop: true };
 
   // Helper: remove a single file if it isn't in the generated set
   function checkRemove(dir: string, relPrefix: string, file: string): void {

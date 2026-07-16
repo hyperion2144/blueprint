@@ -25,6 +25,8 @@ const STEPS: ClaudeCommandDef[] = [
   { step: 'review', name: 'bp:review', description: 'Triple review of a change - outputs dispatch instructions', argumentHint: '[change-name]' },
   { step: 'archive', name: 'bp:archive', description: 'Archive a change (merge delta specs, archive dir, update roadmap)', argumentHint: '[change-name]' },
   { step: 'continue', name: 'bp:continue', description: 'Check progress and suggest next step', argumentHint: '[change-name]' },
+  { step: 'ff', name: 'bp:ff', description: 'Fast-forward: auto-advance through all steps by calling bp continue after each' },
+  { step: 'loop', name: 'bp:loop', description: 'Autonomous loop: same as ff but skip all user interaction until roadmap complete' },
 ];
 
 export function generateClaudeCommand(def: ClaudeCommandDef): string {

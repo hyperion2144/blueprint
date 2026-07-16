@@ -11,7 +11,7 @@ describe('generateClaudeCommands', () => {
     const config = { platform: ['claude-code'] } as unknown as ProjectConfig;
     const files = generateClaudeCommands(config);
     expect(files).toBeDefined();
-    expect(files.length).toBe(8);
+    expect(files.length).toBe(10);
 
     for (const file of files) {
       expect(file.path).toMatch(/^\.claude\/commands\/bp-[a-z-]+\.md$/);

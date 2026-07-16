@@ -261,6 +261,51 @@ The CLI runs schema-driven detection in code and outputs:
 - If the CLI says "Next: bp plan <name>", run the plan workflow instructions it outputs.
 - If multiple active changes exist, the CLI lists them. Pick one and re-run \`bp continue <name>\`.
 ",
+  "ff": "---
+name: bp-ff
+description: Fast-forward: auto-advance through all steps
+hide: false
+---
+
+## Input
+
+- **\`[BP:CHANGE_NAME]\`** (optional): change name. If empty, starts from current project state.
+
+## What to do
+
+Fast-forward: execute the current step, then auto-call \`bp continue\` to get the next step, then execute that. Repeat until complete.
+
+### Loop
+
+For each iteration:
+
+1. **Get current step**: \`\`\`bash
+   bp continue [BP:CHANGE_NAME]
+   \`\`\`
+   The CLI outputs the next step's full workflow instructions.
+
+2. **Execute those instructions** — dispatch sub-agents, write files, run code, etc. as the instructions describe.
+
+3. **After the step completes**, return to step 1.
+
+4. **Stop when**:
+   - \`bp continue\` shows no more actionable steps (no active changes, roadmap has no \`[ ]\` items)
+   - OR an unrecoverable error occurs (report it and stop)
+
+### Constraints
+
+- Respect all gates: \`bp review\` must PASS before \`bp archive\`; design issues (D-prefixed) route to \`bp plan --fix\`; code issues route to \`bp apply --fix\`.
+- You MAY ask the user clarifying questions if truly blocked (e.g. ambiguous requirement). But default to proceeding with the most reasonable interpretation.
+- Each \`bp continue\` invocation is independent — it re-checks artifact state.
+- Report progress to the user after each iteration.
+
+## Guardrails
+
+- Do NOT skip the review gate.
+- Do NOT auto-archive if review verdict is FAIL or NEEDS_REVISION.
+- If \`bp continue\` suggests a fix loop (plan --fix or apply --fix), execute that fix loop before continuing.
+- If a step is unclear or the output is unexpected, stop and ask the user.
+",
   "init": "---
 name: bp-init
 description: Initialize bp project structure and generate platform files
@@ -322,6 +367,54 @@ Project initialized. Run \`bp continue\` to check project status and discover ne
 - Brownfield: dispatch codebase-scanner sub-agent. Do NOT scan code yourself.
 - Greenfield: advance immediately, no scanning needed
 - ALWAYS suggest \`bp roadmap\` directly, not \`bp continue\`
+",
+  "loop": "---
+name: bp-loop
+description: Autonomous loop: auto-advance with no user interaction
+hide: false
+---
+
+## Input
+
+- **\`[BP:CHANGE_NAME]\`** (optional): change name. If empty, starts from current project state.
+
+## What to do
+
+Autonomous loop: same as \`/bp:ff\` but **skip ALL user interaction**. Run until the roadmap has no remaining \`[ ]\` items.
+
+### Loop
+
+For each iteration:
+
+1. **Get current step**: \`\`\`bash
+   bp continue [BP:CHANGE_NAME]
+   \`\`\`
+   The CLI outputs the next step's full workflow instructions.
+
+2. **Execute those instructions WITHOUT asking the user anything.** Make the most reasonable interpretation and proceed. If the instructions say to use \`ask\`, you must SKIP that ask step and use sensible defaults instead.
+
+3. **After the step completes**, return to step 1.
+
+4. **Stop when**:
+   - The roadmap has no \`[ ]\` items (all milestones shipped, all phases completed, all changes archived)
+   - OR an unrecoverable error occurs (report it and stop)
+
+### NO INTERACTION — CRITICAL
+
+- Do NOT call \`ask\` for anything.
+- Do NOT use \`ask_user_question\`.
+- Do NOT pause to ask the user.
+- For requirement questions in roadmap/propose: use the most reasonable defaults, document your assumption in the artifact, and continue.
+- For ambiguous tool output: log a note, make your best guess, and continue.
+- Only stop on hard errors (test failures that can't be fixed in 1 attempt, unrecoverable build errors).
+
+## Guardrails
+
+- Do NOT skip the review gate.
+- Do NOT auto-archive if review verdict is FAIL or NEEDS_REVISION — but DO still attempt \`bp apply --fix\` once. If that doesn't resolve, stop and report.
+- If \`bp continue\` suggests a fix loop, execute it.
+- Report progress concisely after each iteration.
+- When done, summarize what was completed.
 ",
   "plan": "---
 name: bp-plan
