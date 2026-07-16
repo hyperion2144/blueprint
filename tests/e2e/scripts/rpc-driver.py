@@ -17,6 +17,7 @@ from typing import Optional
 MAIN = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 RUN_DIR = os.path.join(MAIN, ".omp.run", "fixture-1")
 FIXTURE = os.path.expanduser("~/vault/projects/specworkflow-fixture/sokoban")
+FIXTURE = os.path.expanduser("~/vault/projects/specworkflow-fixture/sokoban")
 OMP_BIN = os.path.expanduser("~/.bun/bin/omp")
 ANSI_RE = re.compile(r'\x1b\[[0-9;]*[a-zA-Z]')
 
@@ -322,10 +323,19 @@ def main():
     ap.add_argument("--answers", default=None)
     ap.add_argument("--start", action="store_true")
     ap.add_argument("--timeout", type=int, default=900)
+    ap.add_argument("--fixture", default=None, help="Path to fixture project (overrides default)")
+    ap.add_argument("--run-dir", default=None, help="Path to evidence output dir (overrides default)")
     args = ap.parse_args()
-    
+
+    # Override globals if provided
+    global RUN_DIR, FIXTURE
+    if args.fixture:
+        FIXTURE = os.path.expanduser(args.fixture)
+    if args.run_dir:
+        RUN_DIR = os.path.expanduser(args.run_dir)
+    os.makedirs(RUN_DIR, exist_ok=True)
+
     answers = load_json(args.answers) if args.answers else {}
-    
     # Start OMP if requested
     if args.start:
         print(f"Starting OMP (profile={args.profile})...", flush=True)
