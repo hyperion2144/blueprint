@@ -17,6 +17,7 @@ export const AGENT_DEFS: AgentAgentDef[] = [
   { role: 'planner', description: 'Change design', tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'] },
   { role: 'executor', description: 'Code implementation', tools: ['read', 'edit', 'write', 'bash', 'grep', 'glob', 'lsp', 'ast_grep', 'ast_edit'] },
   { role: 'reviewer', description: 'Triple review', tools: ['read', 'grep', 'glob', 'lsp', 'ast_grep', 'bash'] },
+  { role: 'codebase-scanner', description: 'Brownfield codebase scan - extract behavioral contracts into specs', tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'] },
 ];
 
 export function generateAgentAgent(def: AgentAgentDef): string {

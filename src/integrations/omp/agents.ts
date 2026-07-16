@@ -44,8 +44,13 @@ export const AGENT_DEFS: AgentDef[] = [
     tools: ['read', 'grep', 'glob', 'lsp', 'ast_grep', 'bash'],
     spawns: '*',
   },
+  {
+    role: 'codebase-scanner',
+    description: 'Brownfield codebase scan - extract behavioral contracts into specs',
+    tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'],
+    spawns: '*',
+  },
 ];
-
 /* ================================================================
  * Agent file generation
  * ================================================================ */

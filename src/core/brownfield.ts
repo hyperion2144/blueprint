@@ -149,16 +149,8 @@ export async function runBrownfieldInit(
   info: ProjectInfo,
   stack: SpecStackTemplate,
 ): Promise<string[]> {
-  const report = generateCodebaseReport(rootDir, info);
-
-  // 写入 codebase/
-  const codebaseDir = join(bpDir, 'codebase');
-  mkdirSync(codebaseDir, { recursive: true });
-  writeFileSync(join(codebaseDir, 'stack.md'), report.stack, 'utf-8');
-  writeFileSync(join(codebaseDir, 'architecture.md'), report.structure, 'utf-8');
-
-  // Note: specs are NOT bootstrapped here — brownfield projects get specs
-  // from code scanning via bp-spec-bootstrapper sub-agent
+  // Note: specs are NOT bootstrapped here - brownfield projects get specs
+  // from code scanning via codebase-scanner sub-agent (dispatched by init workflow)
 
   return stack.domains.map(d => d.name);
 }

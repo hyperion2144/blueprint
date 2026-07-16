@@ -12,8 +12,9 @@ If \`$ARGUMENTS\` is empty:
 1. List \`bp/changes/\` (exclude \`archive/\`)
 2. If no active changes:
    - Read \`bp/roadmap.md\`
-   - Find the first phase with [ ] changes or NOT_STARTED status
-   - Output roadmap summary and suggest next change to propose
+   - Check if roadmap has real content (look for \`## Milestone: M1\` with actual goal text, not template placeholders like \`{{milestone-name}}\`)
+   - If roadmap is empty/template: suggest \`bp roadmap\` to define project direction first
+   - If roadmap has content: find the first phase with \`[ ]\` changes or \`NOT_STARTED\` status, suggest next change to propose
 3. If one active change: use it
 4. If multiple active changes: list them and ask the user which one
 
@@ -64,7 +65,17 @@ Next: bp apply $1 (implement remaining 2 tasks)
 Run: bp apply $1
 \`\`\`
 
-Or if no active change:
+Or if no active change and roadmap is empty:
+
+\`\`\`
+No active changes.
+
+Roadmap is not yet defined. Define your project direction first.
+
+Run: bp roadmap
+\`\`\`
+
+Or if no active change and roadmap has content:
 
 \`\`\`
 No active changes.
@@ -83,22 +94,23 @@ Suggest: bp propose add-password-reset --phase M1/P1.1
 - **If multiple changes are active**, let the user choose. Don't auto-pick.
 - **If tasks are partially complete**, suggest \`bp apply\` to resume (executor will skip [x] tasks).
 - **If review has issues**, suggest the correct fix command based on issue type (D -> plan --fix, R/Q/G -> apply --fix).
-- **If no active changes**, suggest the next change based on roadmap. Don't create it automatically.
+- **If no active changes and roadmap is empty/template**, suggest \`bp roadmap\` to define direction first.
+- **If no active changes and roadmap has content**, suggest the next change based on roadmap. Don't create it automatically.
 `;
 
 export function getContinueSkillTemplate(): SkillTemplate {
   return {
     name: 'bp-continue',
-    description: 'Auto-advance — project-level or change-level, present pending work, route to next step',
+    description: 'Check progress and suggest next step (artifact-based, no state machine)',
     instructions,
   };
 }
 
 export function getContinueCommandTemplate(): CommandTemplate {
   return {
-    description: 'Auto-advance — project-level or change-level, present pending work, route to next step',
+    description: 'Check progress and suggest next step (artifact-based, no state machine)',
     category: 'Workflow',
-    tags: ['bp', 'continue', 'state', 'advance'],
+    tags: ['bp', 'continue', 'progress', 'artifact'],
     content: instructions,
   };
 }

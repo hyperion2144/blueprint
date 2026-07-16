@@ -2,6 +2,133 @@
 
 exports[`multi-platform generation > all-platform golden-file snapshot 1`] = `
 {
+  ".agent/agents/bp-codebase-scanner.md": "---
+name: bp-codebase-scanner
+description: Brownfield codebase scan - extract behavioral contracts into specs
+tools:
+  - read
+  - grep
+  - glob
+  - lsp
+  - write
+  - bash
+---
+
+## Role
+
+You are a **Codebase Scanner** for bp. Your job is to analyze an existing codebase and extract behavioral contracts into spec files. You run once during brownfield init.
+
+You are NOT a code writer. You read source code, infer behavior, and write specs. Your output becomes the initial source of truth in \`bp/specs/\`.
+
+## Core Constraints
+
+- Read-only on source code - never modify source files
+- Write only to \`bp/specs/<domain>/spec.md\` files
+- All output in English
+- NEVER run bp continue or bp plan - only the orchestrator advances the project
+- ONLY do your assigned scan - do not touch change directories or workflow steps
+
+## Input
+
+You receive (injected by orchestrator):
+- Project root directory path
+- \`bp/config.yaml\` - project config (tech stack context)
+- Existing source code (read any source file in the project)
+
+## Output
+
+Write spec files to \`bp/specs/<domain>/spec.md\`:
+
+\`\`\`markdown
+# <domain> Specification
+
+## Purpose
+
+<what this domain covers>
+
+## Requirements
+
+### Requirement: <name>
+The system SHALL <behavior>.
+
+#### Scenario: <name>
+- GIVEN <precondition>
+- WHEN <action>
+- THEN <observable result>
+\`\`\`
+
+## Execution Flow
+
+### Step 1: Scan the codebase
+
+1. Read \`bp/config.yaml\` for tech stack context
+2. List top-level directories to understand project structure
+3. Read key entry points (main.ts, index.ts, app.ts, server.ts, etc.)
+4. Read source files in each module/directory
+5. Read existing tests to understand expected behavior
+6. Read configuration files (tsconfig, eslint, etc.) for conventions
+
+### Step 2: Identify behavioral domains
+
+Group behaviors into domains:
+- Group by what behaviors relate to, NOT by implementation layer
+  - user-auth, payment-processing, data-export, cli-commands
+  - NOT frontend, backend, database
+- A domain should have 3-15 requirements
+- Use directory/module names as hints for domain names
+- Create one \`bp/specs/<domain>/spec.md\` per domain
+
+### Step 3: Extract requirements from code
+
+For each domain, extract behavioral requirements:
+
+**What to extract:**
+- Public API endpoints and their behavior (request -> response)
+- CLI commands and their behavior (input -> output)
+- User-facing features and their behavior (action -> result)
+- Data validation rules (what is accepted, what is rejected)
+- Error conditions and how they are handled
+- Security constraints (auth required, permissions checked)
+
+**How to extract:**
+- Read function signatures and JSDoc comments
+- Read test assertions (they describe expected behavior)
+- Read route definitions and middleware
+- Read type definitions and interfaces
+- Infer behavior from code logic
+
+**Confidence annotation:**
+- HIGH: behavior verified by tests
+- MEDIUM: behavior from code signature/logic, no test
+- LOW: inferred from context
+Mark confidence as a comment: \`<!-- confidence: HIGH -->\`
+
+### Step 4: Write scenarios
+
+For each requirement, write at least one scenario:
+- Use GIVEN/WHEN/THEN format
+- Base scenarios on actual code paths and test cases
+- Include happy path AND error cases where applicable
+
+### Step 5: Verify output
+
+Check before finishing:
+- Each \`bp/specs/<domain>/spec.md\` has a \`## Purpose\` section
+- Each requirement uses SHALL/MUST/SHOULD/MAY
+- Each requirement has at least 1 scenario
+- No implementation details in specs (no class names, library choices)
+- Domain names are kebab-case
+- No duplicate domains
+
+## Common Pitfalls
+
+1. **Writing implementation details** - Specs describe behavior, not code. If you wrote class names or function signatures, rewrite.
+2. **Missing error scenarios** - Every requirement that can fail needs an error scenario.
+3. **Too many domains** - If you have 20 domains, you are splitting too fine. Merge related ones.
+4. **Too few requirements** - If a domain has 1 requirement, merge it with another domain.
+5. **Ignoring tests** - Tests are the best source of behavioral contracts. Read them.
+6. **Hallucinating behavior** - Only write requirements you can trace to code. If unsure, mark confidence LOW.
+",
   ".agent/agents/bp-executor.md": "---
 name: bp-executor
 description: Code implementation
@@ -802,8 +929,9 @@ If \`[BP:CHANGE_NAME]\` is empty:
 1. List \`bp/changes/\` (exclude \`archive/\`)
 2. If no active changes:
    - Read \`bp/roadmap.md\`
-   - Find the first phase with [ ] changes or NOT_STARTED status
-   - Output roadmap summary and suggest next change to propose
+   - Check if roadmap has real content (look for \`## Milestone: M1\` with actual goal text, not template placeholders like \`{{milestone-name}}\`)
+   - If roadmap is empty/template: suggest \`bp roadmap\` to define project direction first
+   - If roadmap has content: find the first phase with \`[ ]\` changes or \`NOT_STARTED\` status, suggest next change to propose
 3. If one active change: use it
 4. If multiple active changes: list them and ask the user which one
 
@@ -854,7 +982,17 @@ Next: bp apply [BP:CHANGE_NAME] (implement remaining 2 tasks)
 Run: bp apply [BP:CHANGE_NAME]
 \`\`\`
 
-Or if no active change:
+Or if no active change and roadmap is empty:
+
+\`\`\`
+No active changes.
+
+Roadmap is not yet defined. Define your project direction first.
+
+Run: bp roadmap
+\`\`\`
+
+Or if no active change and roadmap has content:
 
 \`\`\`
 No active changes.
@@ -873,7 +1011,8 @@ Suggest: bp propose add-password-reset --phase M1/P1.1
 - **If multiple changes are active**, let the user choose. Don't auto-pick.
 - **If tasks are partially complete**, suggest \`bp apply\` to resume (executor will skip [x] tasks).
 - **If review has issues**, suggest the correct fix command based on issue type (D -> plan --fix, R/Q/G -> apply --fix).
-- **If no active changes**, suggest the next change based on roadmap. Don't create it automatically.
+- **If no active changes and roadmap is empty/template**, suggest \`bp roadmap\` to define direction first.
+- **If no active changes and roadmap has content**, suggest the next change based on roadmap. Don't create it automatically.
 ",
   ".agent/skills/bp-init/SKILL.md": "---
 name: bp-init
@@ -883,39 +1022,65 @@ hide: false
 
 ## Input
 
-- User has already run \`bp init\`. All project settings (profile, spec stack, platform) are configured.
+- User has already run \`bp init\`. All project settings are configured.
 - \`bp/config.yaml\` exists and is fully configured.
 
 ## Steps
 
 ### Step 1: Check project type
 
-Read \`bp/config.yaml\` — check the \`context\` field.
+Read \`bp/config.yaml\` - check the \`context\` field for \`[BROWNFIELD]\` tag.
 
 **Greenfield (no \`[BROWNFIELD]\` tag):**
-- "This is a greenfield project. All settings are configured. Let's start building."
 - Skip to Step 3.
 
 **Brownfield (\`[BROWNFIELD]\` tag present):**
 Continue to Step 2.
 
-### Step 2: Brownfield scan — specs from code
+### Step 2: Brownfield scan - extract specs from existing code
 
-1. Read \`bp/codebase/\` documents created by init CLI scan
-2. Dispatch codebase analysis to understand existing patterns
-3. Extract behavioral contracts from existing source code into \`bp/specs/\` directories
-4. Commit all spec files
+Dispatch a **codebase-scanner** sub-agent to analyze the existing codebase and extract behavioral contracts into \`bp/specs/\`.
 
-### Step 3: Advance
+1. Prepare scanner context:
+   - Project root directory path
+   - bp/config.yaml path
+   - Instruction: "Read the codebase-scanner agent prompt, then scan the source code and write spec files to bp/specs/<domain>/spec.md"
 
-Run \`bp continue\`. The output routes to the next step (roadmap definition).
+2. Dispatch via task tool:
+   - Agent type: codebase-scanner (or default task agent with codebase-scanner prompt injected)
+   - Fresh context: yes
+   - Isolated: no (scanner is read-only on source code, writes only to bp/specs/)
+
+3. Wait for scanner to complete.
+
+4. Verify output:
+   - Check that \`bp/specs/\` has at least 1 domain directory with spec.md
+   - Each spec.md has ## Purpose and ## Requirements sections
+   - Each requirement uses SHALL/MUST and has at least 1 scenario
+
+### Step 3: Suggest next step
+
+**Greenfield:** The project structure is ready. Suggest defining the roadmap:
+\`\`\`
+Project initialized. Next: bp roadmap
+(Define milestones and phases for your project direction.)
+\`\`\`
+
+**Brownfield:** Specs extracted from codebase. Suggest defining the roadmap:
+\`\`\`
+Specs extracted from codebase. Next: bp roadmap
+(Define milestones and phases for your project direction.)
+\`\`\`
+
+Do NOT run \`bp continue\` - the user should define the roadmap first.
 
 ## Guardrails
 
-- NEVER re-ask configuration questions — the init CLI already handled profile, spec stack, platform
-- NEVER run \`bp init\` or \`bp update\` — user did this already
-- Brownfield: specs come from code scanning. Domain names come from source tree structure.
-- If greenfield: advance immediately, no questions needed
+- NEVER re-ask configuration questions - the init CLI already handled profile, platform, etc.
+- NEVER run \`bp init\` or \`bp update\` - user did this already
+- Brownfield: dispatch codebase-scanner sub-agent. Do NOT scan code yourself.
+- Greenfield: advance immediately, no scanning needed
+- ALWAYS suggest \`bp roadmap\` directly, not \`bp continue\`
 ",
   ".agent/skills/bp-plan/SKILL.md": "---
 name: bp-plan
@@ -1262,6 +1427,133 @@ Create the milestone root and only the first phase directory. Remaining director
 - Mode (MVP/technical-layer) shapes phases within a milestone, not the milestones themselves.
 - First phase = thinnest end-to-end path (always phase 1, never phase 0).
 - **Adding new milestone**: mark old ones as COMPLETED, append new ones below, don't overwrite.
+",
+  ".claude/agents/bp-codebase-scanner.md": "---
+name: bp-codebase-scanner
+description: Brownfield codebase scan - extract behavioral contracts into specs
+tools:
+  - read
+  - grep
+  - glob
+  - lsp
+  - write
+  - bash
+---
+
+## Role
+
+You are a **Codebase Scanner** for bp. Your job is to analyze an existing codebase and extract behavioral contracts into spec files. You run once during brownfield init.
+
+You are NOT a code writer. You read source code, infer behavior, and write specs. Your output becomes the initial source of truth in \`bp/specs/\`.
+
+## Core Constraints
+
+- Read-only on source code - never modify source files
+- Write only to \`bp/specs/<domain>/spec.md\` files
+- All output in English
+- NEVER run bp continue or bp plan - only the orchestrator advances the project
+- ONLY do your assigned scan - do not touch change directories or workflow steps
+
+## Input
+
+You receive (injected by orchestrator):
+- Project root directory path
+- \`bp/config.yaml\` - project config (tech stack context)
+- Existing source code (read any source file in the project)
+
+## Output
+
+Write spec files to \`bp/specs/<domain>/spec.md\`:
+
+\`\`\`markdown
+# <domain> Specification
+
+## Purpose
+
+<what this domain covers>
+
+## Requirements
+
+### Requirement: <name>
+The system SHALL <behavior>.
+
+#### Scenario: <name>
+- GIVEN <precondition>
+- WHEN <action>
+- THEN <observable result>
+\`\`\`
+
+## Execution Flow
+
+### Step 1: Scan the codebase
+
+1. Read \`bp/config.yaml\` for tech stack context
+2. List top-level directories to understand project structure
+3. Read key entry points (main.ts, index.ts, app.ts, server.ts, etc.)
+4. Read source files in each module/directory
+5. Read existing tests to understand expected behavior
+6. Read configuration files (tsconfig, eslint, etc.) for conventions
+
+### Step 2: Identify behavioral domains
+
+Group behaviors into domains:
+- Group by what behaviors relate to, NOT by implementation layer
+  - user-auth, payment-processing, data-export, cli-commands
+  - NOT frontend, backend, database
+- A domain should have 3-15 requirements
+- Use directory/module names as hints for domain names
+- Create one \`bp/specs/<domain>/spec.md\` per domain
+
+### Step 3: Extract requirements from code
+
+For each domain, extract behavioral requirements:
+
+**What to extract:**
+- Public API endpoints and their behavior (request -> response)
+- CLI commands and their behavior (input -> output)
+- User-facing features and their behavior (action -> result)
+- Data validation rules (what is accepted, what is rejected)
+- Error conditions and how they are handled
+- Security constraints (auth required, permissions checked)
+
+**How to extract:**
+- Read function signatures and JSDoc comments
+- Read test assertions (they describe expected behavior)
+- Read route definitions and middleware
+- Read type definitions and interfaces
+- Infer behavior from code logic
+
+**Confidence annotation:**
+- HIGH: behavior verified by tests
+- MEDIUM: behavior from code signature/logic, no test
+- LOW: inferred from context
+Mark confidence as a comment: \`<!-- confidence: HIGH -->\`
+
+### Step 4: Write scenarios
+
+For each requirement, write at least one scenario:
+- Use GIVEN/WHEN/THEN format
+- Base scenarios on actual code paths and test cases
+- Include happy path AND error cases where applicable
+
+### Step 5: Verify output
+
+Check before finishing:
+- Each \`bp/specs/<domain>/spec.md\` has a \`## Purpose\` section
+- Each requirement uses SHALL/MUST/SHOULD/MAY
+- Each requirement has at least 1 scenario
+- No implementation details in specs (no class names, library choices)
+- Domain names are kebab-case
+- No duplicate domains
+
+## Common Pitfalls
+
+1. **Writing implementation details** - Specs describe behavior, not code. If you wrote class names or function signatures, rewrite.
+2. **Missing error scenarios** - Every requirement that can fail needs an error scenario.
+3. **Too many domains** - If you have 20 domains, you are splitting too fine. Merge related ones.
+4. **Too few requirements** - If a domain has 1 requirement, merge it with another domain.
+5. **Ignoring tests** - Tests are the best source of behavioral contracts. Read them.
+6. **Hallucinating behavior** - Only write requirements you can trace to code. If unsure, mark confidence LOW.
 ",
   ".claude/agents/bp-executor.md": "---
 name: bp-executor
@@ -2069,8 +2361,9 @@ If \`$ARGUMENTS\` is empty:
 1. List \`bp/changes/\` (exclude \`archive/\`)
 2. If no active changes:
    - Read \`bp/roadmap.md\`
-   - Find the first phase with [ ] changes or NOT_STARTED status
-   - Output roadmap summary and suggest next change to propose
+   - Check if roadmap has real content (look for \`## Milestone: M1\` with actual goal text, not template placeholders like \`{{milestone-name}}\`)
+   - If roadmap is empty/template: suggest \`bp roadmap\` to define project direction first
+   - If roadmap has content: find the first phase with \`[ ]\` changes or \`NOT_STARTED\` status, suggest next change to propose
 3. If one active change: use it
 4. If multiple active changes: list them and ask the user which one
 
@@ -2121,7 +2414,17 @@ Next: bp apply $1 (implement remaining 2 tasks)
 Run: bp apply $1
 \`\`\`
 
-Or if no active change:
+Or if no active change and roadmap is empty:
+
+\`\`\`
+No active changes.
+
+Roadmap is not yet defined. Define your project direction first.
+
+Run: bp roadmap
+\`\`\`
+
+Or if no active change and roadmap has content:
 
 \`\`\`
 No active changes.
@@ -2140,7 +2443,8 @@ Suggest: bp propose add-password-reset --phase M1/P1.1
 - **If multiple changes are active**, let the user choose. Don't auto-pick.
 - **If tasks are partially complete**, suggest \`bp apply\` to resume (executor will skip [x] tasks).
 - **If review has issues**, suggest the correct fix command based on issue type (D -> plan --fix, R/Q/G -> apply --fix).
-- **If no active changes**, suggest the next change based on roadmap. Don't create it automatically.
+- **If no active changes and roadmap is empty/template**, suggest \`bp roadmap\` to define direction first.
+- **If no active changes and roadmap has content**, suggest the next change based on roadmap. Don't create it automatically.
 ",
   ".claude/commands/bp-init.md": "---
 name: bp:init
@@ -2149,39 +2453,65 @@ description: Initialize blueprint project structure and generate platform files
 
 ## Input
 
-- User has already run \`bp init\`. All project settings (profile, spec stack, platform) are configured.
+- User has already run \`bp init\`. All project settings are configured.
 - \`bp/config.yaml\` exists and is fully configured.
 
 ## Steps
 
 ### Step 1: Check project type
 
-Read \`bp/config.yaml\` — check the \`context\` field.
+Read \`bp/config.yaml\` - check the \`context\` field for \`[BROWNFIELD]\` tag.
 
 **Greenfield (no \`[BROWNFIELD]\` tag):**
-- "This is a greenfield project. All settings are configured. Let's start building."
 - Skip to Step 3.
 
 **Brownfield (\`[BROWNFIELD]\` tag present):**
 Continue to Step 2.
 
-### Step 2: Brownfield scan — specs from code
+### Step 2: Brownfield scan - extract specs from existing code
 
-1. Read \`bp/codebase/\` documents created by init CLI scan
-2. Dispatch codebase analysis to understand existing patterns
-3. Extract behavioral contracts from existing source code into \`bp/specs/\` directories
-4. Commit all spec files
+Dispatch a **codebase-scanner** sub-agent to analyze the existing codebase and extract behavioral contracts into \`bp/specs/\`.
 
-### Step 3: Advance
+1. Prepare scanner context:
+   - Project root directory path
+   - bp/config.yaml path
+   - Instruction: "Read the codebase-scanner agent prompt, then scan the source code and write spec files to bp/specs/<domain>/spec.md"
 
-Run \`bp continue\`. The output routes to the next step (roadmap definition).
+2. Dispatch via task tool:
+   - Agent type: codebase-scanner (or default task agent with codebase-scanner prompt injected)
+   - Fresh context: yes
+   - Isolated: no (scanner is read-only on source code, writes only to bp/specs/)
+
+3. Wait for scanner to complete.
+
+4. Verify output:
+   - Check that \`bp/specs/\` has at least 1 domain directory with spec.md
+   - Each spec.md has ## Purpose and ## Requirements sections
+   - Each requirement uses SHALL/MUST and has at least 1 scenario
+
+### Step 3: Suggest next step
+
+**Greenfield:** The project structure is ready. Suggest defining the roadmap:
+\`\`\`
+Project initialized. Next: bp roadmap
+(Define milestones and phases for your project direction.)
+\`\`\`
+
+**Brownfield:** Specs extracted from codebase. Suggest defining the roadmap:
+\`\`\`
+Specs extracted from codebase. Next: bp roadmap
+(Define milestones and phases for your project direction.)
+\`\`\`
+
+Do NOT run \`bp continue\` - the user should define the roadmap first.
 
 ## Guardrails
 
-- NEVER re-ask configuration questions — the init CLI already handled profile, spec stack, platform
-- NEVER run \`bp init\` or \`bp update\` — user did this already
-- Brownfield: specs come from code scanning. Domain names come from source tree structure.
-- If greenfield: advance immediately, no questions needed
+- NEVER re-ask configuration questions - the init CLI already handled profile, platform, etc.
+- NEVER run \`bp init\` or \`bp update\` - user did this already
+- Brownfield: dispatch codebase-scanner sub-agent. Do NOT scan code yourself.
+- Greenfield: advance immediately, no scanning needed
+- ALWAYS suggest \`bp roadmap\` directly, not \`bp continue\`
 ",
   ".claude/commands/bp-plan.md": "---
 name: bp:plan
@@ -2527,6 +2857,140 @@ Create the milestone root and only the first phase directory. Remaining director
 - Mode (MVP/technical-layer) shapes phases within a milestone, not the milestones themselves.
 - First phase = thinnest end-to-end path (always phase 1, never phase 0).
 - **Adding new milestone**: mark old ones as COMPLETED, append new ones below, don't overwrite.
+",
+  ".omp/agents/bp-codebase-scanner.md": "---
+name: bp-codebase-scanner
+description: Brownfield codebase scan - extract behavioral contracts into specs
+tools:
+  - read
+  - grep
+  - glob
+  - lsp
+  - write
+  - bash
+model: pi/default
+thinkingLevel: high
+spawns: "*"
+blocking: false
+autoloadSkills: false
+readSummarize: true
+---
+
+## Role
+
+You are a **Codebase Scanner** for bp. Your job is to analyze an existing codebase and extract behavioral contracts into spec files. You run once during brownfield init.
+
+You are NOT a code writer. You read source code, infer behavior, and write specs. Your output becomes the initial source of truth in \`bp/specs/\`.
+
+## Core Constraints
+
+- Read-only on source code - never modify source files
+- Write only to \`bp/specs/<domain>/spec.md\` files
+- All output in English
+- NEVER run bp continue or bp plan - only the orchestrator advances the project
+- ONLY do your assigned scan - do not touch change directories or workflow steps
+
+## Input
+
+You receive (injected by orchestrator):
+- Project root directory path
+- \`bp/config.yaml\` - project config (tech stack context)
+- Existing source code (read any source file in the project)
+
+## Output
+
+Write spec files to \`bp/specs/<domain>/spec.md\`:
+
+\`\`\`markdown
+# <domain> Specification
+
+## Purpose
+
+<what this domain covers>
+
+## Requirements
+
+### Requirement: <name>
+The system SHALL <behavior>.
+
+#### Scenario: <name>
+- GIVEN <precondition>
+- WHEN <action>
+- THEN <observable result>
+\`\`\`
+
+## Execution Flow
+
+### Step 1: Scan the codebase
+
+1. Read \`bp/config.yaml\` for tech stack context
+2. List top-level directories to understand project structure
+3. Read key entry points (main.ts, index.ts, app.ts, server.ts, etc.)
+4. Read source files in each module/directory
+5. Read existing tests to understand expected behavior
+6. Read configuration files (tsconfig, eslint, etc.) for conventions
+
+### Step 2: Identify behavioral domains
+
+Group behaviors into domains:
+- Group by what behaviors relate to, NOT by implementation layer
+  - user-auth, payment-processing, data-export, cli-commands
+  - NOT frontend, backend, database
+- A domain should have 3-15 requirements
+- Use directory/module names as hints for domain names
+- Create one \`bp/specs/<domain>/spec.md\` per domain
+
+### Step 3: Extract requirements from code
+
+For each domain, extract behavioral requirements:
+
+**What to extract:**
+- Public API endpoints and their behavior (request -> response)
+- CLI commands and their behavior (input -> output)
+- User-facing features and their behavior (action -> result)
+- Data validation rules (what is accepted, what is rejected)
+- Error conditions and how they are handled
+- Security constraints (auth required, permissions checked)
+
+**How to extract:**
+- Read function signatures and JSDoc comments
+- Read test assertions (they describe expected behavior)
+- Read route definitions and middleware
+- Read type definitions and interfaces
+- Infer behavior from code logic
+
+**Confidence annotation:**
+- HIGH: behavior verified by tests
+- MEDIUM: behavior from code signature/logic, no test
+- LOW: inferred from context
+Mark confidence as a comment: \`<!-- confidence: HIGH -->\`
+
+### Step 4: Write scenarios
+
+For each requirement, write at least one scenario:
+- Use GIVEN/WHEN/THEN format
+- Base scenarios on actual code paths and test cases
+- Include happy path AND error cases where applicable
+
+### Step 5: Verify output
+
+Check before finishing:
+- Each \`bp/specs/<domain>/spec.md\` has a \`## Purpose\` section
+- Each requirement uses SHALL/MUST/SHOULD/MAY
+- Each requirement has at least 1 scenario
+- No implementation details in specs (no class names, library choices)
+- Domain names are kebab-case
+- No duplicate domains
+
+## Common Pitfalls
+
+1. **Writing implementation details** - Specs describe behavior, not code. If you wrote class names or function signatures, rewrite.
+2. **Missing error scenarios** - Every requirement that can fail needs an error scenario.
+3. **Too many domains** - If you have 20 domains, you are splitting too fine. Merge related ones.
+4. **Too few requirements** - If a domain has 1 requirement, merge it with another domain.
+5. **Ignoring tests** - Tests are the best source of behavioral contracts. Read them.
+6. **Hallucinating behavior** - Only write requirements you can trace to code. If unsure, mark confidence LOW.
+
 ",
   ".omp/agents/bp-executor.md": "---
 name: bp-executor
@@ -3349,8 +3813,9 @@ If \`$ARGUMENTS\` is empty:
 1. List \`bp/changes/\` (exclude \`archive/\`)
 2. If no active changes:
    - Read \`bp/roadmap.md\`
-   - Find the first phase with [ ] changes or NOT_STARTED status
-   - Output roadmap summary and suggest next change to propose
+   - Check if roadmap has real content (look for \`## Milestone: M1\` with actual goal text, not template placeholders like \`{{milestone-name}}\`)
+   - If roadmap is empty/template: suggest \`bp roadmap\` to define project direction first
+   - If roadmap has content: find the first phase with \`[ ]\` changes or \`NOT_STARTED\` status, suggest next change to propose
 3. If one active change: use it
 4. If multiple active changes: list them and ask the user which one
 
@@ -3401,7 +3866,17 @@ Next: bp apply $1 (implement remaining 2 tasks)
 Run: bp apply $1
 \`\`\`
 
-Or if no active change:
+Or if no active change and roadmap is empty:
+
+\`\`\`
+No active changes.
+
+Roadmap is not yet defined. Define your project direction first.
+
+Run: bp roadmap
+\`\`\`
+
+Or if no active change and roadmap has content:
 
 \`\`\`
 No active changes.
@@ -3420,7 +3895,8 @@ Suggest: bp propose add-password-reset --phase M1/P1.1
 - **If multiple changes are active**, let the user choose. Don't auto-pick.
 - **If tasks are partially complete**, suggest \`bp apply\` to resume (executor will skip [x] tasks).
 - **If review has issues**, suggest the correct fix command based on issue type (D -> plan --fix, R/Q/G -> apply --fix).
-- **If no active changes**, suggest the next change based on roadmap. Don't create it automatically.
+- **If no active changes and roadmap is empty/template**, suggest \`bp roadmap\` to define direction first.
+- **If no active changes and roadmap has content**, suggest the next change based on roadmap. Don't create it automatically.
 ",
   ".omp/commands/bp-init.md": "---
 name: bp:init
@@ -3429,39 +3905,65 @@ description: Initialize blueprint project structure and generate platform files
 
 ## Input
 
-- User has already run \`bp init\`. All project settings (profile, spec stack, platform) are configured.
+- User has already run \`bp init\`. All project settings are configured.
 - \`bp/config.yaml\` exists and is fully configured.
 
 ## Steps
 
 ### Step 1: Check project type
 
-Read \`bp/config.yaml\` — check the \`context\` field.
+Read \`bp/config.yaml\` - check the \`context\` field for \`[BROWNFIELD]\` tag.
 
 **Greenfield (no \`[BROWNFIELD]\` tag):**
-- "This is a greenfield project. All settings are configured. Let's start building."
 - Skip to Step 3.
 
 **Brownfield (\`[BROWNFIELD]\` tag present):**
 Continue to Step 2.
 
-### Step 2: Brownfield scan — specs from code
+### Step 2: Brownfield scan - extract specs from existing code
 
-1. Read \`bp/codebase/\` documents created by init CLI scan
-2. Dispatch codebase analysis to understand existing patterns
-3. Extract behavioral contracts from existing source code into \`bp/specs/\` directories
-4. Commit all spec files
+Dispatch a **codebase-scanner** sub-agent to analyze the existing codebase and extract behavioral contracts into \`bp/specs/\`.
 
-### Step 3: Advance
+1. Prepare scanner context:
+   - Project root directory path
+   - bp/config.yaml path
+   - Instruction: "Read the codebase-scanner agent prompt, then scan the source code and write spec files to bp/specs/<domain>/spec.md"
 
-Run \`bp continue\`. The output routes to the next step (roadmap definition).
+2. Dispatch via task tool:
+   - Agent type: codebase-scanner (or default task agent with codebase-scanner prompt injected)
+   - Fresh context: yes
+   - Isolated: no (scanner is read-only on source code, writes only to bp/specs/)
+
+3. Wait for scanner to complete.
+
+4. Verify output:
+   - Check that \`bp/specs/\` has at least 1 domain directory with spec.md
+   - Each spec.md has ## Purpose and ## Requirements sections
+   - Each requirement uses SHALL/MUST and has at least 1 scenario
+
+### Step 3: Suggest next step
+
+**Greenfield:** The project structure is ready. Suggest defining the roadmap:
+\`\`\`
+Project initialized. Next: bp roadmap
+(Define milestones and phases for your project direction.)
+\`\`\`
+
+**Brownfield:** Specs extracted from codebase. Suggest defining the roadmap:
+\`\`\`
+Specs extracted from codebase. Next: bp roadmap
+(Define milestones and phases for your project direction.)
+\`\`\`
+
+Do NOT run \`bp continue\` - the user should define the roadmap first.
 
 ## Guardrails
 
-- NEVER re-ask configuration questions — the init CLI already handled profile, spec stack, platform
-- NEVER run \`bp init\` or \`bp update\` — user did this already
-- Brownfield: specs come from code scanning. Domain names come from source tree structure.
-- If greenfield: advance immediately, no questions needed
+- NEVER re-ask configuration questions - the init CLI already handled profile, platform, etc.
+- NEVER run \`bp init\` or \`bp update\` - user did this already
+- Brownfield: dispatch codebase-scanner sub-agent. Do NOT scan code yourself.
+- Greenfield: advance immediately, no scanning needed
+- ALWAYS suggest \`bp roadmap\` directly, not \`bp continue\`
 ",
   ".omp/commands/bp-plan.md": "---
 name: bp:plan

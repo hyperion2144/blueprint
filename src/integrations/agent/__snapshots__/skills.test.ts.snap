@@ -243,8 +243,9 @@ If \`[BP:CHANGE_NAME]\` is empty:
 1. List \`bp/changes/\` (exclude \`archive/\`)
 2. If no active changes:
    - Read \`bp/roadmap.md\`
-   - Find the first phase with [ ] changes or NOT_STARTED status
-   - Output roadmap summary and suggest next change to propose
+   - Check if roadmap has real content (look for \`## Milestone: M1\` with actual goal text, not template placeholders like \`{{milestone-name}}\`)
+   - If roadmap is empty/template: suggest \`bp roadmap\` to define project direction first
+   - If roadmap has content: find the first phase with \`[ ]\` changes or \`NOT_STARTED\` status, suggest next change to propose
 3. If one active change: use it
 4. If multiple active changes: list them and ask the user which one
 
@@ -295,7 +296,17 @@ Next: bp apply [BP:CHANGE_NAME] (implement remaining 2 tasks)
 Run: bp apply [BP:CHANGE_NAME]
 \`\`\`
 
-Or if no active change:
+Or if no active change and roadmap is empty:
+
+\`\`\`
+No active changes.
+
+Roadmap is not yet defined. Define your project direction first.
+
+Run: bp roadmap
+\`\`\`
+
+Or if no active change and roadmap has content:
 
 \`\`\`
 No active changes.
@@ -314,7 +325,8 @@ Suggest: bp propose add-password-reset --phase M1/P1.1
 - **If multiple changes are active**, let the user choose. Don't auto-pick.
 - **If tasks are partially complete**, suggest \`bp apply\` to resume (executor will skip [x] tasks).
 - **If review has issues**, suggest the correct fix command based on issue type (D -> plan --fix, R/Q/G -> apply --fix).
-- **If no active changes**, suggest the next change based on roadmap. Don't create it automatically.
+- **If no active changes and roadmap is empty/template**, suggest \`bp roadmap\` to define direction first.
+- **If no active changes and roadmap has content**, suggest the next change based on roadmap. Don't create it automatically.
 ",
   "init": "---
 name: bp-init
@@ -324,39 +336,65 @@ hide: false
 
 ## Input
 
-- User has already run \`bp init\`. All project settings (profile, spec stack, platform) are configured.
+- User has already run \`bp init\`. All project settings are configured.
 - \`bp/config.yaml\` exists and is fully configured.
 
 ## Steps
 
 ### Step 1: Check project type
 
-Read \`bp/config.yaml\` — check the \`context\` field.
+Read \`bp/config.yaml\` - check the \`context\` field for \`[BROWNFIELD]\` tag.
 
 **Greenfield (no \`[BROWNFIELD]\` tag):**
-- "This is a greenfield project. All settings are configured. Let's start building."
 - Skip to Step 3.
 
 **Brownfield (\`[BROWNFIELD]\` tag present):**
 Continue to Step 2.
 
-### Step 2: Brownfield scan — specs from code
+### Step 2: Brownfield scan - extract specs from existing code
 
-1. Read \`bp/codebase/\` documents created by init CLI scan
-2. Dispatch codebase analysis to understand existing patterns
-3. Extract behavioral contracts from existing source code into \`bp/specs/\` directories
-4. Commit all spec files
+Dispatch a **codebase-scanner** sub-agent to analyze the existing codebase and extract behavioral contracts into \`bp/specs/\`.
 
-### Step 3: Advance
+1. Prepare scanner context:
+   - Project root directory path
+   - bp/config.yaml path
+   - Instruction: "Read the codebase-scanner agent prompt, then scan the source code and write spec files to bp/specs/<domain>/spec.md"
 
-Run \`bp continue\`. The output routes to the next step (roadmap definition).
+2. Dispatch via task tool:
+   - Agent type: codebase-scanner (or default task agent with codebase-scanner prompt injected)
+   - Fresh context: yes
+   - Isolated: no (scanner is read-only on source code, writes only to bp/specs/)
+
+3. Wait for scanner to complete.
+
+4. Verify output:
+   - Check that \`bp/specs/\` has at least 1 domain directory with spec.md
+   - Each spec.md has ## Purpose and ## Requirements sections
+   - Each requirement uses SHALL/MUST and has at least 1 scenario
+
+### Step 3: Suggest next step
+
+**Greenfield:** The project structure is ready. Suggest defining the roadmap:
+\`\`\`
+Project initialized. Next: bp roadmap
+(Define milestones and phases for your project direction.)
+\`\`\`
+
+**Brownfield:** Specs extracted from codebase. Suggest defining the roadmap:
+\`\`\`
+Specs extracted from codebase. Next: bp roadmap
+(Define milestones and phases for your project direction.)
+\`\`\`
+
+Do NOT run \`bp continue\` - the user should define the roadmap first.
 
 ## Guardrails
 
-- NEVER re-ask configuration questions — the init CLI already handled profile, spec stack, platform
-- NEVER run \`bp init\` or \`bp update\` — user did this already
-- Brownfield: specs come from code scanning. Domain names come from source tree structure.
-- If greenfield: advance immediately, no questions needed
+- NEVER re-ask configuration questions - the init CLI already handled profile, platform, etc.
+- NEVER run \`bp init\` or \`bp update\` - user did this already
+- Brownfield: dispatch codebase-scanner sub-agent. Do NOT scan code yourself.
+- Greenfield: advance immediately, no scanning needed
+- ALWAYS suggest \`bp roadmap\` directly, not \`bp continue\`
 ",
   "plan": "---
 name: bp-plan

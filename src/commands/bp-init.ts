@@ -112,9 +112,8 @@ async function initHandler(options: {
   }
 
   if (isBrownfield) {
-    const info = detectProjectInfo(process.cwd());
-    await runBrownfieldInit(process.cwd(), bpDir, info, stack);
-    console.log('✓ Project structure scanned. Dispatch bp-codebase-mapper and bp-spec-bootstrapper sub-agents to complete analysis.');
+    console.log('✓ Brownfield mode: run "bp continue" or follow init workflow to dispatch codebase-scanner sub-agent.');
+    console.log('  The codebase-scanner will analyze source code and extract specs into bp/specs/.');
   }
 
   console.log('Blueprint initialized.');
