@@ -12,6 +12,7 @@ import type { ContinueResult } from '../core/continue.js';
 import { loadState, updateState } from '../core/state-file.js';
 import { determineNextStep, determineChangeNextStep, STEP_TO_WORKFLOW, expandTemplateVars, resolveStatus } from '../core/continue.js';
 import { validateStepAdvance } from '../core/state-validator.js';
+import { commitDocChanges } from '../core/git-doc.js';
 
 export function register(program: any): void {
   const cmd = program
@@ -288,6 +289,8 @@ function continueHandler(options?: { auto?: boolean; command?: string }): void {
 
       // Recompute result after state advance to show the NEW step's instructions
       const newState = loadState(bpDir);
+      // Auto-commit state.md if commitDocs enabled
+      commitDocChanges(bpDir, cwd, `chore: advance step to ${state.active_context.step}`);
       // Chain: if we just advanced to ready, immediately trigger phase-ready logic
       if (newState.active_context.step === 'ready') {
         continueHandler(options);
@@ -526,6 +529,8 @@ function continueChangeHandler(name: string, options?: { auto?: boolean; command
           s.active_context = { type: entryType as 'change' | 'adhoc', ref: 'changes/' + name, step: shortStatus };
         }
       });
+      // Auto-commit state.md if commitDocs enabled
+      commitDocChanges(bpDir, cwd, `chore: advance change ${name} to ${shortStatus}`);
       const newResult = determineChangeNextStep(bpDir, name);
       if (!('error' in newResult)) { formatContinueResult(newResult, isAuto, state); return; }
     }

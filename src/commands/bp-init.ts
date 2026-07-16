@@ -11,7 +11,7 @@ import { generateAll } from '../generators/index.js';
 import { REQUIREMENTS_TEMPLATE } from '../templates/artifacts/index.js';
 import { writeGeneratedFiles } from './_utils.js';
 import { getSpecStack, detectSpecStack } from '../templates/spec-stacks/detect.js';
-import type { SpecStackTemplate } from '../templates/spec-stacks/index.js';
+import { commitDocChanges } from '../core/git-doc.js';
 
 export function register(program: Command): void {
   program
@@ -134,5 +134,10 @@ async function initHandler(options: {
     console.log(`✓ Platform files generated (${files.length})`);
   } catch {
     console.log('⚠ Platform file generation failed. Run `bp update` to retry.');
+  }
+
+  // Auto git init + commit if commitDocs enabled
+  if (config.workflow?.commitDocs) {
+    commitDocChanges(bpDir, baseDir, 'init: blueprint project scaffolding', ['bp/']);
   }
 }
