@@ -12,11 +12,9 @@ export type {
 export { PROFILE_MODEL_MAP } from './config.js';
 
 export type {
-  ChangeType,
   ChangeStage,
   ChangeMeta,
 } from './project.js';
-
 export type {
   ArtifactStatus,
   ChangeProgress,

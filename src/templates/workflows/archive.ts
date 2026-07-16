@@ -69,8 +69,7 @@ Read \`bp/roadmap.md\`:
 4. If all changes in the phase are [x]: change phase status to [COMPLETED]
 5. If all phases in the milestone are [COMPLETED]: change milestone status to [SHIPPED]
 6. Write updated roadmap.md
-
-If the change is adhoc (no roadmap reference), skip roadmap update.
+If the proposal has no ## Roadmap Reference section, skip roadmap update.
 
 ### Step 6: Commit and output
 
@@ -95,7 +94,7 @@ Archived $1
 - **Delta spec merge is the critical operation.** If a MODIFIED requirement header doesn't match the global spec, flag it.
 - **Archive preserves full context.** All artifacts (proposal, design, tasks, specs, review) move to archive together.
 - **Roadmap update is automatic.** Don't ask the user to manually update it.
-- If the change is adhoc (no Roadmap Reference in proposal.md), skip the roadmap update step.
+- Check proposal.md for ## Roadmap Reference before updating roadmap.
 `;
 
 export function getArchiveSkillTemplate(): SkillTemplate {

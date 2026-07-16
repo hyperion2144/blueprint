@@ -132,23 +132,21 @@ function archiveHandler(name: string, options: { force?: boolean }): void {
     }
   }
 
-  // ---- Step 4 / 5: Update roadmap (skip adhoc changes) ----
+  // ---- Step 4 / 5: Update roadmap (only if proposal has a phase reference) ----
   const proposalPath = join(changePath, 'proposal.md');
-  let isAdhoc = false;
+  let hasPhaseReference = false;
 
   if (existsSync(proposalPath)) {
     const proposalContent = readFileSync(proposalPath, 'utf-8');
-    if (!proposalContent.includes('## Roadmap Reference')) {
-      isAdhoc = true;
+    if (proposalContent.includes('## Roadmap Reference')) {
+      hasPhaseReference = true;
     }
   }
 
   let phaseCompleted = false;
   let milestoneCompleted = false;
 
-  if (isAdhoc) {
-    console.log('  ~ Adhoc change: skipped roadmap update');
-  } else {
+  if (hasPhaseReference) {
     const roadmapPath = join(bpDir, 'roadmap.md');
     if (existsSync(roadmapPath)) {
       const roadmap = readFileSync(roadmapPath, 'utf-8');
@@ -164,6 +162,8 @@ function archiveHandler(name: string, options: { force?: boolean }): void {
         console.log('  ~ Change not found in roadmap, skipping update');
       }
     }
+  } else {
+    console.log('  ~ No roadmap reference, skipping roadmap update');
   }
 
   // ---- Step 4: Archive the change directory ----
@@ -175,10 +175,10 @@ function archiveHandler(name: string, options: { force?: boolean }): void {
   console.log(`\n✓ Archived ${changeName}`);
   console.log(`  - ${mergedCount} delta spec(s) merged into bp/specs/`);
   console.log(`  - Change moved to bp/changes/archive/${date}-${changeName}/`);
-  if (!isAdhoc && phaseCompleted) {
+  if (phaseCompleted) {
     console.log('  - Phase COMPLETED');
   }
-  if (!isAdhoc && milestoneCompleted) {
+  if (milestoneCompleted) {
     console.log('  - Milestone SHIPPED');
   }
   console.log('\n  Next: bp propose <new-change> (or: bp continue)');

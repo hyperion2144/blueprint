@@ -4,9 +4,7 @@ const instructions = `## Input
 
 - **\`$ARGUMENTS\`** (required): change name (kebab-case)
 - **\`--phase <milestone>/<phase>\`** (optional): reference a roadmap phase
-- **\`--adhoc\`** (optional): mark as adhoc change (no phase reference)
 
-## Steps
 
 ### Step 1: Create change directory
 

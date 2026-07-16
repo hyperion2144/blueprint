@@ -93,7 +93,6 @@ export const PROPOSAL_TEMPLATE = `# Proposal: {{name}}
 <!--
   Optional. If this change belongs to a milestone/phase in roadmap.md,
   reference it here. This helps track progress and prevent direction drift.
-  Remove this section for adhoc changes (--adhoc).
 -->
 
 - **Milestone**: {{milestone-name}}

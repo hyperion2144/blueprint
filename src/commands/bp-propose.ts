@@ -12,11 +12,10 @@ export function register(program: any): void {
     .command('propose <name>')
     .description('Create a change folder with proposal.md')
     .option('--phase <milestone>/<phase>', 'reference a roadmap phase')
-    .option('--adhoc', 'mark as adhoc change (no phase reference)')
     .action(proposeHandler);
 }
 
-function proposeHandler(name: string, options: { phase?: string; adhoc?: boolean }) {
+function proposeHandler(name: string, options: { phase?: string }) {
   const bpDir = findBpDir();
   if (!bpDir) {
     console.error('Not in a blueprint project. Run "bp init" first.');
@@ -42,9 +41,6 @@ function proposeHandler(name: string, options: { phase?: string; adhoc?: boolean
     const [milestone, phase] = options.phase.split('/');
     content = content.replace(/\{\{milestone-name\}\}/g, milestone || '');
     content = content.replace(/\{\{phase-name\}\}/g, phase || '');
-  } else if (options.adhoc) {
-    // Remove roadmap reference section for adhoc changes
-    content = content.replace(/## Roadmap Reference[\s\S]*$/m, '');
   }
 
   writeFileSync(join(changeDir, 'proposal.md'), content, 'utf-8');
@@ -52,7 +48,6 @@ function proposeHandler(name: string, options: { phase?: string; adhoc?: boolean
   // Write change metadata
   const meta = {
     name,
-    type: options.adhoc ? 'adhoc' : 'phase',
     milestone: options.phase?.split('/')[0],
     phase: options.phase?.split('/')[1],
     createdAt: new Date().toISOString(),

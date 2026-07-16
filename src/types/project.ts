@@ -3,9 +3,6 @@
  * Two-layer: Roadmap (living document) + Change (spec-driven unit)
  */
 
-/** Change type */
-export type ChangeType = 'phase' | 'adhoc';
-
 /** Change lifecycle stage (derived from artifact existence, not stored) */
 export type ChangeStage =
   | 'proposed'    // proposal.md exists
@@ -18,7 +15,6 @@ export type ChangeStage =
 /** Change metadata (stored in .bp.yaml per change) */
 export interface ChangeMeta {
   name: string;
-  type: ChangeType;
   /** Optional roadmap reference */
   milestone?: string;
   phase?: string;
