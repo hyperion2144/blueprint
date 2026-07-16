@@ -209,17 +209,14 @@ RUN_ID=$(cat tests/e2e/history/.counter 2>/dev/null || echo 0)
 RUN_ID=$((RUN_ID + 1))
 echo $RUN_ID > tests/e2e/history/.counter
 
-# Reset fixture to clean state
-cd "$FIXTURE"
-git rm -rfq . 2>/dev/null
-git checkout -- . 2>/dev/null
-git clean -fdxq
-cd -
+# Delete fixture completely and recreate from scratch (not git cleanup)
+rm -rf "$FIXTURE"
+mkdir -p "$FIXTURE"
 
-# Initialize BP in fixture
+# Initialize BP + git in fixture
 cd "$FIXTURE"
 bp init --yes
-git init -q 2>/dev/null
+git init -q
 git add -A
 git commit -q -m "fixture: bare init" --allow-empty
 cd -
