@@ -119,8 +119,7 @@ export function updateState(bpDir: string, updater: (state: StateFile) => void):
       if (Date.now() - start >= MAX_WAIT) {
         throw new Error('Failed to acquire state lock within 3 seconds. Another process may be holding bp/.state.lock.');
       }
-      const until = Date.now() + POLL_INTERVAL;
-      while (Date.now() < until) { /* spin */ }
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, POLL_INTERVAL);
     }
   }
 

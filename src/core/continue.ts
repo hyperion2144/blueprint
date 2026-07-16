@@ -305,7 +305,7 @@ export function determineFromState(state: StateFile): ContinueResult {
   };
 }
 
-function resolveStatus(state: StateFile): string {
+export function resolveStatus(state: StateFile): string {
   const ctx = state.active_context;
   switch (ctx.type) {
     case 'project':

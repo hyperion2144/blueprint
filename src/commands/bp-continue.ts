@@ -10,7 +10,7 @@ import { WORKFLOW_REGISTRY, type WorkflowStep } from '../templates/workflows/reg
 import type { ChangeStatus, StateFile } from '../types/index.js';
 import type { ContinueResult } from '../core/continue.js';
 import { loadState, updateState } from '../core/state-file.js';
-import { determineNextStep, determineChangeNextStep, STEP_TO_WORKFLOW, expandTemplateVars } from '../core/continue.js';
+import { determineNextStep, determineChangeNextStep, STEP_TO_WORKFLOW, expandTemplateVars, resolveStatus } from '../core/continue.js';
 import { validateStepAdvance } from '../core/state-validator.js';
 
 export function register(program: any): void {
@@ -80,17 +80,6 @@ function formatContinueResult(result: ContinueResult, isAuto = false, state?: St
   console.log(lines.join('\n'));
 }
 
-function resolveStatusKey(type: string, step: string, projectStatus: string): string {
-  switch (type) {
-    case 'project': return projectStatus;
-    case 'milestone': return step === 'active' ? 'milestone-active' : step;
-    case 'phase': return `phase-${step}`;
-    case 'change': return `change-${step}`;
-    // Adhoc changes: 'proposal' uses adhoc- prefix, all others follow change- cycle
-    case 'adhoc': return step === 'proposal' ? `adhoc-${step}` : `change-${step}`;
-    default: return projectStatus;
-  }
-}
 function continueHandler(options?: { auto?: boolean; command?: string }): void {
   const isAuto = options?.auto ?? false;
   const bpDir = join(process.cwd(), 'bp');
@@ -100,7 +89,7 @@ function continueHandler(options?: { auto?: boolean; command?: string }): void {
 
   // --command: one explicit transition to target state, show its instructions, stop
   if (options?.command && state.active_context.type !== 'change' && state.active_context.type !== 'adhoc') {
-    const currentStatus = resolveStatusKey(state.active_context.type, state.active_context.step, state.project.status);
+    const currentStatus = resolveStatus(state);
     const transition = getTransition(currentStatus, options.command);
     if (!transition) {
       console.log(JSON.stringify({ error: `No transition "${options.command}" from current state "${currentStatus}"` }));
@@ -219,7 +208,7 @@ function continueHandler(options?: { auto?: boolean; command?: string }): void {
       const newState = loadState(bpDir);
       const advanceResult = determineNextStep(bpDir);
       if (advanceResult.nextCommand) {
-        const currentKey = resolveStatusKey(newState.active_context.type, newState.active_context.step, newState.project.status);
+        const currentKey = resolveStatus(newState);
         const transition = getTransition(currentKey, advanceResult.nextCommand);
         if (transition) {
           updateState(bpDir, (s) => {
@@ -272,7 +261,7 @@ function continueHandler(options?: { auto?: boolean; command?: string }): void {
   }
 
   if (result.nextCommand) {
-    const currentStatus = resolveStatusKey(state.active_context.type, state.active_context.step, state.project.status);
+    const currentStatus = resolveStatus(state);
     const transition = getTransition(currentStatus, result.nextCommand);
 
     if (transition) {
@@ -375,6 +364,56 @@ function extractFilesFromTasks(tasksPath: string): string[] | null {
   return files.length > 0 ? files : null;
 }
 
+/** Check if coverage check blocks advancement — returns blocked result or null */
+function handleCoverageCheck(bpDir: string, ref: string): { blocked: boolean; message?: string } | null {
+  const changeDir = join(bpDir, ref);
+  const designContent = existsSync(join(changeDir, 'design.md')) ? readFileSync(join(changeDir, 'design.md'), 'utf-8') : undefined;
+  const [propResult, desResult, taskResult] = ['proposal', 'design', 'tasks'].map(type => {
+    const path = join(changeDir, `${type}.md`);
+    if (!existsSync(path)) return null;
+    const content = readFileSync(path, 'utf-8');
+    const ctx: any = {};
+    if (type === 'tasks' && designContent) ctx.designMd = designContent;
+    if (type === 'design') {
+      const propPath = join(changeDir, 'proposal.md');
+      if (existsSync(propPath)) ctx.proposalMd = readFileSync(propPath, 'utf-8');
+    }
+    return parseAndValidate(type, content, Object.keys(ctx).length > 0 ? ctx : undefined);
+  });
+  if (propResult?.ast && desResult?.ast && taskResult?.ast) {
+    const allErrors = [
+      ...(propResult?.errors || []),
+      ...(desResult?.errors || []),
+      ...(taskResult?.errors || []),
+    ];
+    if (allErrors.length > 0) {
+      return {
+        blocked: true,
+        message: allErrors.map(e => e.message).join('; '),
+      };
+    }
+    const covErrors = checkCoverage(propResult.ast, desResult.ast, taskResult.ast);
+    if (covErrors.length > 0) {
+      return {
+        blocked: true,
+        message: covErrors.map(e => e.message).join('; '),
+      };
+    }
+  }
+  return null;
+}
+
+/** Format conflict check result into console output */
+function handleFileConflicts(conflicts: FileConflict[], state: StateFile): void {
+  const lines = ['# bp continue — blocked', 'error: file conflicts with parallel changes'];
+  for (const c of conflicts) {
+    lines.push(`  Change "${c.blockingChange}" (${state.active_context.contexts?.[c.blockingChange]?.step ?? 'unknown'}) modifies:`);
+    for (const f of c.conflictFiles) lines.push(`    - ${f}`);
+  }
+  lines.push('hint: Wait for the above changes to complete and archive, then retry.');
+  console.log(lines.join('\n'));
+}
+
 function continueChangeHandler(name: string, options?: { auto?: boolean; command?: string }, cmdObj?: any): void {
   const isAuto = options?.auto ?? process.argv.includes('--auto');
   // --command is defined on parent 'continue', pass through via cmdObj.parent
@@ -441,65 +480,24 @@ function continueChangeHandler(name: string, options?: { auto?: boolean; command
   if (changeEntry.status === 'planning') {
     const conflicts = checkFileConflicts(name, bpDir, state);
     if (conflicts) {
-      const lines = ['# bp continue — blocked', 'error: file conflicts with parallel changes'];
-      for (const c of conflicts) {
-        lines.push(`  Change "${c.blockingChange}" (${state.active_context.contexts?.[c.blockingChange]?.step ?? 'unknown'}) modifies:`);
-        for (const f of c.conflictFiles) lines.push(`    - ${f}`);
-      }
-      lines.push('hint: Wait for the above changes to complete and archive, then retry.');
-      console.log(lines.join('\n'));
+      handleFileConflicts(conflicts, state);
       return;
     }
 
     // Coverage check: PR→DS→T chain completeness
-    const changeDir = join(bpDir, ref);
-    const designContent = existsSync(join(changeDir, 'design.md')) ? readFileSync(join(changeDir, 'design.md'), 'utf-8') : undefined;
-    const [propResult, desResult, taskResult] = ['proposal', 'design', 'tasks'].map(type => {
-      const path = join(changeDir, `${type}.md`);
-      if (!existsSync(path)) return null;
-      const content = readFileSync(path, 'utf-8');
-      const ctx: any = {};
-      if (type === 'tasks' && designContent) ctx.designMd = designContent;
-      if (type === 'design') {
-        const propPath = join(changeDir, 'proposal.md');
-        if (existsSync(propPath)) ctx.proposalMd = readFileSync(propPath, 'utf-8');
-      }
-      return parseAndValidate(type, content, Object.keys(ctx).length > 0 ? ctx : undefined);
-    });
-    if (propResult?.ast && desResult?.ast && taskResult?.ast) {
-      // Also report any checkTasks/checkDesign errors that parseAndValidate found
-      const allErrors = [
-        ...(propResult?.errors || []),
-        ...(desResult?.errors || []),
-        ...(taskResult?.errors || []),
-      ];
-      if (allErrors.length > 0) {
-        console.log([
-          '# bp continue — blocked',
-          'error: exit conditions not met',
-          'note: MUST read instructions below, check ---END--- marker exists.',
-          `step: ${state.active_context.step}`,
-          `type: ${state.active_context.type}`,
-          'reasons: ' + allErrors.map(e => e.message).join('; '),
-          'hint: Ensure every PR is referenced by a DS, and every DS by a Task.',
-        ].join('\n'));
-        return;
-      }
-      const covErrors = checkCoverage(propResult.ast, desResult.ast, taskResult.ast);
-      if (covErrors.length > 0) {
-        console.log([
-          '# bp continue — blocked',
-          'error: exit conditions not met',
-          'note: MUST read instructions below, check ---END--- marker exists.',
-          `step: ${state.active_context.step}`,
-          `type: ${state.active_context.type}`,
-          'reasons: ' + covErrors.map(e => e.message).join('; '),
-          'hint: Ensure every PR is referenced by a DS, and every DS by a Task.',
-        ].join('\n'));
-        return;
-      }
+    const covResult = handleCoverageCheck(bpDir, ref);
+    if (covResult?.blocked) {
+      console.log([
+        '# bp continue — blocked',
+        'error: exit conditions not met',
+        `step: ${state.active_context.step}`,
+        `type: ${state.active_context.type}`,
+        'reasons: ' + covResult.message!,
+        'hint: Ensure every PR is referenced by a DS, and every DS by a Task.',
+      ].join('\n'));
+      return;
     }
-    }
+  }
 
   const result = determineChangeNextStep(bpDir, name);
   if ('error' in result) {

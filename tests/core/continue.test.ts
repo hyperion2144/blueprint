@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { statePath } from '../../src/core/state-file.js';
-import { determineNextStep, determineFromState } from '../../src/core/continue.js';
+import { determineNextStep, determineFromState, resolveStatus } from '../../src/core/continue.js';
 import { stringifyFrontmatter } from '../../src/parser/frontmatter.js';
 import type { StateFile } from '../../src/types/index.js';
 
@@ -74,5 +74,52 @@ describe('determineFromState', () => {
     const commands = result.availableSteps.map((s) => s.command);
     expect(commands).toContain('archive');
     expect(commands).toContain('replan');
+  });
+});
+
+describe('resolveStatus', () => {
+  it('adhoc-pending 状态正确解析', () => {
+    const state: StateFile = {
+      project: { name: 'x', status: 'roadmap-defined', current_milestone: null, current_phase: null },
+      active_context: { type: 'adhoc', ref: 'changes/foo', step: 'pending' },
+      changes: [], adhoc: [],
+    };
+    expect(resolveStatus(state)).toBe('adhoc-pending');
+  });
+
+  it('change-pending 状态正确解析', () => {
+    const state: StateFile = {
+      project: { name: 'x', status: 'roadmap-defined', current_milestone: null, current_phase: null },
+      active_context: { type: 'change', ref: 'changes/foo', step: 'pending' },
+      changes: [], adhoc: [],
+    };
+    expect(resolveStatus(state)).toBe('change-pending');
+  });
+
+  it('phase 状态正确解析', () => {
+    const state: StateFile = {
+      project: { name: 'x', status: 'phase-discuss', current_milestone: null, current_phase: null },
+      active_context: { type: 'phase', ref: null, step: 'discuss' },
+      changes: [], adhoc: [],
+    };
+    expect(resolveStatus(state)).toBe('phase-discuss');
+  });
+
+  it('project 状态正确解析', () => {
+    const state: StateFile = {
+      project: { name: 'x', status: 'researched', current_milestone: null, current_phase: null },
+      active_context: { type: 'project', ref: null, step: 'research' },
+      changes: [], adhoc: [],
+    };
+    expect(resolveStatus(state)).toBe('researched');
+  });
+
+  it('changes 状态返回 "changes"', () => {
+    const state: StateFile = {
+      project: { name: 'x', status: 'roadmap-defined', current_milestone: null, current_phase: null },
+      active_context: { type: 'changes', ref: null, step: '' },
+      changes: [], adhoc: [],
+    };
+    expect(resolveStatus(state)).toBe('changes');
   });
 });

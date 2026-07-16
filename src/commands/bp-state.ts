@@ -5,6 +5,7 @@
 import { join, basename } from 'node:path';
 import { readFileSync, existsSync } from 'node:fs';
 import { loadState, updateState } from '../core/state-file.js';
+import { findBlueprintDir } from './_utils.js';
 
 export function register(program: any): void {
   const cmd = program
@@ -54,9 +55,6 @@ function setDeps(name: string, options: { deps?: string }) {
   console.log(JSON.stringify({ ok: true, name, depends_on: depList }));
 }
 
-function findBlueprintDir(): string {
-  return join(process.cwd(), 'bp');
-}
 
 function showState() {
   const bpDir = findBlueprintDir();

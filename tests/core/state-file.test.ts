@@ -74,6 +74,27 @@ describe('updateState', () => {
   });
 });
 
+  it('lock contention: waits for lock release', () => {
+    // Pre-create lock file to force waiting
+    const lockPath = join(tmpDir, '.state.lock');
+    writeFileSync(lockPath, '', 'utf-8');
+
+    // Release lock after 100ms
+    const timer = setTimeout(() => {
+      rmSync(lockPath, { force: true });
+    }, 100);
+
+    const t0 = Date.now();
+    updateState(tmpDir, (s) => { s.project.status = 'after-wait'; });
+    clearTimeout(timer);
+    const elapsed = Date.now() - t0;
+
+    // Should have waited at least ~80ms
+    expect(elapsed).toBeGreaterThan(80);
+    const loaded = loadState(tmpDir);
+    expect(loaded.project.status).toBe('after-wait');
+  });
+
 describe('hasState', () => {
   it('存在时返回 true', () => {
     expect(hasState(tmpDir)).toBe(true);

@@ -38,8 +38,8 @@ export function extractFromGitDiff(
   const extractions: CodeExtraction[] = [];
 
   for (const domain of domains) {
-    const behaviors = extractBehaviors(diff, domain);
-    const constraints = extractConstraints(diff, domain);
+    const behaviors = extractBehaviors(diff);
+    const constraints = extractConstraints(diff);
 
     if (behaviors.length > 0 || constraints.length > 0) {
       extractions.push({ domain, behaviors, constraints });
@@ -85,7 +85,7 @@ function detectDomains(changeDir: string): string[] {
 }
 
 /** Extract behavior keywords from diff */
-function extractBehaviors(diff: string, _domain: string): string[] {
+function extractBehaviors(diff: string): string[] {
   const behaviors: string[] = [];
   const lines = diff.split('\n');
 
@@ -110,7 +110,7 @@ function extractBehaviors(diff: string, _domain: string): string[] {
   return behaviors;
 }
 /** Extract constraint keywords from diff */
-function extractConstraints(diff: string, _domain: string): string[] {
+function extractConstraints(diff: string): string[] {
   const constraints: string[] = [];
   const lines = diff.split('\n');
 

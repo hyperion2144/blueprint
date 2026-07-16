@@ -25,11 +25,6 @@ export function fingerprint(content: string): string {
   return createHash('sha256').update(content).digest('hex');
 }
 
-/** 捕获 base 指纹 */
-export function captureBaseFingerprint(specPath: string): string | null {
-  if (!existsSync(specPath)) return null;
-  return fingerprint(readFileSync(specPath, 'utf-8'));
-}
 
 /**
  * 合并 delta-spec 到 live spec

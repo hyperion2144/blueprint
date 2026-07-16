@@ -1,4 +1,4 @@
-import { join } from 'node:path';
+import { join, basename } from 'node:path';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import type { Command } from 'commander';
 import { saveConfig } from '../core/config.js';
@@ -79,7 +79,7 @@ async function initHandler(options: {
 
   saveState(bpDir, {
     project: {
-      name: baseDir.split('/').pop() || 'project',
+      name: basename(baseDir) || 'project',
       status: 'initialized',
       current_milestone: null,
       current_phase: null,
@@ -95,7 +95,7 @@ async function initHandler(options: {
   console.log('✓ state.md created');
 
   // Create requirements.md template
-  const reqContent = REQUIREMENTS_TEMPLATE.replace(/\{\{name\}\}/g, baseDir.split('/').pop() || 'project');
+  const reqContent = REQUIREMENTS_TEMPLATE.replace(/\{\{name\}\}/g, basename(baseDir) || 'project');
   writeFileSync(join(bpDir, 'requirements.md'), reqContent, 'utf-8');
   console.log('✓ requirements.md created (template)');
 

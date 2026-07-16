@@ -2,9 +2,8 @@
  * bp config — 查看/修改配置
  */
 
-import { join } from 'node:path';
+import { findBlueprintDir } from './_utils.js';
 import { loadConfig, updateConfig, ProjectConfigSchema } from '../core/config.js';
-
 export function register(program: any): void {
   const cmd = program
     .command('config')
@@ -80,6 +79,3 @@ function parseTypedValue(value: string): unknown {
   return value;
 }
 
-function findBlueprintDir(): string {
-  return join(process.cwd(), 'bp');
-}

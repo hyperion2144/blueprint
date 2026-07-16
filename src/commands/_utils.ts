@@ -1,13 +1,26 @@
-/* 命令工具函数 */
+/**
+ * bp — shared utility functions for command modules.
+ */
 
-import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 
-/** 写入批量生成的文件 */
-export function writeGeneratedFiles(files: { path: string; content: string }[]): void {
+interface GeneratedFile {
+  path: string;
+  content: string;
+}
+
+/** Default bp/ directory (based on cwd). All commands should use this function. */
+export function findBlueprintDir(): string {
+  return join(process.cwd(), 'bp');
+}
+
+/** Write generated files to disk, creating directories as needed. */
+export function writeGeneratedFiles(files: GeneratedFile[]): void {
   for (const file of files) {
-    const dir = file.path.split('/').slice(0, -1).join('/');
+    const dir = dirname(file.path);
     if (dir) mkdirSync(dir, { recursive: true });
     writeFileSync(file.path, file.content, 'utf-8');
-    console.log(`  ✓ ${file.path}`);
   }
 }

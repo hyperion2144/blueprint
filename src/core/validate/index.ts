@@ -104,7 +104,7 @@ export function parseAndValidate(
   }
 
   // 2. FILL — no template placeholders
-  if (/\\{\\{/.test(content)) {
+  if (/\{\{/.test(content)) {
     errors.push({ field: 'fill', message: 'File contains unfilled template placeholders ({{...}})' });
   }
 

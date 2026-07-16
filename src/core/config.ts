@@ -21,6 +21,7 @@ export const ProjectConfigSchema = z.object({
     triple_review: z.boolean().optional(),
     auto_advance: z.boolean().optional(),
     spec_injection: z.boolean().optional(),
+    commitDocs: z.boolean().optional(),
   }).optional().default({}),
   review: z.object({
     gate: z.enum(['all-pass', 'severity', 'report-only']).optional(),
