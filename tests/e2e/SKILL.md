@@ -225,35 +225,45 @@ git commit -q -m "fixture: bare init" --allow-empty
 cd -
 ```
 
-### Phase 2: Start SUT
+### Phase 2: Start SUT and Initialize
 
 ```bash
 PROFILE="bp-test-$(date +%s)"
 
-# Start OMP RPC session on fixture
+# Start OMP RPC session and trigger /bp-init (writes conventions, brownfield scan)
+# Project context goes BEFORE the slash command so SUT has it for decisions
 python3 tests/e2e/scripts/rpc-driver.py \
   --profile "$PROFILE" \
-  --step "00-start" \
-  --message "You are working on a Sokoban game project. Run 'bp continue' and follow its instructions. For any user questions, use sensible defaults: the project is a web-based Sokoban puzzle game using HTML5 Canvas and TypeScript. Keep the roadmap simple: 1 milestone, 2-3 phases, each phase 1-2 changes. Do NOT ask the user anything - make reasonable assumptions and document them." \
+  --step "00-init" \
+  --message "Project context: web-based Sokoban puzzle game using HTML5 Canvas and TypeScript. Keep roadmap simple: 1 milestone, 2-3 phases, each phase 1-2 changes. Use sensible defaults for all questions - do not ask the user anything. Make reasonable assumptions and document them.
+
+/bp-init" \
   --start \
   --timeout 600
 ```
 
 ### Phase 3: Drive SUT Through BP Lifecycle
 
-Send `bp continue` repeatedly. The SUT reads CLI output and follows workflow
-instructions. After each step, collect evidence.
+**CRITICAL: Send slash commands directly (`/bp-continue`, `/bp-loop`), NOT text
+descriptions like "Run bp continue".** The SUT is an OMP session - slash commands
+trigger the corresponding BP skills. Plain text messages will NOT trigger them.
+
+#### Mode A: Step-by-step (recommended for first runs)
+
+Send `/bp-continue` repeatedly. Each call triggers the continue skill, which
+runs `bp continue` CLI, detects the next step, and outputs its full workflow
+instructions. The SUT follows those instructions, then `agent_end` fires.
 
 ```bash
-# Step sequence for v2 flow:
-# 1. bp continue → detects empty roadmap → suggests bp roadmap
-# 2. bp continue → detects roadmap exists, no changes → suggests bp propose
-# 3. bp continue → detects proposal → suggests bp plan
-# 4. bp continue → detects plan → suggests bp apply
-# 5. bp continue → detects code → suggests bp review
-# 6. bp continue → detects review PASS → suggests bp archive
-# 7. bp continue → detects archive, next change → back to step 2
-# 8. bp continue → all changes archived → project complete
+# v2 flow step sequence (each /bp-continue triggers one step):
+# /bp-continue -> detects empty roadmap -> SUT runs /bp-roadmap internally
+# /bp-continue -> roadmap exists, no changes -> SUT runs /bp-propose
+# /bp-continue -> proposal exists -> SUT runs /bp-plan
+# /bp-continue -> plan exists -> SUT runs /bp-apply
+# /bp-continue -> code exists -> SUT runs /bp-review
+# /bp-continue -> review PASS -> SUT runs /bp-archive
+# /bp-continue -> archived, next change -> back to propose
+# /bp-continue -> all archived -> project complete
 
 STEP=0
 while true; do
@@ -263,7 +273,7 @@ while true; do
   python3 tests/e2e/scripts/rpc-driver.py \
     --profile "$PROFILE" \
     --step "$STEP_ID" \
-    --message "Run 'bp continue' and follow its instructions completely. Do not ask any questions - use sensible defaults. If a step requires user input, make the most reasonable choice and document your assumption." \
+    --message "/bp-continue" \
     --timeout 900
 
   # Check if project is complete
@@ -284,21 +294,22 @@ while true; do
 done
 ```
 
-**Alternative: Single autonomous drive.** Instead of step-by-step, send one
-message that tells the SUT to run `bp loop` (autonomous mode):
+#### Mode B: Autonomous (faster, tests loop mode itself)
+
+Send `/bp-loop` once. This triggers the autonomous loop skill, which runs
+`bp continue` repeatedly without user interaction until the roadmap is complete.
 
 ```bash
 python3 tests/e2e/scripts/rpc-driver.py \
   --profile "$PROFILE" \
   --step "01-loop" \
-  --message "Run 'bp loop' to autonomously advance the project. The project is a Sokoban game using HTML5 Canvas and TypeScript. Make reasonable assumptions for all questions. Do not ask the user anything. Run until the roadmap is complete or an unrecoverable error occurs." \
-  --start \
+  --message "/bp-loop" \
   --timeout 3600
 ```
 
 Choose the approach based on the run goal:
-- **Step-by-step**: Better observability, can collect evidence per step (use for first few runs)
-- **Autonomous (bp loop)**: Faster, tests the loop mode itself (use once flow is stable)
+- **Step-by-step** (Mode A): Better observability, collect evidence per step (first few runs)
+- **Autonomous** (Mode B): Faster, tests the loop mode itself (once flow is stable)
 
 ### Phase 4: Collect Evidence
 
@@ -473,10 +484,13 @@ If you need to pause (context limit, user intervention):
 
 ```bash
 # SUT = OMP RPC session on fixture project
+# First call: include project context + /bp-init slash command
 python3 tests/e2e/scripts/rpc-driver.py \
   --profile "$PROFILE" \
-  --step "00-start" \
-  --message "<initial prompt>" \
+  --step "00-init" \
+  --message "Project context: <description>. Use sensible defaults for all questions.
+
+/bp-init" \
   --start \
   --timeout 600
 ```
@@ -486,12 +500,24 @@ the session (omit `--start`).
 
 ### Sending Commands
 
+**Always send slash commands (`/bp-continue`, `/bp-loop`, etc.) as the message.
+Never send text descriptions like "Run bp continue" - the SUT won't trigger the
+BP skill.**
+
 ```bash
+# Step-by-step: send /bp-continue for each step
 python3 tests/e2e/scripts/rpc-driver.py \
   --profile "$PROFILE" \
   --step "01-continue" \
-  --message "Run 'bp continue' and follow its instructions. Use sensible defaults for any questions." \
+  --message "/bp-continue" \
   --timeout 900
+
+# Autonomous: send /bp-loop once
+python3 tests/e2e/scripts/rpc-driver.py \
+  --profile "$PROFILE" \
+  --step "01-loop" \
+  --message "/bp-loop" \
+  --timeout 3600
 ```
 
 ### Auto-Answering
