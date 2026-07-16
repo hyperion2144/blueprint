@@ -28,6 +28,7 @@ program
 
 registerInit(program);
 registerRoadmap(program);
+registerPropose(program);
 registerPlan(program);
 registerApply(program);
 registerReview(program);

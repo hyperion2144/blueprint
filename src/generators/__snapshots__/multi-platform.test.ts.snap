@@ -199,9 +199,11 @@ Read ALL of the following before writing any code:
 
 **Checkpoint:** Can you explain what each task does, what spec requirement it implements, and what files it touches? If not, read more.
 
-### Step 2: Execute tasks in dependency order
+### Step 2: Execute tasks IN ORDER
 
-Within your wave, execute tasks respecting \`depends_on\`. For tasks without dependencies, execute in the order they appear.
+**HARD RULE: Execute tasks in the exact order they appear in tasks.md. Do not skip, reorder, or jump ahead.** The only exception is \`depends_on\` - if a task lists \`depends_on: T-3\`, you must complete T-3 first.
+
+Within your wave, go through tasks top-to-bottom. For each task:
 
 #### For type:behavior tasks (TDD mandatory)
 
@@ -228,13 +230,16 @@ Commit: \`refactor(<scope>): <description>\`
 
 #### For type:scaffolding tasks: Direct implementation. Commit: \`chore(<scope>): <description>\`
 
-### Step 3: Mark tasks complete
+### Step 3: After EACH task commit - mark it IMMEDIATELY
 
-After each task is implemented, tested, and committed:
-1. Find the task in tasks.md
-2. Change \`- [ ]\` to \`- [x]\`
-3. Add commit hash annotation: \`<!-- commit: <hash> -->\`
-4. Save tasks.md
+**HARD RULE: Do not batch-mark at the end. After every task's commit, IMMEDIATELY:**
+1. Open \`tasks.md\`
+2. Find the \`- [ ] T-N:\` line for that task
+3. Change \`- [ ]\` to \`- [x]\`
+4. Add \`<!-- commit: <hash> -->\` on the same line (use \`git rev-parse HEAD\` to get the hash)
+5. Save \`tasks.md\`
+
+If you skip this, the orchestrator will treat the task as not-done and the change will fail review.
 
 ### Step 4: Return
 
@@ -1682,9 +1687,11 @@ Read ALL of the following before writing any code:
 
 **Checkpoint:** Can you explain what each task does, what spec requirement it implements, and what files it touches? If not, read more.
 
-### Step 2: Execute tasks in dependency order
+### Step 2: Execute tasks IN ORDER
 
-Within your wave, execute tasks respecting \`depends_on\`. For tasks without dependencies, execute in the order they appear.
+**HARD RULE: Execute tasks in the exact order they appear in tasks.md. Do not skip, reorder, or jump ahead.** The only exception is \`depends_on\` - if a task lists \`depends_on: T-3\`, you must complete T-3 first.
+
+Within your wave, go through tasks top-to-bottom. For each task:
 
 #### For type:behavior tasks (TDD mandatory)
 
@@ -1711,13 +1718,16 @@ Commit: \`refactor(<scope>): <description>\`
 
 #### For type:scaffolding tasks: Direct implementation. Commit: \`chore(<scope>): <description>\`
 
-### Step 3: Mark tasks complete
+### Step 3: After EACH task commit - mark it IMMEDIATELY
 
-After each task is implemented, tested, and committed:
-1. Find the task in tasks.md
-2. Change \`- [ ]\` to \`- [x]\`
-3. Add commit hash annotation: \`<!-- commit: <hash> -->\`
-4. Save tasks.md
+**HARD RULE: Do not batch-mark at the end. After every task's commit, IMMEDIATELY:**
+1. Open \`tasks.md\`
+2. Find the \`- [ ] T-N:\` line for that task
+3. Change \`- [ ]\` to \`- [x]\`
+4. Add \`<!-- commit: <hash> -->\` on the same line (use \`git rev-parse HEAD\` to get the hash)
+5. Save \`tasks.md\`
+
+If you skip this, the orchestrator will treat the task as not-done and the change will fail review.
 
 ### Step 4: Return
 
@@ -3176,9 +3186,11 @@ Read ALL of the following before writing any code:
 
 **Checkpoint:** Can you explain what each task does, what spec requirement it implements, and what files it touches? If not, read more.
 
-### Step 2: Execute tasks in dependency order
+### Step 2: Execute tasks IN ORDER
 
-Within your wave, execute tasks respecting \`depends_on\`. For tasks without dependencies, execute in the order they appear.
+**HARD RULE: Execute tasks in the exact order they appear in tasks.md. Do not skip, reorder, or jump ahead.** The only exception is \`depends_on\` - if a task lists \`depends_on: T-3\`, you must complete T-3 first.
+
+Within your wave, go through tasks top-to-bottom. For each task:
 
 #### For type:behavior tasks (TDD mandatory)
 
@@ -3205,13 +3217,16 @@ Commit: \`refactor(<scope>): <description>\`
 
 #### For type:scaffolding tasks: Direct implementation. Commit: \`chore(<scope>): <description>\`
 
-### Step 3: Mark tasks complete
+### Step 3: After EACH task commit - mark it IMMEDIATELY
 
-After each task is implemented, tested, and committed:
-1. Find the task in tasks.md
-2. Change \`- [ ]\` to \`- [x]\`
-3. Add commit hash annotation: \`<!-- commit: <hash> -->\`
-4. Save tasks.md
+**HARD RULE: Do not batch-mark at the end. After every task's commit, IMMEDIATELY:**
+1. Open \`tasks.md\`
+2. Find the \`- [ ] T-N:\` line for that task
+3. Change \`- [ ]\` to \`- [x]\`
+4. Add \`<!-- commit: <hash> -->\` on the same line (use \`git rev-parse HEAD\` to get the hash)
+5. Save \`tasks.md\`
+
+If you skip this, the orchestrator will treat the task as not-done and the change will fail review.
 
 ### Step 4: Return
 

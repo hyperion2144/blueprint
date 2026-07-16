@@ -318,7 +318,7 @@ Read ALL of the following before writing any code:
 
 ### Step 2: Execute tasks IN ORDER
 
-**HARD RULE: Execute tasks in the exact order they appear in tasks.md. Do not skip, reorder, or jump ahead.** The only exception is `depends_on` - if a task lists `depends_on: T-3`, you must complete T-3 first.
+**HARD RULE: Execute tasks in the exact order they appear in tasks.md. Do not skip, reorder, or jump ahead.** The only exception is \`depends_on\` - if a task lists \`depends_on: T-3\`, you must complete T-3 first.
 
 Within your wave, go through tasks top-to-bottom. For each task:
 

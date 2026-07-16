@@ -18,7 +18,7 @@ import type { ArtifactStatus, ChangeProgress, ChangeStage, ContinueResult, NextS
 import type { SchemaDef, SchemaArtifact, SchemaStep } from './schema.js';
 
 /** Get workflow instructions from registry */
-function getWorkflowInstructions(step: string): string | undefined {
+export function getWorkflowInstructions(step: string): string | undefined {
   const registry = WORKFLOW_REGISTRY[step as WorkflowStep];
   return registry?.command?.()?.content;
 }

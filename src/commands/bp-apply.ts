@@ -1,10 +1,9 @@
 /**
- * bp apply [name] — dispatch executor sub-agents per wave for parallel implementation
- *
- * Full instructions: see DESIGN-v2/workflows/apply.md
+ * bp apply [name] - dispatch executor sub-agents per wave for parallel implementation
  */
 
 import { findBpDir } from './_utils.js';
+import { getWorkflowInstructions } from '../core/continue.js';
 import type { Command } from 'commander';
 
 export function register(program: Command): void {
@@ -22,9 +21,12 @@ function applyHandler(name: string | undefined, options: { fix?: boolean }) {
     process.exit(1);
   }
 
-  console.log('Workflow: apply');
-  console.log('See DESIGN-v2/workflows/apply.md for full instructions.');
-  console.log('');
+  // Output the full workflow instructions from the TypeScript template
+  const instructions = getWorkflowInstructions('apply');
+  if (instructions) {
+    console.log(instructions);
+    return;
+  }
 
   if (!name) {
     console.log('No change name provided.');
@@ -34,13 +36,6 @@ function applyHandler(name: string | undefined, options: { fix?: boolean }) {
     return;
   }
 
-  const fixMode = options.fix ? ' --fix' : '';
   console.log(`Change: ${name}`);
   console.log(`Mode: ${options.fix ? 'fix' : 'normal'}`);
-  console.log(`\nDispatch executor sub-agents per wave for change "${name}":\n`);
-  console.log(`  1. Read bp/changes/${name}/tasks.md and identify waves`);
-  console.log(`  2. For each wave: dispatch executor sub-agent (isolated)`);
-  console.log(`  3. After each wave: verify git log, tests, task marking`);
-  console.log(`  4. Run full test suite after all waves complete`);
-  console.log(`\n  Then run: bp review ${name}${fixMode}`);
 }

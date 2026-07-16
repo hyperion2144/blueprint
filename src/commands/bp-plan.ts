@@ -1,10 +1,9 @@
 /**
- * bp plan [name] — dispatch planner sub-agent to produce design.md, tasks.md, and delta specs
- *
- * Full instructions: see DESIGN-v2/workflows/plan.md
+ * bp plan [name] - dispatch planner sub-agent to produce design.md, tasks.md, and delta specs
  */
 
 import { findBpDir } from './_utils.js';
+import { getWorkflowInstructions } from '../core/continue.js';
 import type { Command } from 'commander';
 
 export function register(program: Command): void {
@@ -22,9 +21,12 @@ function planHandler(name: string | undefined, options: { fix?: boolean }) {
     process.exit(1);
   }
 
-  console.log('Workflow: plan');
-  console.log('See DESIGN-v2/workflows/plan.md for full instructions.');
-  console.log('');
+  // Output the full workflow instructions from the TypeScript template
+  const instructions = getWorkflowInstructions('plan');
+  if (instructions) {
+    console.log(instructions);
+    return;
+  }
 
   if (!name) {
     console.log('No change name provided.');
@@ -34,13 +36,6 @@ function planHandler(name: string | undefined, options: { fix?: boolean }) {
     return;
   }
 
-  const fixMode = options.fix ? ' --fix' : '';
   console.log(`Change: ${name}`);
   console.log(`Mode: ${options.fix ? 'fix' : 'normal'}`);
-  console.log(`\nDispatch the planner sub-agent for change "${name}":\n`);
-  console.log(`  1. Read bp/changes/${name}/proposal.md`);
-  console.log(`  2. Read bp/specs/<domain>/spec.md for each affected domain`);
-  console.log(`  3. Read bp/conventions/coding.md and bp/config.yaml`);
-  console.log(`  4. Produce: design.md, tasks.md, specs/<domain>/spec.md`);
-  console.log(`\n  Then run: bp apply ${name}${fixMode}`);
 }
