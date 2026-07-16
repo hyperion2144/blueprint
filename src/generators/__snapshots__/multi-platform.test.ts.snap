@@ -784,9 +784,12 @@ If all tasks are non-behavior:
 ### Step 6: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/[BP:CHANGE_NAME]/ && bp roadmap-update [BP:CHANGE_NAME]
+# Update roadmap: If the change is linked to a roadmap phase, update it to \`- [-] [BP:CHANGE_NAME] (implemented YYYY-MM-DD)\`.
+git add bp/changes/[BP:CHANGE_NAME]/
 bp commit "feat: implementation complete for [BP:CHANGE_NAME]" --files bp/changes/[BP:CHANGE_NAME]/
 \`\`\`
+  Next: bp review [BP:CHANGE_NAME]
+  (or: bp continue [BP:CHANGE_NAME])
 
 Output:
 \`\`\`
@@ -888,18 +891,8 @@ If the proposal has no ## Roadmap Reference section, skip roadmap update.
 ### Step 6: Commit and output
 
 \`\`\`bash
-bp roadmap-update [BP:CHANGE_NAME]
+# Step 5 already updated the roadmap above — no separate roadmap-update command needed.
 bp commit "archive: [BP:CHANGE_NAME] - specs merged, roadmap updated" --files bp/specs/ bp/roadmap.md
-\`\`\`
-
-Output:
-\`\`\`
-Archived [BP:CHANGE_NAME]
-  - Delta specs merged into bp/specs/<domain>/spec.md
-  - Change moved to bp/changes/archive/<date>-[BP:CHANGE_NAME]/
-  - Roadmap updated: <phase> progress <done>/<total>
-
-  Next: bp propose <new-change> (or: bp continue)
 \`\`\`
 
 ## Guardrails
@@ -1203,9 +1196,12 @@ If any check fails: re-dispatch planner with specific feedback on what's missing
 ### Step 5: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/[BP:CHANGE_NAME]/ && bp roadmap-update [BP:CHANGE_NAME]
+# Update roadmap: If the change's proposal.md has \`## Roadmap Reference\`, read \`bp/roadmap.md\`, find the change in that phase's Changes list, and update it to \`- [-] [BP:CHANGE_NAME] (planned YYYY-MM-DD)\`.
+git add bp/changes/[BP:CHANGE_NAME]/
 bp commit "docs(plan): design + tasks + delta specs for [BP:CHANGE_NAME]" --files bp/changes/[BP:CHANGE_NAME]/
 \`\`\`
+  Next: bp apply [BP:CHANGE_NAME]
+  (or: bp continue [BP:CHANGE_NAME])
 
 Output:
 \`\`\`
@@ -1285,7 +1281,8 @@ Before finishing, check:
 ### Step 5: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/[BP:CHANGE_NAME]/ && bp roadmap-update [BP:CHANGE_NAME]
+# Update roadmap: If the proposal has \`## Roadmap Reference\`, read \`bp/roadmap.md\`, find the corresponding phase, and add \`- [ ] [BP:CHANGE_NAME]\` to its Changes list if not already present.
+git add bp/changes/[BP:CHANGE_NAME]/
 bp commit "docs(proposal): [BP:CHANGE_NAME]" --files bp/changes/[BP:CHANGE_NAME]/
 \`\`\`
 
@@ -1405,17 +1402,10 @@ Review NEEDS_REVISION for [BP:CHANGE_NAME]
 ### Step 6: Commit review.md
 
 \`\`\`bash
-git add . && bp roadmap-update [BP:CHANGE_NAME]
+# Update roadmap: If the change is linked to a roadmap phase, update it to \`- [x] [BP:CHANGE_NAME] (reviewed YYYY-MM-DD)\`.
+git add .
 bp commit "docs(review): triple review for [BP:CHANGE_NAME]" --files bp/changes/[BP:CHANGE_NAME]/review.md
 \`\`\`
-
-## Guardrails
-
-- **Full mode: MUST dispatch sub-agent.** Do NOT write review.md yourself.
-- **tsc + vitest must pass before review.** Don't review broken code.
-- **Do NOT fix issues yourself.** You identify them; the executor fixes them.
-- **D issues -> replan (bp plan --fix). R/Q/G issues -> reapply (bp apply --fix).** Never mix.
-- In --fix re-review: reviewer marks [x] in existing review.md, does NOT create new file.
 - Do NOT run bp archive automatically - let the user review the findings first.
 ",
   ".agent/skills/bp-roadmap/SKILL.md": "---
@@ -2281,9 +2271,12 @@ If all tasks are non-behavior:
 ### Step 6: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/$1/ && bp roadmap-update $1
+# Update roadmap: If the change is linked to a roadmap phase, update it to \`- [-] $1 (implemented YYYY-MM-DD)\`.
+git add bp/changes/$1/
 bp commit "feat: implementation complete for $1" --files bp/changes/$1/
 \`\`\`
+  Next: bp review $1
+  (or: bp continue $1)
 
 Output:
 \`\`\`
@@ -2385,18 +2378,8 @@ If the proposal has no ## Roadmap Reference section, skip roadmap update.
 ### Step 6: Commit and output
 
 \`\`\`bash
-bp roadmap-update $1
+# Step 5 already updated the roadmap above — no separate roadmap-update command needed.
 bp commit "archive: $1 - specs merged, roadmap updated" --files bp/specs/ bp/roadmap.md
-\`\`\`
-
-Output:
-\`\`\`
-Archived $1
-  - Delta specs merged into bp/specs/<domain>/spec.md
-  - Change moved to bp/changes/archive/<date>-$1/
-  - Roadmap updated: <phase> progress <done>/<total>
-
-  Next: bp propose <new-change> (or: bp continue)
 \`\`\`
 
 ## Guardrails
@@ -2697,9 +2680,12 @@ If any check fails: re-dispatch planner with specific feedback on what's missing
 ### Step 5: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/$1/ && bp roadmap-update $1
+# Update roadmap: If the change's proposal.md has \`## Roadmap Reference\`, read \`bp/roadmap.md\`, find the change in that phase's Changes list, and update it to \`- [-] $1 (planned YYYY-MM-DD)\`.
+git add bp/changes/$1/
 bp commit "docs(plan): design + tasks + delta specs for $1" --files bp/changes/$1/
 \`\`\`
+  Next: bp apply $1
+  (or: bp continue $1)
 
 Output:
 \`\`\`
@@ -2779,7 +2765,8 @@ Before finishing, check:
 ### Step 5: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/$1/ && bp roadmap-update $1
+# Update roadmap: If the proposal has \`## Roadmap Reference\`, read \`bp/roadmap.md\`, find the corresponding phase, and add \`- [ ] $1\` to its Changes list if not already present.
+git add bp/changes/$1/
 bp commit "docs(proposal): $1" --files bp/changes/$1/
 \`\`\`
 
@@ -2899,17 +2886,10 @@ Review NEEDS_REVISION for $1
 ### Step 6: Commit review.md
 
 \`\`\`bash
-git add . && bp roadmap-update $1
+# Update roadmap: If the change is linked to a roadmap phase, update it to \`- [x] $1 (reviewed YYYY-MM-DD)\`.
+git add .
 bp commit "docs(review): triple review for $1" --files bp/changes/$1/review.md
 \`\`\`
-
-## Guardrails
-
-- **Full mode: MUST dispatch sub-agent.** Do NOT write review.md yourself.
-- **tsc + vitest must pass before review.** Don't review broken code.
-- **Do NOT fix issues yourself.** You identify them; the executor fixes them.
-- **D issues -> replan (bp plan --fix). R/Q/G issues -> reapply (bp apply --fix).** Never mix.
-- In --fix re-review: reviewer marks [x] in existing review.md, does NOT create new file.
 - Do NOT run bp archive automatically - let the user review the findings first.
 ",
   ".claude/commands/bp-roadmap.md": "---
@@ -3796,9 +3776,12 @@ If all tasks are non-behavior:
 ### Step 6: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/$1/ && bp roadmap-update $1
+# Update roadmap: If the change is linked to a roadmap phase, update it to \`- [-] $1 (implemented YYYY-MM-DD)\`.
+git add bp/changes/$1/
 bp commit "feat: implementation complete for $1" --files bp/changes/$1/
 \`\`\`
+  Next: bp review $1
+  (or: bp continue $1)
 
 Output:
 \`\`\`
@@ -3900,18 +3883,8 @@ If the proposal has no ## Roadmap Reference section, skip roadmap update.
 ### Step 6: Commit and output
 
 \`\`\`bash
-bp roadmap-update $1
+# Step 5 already updated the roadmap above — no separate roadmap-update command needed.
 bp commit "archive: $1 - specs merged, roadmap updated" --files bp/specs/ bp/roadmap.md
-\`\`\`
-
-Output:
-\`\`\`
-Archived $1
-  - Delta specs merged into bp/specs/<domain>/spec.md
-  - Change moved to bp/changes/archive/<date>-$1/
-  - Roadmap updated: <phase> progress <done>/<total>
-
-  Next: bp propose <new-change> (or: bp continue)
 \`\`\`
 
 ## Guardrails
@@ -4212,9 +4185,12 @@ If any check fails: re-dispatch planner with specific feedback on what's missing
 ### Step 5: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/$1/ && bp roadmap-update $1
+# Update roadmap: If the change's proposal.md has \`## Roadmap Reference\`, read \`bp/roadmap.md\`, find the change in that phase's Changes list, and update it to \`- [-] $1 (planned YYYY-MM-DD)\`.
+git add bp/changes/$1/
 bp commit "docs(plan): design + tasks + delta specs for $1" --files bp/changes/$1/
 \`\`\`
+  Next: bp apply $1
+  (or: bp continue $1)
 
 Output:
 \`\`\`
@@ -4294,7 +4270,8 @@ Before finishing, check:
 ### Step 5: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/$1/ && bp roadmap-update $1
+# Update roadmap: If the proposal has \`## Roadmap Reference\`, read \`bp/roadmap.md\`, find the corresponding phase, and add \`- [ ] $1\` to its Changes list if not already present.
+git add bp/changes/$1/
 bp commit "docs(proposal): $1" --files bp/changes/$1/
 \`\`\`
 
@@ -4414,17 +4391,10 @@ Review NEEDS_REVISION for $1
 ### Step 6: Commit review.md
 
 \`\`\`bash
-git add . && bp roadmap-update $1
+# Update roadmap: If the change is linked to a roadmap phase, update it to \`- [x] $1 (reviewed YYYY-MM-DD)\`.
+git add .
 bp commit "docs(review): triple review for $1" --files bp/changes/$1/review.md
 \`\`\`
-
-## Guardrails
-
-- **Full mode: MUST dispatch sub-agent.** Do NOT write review.md yourself.
-- **tsc + vitest must pass before review.** Don't review broken code.
-- **Do NOT fix issues yourself.** You identify them; the executor fixes them.
-- **D issues -> replan (bp plan --fix). R/Q/G issues -> reapply (bp apply --fix).** Never mix.
-- In --fix re-review: reviewer marks [x] in existing review.md, does NOT create new file.
 - Do NOT run bp archive automatically - let the user review the findings first.
 ",
   ".omp/commands/bp-roadmap.md": "---

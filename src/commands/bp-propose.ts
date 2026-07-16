@@ -46,13 +46,7 @@ function proposeHandler(name: string, options: { phase?: string }) {
   writeFileSync(join(changeDir, 'proposal.md'), content, 'utf-8');
 
   // Write change metadata
-  const meta = {
-    name,
-    milestone: options.phase?.split('/')[0],
-    phase: options.phase?.split('/')[1],
-    createdAt: new Date().toISOString(),
-  };
-  writeFileSync(join(changeDir, '.bp.yaml'), formatYaml(meta), 'utf-8');
+
 
   console.log(`✓ Created bp/changes/${name}/proposal.md`);
   console.log(`  Proposal is ready for planning.`);
@@ -60,11 +54,3 @@ function proposeHandler(name: string, options: { phase?: string }) {
   console.log(`  (or: bp continue ${name})`);
 }
 
-function formatYaml(obj: Record<string, any>): string {
-  const lines: string[] = [];
-  for (const [key, value] of Object.entries(obj)) {
-    if (value === undefined || value === null) continue;
-    lines.push(`${key}: ${value}`);
-  }
-  return lines.join('\n') + '\n';
-}

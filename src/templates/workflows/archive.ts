@@ -74,18 +74,8 @@ If the proposal has no ## Roadmap Reference section, skip roadmap update.
 ### Step 6: Commit and output
 
 \`\`\`bash
-bp roadmap-update $1
+# Step 5 already updated the roadmap above — no separate roadmap-update command needed.
 bp commit "archive: $1 - specs merged, roadmap updated" --files bp/specs/ bp/roadmap.md
-\`\`\`
-
-Output:
-\`\`\`
-Archived $1
-  - Delta specs merged into bp/specs/<domain>/spec.md
-  - Change moved to bp/changes/archive/<date>-$1/
-  - Roadmap updated: <phase> progress <done>/<total>
-
-  Next: bp propose <new-change> (or: bp continue)
 \`\`\`
 
 ## Guardrails

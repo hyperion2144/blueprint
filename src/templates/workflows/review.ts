@@ -92,17 +92,10 @@ Review NEEDS_REVISION for $1
 ### Step 6: Commit review.md
 
 \`\`\`bash
-git add . && bp roadmap-update $1
+# Update roadmap: If the change is linked to a roadmap phase, update it to \`- [x] $1 (reviewed YYYY-MM-DD)\`.
+git add .
 bp commit "docs(review): triple review for $1" --files bp/changes/$1/review.md
 \`\`\`
-
-## Guardrails
-
-- **Full mode: MUST dispatch sub-agent.** Do NOT write review.md yourself.
-- **tsc + vitest must pass before review.** Don't review broken code.
-- **Do NOT fix issues yourself.** You identify them; the executor fixes them.
-- **D issues -> replan (bp plan --fix). R/Q/G issues -> reapply (bp apply --fix).** Never mix.
-- In --fix re-review: reviewer marks [x] in existing review.md, does NOT create new file.
 - Do NOT run bp archive automatically - let the user review the findings first.
 `;
 

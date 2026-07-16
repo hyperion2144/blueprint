@@ -89,9 +89,12 @@ If all tasks are non-behavior:
 ### Step 6: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/$1/ && bp roadmap-update $1
+# Update roadmap: If the change is linked to a roadmap phase, update it to \`- [-] $1 (implemented YYYY-MM-DD)\`.
+git add bp/changes/$1/
 bp commit "feat: implementation complete for $1" --files bp/changes/$1/
 \`\`\`
+  Next: bp review $1
+  (or: bp continue $1)
 
 Output:
 \`\`\`

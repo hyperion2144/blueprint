@@ -5,7 +5,6 @@ import { fileURLToPath } from 'node:url';
 import { register as registerInit } from './commands/bp-init.js';
 import { register as registerRoadmap } from './commands/bp-roadmap.js';
 import { register as registerPropose } from './commands/bp-propose.js';
-import { register as registerRoadmapUpdate } from './commands/bp-roadmap-update.js';
 import { register as registerPlan } from './commands/bp-plan.js';
 import { register as registerApply } from './commands/bp-apply.js';
 import { register as registerReview } from './commands/bp-review.js';
@@ -29,8 +28,6 @@ program
 
 registerInit(program);
 registerRoadmap(program);
-registerPropose(program);
-registerRoadmapUpdate(program);
 registerPlan(program);
 registerApply(program);
 registerReview(program);

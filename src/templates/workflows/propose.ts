@@ -54,7 +54,8 @@ Before finishing, check:
 ### Step 5: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/$1/ && bp roadmap-update $1
+# Update roadmap: If the proposal has \`## Roadmap Reference\`, read \`bp/roadmap.md\`, find the corresponding phase, and add \`- [ ] $1\` to its Changes list if not already present.
+git add bp/changes/$1/
 bp commit "docs(proposal): $1" --files bp/changes/$1/
 \`\`\`
 
