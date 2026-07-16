@@ -1301,51 +1301,54 @@ hide: false
 
 ### Step 1: Discuss project requirements
 
-Before defining any milestones, understand the project goals and requirements:
+Before defining milestones, understand the project goals and requirements:
 
 Use \`ask\` to discuss:
 - **Project goal**: What is this project trying to achieve? What problem does it solve?
 - **Target users**: Who will use this? What are their needs?
-- **Key features**: What are the main capabilities required? List them.
+- **Key features**: What are the main capabilities required?
 - **Constraints**: Any technical, timeline, or resource constraints?
 - **Existing codebase**: If brownfield, what exists already? What needs to change?
 
-Take notes on the discussion. These will inform the roadmap structure.
+Take notes. These inform the roadmap structure.
 
-### Step 2: Choose planning mode
+### Step 2: Get context
 
-Based on the discussion, determine the planning mode:
+Read \`bp/config.yaml\` and \`bp/specs/\` to understand the project scope, tech stack, and existing behavioral contracts.
+
+### Step 3: Detect roadmap state
+
+Read \`bp/roadmap.md\`. Check if it already has defined milestones (look for \`## Milestone:\` headers that have real content, not template placeholders).
+
+**First time (no milestones defined):**
+Continue to Step 4.
+
+**Adding a new milestone (roadmap already exists):**
+- Append new milestone(s) BELOW existing milestones, separated by \`---\`
+- Keep existing milestones with their status unchanged
+
+### Step 4: Choose planning mode (first time only)
+
+Use \`ask\` to determine the planning mode:
 
 - **MVP mode** (product-facing): each phase delivers user-facing value
-  - Phases: "User can sign up" -> "User can make a payment" -> "User can view history"
 - **Technical-layer mode** (infrastructure/CLI): each phase produces a runnable/testable artifact
-  - Phases: "CLI scaffold" -> "Core engine" -> "Command implementations"
 
-### Step 3: Define Milestones
+### Step 5: Define Milestones
 
 Get the roadmap template: \`bp template roadmap\`. Fill with milestones and phases.
 
 **Default: 1 milestone = the entire project.** Milestones are product releases, NOT development phases.
 
-Each milestone:
-- Has a clear goal (what value it delivers)
-- Contains 2-4 phases
-- First phase is always the thinnest end-to-end path
-
-Each phase:
-- Has a concrete, verifiable deliverable
-- Maps to one or more spec domains
-- Lists planned changes (what \`bp propose\` will create)
-
-### Step 4: Validate
+### Step 6: Validate
 
 Check before finishing:
-- [ ] All project requirements from the discussion are covered by some phase
-- [ ] Phase dependencies form a DAG (no cycles)
-- [ ] Each phase has a concrete, verifiable deliverable
-- [ ] Phase count per milestone: small 1-2, medium 2-3, large 3-4
-- [ ] First phase is the thinnest end-to-end path
-- [ ] No template placeholders remaining (\`{{\`)
+- All project requirements from Step 1 discussion are covered by some phase
+- Phase dependencies form a DAG (no cycles)
+- Each phase has a concrete, verifiable deliverable
+- Phase count per milestone: small 1-2, medium 2-3, large 3-4
+- First phase is always the thinnest possible end-to-end path
+- No template placeholders remaining (\`{{\`)
 
 ## Output
 
@@ -1353,7 +1356,7 @@ Check before finishing:
 
 ## Guardrails
 
-- **Default: 1 milestone.** No "foundation", "setup", "scaffolding" milestone — M1 = shippable product.
+- **Default: 1 milestone.** No "foundation", "setup", "scaffolding" — M1 = shippable product.
 - Mode (MVP/technical-layer) shapes phases within a milestone, not the milestones themselves.
 - First phase = thinnest end-to-end path (always first phase, never "phase 0").
 - **Adding new milestone**: append new ones below existing, don't overwrite.
@@ -2662,51 +2665,54 @@ description: View or modify roadmap.md
 
 ### Step 1: Discuss project requirements
 
-Before defining any milestones, understand the project goals and requirements:
+Before defining milestones, understand the project goals and requirements:
 
 Use \`ask\` to discuss:
 - **Project goal**: What is this project trying to achieve? What problem does it solve?
 - **Target users**: Who will use this? What are their needs?
-- **Key features**: What are the main capabilities required? List them.
+- **Key features**: What are the main capabilities required?
 - **Constraints**: Any technical, timeline, or resource constraints?
 - **Existing codebase**: If brownfield, what exists already? What needs to change?
 
-Take notes on the discussion. These will inform the roadmap structure.
+Take notes. These inform the roadmap structure.
 
-### Step 2: Choose planning mode
+### Step 2: Get context
 
-Based on the discussion, determine the planning mode:
+Read \`bp/config.yaml\` and \`bp/specs/\` to understand the project scope, tech stack, and existing behavioral contracts.
+
+### Step 3: Detect roadmap state
+
+Read \`bp/roadmap.md\`. Check if it already has defined milestones (look for \`## Milestone:\` headers that have real content, not template placeholders).
+
+**First time (no milestones defined):**
+Continue to Step 4.
+
+**Adding a new milestone (roadmap already exists):**
+- Append new milestone(s) BELOW existing milestones, separated by \`---\`
+- Keep existing milestones with their status unchanged
+
+### Step 4: Choose planning mode (first time only)
+
+Use \`ask\` to determine the planning mode:
 
 - **MVP mode** (product-facing): each phase delivers user-facing value
-  - Phases: "User can sign up" -> "User can make a payment" -> "User can view history"
 - **Technical-layer mode** (infrastructure/CLI): each phase produces a runnable/testable artifact
-  - Phases: "CLI scaffold" -> "Core engine" -> "Command implementations"
 
-### Step 3: Define Milestones
+### Step 5: Define Milestones
 
 Get the roadmap template: \`bp template roadmap\`. Fill with milestones and phases.
 
 **Default: 1 milestone = the entire project.** Milestones are product releases, NOT development phases.
 
-Each milestone:
-- Has a clear goal (what value it delivers)
-- Contains 2-4 phases
-- First phase is always the thinnest end-to-end path
-
-Each phase:
-- Has a concrete, verifiable deliverable
-- Maps to one or more spec domains
-- Lists planned changes (what \`bp propose\` will create)
-
-### Step 4: Validate
+### Step 6: Validate
 
 Check before finishing:
-- [ ] All project requirements from the discussion are covered by some phase
-- [ ] Phase dependencies form a DAG (no cycles)
-- [ ] Each phase has a concrete, verifiable deliverable
-- [ ] Phase count per milestone: small 1-2, medium 2-3, large 3-4
-- [ ] First phase is the thinnest end-to-end path
-- [ ] No template placeholders remaining (\`{{\`)
+- All project requirements from Step 1 discussion are covered by some phase
+- Phase dependencies form a DAG (no cycles)
+- Each phase has a concrete, verifiable deliverable
+- Phase count per milestone: small 1-2, medium 2-3, large 3-4
+- First phase is always the thinnest possible end-to-end path
+- No template placeholders remaining (\`{{\`)
 
 ## Output
 
@@ -2714,7 +2720,7 @@ Check before finishing:
 
 ## Guardrails
 
-- **Default: 1 milestone.** No "foundation", "setup", "scaffolding" milestone — M1 = shippable product.
+- **Default: 1 milestone.** No "foundation", "setup", "scaffolding" — M1 = shippable product.
 - Mode (MVP/technical-layer) shapes phases within a milestone, not the milestones themselves.
 - First phase = thinnest end-to-end path (always first phase, never "phase 0").
 - **Adding new milestone**: append new ones below existing, don't overwrite.
@@ -4045,51 +4051,54 @@ description: View or modify roadmap.md
 
 ### Step 1: Discuss project requirements
 
-Before defining any milestones, understand the project goals and requirements:
+Before defining milestones, understand the project goals and requirements:
 
 Use \`ask\` to discuss:
 - **Project goal**: What is this project trying to achieve? What problem does it solve?
 - **Target users**: Who will use this? What are their needs?
-- **Key features**: What are the main capabilities required? List them.
+- **Key features**: What are the main capabilities required?
 - **Constraints**: Any technical, timeline, or resource constraints?
 - **Existing codebase**: If brownfield, what exists already? What needs to change?
 
-Take notes on the discussion. These will inform the roadmap structure.
+Take notes. These inform the roadmap structure.
 
-### Step 2: Choose planning mode
+### Step 2: Get context
 
-Based on the discussion, determine the planning mode:
+Read \`bp/config.yaml\` and \`bp/specs/\` to understand the project scope, tech stack, and existing behavioral contracts.
+
+### Step 3: Detect roadmap state
+
+Read \`bp/roadmap.md\`. Check if it already has defined milestones (look for \`## Milestone:\` headers that have real content, not template placeholders).
+
+**First time (no milestones defined):**
+Continue to Step 4.
+
+**Adding a new milestone (roadmap already exists):**
+- Append new milestone(s) BELOW existing milestones, separated by \`---\`
+- Keep existing milestones with their status unchanged
+
+### Step 4: Choose planning mode (first time only)
+
+Use \`ask\` to determine the planning mode:
 
 - **MVP mode** (product-facing): each phase delivers user-facing value
-  - Phases: "User can sign up" -> "User can make a payment" -> "User can view history"
 - **Technical-layer mode** (infrastructure/CLI): each phase produces a runnable/testable artifact
-  - Phases: "CLI scaffold" -> "Core engine" -> "Command implementations"
 
-### Step 3: Define Milestones
+### Step 5: Define Milestones
 
 Get the roadmap template: \`bp template roadmap\`. Fill with milestones and phases.
 
 **Default: 1 milestone = the entire project.** Milestones are product releases, NOT development phases.
 
-Each milestone:
-- Has a clear goal (what value it delivers)
-- Contains 2-4 phases
-- First phase is always the thinnest end-to-end path
-
-Each phase:
-- Has a concrete, verifiable deliverable
-- Maps to one or more spec domains
-- Lists planned changes (what \`bp propose\` will create)
-
-### Step 4: Validate
+### Step 6: Validate
 
 Check before finishing:
-- [ ] All project requirements from the discussion are covered by some phase
-- [ ] Phase dependencies form a DAG (no cycles)
-- [ ] Each phase has a concrete, verifiable deliverable
-- [ ] Phase count per milestone: small 1-2, medium 2-3, large 3-4
-- [ ] First phase is the thinnest end-to-end path
-- [ ] No template placeholders remaining (\`{{\`)
+- All project requirements from Step 1 discussion are covered by some phase
+- Phase dependencies form a DAG (no cycles)
+- Each phase has a concrete, verifiable deliverable
+- Phase count per milestone: small 1-2, medium 2-3, large 3-4
+- First phase is always the thinnest possible end-to-end path
+- No template placeholders remaining (\`{{\`)
 
 ## Output
 
@@ -4097,7 +4106,7 @@ Check before finishing:
 
 ## Guardrails
 
-- **Default: 1 milestone.** No "foundation", "setup", "scaffolding" milestone — M1 = shippable product.
+- **Default: 1 milestone.** No "foundation", "setup", "scaffolding" — M1 = shippable product.
 - Mode (MVP/technical-layer) shapes phases within a milestone, not the milestones themselves.
 - First phase = thinnest end-to-end path (always first phase, never "phase 0").
 - **Adding new milestone**: append new ones below existing, don't overwrite.
