@@ -157,20 +157,29 @@ function determineChangeNextStep(
     }
   }
 
-  // Phase 0: Check for partial plan execution
-  // Some plan artifacts exist but others missing - planner was interrupted
-  const planArtifacts = ['design', 'specs', 'tasks'];
-  const planExisting = planArtifacts.filter((a) => existingArtifacts.has(a));
-  const planMissing = planArtifacts.filter((a) => !existingArtifacts.has(a));
-  if (planExisting.length > 0 && planMissing.length > 0) {
-    return {
-      stage: 'incomplete',
-      command: `plan ${changeName}`,
-      description: `[INCOMPLETE] Planner only produced: ${planExisting.join(', ')}. Missing: ${planMissing.join(', ')}. Follow the instructions below to complete the plan step.`,
-      instructions: getWorkflowInstructions('plan'),
-    };
+  // Phase 0: Check for partial step execution
+  // Group artifacts by command, check if any command has partial completion
+  const commandArtifactIds: Record<string, string[]> = {};
+  for (const artifact of schema.artifacts) {
+    if (!artifact.command) continue;
+    if (!commandArtifactIds[artifact.command]) {
+      commandArtifactIds[artifact.command] = [];
+    }
+    commandArtifactIds[artifact.command].push(artifact.id);
   }
-
+  for (const [command, ids] of Object.entries(commandArtifactIds)) {
+    if (ids.length <= 1) continue; // single-file commands can't be partial
+    const existing = ids.filter((id) => existingArtifacts.has(id));
+    const missingIds = ids.filter((id) => !existingArtifacts.has(id));
+    if (existing.length > 0 && missingIds.length > 0) {
+      return {
+        stage: 'incomplete',
+        command: `${command} ${changeName}`,
+        description: `[INCOMPLETE] ${command} only produced: ${existing.join(', ')}. Missing: ${missingIds.join(', ')}. Follow the instructions below to complete this step.`,
+        instructions: getWorkflowInstructions(command),
+      };
+    }
+  }
   // Phase 1: Check artifact-producing steps (proposal, design, specs, tasks)
   // Find the first artifact that doesn't exist but whose requirements are met
   for (const artifact of schema.artifacts) {
