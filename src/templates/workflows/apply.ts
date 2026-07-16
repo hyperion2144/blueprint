@@ -89,8 +89,8 @@ If all tasks are non-behavior:
 ### Step 6: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/$1/
-git commit -m "feat: implementation complete for $1"
+git add bp/changes/$1/ && bp roadmap-update $1
+bp commit "feat: implementation complete for $1" --files bp/changes/$1/
 \`\`\`
 
 Output:

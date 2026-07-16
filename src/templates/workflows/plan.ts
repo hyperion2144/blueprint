@@ -73,8 +73,8 @@ If any check fails: re-dispatch planner with specific feedback on what's missing
 ### Step 5: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/$1/
-git commit -m "docs(plan): design + tasks + delta specs for $1"
+git add bp/changes/$1/ && bp roadmap-update $1
+bp commit "docs(plan): design + tasks + delta specs for $1" --files bp/changes/$1/
 \`\`\`
 
 Output:

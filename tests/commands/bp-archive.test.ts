@@ -54,8 +54,7 @@ describe('bp archive', () => {
     mkdirSync(join(testDir, 'bp', 'changes', 'test-change', 'specs', 'auth'), { recursive: true });
     write('bp/changes/test-change/specs/auth/auth.md', '# Auth Spec\n');
 
-    execSync('git add -A', { cwd: testDir });
-    execSync('git commit -m "add test change"', { cwd: testDir });
+    execSync('git add -f -A && git commit -m "add test change"', { cwd: testDir });
 
     const output = cli('archive', 'test-change');
     expect(output).toContain('Archived');

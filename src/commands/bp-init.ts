@@ -10,7 +10,7 @@
  */
 
 import { join, basename } from 'node:path';
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import type { Command } from 'commander';
 import type { Profile, ProjectConfig } from '../types/index.js';
 import { createBlueprintStructure, isInitialized } from '../core/file-tree.js';
@@ -108,11 +108,10 @@ async function initHandler(options: {
       mkdirSync(domainDir, { recursive: true });
       writeFileSync(join(domainDir, 'spec.md'), domain.specContent, 'utf-8');
     }
-    console.log('✓ specs/ created (' + stack.domains.map((d) => d.name).join(', ') + ')');
   } else {
     mkdirSync(specsDir, { recursive: true });
-    console.log('✓ specs/ directory created (brownfield — specs generated from code scanning)');
   }
+  console.log('✓ specs/ directory created');
 
   console.log('Blueprint initialized.');
 
@@ -136,6 +135,25 @@ async function initHandler(options: {
     console.log(`✓ Platform files generated (${files.length})`);
   } catch {
     console.log('⚠ Platform file generation failed. Run `bp update` to retry.');
+  }
+
+  // Auto-create .gitignore when commitDocs is false (bp/ files should not be tracked)
+  if (!wizard.commitDocs) {
+    const gitignorePath = join(baseDir, '.gitignore');
+    const gitignoreEntries = ['bp/', '.omp/', '.claude/', '.agent/'];
+
+    if (existsSync(gitignorePath)) {
+      // Append missing entries
+      const existing = readFileSync(gitignorePath, 'utf-8');
+      const missing = gitignoreEntries.filter(e => !existing.includes(e));
+      if (missing.length > 0) {
+        writeFileSync(gitignorePath, existing + '\n' + missing.join('\n') + '\n', 'utf-8');
+        console.log(`✓ .gitignore updated (added: ${missing.join(', ')})`);
+      }
+    } else {
+      writeFileSync(gitignorePath, gitignoreEntries.join('\n') + '\n', 'utf-8');
+      console.log('✓ .gitignore created (bp/, .omp/, .claude/, .agent/ ignored)');
+    }
   }
 
   // Auto git init + commit if commitDocs enabled

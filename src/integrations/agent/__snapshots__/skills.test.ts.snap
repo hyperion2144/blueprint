@@ -98,8 +98,8 @@ If all tasks are non-behavior:
 ### Step 6: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/[BP:CHANGE_NAME]/
-git commit -m "feat: implementation complete for [BP:CHANGE_NAME]"
+git add bp/changes/[BP:CHANGE_NAME]/ && bp roadmap-update [BP:CHANGE_NAME]
+bp commit "feat: implementation complete for [BP:CHANGE_NAME]" --files bp/changes/[BP:CHANGE_NAME]/
 \`\`\`
 
 Output:
@@ -202,8 +202,8 @@ If the proposal has no ## Roadmap Reference section, skip roadmap update.
 ### Step 6: Commit and output
 
 \`\`\`bash
-git add bp/specs/ bp/changes/archive/ bp/roadmap.md
-git commit -m "archive: [BP:CHANGE_NAME] - specs merged, roadmap updated"
+bp roadmap-update [BP:CHANGE_NAME]
+bp commit "archive: [BP:CHANGE_NAME] - specs merged, roadmap updated" --files bp/specs/ bp/roadmap.md
 \`\`\`
 
 Output:
@@ -517,8 +517,8 @@ If any check fails: re-dispatch planner with specific feedback on what's missing
 ### Step 5: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/[BP:CHANGE_NAME]/
-git commit -m "docs(plan): design + tasks + delta specs for [BP:CHANGE_NAME]"
+git add bp/changes/[BP:CHANGE_NAME]/ && bp roadmap-update [BP:CHANGE_NAME]
+bp commit "docs(plan): design + tasks + delta specs for [BP:CHANGE_NAME]" --files bp/changes/[BP:CHANGE_NAME]/
 \`\`\`
 
 Output:
@@ -599,8 +599,8 @@ Before finishing, check:
 ### Step 5: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/[BP:CHANGE_NAME]/proposal.md
-git commit -m "docs(proposal): [BP:CHANGE_NAME]"
+git add bp/changes/[BP:CHANGE_NAME]/ && bp roadmap-update [BP:CHANGE_NAME]
+bp commit "docs(proposal): [BP:CHANGE_NAME]" --files bp/changes/[BP:CHANGE_NAME]/
 \`\`\`
 
 Output:
@@ -719,8 +719,8 @@ Review NEEDS_REVISION for [BP:CHANGE_NAME]
 ### Step 6: Commit review.md
 
 \`\`\`bash
-git add bp/changes/[BP:CHANGE_NAME]/review.md
-git commit -m "docs(review): triple review for [BP:CHANGE_NAME]"
+git add . && bp roadmap-update [BP:CHANGE_NAME]
+bp commit "docs(review): triple review for [BP:CHANGE_NAME]" --files bp/changes/[BP:CHANGE_NAME]/review.md
 \`\`\`
 
 ## Guardrails

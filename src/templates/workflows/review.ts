@@ -92,8 +92,8 @@ Review NEEDS_REVISION for $1
 ### Step 6: Commit review.md
 
 \`\`\`bash
-git add bp/changes/$1/review.md
-git commit -m "docs(review): triple review for $1"
+git add . && bp roadmap-update $1
+bp commit "docs(review): triple review for $1" --files bp/changes/$1/review.md
 \`\`\`
 
 ## Guardrails

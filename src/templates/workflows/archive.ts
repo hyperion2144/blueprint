@@ -74,8 +74,8 @@ If the proposal has no ## Roadmap Reference section, skip roadmap update.
 ### Step 6: Commit and output
 
 \`\`\`bash
-git add bp/specs/ bp/changes/archive/ bp/roadmap.md
-git commit -m "archive: $1 - specs merged, roadmap updated"
+bp roadmap-update $1
+bp commit "archive: $1 - specs merged, roadmap updated" --files bp/specs/ bp/roadmap.md
 \`\`\`
 
 Output:

@@ -155,7 +155,7 @@ You are NOT a designer. You follow the design and tasks given to you. If the des
 1. **TDD is non-negotiable for behavior tasks** - RED (failing test) -> GREEN (minimal implementation) -> REFACTOR (improve clarity). No exceptions in standard profile.
 2. **Tests express intent** - A test is not "test function X". It's "verify that when the user does Y, the system responds with Z". Read the spec_ref to understand WHY before writing the test.
 3. **Minimal implementation** - Write the least code that makes the test pass. Don't add "just in case" features. Don't implement the next task's requirements early.
-4. **Atomic commits** - Each commit is one complete, verifiable change. A commit that breaks the build is a bug, not a work in progress.
+4. **Atomic commits** - Use \`bp commit\` for each task (one complete, verifiable change per commit). A commit that breaks the build is a bug, not a work in progress.
 5. **Follow existing patterns** - Read the codebase before writing. If the project uses pattern X, use pattern X. Don't introduce pattern Y because you're more familiar with it.
 6. **Fix forward, don't work around** - If you find a bug in existing code, fix it. Don't add a workaround in your new code. Annotate with [auto-fix].
 
@@ -182,7 +182,7 @@ In \`--fix\` mode:
 ## Output
 
 - Code changes (source files + test files)
-- Atomic git commits (one per task, Conventional Commits format)
+- Atomic bp commits (one per task, Conventional Commits format)
 - Tasks marked complete in tasks.md (\`- [ ]\` -> \`- [x]\` with commit hash annotation)
 
 ## Execution Flow
@@ -784,8 +784,8 @@ If all tasks are non-behavior:
 ### Step 6: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/[BP:CHANGE_NAME]/
-git commit -m "feat: implementation complete for [BP:CHANGE_NAME]"
+git add bp/changes/[BP:CHANGE_NAME]/ && bp roadmap-update [BP:CHANGE_NAME]
+bp commit "feat: implementation complete for [BP:CHANGE_NAME]" --files bp/changes/[BP:CHANGE_NAME]/
 \`\`\`
 
 Output:
@@ -888,8 +888,8 @@ If the proposal has no ## Roadmap Reference section, skip roadmap update.
 ### Step 6: Commit and output
 
 \`\`\`bash
-git add bp/specs/ bp/changes/archive/ bp/roadmap.md
-git commit -m "archive: [BP:CHANGE_NAME] - specs merged, roadmap updated"
+bp roadmap-update [BP:CHANGE_NAME]
+bp commit "archive: [BP:CHANGE_NAME] - specs merged, roadmap updated" --files bp/specs/ bp/roadmap.md
 \`\`\`
 
 Output:
@@ -1203,8 +1203,8 @@ If any check fails: re-dispatch planner with specific feedback on what's missing
 ### Step 5: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/[BP:CHANGE_NAME]/
-git commit -m "docs(plan): design + tasks + delta specs for [BP:CHANGE_NAME]"
+git add bp/changes/[BP:CHANGE_NAME]/ && bp roadmap-update [BP:CHANGE_NAME]
+bp commit "docs(plan): design + tasks + delta specs for [BP:CHANGE_NAME]" --files bp/changes/[BP:CHANGE_NAME]/
 \`\`\`
 
 Output:
@@ -1285,8 +1285,8 @@ Before finishing, check:
 ### Step 5: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/[BP:CHANGE_NAME]/proposal.md
-git commit -m "docs(proposal): [BP:CHANGE_NAME]"
+git add bp/changes/[BP:CHANGE_NAME]/ && bp roadmap-update [BP:CHANGE_NAME]
+bp commit "docs(proposal): [BP:CHANGE_NAME]" --files bp/changes/[BP:CHANGE_NAME]/
 \`\`\`
 
 Output:
@@ -1405,8 +1405,8 @@ Review NEEDS_REVISION for [BP:CHANGE_NAME]
 ### Step 6: Commit review.md
 
 \`\`\`bash
-git add bp/changes/[BP:CHANGE_NAME]/review.md
-git commit -m "docs(review): triple review for [BP:CHANGE_NAME]"
+git add . && bp roadmap-update [BP:CHANGE_NAME]
+bp commit "docs(review): triple review for [BP:CHANGE_NAME]" --files bp/changes/[BP:CHANGE_NAME]/review.md
 \`\`\`
 
 ## Guardrails
@@ -1648,7 +1648,7 @@ You are NOT a designer. You follow the design and tasks given to you. If the des
 1. **TDD is non-negotiable for behavior tasks** - RED (failing test) -> GREEN (minimal implementation) -> REFACTOR (improve clarity). No exceptions in standard profile.
 2. **Tests express intent** - A test is not "test function X". It's "verify that when the user does Y, the system responds with Z". Read the spec_ref to understand WHY before writing the test.
 3. **Minimal implementation** - Write the least code that makes the test pass. Don't add "just in case" features. Don't implement the next task's requirements early.
-4. **Atomic commits** - Each commit is one complete, verifiable change. A commit that breaks the build is a bug, not a work in progress.
+4. **Atomic commits** - Use \`bp commit\` for each task (one complete, verifiable change per commit). A commit that breaks the build is a bug, not a work in progress.
 5. **Follow existing patterns** - Read the codebase before writing. If the project uses pattern X, use pattern X. Don't introduce pattern Y because you're more familiar with it.
 6. **Fix forward, don't work around** - If you find a bug in existing code, fix it. Don't add a workaround in your new code. Annotate with [auto-fix].
 
@@ -1675,7 +1675,7 @@ In \`--fix\` mode:
 ## Output
 
 - Code changes (source files + test files)
-- Atomic git commits (one per task, Conventional Commits format)
+- Atomic bp commits (one per task, Conventional Commits format)
 - Tasks marked complete in tasks.md (\`- [ ]\` -> \`- [x]\` with commit hash annotation)
 
 ## Execution Flow
@@ -2281,8 +2281,8 @@ If all tasks are non-behavior:
 ### Step 6: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/$1/
-git commit -m "feat: implementation complete for $1"
+git add bp/changes/$1/ && bp roadmap-update $1
+bp commit "feat: implementation complete for $1" --files bp/changes/$1/
 \`\`\`
 
 Output:
@@ -2385,8 +2385,8 @@ If the proposal has no ## Roadmap Reference section, skip roadmap update.
 ### Step 6: Commit and output
 
 \`\`\`bash
-git add bp/specs/ bp/changes/archive/ bp/roadmap.md
-git commit -m "archive: $1 - specs merged, roadmap updated"
+bp roadmap-update $1
+bp commit "archive: $1 - specs merged, roadmap updated" --files bp/specs/ bp/roadmap.md
 \`\`\`
 
 Output:
@@ -2697,8 +2697,8 @@ If any check fails: re-dispatch planner with specific feedback on what's missing
 ### Step 5: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/$1/
-git commit -m "docs(plan): design + tasks + delta specs for $1"
+git add bp/changes/$1/ && bp roadmap-update $1
+bp commit "docs(plan): design + tasks + delta specs for $1" --files bp/changes/$1/
 \`\`\`
 
 Output:
@@ -2779,8 +2779,8 @@ Before finishing, check:
 ### Step 5: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/$1/proposal.md
-git commit -m "docs(proposal): $1"
+git add bp/changes/$1/ && bp roadmap-update $1
+bp commit "docs(proposal): $1" --files bp/changes/$1/
 \`\`\`
 
 Output:
@@ -2899,8 +2899,8 @@ Review NEEDS_REVISION for $1
 ### Step 6: Commit review.md
 
 \`\`\`bash
-git add bp/changes/$1/review.md
-git commit -m "docs(review): triple review for $1"
+git add . && bp roadmap-update $1
+bp commit "docs(review): triple review for $1" --files bp/changes/$1/review.md
 \`\`\`
 
 ## Guardrails
@@ -3152,7 +3152,7 @@ You are NOT a designer. You follow the design and tasks given to you. If the des
 1. **TDD is non-negotiable for behavior tasks** - RED (failing test) -> GREEN (minimal implementation) -> REFACTOR (improve clarity). No exceptions in standard profile.
 2. **Tests express intent** - A test is not "test function X". It's "verify that when the user does Y, the system responds with Z". Read the spec_ref to understand WHY before writing the test.
 3. **Minimal implementation** - Write the least code that makes the test pass. Don't add "just in case" features. Don't implement the next task's requirements early.
-4. **Atomic commits** - Each commit is one complete, verifiable change. A commit that breaks the build is a bug, not a work in progress.
+4. **Atomic commits** - Use \`bp commit\` for each task (one complete, verifiable change per commit). A commit that breaks the build is a bug, not a work in progress.
 5. **Follow existing patterns** - Read the codebase before writing. If the project uses pattern X, use pattern X. Don't introduce pattern Y because you're more familiar with it.
 6. **Fix forward, don't work around** - If you find a bug in existing code, fix it. Don't add a workaround in your new code. Annotate with [auto-fix].
 
@@ -3179,7 +3179,7 @@ In \`--fix\` mode:
 ## Output
 
 - Code changes (source files + test files)
-- Atomic git commits (one per task, Conventional Commits format)
+- Atomic bp commits (one per task, Conventional Commits format)
 - Tasks marked complete in tasks.md (\`- [ ]\` -> \`- [x]\` with commit hash annotation)
 
 ## Execution Flow
@@ -3796,8 +3796,8 @@ If all tasks are non-behavior:
 ### Step 6: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/$1/
-git commit -m "feat: implementation complete for $1"
+git add bp/changes/$1/ && bp roadmap-update $1
+bp commit "feat: implementation complete for $1" --files bp/changes/$1/
 \`\`\`
 
 Output:
@@ -3900,8 +3900,8 @@ If the proposal has no ## Roadmap Reference section, skip roadmap update.
 ### Step 6: Commit and output
 
 \`\`\`bash
-git add bp/specs/ bp/changes/archive/ bp/roadmap.md
-git commit -m "archive: $1 - specs merged, roadmap updated"
+bp roadmap-update $1
+bp commit "archive: $1 - specs merged, roadmap updated" --files bp/specs/ bp/roadmap.md
 \`\`\`
 
 Output:
@@ -4212,8 +4212,8 @@ If any check fails: re-dispatch planner with specific feedback on what's missing
 ### Step 5: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/$1/
-git commit -m "docs(plan): design + tasks + delta specs for $1"
+git add bp/changes/$1/ && bp roadmap-update $1
+bp commit "docs(plan): design + tasks + delta specs for $1" --files bp/changes/$1/
 \`\`\`
 
 Output:
@@ -4294,8 +4294,8 @@ Before finishing, check:
 ### Step 5: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/$1/proposal.md
-git commit -m "docs(proposal): $1"
+git add bp/changes/$1/ && bp roadmap-update $1
+bp commit "docs(proposal): $1" --files bp/changes/$1/
 \`\`\`
 
 Output:
@@ -4414,8 +4414,8 @@ Review NEEDS_REVISION for $1
 ### Step 6: Commit review.md
 
 \`\`\`bash
-git add bp/changes/$1/review.md
-git commit -m "docs(review): triple review for $1"
+git add . && bp roadmap-update $1
+bp commit "docs(review): triple review for $1" --files bp/changes/$1/review.md
 \`\`\`
 
 ## Guardrails

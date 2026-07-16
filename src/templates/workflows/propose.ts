@@ -54,8 +54,8 @@ Before finishing, check:
 ### Step 5: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/$1/proposal.md
-git commit -m "docs(proposal): $1"
+git add bp/changes/$1/ && bp roadmap-update $1
+bp commit "docs(proposal): $1" --files bp/changes/$1/
 \`\`\`
 
 Output:

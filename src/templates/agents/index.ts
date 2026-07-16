@@ -280,7 +280,7 @@ You are NOT a designer. You follow the design and tasks given to you. If the des
 1. **TDD is non-negotiable for behavior tasks** - RED (failing test) -> GREEN (minimal implementation) -> REFACTOR (improve clarity). No exceptions in standard profile.
 2. **Tests express intent** - A test is not "test function X". It's "verify that when the user does Y, the system responds with Z". Read the spec_ref to understand WHY before writing the test.
 3. **Minimal implementation** - Write the least code that makes the test pass. Don't add "just in case" features. Don't implement the next task's requirements early.
-4. **Atomic commits** - Each commit is one complete, verifiable change. A commit that breaks the build is a bug, not a work in progress.
+4. **Atomic commits** - Use \`bp commit\` for each task (one complete, verifiable change per commit). A commit that breaks the build is a bug, not a work in progress.
 5. **Follow existing patterns** - Read the codebase before writing. If the project uses pattern X, use pattern X. Don't introduce pattern Y because you're more familiar with it.
 6. **Fix forward, don't work around** - If you find a bug in existing code, fix it. Don't add a workaround in your new code. Annotate with [auto-fix].
 
@@ -299,7 +299,7 @@ In \`--fix\` mode:
 ## Output
 
 - Code changes (source files + test files)
-- Atomic git commits (one per task, Conventional Commits format)
+- Atomic bp commits (one per task, Conventional Commits format)
 - Tasks marked complete in tasks.md (\`- [ ]\` -> \`- [x]\` with commit hash annotation)
 
 ## Execution Flow

@@ -98,8 +98,8 @@ If all tasks are non-behavior:
 ### Step 6: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/$1/
-git commit -m "feat: implementation complete for $1"
+git add bp/changes/$1/ && bp roadmap-update $1
+bp commit "feat: implementation complete for $1" --files bp/changes/$1/
 \`\`\`
 
 Output:
@@ -202,8 +202,8 @@ If the proposal has no ## Roadmap Reference section, skip roadmap update.
 ### Step 6: Commit and output
 
 \`\`\`bash
-git add bp/specs/ bp/changes/archive/ bp/roadmap.md
-git commit -m "archive: $1 - specs merged, roadmap updated"
+bp roadmap-update $1
+bp commit "archive: $1 - specs merged, roadmap updated" --files bp/specs/ bp/roadmap.md
 \`\`\`
 
 Output:
@@ -514,8 +514,8 @@ If any check fails: re-dispatch planner with specific feedback on what's missing
 ### Step 5: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/$1/
-git commit -m "docs(plan): design + tasks + delta specs for $1"
+git add bp/changes/$1/ && bp roadmap-update $1
+bp commit "docs(plan): design + tasks + delta specs for $1" --files bp/changes/$1/
 \`\`\`
 
 Output:
@@ -596,8 +596,8 @@ Before finishing, check:
 ### Step 5: Commit and suggest next step
 
 \`\`\`bash
-git add bp/changes/$1/proposal.md
-git commit -m "docs(proposal): $1"
+git add bp/changes/$1/ && bp roadmap-update $1
+bp commit "docs(proposal): $1" --files bp/changes/$1/
 \`\`\`
 
 Output:
@@ -716,8 +716,8 @@ Review NEEDS_REVISION for $1
 ### Step 6: Commit review.md
 
 \`\`\`bash
-git add bp/changes/$1/review.md
-git commit -m "docs(review): triple review for $1"
+git add . && bp roadmap-update $1
+bp commit "docs(review): triple review for $1" --files bp/changes/$1/review.md
 \`\`\`
 
 ## Guardrails
