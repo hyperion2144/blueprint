@@ -61,15 +61,14 @@ rmdir bp/changes/$1
 
 ### Step 5: Update roadmap
 
-Read \`bp/roadmap.md\`:
+Read \`bp/roadmap.md\`. If the change's proposal.md has a \`## Roadmap Reference\` section:
 
-1. Find the change name in the changes list under its phase
-2. Change \`- [ ]\` to \`- [x]\` and add archive date
-3. Increment the phase's change count: \`{{completed}}/{{total}}\` -> \`{{completed+1}}/{{total}}\`
-4. If all changes in the phase are [x]: change phase status to [COMPLETED]
-5. If all phases in the milestone are [COMPLETED]: change milestone status to [SHIPPED]
-6. Write updated roadmap.md
-If the proposal has no ## Roadmap Reference section, skip roadmap update.
+1. Find the change line under its phase
+2. Update it to: \`- [x] <name> (archived YYYY-MM-DD)\`
+3. Save \`bp/roadmap.md\`
+
+Do NOT manually count phase completions or milestone shipments.
+Those are tracked by \`bp continue\` output, not by editing roadmap.md.
 
 ### Step 6: Commit and output
 

@@ -54,19 +54,38 @@ Produce three files in the change directory:
 
 ## Execution Flow
 
-### Step 1: Absorb context (DO NOT write yet)
+### Step 1: Read context and quality-gate the proposal
 
-Read ALL of the following before touching any template:
+Read ALL of the following:
+1. \`proposal.md\` - Extract: intent, scope (in/out), approach, deliverables (PR-N list)
+2. \`bp/specs/<domain>/spec.md\` - existing behavioral contracts per affected domain
+3. \`bp/conventions/coding.md\` - coding standards
+4. \`bp/config.yaml\` - project config (profile, tech stack context)
+5. Existing codebase - read source files related to the proposal
 
-1. **proposal.md** - Extract: intent, scope (in/out), approach, deliverables (PR-N list)
-2. **Existing specs** - Run \`ls bp/specs/\` to find domains. Read \`bp/specs/<domain>/spec.md\` for each affected domain. Note existing requirements you'll modify or remove.
-3. **Conventions** - Read \`bp/conventions/coding.md\`. Your design must respect existing patterns.
-4. **Codebase** - Read source files related to the proposal. Understand current architecture, naming, file organization. Your design fits INTO the existing codebase, not alongside it.
-5. **Config** - Read \`bp/config.yaml\`. Note profile (lite/standard), tech stack, rules.
+In \`--fix\` mode, also read: \`review.md\` (focus on D-prefixed design issues)
 
-**In --fix mode:** Read \`review.md\`. Focus on D-prefixed issues. Your job is to fix the design, not the code.
+### Step 1b: Quality gate - is the proposal clear enough to design?
 
-**Checkpoint:** Can you explain in 2-3 sentences what this change does, what modules it touches, and what existing behavior it modifies? If not, read more.
+After reading, assess whether you can produce a **detailed, executable** design without guessing. Check each PR-N:
+
+- If a PR-N is so vague that multiple radically different designs could satisfy it (e.g., "support authentication" - JWT? OAuth? Session?) -> **STOP. Return to orchestrator:** "Proposal PR-N is ambiguous. Possible interpretations: A, B, C. Re-run propose to clarify, or provide the answer."
+- If the proposal contradicts existing code behavior and you can't tell which is correct -> **STOP. Return:** "Proposal says X but code does Y. Which is the intended behavior?"
+- If the proposal asks for something technically infeasible with the current stack -> **STOP. Return:** "PR-N requires Z but project uses W. Options: migrate, workaround, or descope."
+
+**If you return for any of the above, do NOT write any artifacts.** The orchestrator will get the answer and re-dispatch you.
+
+### Step 1c: Technical research (if proposal is clear but you need to choose an approach)
+
+If the proposal is clear but you need to decide between technical approaches:
+- Read the codebase to see what patterns/libraries are already used
+- Check \`package.json\` for existing dependencies
+- Use \`grep\` to find similar implementations
+- Document your choice as a D-N decision with alternatives
+
+Do NOT ask the user for technical decisions - research and decide yourself.
+
+**Checkpoint:** Can you name the specific library/approach for each technical decision? Can you explain what existing behavior each PR-N modifies? If not, research more or return for clarification.
 
 ### Step 2: Determine affected domains
 
@@ -287,7 +306,8 @@ You are NOT a designer. You follow the design and tasks given to you. If the des
 ${AGENT_CONSTRAINTS}## Input
 
 You receive (injected by orchestrator):
-- **tasks.md** - but ONLY your wave's tasks (not the full file)
+- **Your wave's tasks** - full detail (type, description, refs, spec_ref, files, acceptance, RED)
+- **Summary of completed tasks from prior waves** - task ID, title, key files created/modified, key public interfaces (function signatures, type definitions) that downstream tasks depend on. This is provided so you know what T-1 produced if your T-4 depends_on T-1.
 - **design.md** - full design (for technical context)
 - **Delta specs** - \`specs/<domain>/spec.md\` for domains referenced by your tasks' \`spec_ref\`
 - **Conventions** - \`bp/conventions/coding.md\`
@@ -447,6 +467,12 @@ Single file: \`review.md\` containing three review sections + issue list + routi
 3. Read \`tasks.md\` - list all T-N tasks, their types, spec_refs, and [x]/[ ] status
 4. Read delta specs - list all ADDED/MODIFIED/REMOVED requirements and scenarios
 5. Read git diff or changed files - understand what code was actually written
+
+**Task completion check (before spec review):**
+Read \`tasks.md\`. Check every task is marked \`[x]\` with a commit hash annotation.
+- Any \`- [ ]\` task remaining = FAIL (implementation incomplete). Report as R-N: "Task T-N not marked complete"
+- Any \`- [x]\` without \`<!-- commit: -->\` = FAIL (commit not recorded). Report as R-N: "Task T-N missing commit hash"
+This check runs BEFORE the spec/quality/goal reviews.
 
 ### Step 2: Spec Review (Spec Gate)
 

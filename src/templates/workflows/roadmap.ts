@@ -19,6 +19,24 @@ Use \`ask\` to discuss:
 
 Take notes. These inform the roadmap structure.
 
+
+### Step 1b: Research (do this yourself, do NOT ask the user)
+
+After the initial discussion, research the project context:
+- If brownfield: read existing source code, understand current architecture, identify what exists vs what needs to change
+- Read \`package.json\` (or equivalent) to understand tech stack and existing dependencies
+- Read \`bp/specs/\` if specs exist (brownfield after codebase-scanner)
+- Check for config files (tsconfig, eslint, etc.) to understand conventions
+
+### Step 1c: Follow-up questions (if needed)
+
+After research, assess whether you have enough to define milestones. If ANY of these are unclear, use \`ask\` to follow up:
+- User said "authentication" but didn't specify method (JWT/Session/OAuth?) -> ask
+- User said "use React" but package.json shows Vue -> clarify the contradiction
+- User's scope is too large (>5 phases in one milestone) -> suggest splitting
+- User mentioned a feature but you don't know if existing code already partially implements it -> ask
+
+Do NOT proceed to Step 2 until you can answer: "What are the concrete, unambiguous deliverables for each phase?"
 ### Step 2: Get context
 
 Read \`bp/config.yaml\` and \`bp/specs/\` to understand the project scope, tech stack, and existing behavioral contracts.

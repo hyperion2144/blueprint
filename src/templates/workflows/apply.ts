@@ -46,6 +46,7 @@ Read \`tasks.md\` and parse into execution plan:
    - ALL referenced specs (from \`spec_ref\` fields across tasks)
    - Design context (relevant DS-N items)
    - Conventions file path
+   - Summary of completed tasks from prior waves: task ID, title, files, key public interfaces
    - In --fix mode: review.md issue list for this wave
 
 ### Step 4: Dispatch executor waves (Full mode)

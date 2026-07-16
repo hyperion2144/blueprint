@@ -20,6 +20,33 @@ Use \`ask\` to discuss:
 
 Take notes. These will inform the proposal.
 
+### Step 1b: Research existing code (do this yourself)
+
+Before writing the proposal, understand the current state of the codebase:
+- Read source files related to what the user described
+- Check \`bp/specs/<domain>/spec.md\` for existing behavioral contracts that this change might modify
+- Use \`grep\` to find existing implementations of similar features
+- Read \`package.json\` for existing dependencies
+
+This research ensures your proposal fits into the existing codebase.
+
+### Step 1c: Follow-up questions (if needed)
+
+After research, assess each potential deliverable (PR-N). If ANY are ambiguous, use \`ask\` to clarify:
+- User said "support authentication" -> ask: "Which method? JWT, Session, OAuth?"
+- User said "add payment" -> ask: "Which gateway? Stripe, PayPal?"
+- User said "improve performance" -> ask: "Which specific operation is slow? What's the target?"
+- Research shows existing code already partially implements the feature -> ask: "Should we extend the existing implementation or rewrite?"
+
+### Step 1d: Completeness check (before writing proposal)
+
+Before writing, verify EACH deliverable has:
+- Clear behavior: not "support auth" but "user can login with email+password and receive JWT"
+- Clear scope boundary: what's included and what's NOT
+- Clear technical constraints: if the user specified a library/approach
+
+If a deliverable is still ambiguous after follow-up, add \`[ASSUMPTION: xxx]\` in the proposal's Approach section so the planner and reviewer can see it.
+
 ### Step 2: Create change directory
 
 \`\`\`bash
