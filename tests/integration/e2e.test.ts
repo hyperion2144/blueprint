@@ -46,10 +46,11 @@ describe('E2E: init -> propose -> template -> continue -> archive', () => {
     expect(content).toContain('Scope');
   });
 
-  it('step 4: bp continue shows progress for change', () => {
+  it('step 4: bp continue outputs next step instructions', () => {
     const output = execSync(`node ${cliPath} continue add-auth`, { encoding: 'utf-8', cwd: testDir });
-    expect(output).toContain('add-auth');
-    expect(output).toContain('proposal.md');
+    // Should output plan workflow instructions directly (not a command reference)
+    expect(output).toContain('design.md');
+    expect(output).toContain('tasks.md');
   });
 
   it('step 5: bp list shows active changes', () => {
