@@ -231,13 +231,12 @@ cd -
 PROFILE="bp-test-$(date +%s)"
 
 # Start OMP RPC session and trigger /bp-init (writes conventions, brownfield scan)
-# Project context goes BEFORE the slash command so SUT has it for decisions
+# Slash command MUST be at the very start of the message - OMP parses from byte 0
+# Project context goes AFTER the slash command as arguments
 python3 tests/e2e/scripts/rpc-driver.py \
   --profile "$PROFILE" \
   --step "00-init" \
-  --message "Project context: web-based Sokoban puzzle game using HTML5 Canvas and TypeScript. Keep roadmap simple: 1 milestone, 2-3 phases, each phase 1-2 changes. Use sensible defaults for all questions - do not ask the user anything. Make reasonable assumptions and document them.
-
-/bp-init" \
+  --message "/bp-init Sokoban puzzle game using HTML5 Canvas and TypeScript. Keep roadmap simple: 1 milestone, 2-3 phases, each phase 1-2 changes. Use sensible defaults for all questions - do not ask the user anything." \
   --start \
   --timeout 600
 ```
@@ -484,13 +483,11 @@ If you need to pause (context limit, user intervention):
 
 ```bash
 # SUT = OMP RPC session on fixture project
-# First call: include project context + /bp-init slash command
+# First call: /bp-init slash command at START of message, context after
 python3 tests/e2e/scripts/rpc-driver.py \
   --profile "$PROFILE" \
   --step "00-init" \
-  --message "Project context: <description>. Use sensible defaults for all questions.
-
-/bp-init" \
+  --message "/bp-init <project description>. Use sensible defaults for all questions." \
   --start \
   --timeout 600
 ```
