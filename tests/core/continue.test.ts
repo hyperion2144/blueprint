@@ -3,6 +3,7 @@ import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { checkArtifacts, getChangeProgress, determineNextStepForChange } from '../../src/core/continue.js';
 import { createBlueprintStructure, createChangeDir } from '../../src/core/file-tree.js';
+import { DEFAULT_SCHEMA } from '../../src/core/schema.js';
 
 const tmpDir = join(process.cwd(), 'tests/tmp-continue');
 
@@ -21,10 +22,14 @@ function writeArtifact(changeName: string, file: string, content = '# test\n'): 
   writeFileSync(join(dir, file), content, 'utf-8');
 }
 
+function ensureSpecsDir(changeName: string): void {
+  mkdirSync(join(tmpDir, 'changes', changeName, 'specs'), { recursive: true });
+}
+
 describe('checkArtifacts', () => {
   it('returns all false for new change', () => {
     createChangeDir(tmpDir, 'test-change');
-    const artifacts = checkArtifacts(tmpDir, 'test-change');
+    const artifacts = checkArtifacts(tmpDir, 'test-change', DEFAULT_SCHEMA);
     expect(artifacts.proposal).toBe(false);
     expect(artifacts.design).toBe(false);
     expect(artifacts.tasks).toBe(false);
@@ -36,7 +41,7 @@ describe('checkArtifacts', () => {
 
   it('detects proposal artifact', () => {
     writeArtifact('test-change', 'proposal.md');
-    const artifacts = checkArtifacts(tmpDir, 'test-change');
+    const artifacts = checkArtifacts(tmpDir, 'test-change', DEFAULT_SCHEMA);
     expect(artifacts.proposal).toBe(true);
     expect(artifacts.design).toBe(false);
   });
@@ -45,9 +50,9 @@ describe('checkArtifacts', () => {
     writeArtifact('test-change', 'proposal.md');
     writeArtifact('test-change', 'design.md');
     writeArtifact('test-change', 'tasks.md', '- [ ] T-1\n- [x] T-2\n');
-    mkdirSync(join(tmpDir, 'changes', 'test-change', 'specs'), { recursive: true });
+    ensureSpecsDir('test-change');
     writeArtifact('test-change', 'review.md');
-    const artifacts = checkArtifacts(tmpDir, 'test-change');
+    const artifacts = checkArtifacts(tmpDir, 'test-change', DEFAULT_SCHEMA);
     expect(artifacts.proposal).toBe(true);
     expect(artifacts.design).toBe(true);
     expect(artifacts.tasks).toBe(true);
@@ -60,7 +65,7 @@ describe('checkArtifacts', () => {
 
   it('detects all tasks done', () => {
     writeArtifact('test-change', 'tasks.md', '- [x] T-1\n- [x] T-2\n');
-    const artifacts = checkArtifacts(tmpDir, 'test-change');
+    const artifacts = checkArtifacts(tmpDir, 'test-change', DEFAULT_SCHEMA);
     expect(artifacts.tasksTotal).toBe(2);
     expect(artifacts.tasksCompleted).toBe(2);
     expect(artifacts.allTasksDone).toBe(true);
@@ -83,6 +88,7 @@ describe('getChangeProgress', () => {
   it('returns in-progress when tasks partially done', () => {
     writeArtifact('test-change', 'proposal.md');
     writeArtifact('test-change', 'design.md');
+    ensureSpecsDir('test-change');
     writeArtifact('test-change', 'tasks.md', '- [ ] T-1\n- [x] T-2\n');
     const progress = getChangeProgress(tmpDir, 'test-change');
     expect(progress).not.toBeNull();
@@ -92,6 +98,7 @@ describe('getChangeProgress', () => {
   it('returns reviewed when review passes', () => {
     writeArtifact('test-change', 'proposal.md');
     writeArtifact('test-change', 'design.md');
+    ensureSpecsDir('test-change');
     writeArtifact('test-change', 'tasks.md', '- [x] T-1\n');
     writeArtifact('test-change', 'review.md', '## Overall Verdict: PASS\n');
     const progress = getChangeProgress(tmpDir, 'test-change');
@@ -128,6 +135,7 @@ describe('determineNextStepForChange', () => {
   it('with design and tasks suggests apply', () => {
     writeArtifact('test-change', 'proposal.md');
     writeArtifact('test-change', 'design.md');
+    ensureSpecsDir('test-change');
     writeArtifact('test-change', 'tasks.md', '- [ ] T-1\n');
     const result = determineNextStepForChange(tmpDir, 'test-change');
     expect(result.nextStep).not.toBeNull();
@@ -137,22 +145,23 @@ describe('determineNextStepForChange', () => {
   it('all tasks done without review suggests review', () => {
     writeArtifact('test-change', 'proposal.md');
     writeArtifact('test-change', 'design.md');
+    ensureSpecsDir('test-change');
     writeArtifact('test-change', 'tasks.md', '- [x] T-1\n');
     const result = determineNextStepForChange(tmpDir, 'test-change');
     expect(result.nextStep).not.toBeNull();
     expect(result.nextStep!.command).toContain('review');
   });
 
-  it('review passed suggests archive', () => {
+  it('review passed means change is complete (no next step)', () => {
     writeArtifact('test-change', 'proposal.md');
     writeArtifact('test-change', 'design.md');
+    ensureSpecsDir('test-change');
     writeArtifact('test-change', 'tasks.md', '- [x] T-1\n');
     writeArtifact('test-change', 'review.md', '## Overall Verdict: PASS\n');
     const result = determineNextStepForChange(tmpDir, 'test-change');
-    expect(result.nextStep).not.toBeNull();
-    expect(result.nextStep!.command).toContain('archive');
+    // Schema considers archive complete when review passes
+    expect(result.nextStep).toBeNull();
   });
-
   it('single active change auto-selects', () => {
     writeArtifact('test-change', 'proposal.md');
     const result = determineNextStepForChange(tmpDir);

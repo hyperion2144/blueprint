@@ -19,6 +19,8 @@ export const ProjectConfigSchema = z.object({
   platform: z.array(z.string()).default(['omp']),
   profile: z.enum(['lite', 'standard']).default('standard'),
   context: z.string().default(''),
+  brownfield: z.boolean().default(false),
+  commitDocs: z.boolean().default(false),
   rules: z.record(z.string(), z.array(z.string())).default({}),
   schema: z.string().default('spec-driven'),
   models: z.record(z.string(), z.string()).default({}),
@@ -35,7 +37,6 @@ export function configPath(bpDir: string): string {
 export function loadConfig(bpDir: string): ProjectConfig {
   const path = configPath(bpDir);
   if (!existsSync(path)) {
-    // Fallback: try old project.yml for migration
     const oldPath = join(bpDir, 'project.yml');
     if (existsSync(oldPath)) {
       return migrateConfig(bpDir);
@@ -47,19 +48,22 @@ export function loadConfig(bpDir: string): ProjectConfig {
   return ProjectConfigSchema.parse(raw) as ProjectConfig;
 }
 
-/** Save config to bp/config.yaml (preserves comments) */
+/** Save config to bp/config.yaml */
 export function saveConfig(bpDir: string, config: ProjectConfig): void {
   const path = configPath(bpDir);
-  const doc = new Document();
-  doc.set('version', config.version);
-  doc.set('platform', config.platform);
-  doc.set('profile', config.profile);
-  doc.set('context', config.context);
-  doc.set('rules', config.rules);
-  doc.set('schema', config.schema);
-  doc.set('models', config.models);
-  doc.set('conventions', config.conventions);
-  doc.set('git', config.git);
+  const doc = new Document({
+    version: config.version,
+    platform: config.platform,
+    profile: config.profile,
+    context: config.context,
+    brownfield: config.brownfield,
+    commitDocs: config.commitDocs,
+    rules: config.rules,
+    schema: config.schema,
+    models: config.models,
+    conventions: config.conventions,
+    git: config.git,
+  });
   writeYamlDoc(path, doc);
 }
 
@@ -87,6 +91,8 @@ function migrateConfig(bpDir: string): ProjectConfig {
     platform: old.platform ?? ['omp'],
     profile: old.profile === 'strict' ? 'standard' : (old.profile ?? 'standard'),
     context: old.context ?? '',
+    brownfield: false,
+    commitDocs: old.workflow?.commitDocs ?? false,
     rules: {},
     schema: 'spec-driven',
     models: old.models ?? {},

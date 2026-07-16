@@ -1,6 +1,7 @@
 /**
- * v2 schema - YAML schema loading and artifact dependency graph
- * Replaces PEG grammar validation with lightweight schema definitions.
+ * v2 schema - YAML schema loading and step dependency graph
+ * Defines the workflow as a data structure, not hardcoded in continue.ts.
+ * continue.ts reads the schema to determine the next step.
  */
 
 import { existsSync, readFileSync } from 'node:fs';
@@ -12,7 +13,23 @@ export interface SchemaArtifact {
   id: string;
   generates: string;
   requires: string[];
+  /** Workflow command that produces this artifact */
+  command?: string;
   description?: string;
+}
+
+/** Action step (apply/review/archive) in a schema */
+export interface SchemaStep {
+  id: string;
+  requires: string[];
+  /** Workflow command for this step */
+  command: string;
+  /** How to check if this step is complete */
+  completion: 'file_exists' | 'tasks_all_checked' | 'review_exists' | 'review_pass';
+  /** File to check for completion (if applicable) */
+  tracks?: string;
+  /** Sub-agent to dispatch */
+  dispatch?: string;
 }
 
 /** Schema definition */
@@ -20,10 +37,10 @@ export interface SchemaDef {
   name: string;
   version?: number;
   description?: string;
+  /** Artifact-producing steps (proposal, design, specs, tasks) */
   artifacts: SchemaArtifact[];
-  apply?: { requires: string[]; tracks: string; dispatch?: string };
-  review?: { requires: string[]; dispatch?: string; dimensions?: string[] };
-  archive?: { requires: string[]; merges?: string[] };
+  /** Action steps in order (apply, review, archive) */
+  steps: SchemaStep[];
 }
 
 /** Built-in default schema (spec-driven) */
@@ -32,20 +49,21 @@ export const DEFAULT_SCHEMA: SchemaDef = {
   version: 2,
   description: 'Spec-driven development with structured design and sub-agent dispatch',
   artifacts: [
-    { id: 'proposal', generates: 'proposal.md', requires: [], description: 'Why + what + scope + deliverables' },
-    { id: 'design', generates: 'design.md', requires: ['proposal'], description: 'Structured technical design' },
-    { id: 'specs', generates: 'specs/**/*.md', requires: ['proposal'], description: 'Delta specs (ADDED/MODIFIED/REMOVED)' },
-    { id: 'tasks', generates: 'tasks.md', requires: ['design', 'specs'], description: 'Structured task checklist' },
+    { id: 'proposal', generates: 'proposal.md', requires: [], command: 'propose', description: 'Why + what + scope + deliverables' },
+    { id: 'design', generates: 'design.md', requires: ['proposal'], command: 'plan', description: 'Structured technical design' },
+    { id: 'specs', generates: 'specs/**/*.md', requires: ['proposal'], command: 'plan', description: 'Delta specs (ADDED/MODIFIED/REMOVED)' },
+    { id: 'tasks', generates: 'tasks.md', requires: ['design', 'specs'], command: 'plan', description: 'Structured task checklist' },
   ],
-  apply: { requires: ['tasks'], tracks: 'tasks.md', dispatch: 'executor' },
-  review: { requires: ['apply'], dispatch: 'reviewer', dimensions: ['spec', 'quality', 'goal'] },
-  archive: { requires: ['review'], merges: ['specs'] },
+  steps: [
+    { id: 'apply', requires: ['tasks'], command: 'apply', completion: 'tasks_all_checked', tracks: 'tasks.md', dispatch: 'executor' },
+    { id: 'review', requires: ['apply'], command: 'review', completion: 'review_exists', dispatch: 'reviewer' },
+    { id: 'archive', requires: ['review'], command: 'archive', completion: 'review_pass' },
+  ],
 };
 
 /** Load schema from bp/schemas/<name>/schema.yaml, or return default */
 export function loadSchema(bpDir: string, schemaName?: string): SchemaDef {
   if (!schemaName) {
-    // Try to read from config
     try {
       const configPath = join(bpDir, 'config.yaml');
       if (existsSync(configPath)) {
@@ -62,7 +80,6 @@ export function loadSchema(bpDir: string, schemaName?: string): SchemaDef {
     return DEFAULT_SCHEMA;
   }
 
-  // Try to load custom schema
   const schemaPath = join(bpDir, 'schemas', schemaName, 'schema.yaml');
   if (!existsSync(schemaPath)) {
     return DEFAULT_SCHEMA;
@@ -70,23 +87,4 @@ export function loadSchema(bpDir: string, schemaName?: string): SchemaDef {
 
   const content = readFileSync(schemaPath, 'utf-8');
   return parse(content) as SchemaDef;
-}
-
-/** Get the next artifact(s) that can be created based on what exists */
-export function getNextArtifacts(schema: SchemaDef, existingArtifacts: string[]): string[] {
-  const next: string[] = [];
-  for (const artifact of schema.artifacts) {
-    if (existingArtifacts.includes(artifact.id)) continue;
-    // Check if all requirements are met
-    const requirementsMet = artifact.requires.every((req) => existingArtifacts.includes(req));
-    if (requirementsMet) {
-      next.push(artifact.id);
-    }
-  }
-  return next;
-}
-
-/** Get all artifact IDs in the schema */
-export function getArtifactIds(schema: SchemaDef): string[] {
-  return schema.artifacts.map((a) => a.id);
 }

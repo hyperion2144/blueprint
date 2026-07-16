@@ -8,6 +8,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { findBpDir } from './_utils.js';
+import { loadSchema } from '../core/schema.js';
 import { listActiveChanges, changeDir } from '../core/file-tree.js';
 import { checkArtifacts } from '../core/continue.js';
 import { WORKFLOW_REGISTRY } from '../templates/workflows/registry.js';
@@ -37,7 +38,8 @@ function reviewHandler(name: string | undefined, options: { fix?: boolean }): vo
   }
 
   // Check that code is fully implemented (all tasks [x])
-  const artifacts = checkArtifacts(bpDir, changeName);
+  const schema = loadSchema(bpDir);
+  const artifacts = checkArtifacts(bpDir, changeName, schema);
   if (!artifacts.allTasksDone) {
     console.log(
       `\nCode is not fully implemented. Tasks: ${artifacts.tasksCompleted}/${artifacts.tasksTotal} complete.`,

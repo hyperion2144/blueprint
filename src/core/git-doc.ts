@@ -5,6 +5,7 @@
 
 import { execFileSync, execSync } from 'node:child_process';
 import { existsSync, writeFileSync, rmSync } from 'node:fs';
+import { loadConfig } from './config.js';
 import { join } from 'node:path';
 
 /**
@@ -17,6 +18,14 @@ import { join } from 'node:path';
  * @param files - files to stage (default: ['bp/config.yaml'])
  */
 export function commitDocChanges(bpDir: string, cwd: string, message: string, files?: string[]): void {
+  // Check if commitDocs is enabled in config
+  try {
+    const config = loadConfig(bpDir);
+    if (!config.commitDocs) return;
+  } catch {
+    return; // config not available - skip silently
+  }
+
   try {
     // git init if needed
     if (!existsSync(join(cwd, '.git'))) {

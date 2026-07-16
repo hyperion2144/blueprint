@@ -658,6 +658,11 @@ platform:
 # lite:     no review gate, TDD optional, single agent for lightweight changes
 # standard: review gate (must PASS before archive), TDD for behavior, sub-agent waves
 profile: standard
+# Brownfield project (existing codebase with code scanning)
+brownfield: false
+
+# Auto-commit documentation files alongside code
+commitDocs: false
 
 # Project context - injected into ALL sub-agent prompts
 context: |

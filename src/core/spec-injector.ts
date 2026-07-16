@@ -6,6 +6,7 @@
 
 import { join } from 'node:path';
 import { readdirSync, existsSync, readFileSync, statSync } from 'node:fs';
+import { loadConfig } from './config.js';
 
 export interface FileRef {
   path: string;
@@ -22,6 +23,7 @@ export interface ContextResult {
   globalSpecs: FileRef[];
   conventions: FileRef[];
   changeArtifacts: FileRef[];
+  rules: FileRef[];
 }
 
 /** Generate context output */
@@ -33,6 +35,7 @@ export function generateContext(bpDir: string, step: string, changeName?: string
     globalSpecs: [],
     conventions: [],
     changeArtifacts: [],
+    rules: [],
   };
 
   // Conventions always injected
@@ -53,6 +56,20 @@ export function generateContext(bpDir: string, step: string, changeName?: string
   } else {
     // Without change scope, return global specs directly
     result.specs = result.globalSpecs;
+  }
+
+  // Inject rules from config
+  try {
+    const config = loadConfig(bpDir);
+    if (config.rules && Object.keys(config.rules).length > 0) {
+      result.rules = Object.entries(config.rules).map(([artifact, ruleList]) => ({
+        path: `rules:${artifact}`,
+        description: `Rules for ${artifact} artifact`,
+        content: ruleList.join('\n'),
+      }));
+    }
+  } catch {
+    // config not available - skip rules silently
   }
 
   return result;
@@ -144,6 +161,14 @@ export function formatContextTerminal(result: ContextResult): string {
     lines.push('Related specs:');
     for (const spec of result.specs) {
       lines.push(`  ${spec.path.padEnd(40)} # ${spec.description ?? ''}`);
+    }
+    lines.push('');
+  }
+
+  if (result.rules.length > 0) {
+    lines.push('Config rules:');
+    for (const rule of result.rules) {
+      lines.push(`  ${rule.path.padEnd(40)} # ${rule.description ?? ''}`);
     }
     lines.push('');
   }

@@ -80,6 +80,9 @@ async function initHandler(options: {
   configContent = configContent.replace(/\{\{test-framework\}\}/g, 'vitest');
   configContent = configContent.replace(/\{\{response-language\}\}/g, 'English');
   configContent = configContent.replace(/profile: standard/, `profile: ${profile}`);
+  configContent = configContent.replace(/platform:[\s\S]*?(?=\n\n)/, `platform:\n${platform.map((p) => `  - ${p}`).join('\n')}`);
+  configContent = configContent.replace(/brownfield: false/, `brownfield: ${isBrownfield}`);
+  configContent = configContent.replace(/commitDocs: false/, `commitDocs: ${wizard.commitDocs}`);
   writeFileSync(join(bpDir, 'config.yaml'), configContent, 'utf-8');
   console.log('✓ config.yaml created');
 
@@ -111,11 +114,6 @@ async function initHandler(options: {
     console.log('✓ specs/ directory created (brownfield — specs generated from code scanning)');
   }
 
-  if (isBrownfield) {
-    console.log('✓ Brownfield mode: run "bp continue" or follow init workflow to dispatch codebase-scanner sub-agent.');
-    console.log('  The codebase-scanner will analyze source code and extract specs into bp/specs/.');
-  }
-
   console.log('Blueprint initialized.');
 
   // Generate platform files
@@ -124,7 +122,9 @@ async function initHandler(options: {
       version: 2,
       platform,
       profile: profile as Profile,
-      context: wizard.context + (isBrownfield ? ' [BROWNFIELD]' : ''),
+      brownfield: isBrownfield,
+      commitDocs: wizard.commitDocs,
+      context: wizard.context,
       rules: {},
       schema: 'spec-driven',
       models: {},
@@ -142,4 +142,8 @@ async function initHandler(options: {
   if (wizard.commitDocs) {
     commitDocChanges(bpDir, baseDir, 'init: blueprint project scaffolding', ['bp/']);
   }
+
+  // Suggest next step
+  console.log('');
+  console.log('Next: /bp:continue');
 }

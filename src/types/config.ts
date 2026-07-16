@@ -18,6 +18,10 @@ export interface ProjectConfig {
   platform: string[];
   profile: Profile;
   context: string;
+  /** Whether this is a brownfield project (existing codebase) */
+  brownfield: boolean;
+  /** Whether to auto-commit documentation files alongside code */
+  commitDocs: boolean;
   rules: Rules;
   schema: string;
   models: ModelMap;

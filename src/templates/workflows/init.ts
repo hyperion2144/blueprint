@@ -9,12 +9,12 @@ const instructions = `## Input
 
 ### Step 1: Check project type
 
-Read \`bp/config.yaml\` - check the \`context\` field for \`[BROWNFIELD]\` tag.
+Read \`bp/config.yaml\` - check the \`brownfield\` field.
 
-**Greenfield (no \`[BROWNFIELD]\` tag):**
+**Greenfield (\`brownfield: false\`):**
 - Skip to Step 3.
 
-**Brownfield (\`[BROWNFIELD]\` tag present):**
+**Brownfield (\`brownfield: true\`):**
 Continue to Step 2.
 
 ### Step 2: Brownfield scan - extract specs from existing code
@@ -40,19 +40,13 @@ Dispatch a **codebase-scanner** sub-agent to analyze the existing codebase and e
 
 ### Step 3: Suggest next step
 
-**Greenfield:** The project structure is ready. Suggest defining the roadmap:
+Suggest running \`bp continue\` (which will detect empty roadmap and prompt the user to define one):
 \`\`\`
-Project initialized. Next: bp roadmap
-(Define milestones and phases for your project direction.)
-\`\`\`
-
-**Brownfield:** Specs extracted from codebase. Suggest defining the roadmap:
-\`\`\`
-Specs extracted from codebase. Next: bp roadmap
-(Define milestones and phases for your project direction.)
+Project initialized. Run \`bp continue\` to check project status and discover next steps.
 \`\`\`
 
-Do NOT run \`bp continue\` - the user should define the roadmap first.
+\`bp continue\` will detect the empty roadmap and suggest \`bp roadmap\`.
+
 
 ## Guardrails
 
