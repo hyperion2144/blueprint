@@ -233,100 +233,34 @@ hide: false
 
 ## Input
 
-- **\`[BP:CHANGE_NAME]\`** (optional): change name. If empty, find the most recently active change.
+- **\`[BP:CHANGE_NAME]\`** (optional): change name. If empty, the CLI auto-detects.
 
-## Steps
+## What to do
 
-### Step 1: Find active change
-
-If \`[BP:CHANGE_NAME]\` is empty:
-1. List \`bp/changes/\` (exclude \`archive/\`)
-2. If no active changes:
-   - Read \`bp/roadmap.md\`
-   - Check if roadmap has real content (look for \`## Milestone: M1\` with actual goal text, not template placeholders like \`{{milestone-name}}\`)
-   - If roadmap is empty/template: suggest \`bp roadmap\` to define project direction first
-   - If roadmap has content: find the first phase with \`[ ]\` changes or \`NOT_STARTED\` status, suggest next change to propose
-3. If one active change: use it
-4. If multiple active changes: list them and ask the user which one
-
-### Step 2: Check artifact existence
-
-For the resolved change, check which artifacts exist:
+Run the CLI command:
 
 \`\`\`bash
-ls bp/changes/[BP:CHANGE_NAME]/proposal.md 2>/dev/null
-ls bp/changes/[BP:CHANGE_NAME]/design.md 2>/dev/null
-ls bp/changes/[BP:CHANGE_NAME]/tasks.md 2>/dev/null
-ls bp/changes/[BP:CHANGE_NAME]/specs/ 2>/dev/null
-ls bp/changes/[BP:CHANGE_NAME]/review.md 2>/dev/null
+bp continue [BP:CHANGE_NAME]
 \`\`\`
 
-Also check task completion status in tasks.md:
-- Count [x] vs [ ] entries
-- If all [x] and tests pass -> code is implemented
+The CLI runs schema-driven detection in code and outputs:
+1. Current artifact status (proposal/design/tasks/specs/review existence + task completion count)
+2. Next recommended step (command + description)
+3. Full workflow instructions for the next step
 
-### Step 3: Determine progress and suggest next step
+**Follow the CLI output.** Do not manually check files or determine the next step yourself - the code does it.
 
-| Condition | Status | Next Step |
-|-----------|--------|-----------|
-| No proposal.md | Not started | \`bp propose [BP:CHANGE_NAME]\` |
-| proposal.md exists, no design.md | Proposed | \`bp plan [BP:CHANGE_NAME]\` |
-| design.md + tasks.md exist, tasks all [ ] | Planned | \`bp apply [BP:CHANGE_NAME]\` |
-| Some tasks [x], some [ ] | In progress | \`bp apply [BP:CHANGE_NAME]\` (resume) |
-| All tasks [x], no review.md | Implemented | \`bp review [BP:CHANGE_NAME]\` |
-| review.md exists, verdict = PASS | Reviewed | \`bp archive [BP:CHANGE_NAME]\` |
-| review.md exists, has R/Q/G issues | Needs fix | \`bp apply --fix [BP:CHANGE_NAME]\` |
-| review.md exists, has D issues | Needs redesign | \`bp plan --fix [BP:CHANGE_NAME]\` |
+## When to use
 
-### Step 4: Output status and recommendation
-
-\`\`\`
-Change: [BP:CHANGE_NAME]
-
-Artifacts:
-  proposal.md    (check)
-  design.md      (check)
-  tasks.md       (check) (3/5 complete)
-  specs/         (check) (2 domains)
-  review.md      (cross)
-
-Status: In Progress
-Next: bp apply [BP:CHANGE_NAME] (implement remaining 2 tasks)
-
-Run: bp apply [BP:CHANGE_NAME]
-\`\`\`
-
-Or if no active change and roadmap is empty:
-
-\`\`\`
-No active changes.
-
-Roadmap is not yet defined. Define your project direction first.
-
-Run: bp roadmap
-\`\`\`
-
-Or if no active change and roadmap has content:
-
-\`\`\`
-No active changes.
-
-Roadmap:
-  M1 - Core Engine [ACTIVE]
-    P1.1 - Auth System [IN_PROGRESS] (3/4 changes done)
-      Next: add-password-reset
-
-Suggest: bp propose add-password-reset --phase M1/P1.1
-\`\`\`
+- After \`bp init\` (CLI detects empty roadmap -> suggests bp roadmap)
+- After any step completes (CLI detects next step based on schema)
+- When unsure what to do next (CLI shows current progress)
 
 ## Guardrails
 
-- **continue only SUGGESTS.** It does not execute the next step automatically.
-- **If multiple changes are active**, let the user choose. Don't auto-pick.
-- **If tasks are partially complete**, suggest \`bp apply\` to resume (executor will skip [x] tasks).
-- **If review has issues**, suggest the correct fix command based on issue type (D -> plan --fix, R/Q/G -> apply --fix).
-- **If no active changes and roadmap is empty/template**, suggest \`bp roadmap\` to define direction first.
-- **If no active changes and roadmap has content**, suggest the next change based on roadmap. Don't create it automatically.
+- The CLI does ALL detection. You just follow its output.
+- If the CLI says "Next: bp plan <name>", run the plan workflow instructions it outputs.
+- If multiple active changes exist, the CLI lists them. Pick one and re-run \`bp continue <name>\`.
 ",
   "init": "---
 name: bp-init
