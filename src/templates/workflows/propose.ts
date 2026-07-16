@@ -15,7 +15,7 @@ Use \`ask\` to discuss:
 - **Problem**: What problem does this change solve? What would the user like to achieve?
 - **Scope**: What should be included? What should be explicitly excluded?
 - **Deliverables**: What observable behaviors should this change produce? List them as user-facing capabilities.
-- **Approach**: Does the user have any preference on how to implement it? Any constraints (tech stack, dependencies, patterns)?
+- **Approach**: Does the user have any preference on how to implement it? Any constraints?
 - **Roadmap context**: If \`--phase\` is provided, explain what phase this belongs to and confirm alignment.
 
 Take notes. These will inform the proposal.
@@ -26,24 +26,24 @@ Before writing the proposal, understand the current state of the codebase:
 - Read source files related to what the user described
 - Check \`bp/specs/<domain>/spec.md\` for existing behavioral contracts that this change might modify
 - Use \`grep\` to find existing implementations of similar features
-- Read \`package.json\` for existing dependencies
+- Read the project's dependency and config files to understand existing dependencies
 
 This research ensures your proposal fits into the existing codebase.
 
 ### Step 1c: Follow-up questions (if needed)
 
 After research, assess each potential deliverable (PR-N). If ANY are ambiguous, use \`ask\` to clarify:
-- User said "support authentication" -> ask: "Which method? JWT, Session, OAuth?"
-- User said "add payment" -> ask: "Which gateway? Stripe, PayPal?"
-- User said "improve performance" -> ask: "Which specific operation is slow? What's the target?"
+- User described a feature but didn't specify the approach -> ask which approach they prefer
+- User described a capability but didn't specify requirements -> ask for clarity
+- User said "improve performance" -> ask "Which specific operation? What's the target?"
 - Research shows existing code already partially implements the feature -> ask: "Should we extend the existing implementation or rewrite?"
 
 ### Step 1d: Completeness check (before writing proposal)
 
 Before writing, verify EACH deliverable has:
-- Clear behavior: not "support auth" but "user can login with email+password and receive JWT"
-- Clear scope boundary: what's included and what's NOT
-- Clear technical constraints: if the user specified a library/approach
+- **Clear behavior**: not "support auth" but a concrete description of what the system does
+- **Clear scope boundary**: what's included and what's explicitly NOT
+- **Clear constraints**: if the user specified a library, approach, or limitation
 
 If a deliverable is still ambiguous after follow-up, add \`[ASSUMPTION: xxx]\` in the proposal's Approach section so the planner and reviewer can see it.
 
@@ -75,13 +75,13 @@ Before finishing, check:
 - [ ] Scope has both In Scope and Out of Scope sections
 - [ ] Each deliverable (PR-N) has a SHALL statement and Verify method
 - [ ] No \`{{\` template placeholders remaining
-- [ ] PR count ≤ 5 (if more, suggest splitting)
+- [ ] PR count <= 5 (if more, suggest splitting)
 - [ ] The proposal reflects what the user described (not AI guesswork)
 
 ### Step 5: Commit and suggest next step
 
 \`\`\`bash
-# Update roadmap: If the proposal has \`## Roadmap Reference\`, read \`bp/roadmap.md\`, find the corresponding phase, and add \`- [ ] $1\` to its Changes list if not already present.
+# Update roadmap: If proposal has \`## Roadmap Reference\`, read \`bp/roadmap.md\`, find corresponding phase, add \`- [ ] $1\` to its Changes list if not already present.
 git add bp/changes/$1/
 bp commit "docs(proposal): $1" --files bp/changes/$1/
 \`\`\`
@@ -107,14 +107,14 @@ Created bp/changes/$1/proposal.md
 export function getProposeSkillTemplate(): SkillTemplate {
   return {
     name: 'bp-propose',
-    description: 'Discuss requirements with user, then write change proposal',
+    description: 'Discuss requirements with user, research code, then write change proposal',
     instructions,
   };
 }
 
 export function getProposeCommandTemplate(): CommandTemplate {
   return {
-    description: 'Discuss requirements with user, then write change proposal',
+    description: 'Discuss requirements with user, research code, then write change proposal',
     category: 'Workflow',
     tags: ['bp', 'propose', 'proposal', 'change', 'requirements'],
     content: instructions,

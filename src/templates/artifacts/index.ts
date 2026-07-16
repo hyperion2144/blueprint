@@ -564,7 +564,11 @@ export const REVIEW_TEMPLATE = `# Review: {{name}}
 
 ## Issues
 
-- [ ] {{R/Q/G/D}}{{N}} - {{brief-description}} ({{spec/quality/goal}})
+- [ ] R1 - {{spec requirement not implemented}} (spec)
+- [ ] Q1 - {{code quality issue description}} (quality)
+- [ ] G1 - {{goal not achieved}} (goal)
+- [ ] D1 - {{design/architecture flaw}} (design)
+<!-- Add one - [ ] line per issue found. In fix mode, mark resolved: - [ ] -> - [x] -->
 
 ## Routing
 
