@@ -1010,12 +1010,28 @@ hide: false
 Read \`bp/config.yaml\` - check the \`brownfield\` field.
 
 **Greenfield (\`brownfield: false\`):**
-- Skip to Step 3.
-
-**Brownfield (\`brownfield: true\`):**
 Continue to Step 2.
 
-### Step 2: Brownfield scan - extract specs from existing code
+**Brownfield (\`brownfield: true\`):**
+Skip to Step 3.
+
+### Step 2: Write coding conventions (greenfield)
+
+Read \`bp/conventions/coding.md\`. If it is empty or only has a template header, fill it in based on the tech stack from \`bp/config.yaml\`:
+
+- Read \`bp/config.yaml\` for tech stack context
+- Read the project root for config files (tsconfig.json, eslint.config.js, etc.)
+- Write conventions covering:
+  - **Naming**: file naming (kebab-case), function naming (camelCase), type naming (PascalCase), constants (UPPER_SNAKE_CASE)
+  - **Code style**: indentation, quotes, semicolons, max line length (from project config)
+  - **Imports**: ordering, path aliases, barrel exports
+  - **Error handling**: try/catch pattern, error types, logging
+  - **Testing**: test framework, file naming (*.test.ts), test structure (describe/it)
+  - **Types**: strictness level, type vs interface preference
+
+No need to ask the user - derive conventions from the project's existing config files and tech stack.
+
+### Step 3: Brownfield scan (brownfield only)
 
 Dispatch a **codebase-scanner** sub-agent to analyze the existing codebase and extract behavioral contracts into \`bp/specs/\`.
 
@@ -1036,23 +1052,28 @@ Dispatch a **codebase-scanner** sub-agent to analyze the existing codebase and e
    - Each spec.md has ## Purpose and ## Requirements sections
    - Each requirement uses SHALL/MUST and has at least 1 scenario
 
-### Step 3: Suggest next step
+### Step 4: Verify coding conventions
 
-Suggest running \`bp continue\` (which will detect empty roadmap and prompt the user to define one):
+Check \`bp/conventions/coding.md\`:
+- Has real content (not just template header)
+- Covers naming, code style, imports, error handling, testing
+- It is written to bp/conventions/coding.md
+
+### Step 5: Suggest next step
+
+Suggest running \`bp continue\` (which will detect empty roadmap and suggest \`bp roadmap\`):
+
 \`\`\`
 Project initialized. Run \`bp continue\` to check project status and discover next steps.
 \`\`\`
-
-\`bp continue\` will detect the empty roadmap and suggest \`bp roadmap\`.
-
 
 ## Guardrails
 
 - NEVER re-ask configuration questions - the init CLI already handled profile, platform, etc.
 - NEVER run \`bp init\` or \`bp update\` - user did this already
 - Brownfield: dispatch codebase-scanner sub-agent. Do NOT scan code yourself.
-- Greenfield: advance immediately, no scanning needed
-- ALWAYS suggest \`bp roadmap\` directly, not \`bp continue\`
+- Greenfield: write coding conventions into bp/conventions/coding.md, verify specs exist
+- ALWAYS suggest \`bp continue\`, not \`bp roadmap\` directly
 ",
   ".agent/skills/bp-loop/SKILL.md": "---
 name: bp-loop
@@ -1215,8 +1236,22 @@ hide: false
 - **\`[BP:CHANGE_NAME]\`** (required): change name (kebab-case)
 - **\`--phase <milestone>/<phase>\`** (optional): reference a roadmap phase
 
+## Steps
 
-### Step 1: Create change directory
+### Step 1: Discuss with the user
+
+Before writing anything, understand what the user wants to build.
+
+Use \`ask\` to discuss:
+- **Problem**: What problem does this change solve? What would the user like to achieve?
+- **Scope**: What should be included? What should be explicitly excluded?
+- **Deliverables**: What observable behaviors should this change produce? List them as user-facing capabilities.
+- **Approach**: Does the user have any preference on how to implement it? Any constraints (tech stack, dependencies, patterns)?
+- **Roadmap context**: If \`--phase\` is provided, explain what phase this belongs to and confirm alignment.
+
+Take notes. These will inform the proposal.
+
+### Step 2: Create change directory
 
 \`\`\`bash
 mkdir -p bp/changes/[BP:CHANGE_NAME]
@@ -1224,29 +1259,30 @@ mkdir -p bp/changes/[BP:CHANGE_NAME]
 
 If \`--phase\` is provided, note the milestone/phase for the proposal's Roadmap Reference section.
 
-### Step 2: Generate proposal
+### Step 3: Write proposal
 
-Get the proposal template and fill it:
+Get the proposal template and fill it based on the discussion:
 
 1. Run \`bp template proposal --stdout\` to get the template
-2. Fill in each section based on conversation context:
-   - **Intent**: What problem does this solve? Why now?
-   - **Scope**: What's in and out? Be explicit about boundaries.
-   - **Approach**: High-level method (not technical details)
-   - **Deliverables**: Observable, verifiable capabilities (PR-N)
+2. Fill in each section:
+   - **Intent**: Capture what the user described as the problem to solve
+   - **Scope**: In scope and out of scope from the discussion
+   - **Approach**: User's preferred approach if given, or a reasonable high-level approach based on the discussion
+   - **Deliverables**: Observable, verifiable capabilities (PR-N). Each must have a SHALL statement and a Verify method.
    - **Roadmap Reference**: If --phase provided, fill in milestone/phase
 3. Write to \`bp/changes/[BP:CHANGE_NAME]/proposal.md\`
 
-### Step 3: Verify proposal quality
+### Step 4: Verify proposal quality
 
 Before finishing, check:
-- [ ] Intent explains the problem (not just the solution)
+- [ ] Intent clearly states the problem
 - [ ] Scope has both In Scope and Out of Scope sections
 - [ ] Each deliverable (PR-N) has a SHALL statement and Verify method
 - [ ] No \`{{\` template placeholders remaining
 - [ ] PR count ≤ 5 (if more, suggest splitting)
+- [ ] The proposal reflects what the user described (not AI guesswork)
 
-### Step 4: Commit and suggest next step
+### Step 5: Commit and suggest next step
 
 \`\`\`bash
 git add bp/changes/[BP:CHANGE_NAME]/proposal.md
@@ -1264,9 +1300,11 @@ Created bp/changes/[BP:CHANGE_NAME]/proposal.md
 
 ## Guardrails
 
+- **ALWAYS discuss with the user before writing.** Do not guess the requirements.
 - Do NOT create design.md, tasks.md, or specs/ - that's the planner's job
 - Do NOT run bp plan automatically - let the user review the proposal first
 - If the user wants to skip proposal review and go straight to planning, they can run bp plan [BP:CHANGE_NAME] directly
+- Architecture decisions and technical design come from the planner, not from propose
 ",
   ".agent/skills/bp-review/SKILL.md": "---
 name: bp-review
@@ -2467,12 +2505,28 @@ description: Initialize blueprint project structure and generate platform files
 Read \`bp/config.yaml\` - check the \`brownfield\` field.
 
 **Greenfield (\`brownfield: false\`):**
-- Skip to Step 3.
-
-**Brownfield (\`brownfield: true\`):**
 Continue to Step 2.
 
-### Step 2: Brownfield scan - extract specs from existing code
+**Brownfield (\`brownfield: true\`):**
+Skip to Step 3.
+
+### Step 2: Write coding conventions (greenfield)
+
+Read \`bp/conventions/coding.md\`. If it is empty or only has a template header, fill it in based on the tech stack from \`bp/config.yaml\`:
+
+- Read \`bp/config.yaml\` for tech stack context
+- Read the project root for config files (tsconfig.json, eslint.config.js, etc.)
+- Write conventions covering:
+  - **Naming**: file naming (kebab-case), function naming (camelCase), type naming (PascalCase), constants (UPPER_SNAKE_CASE)
+  - **Code style**: indentation, quotes, semicolons, max line length (from project config)
+  - **Imports**: ordering, path aliases, barrel exports
+  - **Error handling**: try/catch pattern, error types, logging
+  - **Testing**: test framework, file naming (*.test.ts), test structure (describe/it)
+  - **Types**: strictness level, type vs interface preference
+
+No need to ask the user - derive conventions from the project's existing config files and tech stack.
+
+### Step 3: Brownfield scan (brownfield only)
 
 Dispatch a **codebase-scanner** sub-agent to analyze the existing codebase and extract behavioral contracts into \`bp/specs/\`.
 
@@ -2493,23 +2547,28 @@ Dispatch a **codebase-scanner** sub-agent to analyze the existing codebase and e
    - Each spec.md has ## Purpose and ## Requirements sections
    - Each requirement uses SHALL/MUST and has at least 1 scenario
 
-### Step 3: Suggest next step
+### Step 4: Verify coding conventions
 
-Suggest running \`bp continue\` (which will detect empty roadmap and prompt the user to define one):
+Check \`bp/conventions/coding.md\`:
+- Has real content (not just template header)
+- Covers naming, code style, imports, error handling, testing
+- It is written to bp/conventions/coding.md
+
+### Step 5: Suggest next step
+
+Suggest running \`bp continue\` (which will detect empty roadmap and suggest \`bp roadmap\`):
+
 \`\`\`
 Project initialized. Run \`bp continue\` to check project status and discover next steps.
 \`\`\`
-
-\`bp continue\` will detect the empty roadmap and suggest \`bp roadmap\`.
-
 
 ## Guardrails
 
 - NEVER re-ask configuration questions - the init CLI already handled profile, platform, etc.
 - NEVER run \`bp init\` or \`bp update\` - user did this already
 - Brownfield: dispatch codebase-scanner sub-agent. Do NOT scan code yourself.
-- Greenfield: advance immediately, no scanning needed
-- ALWAYS suggest \`bp roadmap\` directly, not \`bp continue\`
+- Greenfield: write coding conventions into bp/conventions/coding.md, verify specs exist
+- ALWAYS suggest \`bp continue\`, not \`bp roadmap\` directly
 ",
   ".claude/commands/bp-loop.md": "---
 name: bp:loop
@@ -2671,8 +2730,22 @@ argument-hint: "[change-name]"
 - **\`$ARGUMENTS\`** (required): change name (kebab-case)
 - **\`--phase <milestone>/<phase>\`** (optional): reference a roadmap phase
 
+## Steps
 
-### Step 1: Create change directory
+### Step 1: Discuss with the user
+
+Before writing anything, understand what the user wants to build.
+
+Use \`ask\` to discuss:
+- **Problem**: What problem does this change solve? What would the user like to achieve?
+- **Scope**: What should be included? What should be explicitly excluded?
+- **Deliverables**: What observable behaviors should this change produce? List them as user-facing capabilities.
+- **Approach**: Does the user have any preference on how to implement it? Any constraints (tech stack, dependencies, patterns)?
+- **Roadmap context**: If \`--phase\` is provided, explain what phase this belongs to and confirm alignment.
+
+Take notes. These will inform the proposal.
+
+### Step 2: Create change directory
 
 \`\`\`bash
 mkdir -p bp/changes/$1
@@ -2680,29 +2753,30 @@ mkdir -p bp/changes/$1
 
 If \`--phase\` is provided, note the milestone/phase for the proposal's Roadmap Reference section.
 
-### Step 2: Generate proposal
+### Step 3: Write proposal
 
-Get the proposal template and fill it:
+Get the proposal template and fill it based on the discussion:
 
 1. Run \`bp template proposal --stdout\` to get the template
-2. Fill in each section based on conversation context:
-   - **Intent**: What problem does this solve? Why now?
-   - **Scope**: What's in and out? Be explicit about boundaries.
-   - **Approach**: High-level method (not technical details)
-   - **Deliverables**: Observable, verifiable capabilities (PR-N)
+2. Fill in each section:
+   - **Intent**: Capture what the user described as the problem to solve
+   - **Scope**: In scope and out of scope from the discussion
+   - **Approach**: User's preferred approach if given, or a reasonable high-level approach based on the discussion
+   - **Deliverables**: Observable, verifiable capabilities (PR-N). Each must have a SHALL statement and a Verify method.
    - **Roadmap Reference**: If --phase provided, fill in milestone/phase
 3. Write to \`bp/changes/$1/proposal.md\`
 
-### Step 3: Verify proposal quality
+### Step 4: Verify proposal quality
 
 Before finishing, check:
-- [ ] Intent explains the problem (not just the solution)
+- [ ] Intent clearly states the problem
 - [ ] Scope has both In Scope and Out of Scope sections
 - [ ] Each deliverable (PR-N) has a SHALL statement and Verify method
 - [ ] No \`{{\` template placeholders remaining
 - [ ] PR count ≤ 5 (if more, suggest splitting)
+- [ ] The proposal reflects what the user described (not AI guesswork)
 
-### Step 4: Commit and suggest next step
+### Step 5: Commit and suggest next step
 
 \`\`\`bash
 git add bp/changes/$1/proposal.md
@@ -2720,9 +2794,11 @@ Created bp/changes/$1/proposal.md
 
 ## Guardrails
 
+- **ALWAYS discuss with the user before writing.** Do not guess the requirements.
 - Do NOT create design.md, tasks.md, or specs/ - that's the planner's job
 - Do NOT run bp plan automatically - let the user review the proposal first
 - If the user wants to skip proposal review and go straight to planning, they can run bp plan $1 directly
+- Architecture decisions and technical design come from the planner, not from propose
 ",
   ".claude/commands/bp-review.md": "---
 name: bp:review
@@ -3944,12 +4020,28 @@ description: Initialize blueprint project structure and generate platform files
 Read \`bp/config.yaml\` - check the \`brownfield\` field.
 
 **Greenfield (\`brownfield: false\`):**
-- Skip to Step 3.
-
-**Brownfield (\`brownfield: true\`):**
 Continue to Step 2.
 
-### Step 2: Brownfield scan - extract specs from existing code
+**Brownfield (\`brownfield: true\`):**
+Skip to Step 3.
+
+### Step 2: Write coding conventions (greenfield)
+
+Read \`bp/conventions/coding.md\`. If it is empty or only has a template header, fill it in based on the tech stack from \`bp/config.yaml\`:
+
+- Read \`bp/config.yaml\` for tech stack context
+- Read the project root for config files (tsconfig.json, eslint.config.js, etc.)
+- Write conventions covering:
+  - **Naming**: file naming (kebab-case), function naming (camelCase), type naming (PascalCase), constants (UPPER_SNAKE_CASE)
+  - **Code style**: indentation, quotes, semicolons, max line length (from project config)
+  - **Imports**: ordering, path aliases, barrel exports
+  - **Error handling**: try/catch pattern, error types, logging
+  - **Testing**: test framework, file naming (*.test.ts), test structure (describe/it)
+  - **Types**: strictness level, type vs interface preference
+
+No need to ask the user - derive conventions from the project's existing config files and tech stack.
+
+### Step 3: Brownfield scan (brownfield only)
 
 Dispatch a **codebase-scanner** sub-agent to analyze the existing codebase and extract behavioral contracts into \`bp/specs/\`.
 
@@ -3970,23 +4062,28 @@ Dispatch a **codebase-scanner** sub-agent to analyze the existing codebase and e
    - Each spec.md has ## Purpose and ## Requirements sections
    - Each requirement uses SHALL/MUST and has at least 1 scenario
 
-### Step 3: Suggest next step
+### Step 4: Verify coding conventions
 
-Suggest running \`bp continue\` (which will detect empty roadmap and prompt the user to define one):
+Check \`bp/conventions/coding.md\`:
+- Has real content (not just template header)
+- Covers naming, code style, imports, error handling, testing
+- It is written to bp/conventions/coding.md
+
+### Step 5: Suggest next step
+
+Suggest running \`bp continue\` (which will detect empty roadmap and suggest \`bp roadmap\`):
+
 \`\`\`
 Project initialized. Run \`bp continue\` to check project status and discover next steps.
 \`\`\`
-
-\`bp continue\` will detect the empty roadmap and suggest \`bp roadmap\`.
-
 
 ## Guardrails
 
 - NEVER re-ask configuration questions - the init CLI already handled profile, platform, etc.
 - NEVER run \`bp init\` or \`bp update\` - user did this already
 - Brownfield: dispatch codebase-scanner sub-agent. Do NOT scan code yourself.
-- Greenfield: advance immediately, no scanning needed
-- ALWAYS suggest \`bp roadmap\` directly, not \`bp continue\`
+- Greenfield: write coding conventions into bp/conventions/coding.md, verify specs exist
+- ALWAYS suggest \`bp continue\`, not \`bp roadmap\` directly
 ",
   ".omp/commands/bp-loop.md": "---
 name: bp:loop
@@ -4148,8 +4245,22 @@ argument-hint: "[change-name]"
 - **\`$ARGUMENTS\`** (required): change name (kebab-case)
 - **\`--phase <milestone>/<phase>\`** (optional): reference a roadmap phase
 
+## Steps
 
-### Step 1: Create change directory
+### Step 1: Discuss with the user
+
+Before writing anything, understand what the user wants to build.
+
+Use \`ask\` to discuss:
+- **Problem**: What problem does this change solve? What would the user like to achieve?
+- **Scope**: What should be included? What should be explicitly excluded?
+- **Deliverables**: What observable behaviors should this change produce? List them as user-facing capabilities.
+- **Approach**: Does the user have any preference on how to implement it? Any constraints (tech stack, dependencies, patterns)?
+- **Roadmap context**: If \`--phase\` is provided, explain what phase this belongs to and confirm alignment.
+
+Take notes. These will inform the proposal.
+
+### Step 2: Create change directory
 
 \`\`\`bash
 mkdir -p bp/changes/$1
@@ -4157,29 +4268,30 @@ mkdir -p bp/changes/$1
 
 If \`--phase\` is provided, note the milestone/phase for the proposal's Roadmap Reference section.
 
-### Step 2: Generate proposal
+### Step 3: Write proposal
 
-Get the proposal template and fill it:
+Get the proposal template and fill it based on the discussion:
 
 1. Run \`bp template proposal --stdout\` to get the template
-2. Fill in each section based on conversation context:
-   - **Intent**: What problem does this solve? Why now?
-   - **Scope**: What's in and out? Be explicit about boundaries.
-   - **Approach**: High-level method (not technical details)
-   - **Deliverables**: Observable, verifiable capabilities (PR-N)
+2. Fill in each section:
+   - **Intent**: Capture what the user described as the problem to solve
+   - **Scope**: In scope and out of scope from the discussion
+   - **Approach**: User's preferred approach if given, or a reasonable high-level approach based on the discussion
+   - **Deliverables**: Observable, verifiable capabilities (PR-N). Each must have a SHALL statement and a Verify method.
    - **Roadmap Reference**: If --phase provided, fill in milestone/phase
 3. Write to \`bp/changes/$1/proposal.md\`
 
-### Step 3: Verify proposal quality
+### Step 4: Verify proposal quality
 
 Before finishing, check:
-- [ ] Intent explains the problem (not just the solution)
+- [ ] Intent clearly states the problem
 - [ ] Scope has both In Scope and Out of Scope sections
 - [ ] Each deliverable (PR-N) has a SHALL statement and Verify method
 - [ ] No \`{{\` template placeholders remaining
 - [ ] PR count ≤ 5 (if more, suggest splitting)
+- [ ] The proposal reflects what the user described (not AI guesswork)
 
-### Step 4: Commit and suggest next step
+### Step 5: Commit and suggest next step
 
 \`\`\`bash
 git add bp/changes/$1/proposal.md
@@ -4197,9 +4309,11 @@ Created bp/changes/$1/proposal.md
 
 ## Guardrails
 
+- **ALWAYS discuss with the user before writing.** Do not guess the requirements.
 - Do NOT create design.md, tasks.md, or specs/ - that's the planner's job
 - Do NOT run bp plan automatically - let the user review the proposal first
 - If the user wants to skip proposal review and go straight to planning, they can run bp plan $1 directly
+- Architecture decisions and technical design come from the planner, not from propose
 ",
   ".omp/commands/bp-review.md": "---
 name: bp:review
