@@ -1,37 +1,28 @@
 /**
- * bp 类型统一导出
+ * v2 type exports - unified barrel
  */
 
 export type {
   Profile,
-  ModelTier,
   ModelMap,
-  AgentModelMap,
-  WorkflowToggles,
-  ReviewConfig,
-  ChangeConfig,
-  GitConfig,
+  Rules,
   ProjectConfig,
 } from './config.js';
 
-export { PROFILE_MODEL_MAP, type SpecConfig } from './config.js';
+export { PROFILE_MODEL_MAP } from './config.js';
 
 export type {
-  EntityType,
-  ChangeStatus,
-  Milestone,
-  Phase,
-  Change,
+  ChangeType,
+  ChangeStage,
   ChangeMeta,
 } from './project.js';
 
 export type {
-  ChangeState,
-  StateFile,
-  StateTransition,
+  ArtifactStatus,
+  ChangeProgress,
+  NextStep,
+  ContinueResult,
 } from './state.js';
-
-export { STATE_TRANSITIONS } from './state.js';
 
 export type {
   HeadingNode,

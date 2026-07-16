@@ -1,100 +1,99 @@
+/**
+ * v2 config - simplified project configuration
+ * Loads/saves bp/config.yaml with Zod validation
+ */
+
 import { join } from 'node:path';
 import { existsSync } from 'node:fs';
 import { z } from 'zod';
 import { readYamlDoc, writeYamlDoc } from '../parser/yaml.js';
-import { PROFILE_MODEL_MAP, TIER_TO_PROFILE } from '../types/config.js';
-import type { ProjectConfig, Profile, ModelMap, ModelTier } from '../types/index.js';
+import { PROFILE_MODEL_MAP } from '../types/config.js';
+import type { ProjectConfig, Profile, ModelMap } from '../types/index.js';
 import { Document } from 'yaml';
 
-const CONFIG_FILE = 'project.yml';
+const CONFIG_FILE = 'config.yaml';
 
-/** zod schema for project.yml */
+/** Zod schema for config.yaml */
 export const ProjectConfigSchema = z.object({
-  version: z.number(),
-  platform: z.array(z.string()),
-  profile: z.enum(['lite', 'standard', 'strict']),
-  context: z.string(),
-  workflow: z.object({
-    research: z.boolean().optional(),
-    plan_check: z.boolean().optional(),
-    tdd: z.boolean().optional(),
-    triple_review: z.boolean().optional(),
-    auto_advance: z.boolean().optional(),
-    spec_injection: z.boolean().optional(),
-    commitDocs: z.boolean().optional(),
-  }).optional().default({}),
-  review: z.object({
-    gate: z.enum(['all-pass', 'severity', 'report-only']).optional(),
-    parallel: z.boolean().optional(),
-  }).optional().default({}),
-  change: z.object({
-    parallel: z.enum(['serial', 'dependency-graph', 'pipeline']).optional(),
-    isolation: z.boolean().optional(),
-  }).optional().default({}),
-  git: z.object({
-    branching: z.enum(['none', 'phase', 'milestone']).optional(),
-    create_tag: z.boolean().optional(),
-  }).optional().default({}),
-  release: z.object({
-    template: z.enum(['standard', 'detailed', 'minimal']).optional().default('standard'),
-  }).optional().default({ template: 'standard' }),
-  spec: z.object({
-    stack: z.string().optional().default('generic'),
-  }).optional().default({ stack: 'generic' }),
-  conventions: z.object({
-    inject: z.boolean().optional().default(true),
-  }).optional().default({ inject: true }),
-  models: z.record(z.string(), z.string()).optional().default({}),
-  modelProfile: z.enum(['budget', 'balanced', 'quality']).optional(),
-  agentModels: z.record(z.string(), z.string()).optional().default({}),
+  version: z.number().default(2),
+  platform: z.array(z.string()).default(['omp']),
+  profile: z.enum(['lite', 'standard']).default('standard'),
+  context: z.string().default(''),
+  rules: z.record(z.string(), z.array(z.string())).default({}),
+  schema: z.string().default('spec-driven'),
+  models: z.record(z.string(), z.string()).default({}),
+  conventions: z.object({ inject: z.boolean() }).default({ inject: true }),
+  git: z.object({ create_tag: z.boolean() }).default({ create_tag: true }),
 });
 
-/** project.yml 路径 */
+/** Get config file path */
 export function configPath(bpDir: string): string {
   return join(bpDir, CONFIG_FILE);
 }
 
-/** 读取并验证 project.yml */
+/** Load config from bp/config.yaml */
 export function loadConfig(bpDir: string): ProjectConfig {
-  const doc = readYamlDoc(configPath(bpDir));
+  const path = configPath(bpDir);
+  if (!existsSync(path)) {
+    // Fallback: try old project.yml for migration
+    const oldPath = join(bpDir, 'project.yml');
+    if (existsSync(oldPath)) {
+      return migrateConfig(bpDir);
+    }
+    throw new Error(`Config not found: ${path}. Run 'bp init' first.`);
+  }
+  const doc = readYamlDoc(path);
   const raw = doc.toJS();
   return ProjectConfigSchema.parse(raw) as ProjectConfig;
 }
 
-/** 写回 project.yml（保留注释） */
+/** Save config to bp/config.yaml (preserves comments) */
 export function saveConfig(bpDir: string, config: ProjectConfig): void {
-  let doc: Document;
-  if (existsSync(configPath(bpDir))) {
-    doc = readYamlDoc(configPath(bpDir));
-  } else {
-    doc = new Document({});
-  }
+  const path = configPath(bpDir);
+  const doc = new Document();
   doc.set('version', config.version);
   doc.set('platform', config.platform);
   doc.set('profile', config.profile);
   doc.set('context', config.context);
-  if (config.workflow) doc.set('workflow', config.workflow);
-  if (config.review) doc.set('review', config.review);
-  if (config.change) doc.set('change', config.change);
-  if (config.git) doc.set('git', config.git);
-  if (config.release) doc.set('release', config.release);
-  if (config.spec) doc.set('spec', config.spec);
-  if (config.modelProfile) doc.set('modelProfile', config.modelProfile);
-  if (config.agentModels) doc.set('agentModels', config.agentModels);
-  if (config.conventions) doc.set('conventions', config.conventions);
-  if (config.models) doc.set('models', config.models);
-  writeYamlDoc(configPath(bpDir), doc);
+  doc.set('rules', config.rules);
+  doc.set('schema', config.schema);
+  doc.set('models', config.models);
+  doc.set('conventions', config.conventions);
+  doc.set('git', config.git);
+  writeYamlDoc(path, doc);
 }
 
-/** 修改单个字段并写回 */
+/** Update config in-place */
 export function updateConfig(bpDir: string, updater: (config: ProjectConfig) => void): void {
   const config = loadConfig(bpDir);
   updater(config);
   saveConfig(bpDir, config);
 }
 
-/** 解析模型映射：modelProfile 优先，否则 profile */
+/** Resolve model mapping: profile defaults + per-role overrides */
 export function resolveModels(config: ProjectConfig): ModelMap {
-  const profile = (config.modelProfile ? TIER_TO_PROFILE[config.modelProfile] : config.profile) as Profile;
+  const profile = config.profile as Profile;
   return { ...PROFILE_MODEL_MAP[profile], ...config.models };
+}
+
+/** Migrate from v1 project.yml to v2 config.yaml */
+function migrateConfig(bpDir: string): ProjectConfig {
+  const oldPath = join(bpDir, 'project.yml');
+  const doc = readYamlDoc(oldPath);
+  const old = doc.toJS() as Record<string, any>;
+
+  const config: ProjectConfig = {
+    version: 2,
+    platform: old.platform ?? ['omp'],
+    profile: old.profile === 'strict' ? 'standard' : (old.profile ?? 'standard'),
+    context: old.context ?? '',
+    rules: {},
+    schema: 'spec-driven',
+    models: old.models ?? {},
+    conventions: { inject: old.conventions?.inject ?? true },
+    git: { create_tag: old.git?.create_tag ?? true },
+  };
+
+  saveConfig(bpDir, config);
+  return config;
 }

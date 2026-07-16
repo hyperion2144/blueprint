@@ -2,36 +2,40 @@
 
 **Spec-driven development workflow for AI coding agents.**
 
-Write behavioral specs once, let agents implement against them across the full project lifecycle. Structured validation at every gate, PEG grammar-checked artifacts, auto-advancing state machine.
+Write behavioral specs once, let agents implement against them. Lightweight artifact-based progress — no state machine, no formal grammars. Delta specs capture behavioral contracts at the change level and merge into a global spec on archive.
+
+Inspired by OpenSpec-style structured specifications, adapted for AI-agent-driven development with 3 specialized sub-agents (planner, executor, reviewer).
 
 ## Why
 
 AI coding agents are powerful but unpredictable — requirements exist only in chat history, context rots across long sessions, and there's no repeatable workflow. Blueprint solves this:
 
 - **Spec alignment before code.** Requirements, design decisions, and behavioral contracts are captured as structured artifacts, not chat.
-- **Fresh-context sub-agents.** Heavy work (research, planning, implementation, review) delegates to spawned sub-agents with clean context — no rot.
-- **State machine CLI.** `bp continue` auto-advances through the workflow. The CLI is the single source of truth; agents orchestrate, not implement.
-- **PEG-validated artifacts.** Every output document is checked against a formal grammar — format errors are caught before they propagate.
-- **Delta-spec merge.** Change-level behavioral contracts merge into global specs on archive with SHA-256 fingerprinting.
+- **Fresh-context sub-agents.** Heavy work (planning, implementation, review) delegates to spawned sub-agents with clean context — no rot.
+- **Artifact-based CLI.** `bp continue` detects progress from file existence. No state machine, no lock files — just check what's on disk.
+- **Lightweight validation.** Artifacts are checked for required sections, valid IDs, and unreplaced placeholders — no formal grammar compilation.
+- **Delta-spec merge.** Change-level behavioral contracts (ADDED/MODIFIED/REMOVED) merge into global specs on archive with SHA-256 fingerprinting.
 
 ## Core Concepts
 
 ```
-Project → Milestone → Phase → Change
+Roadmap (living document) → Change (spec-driven unit)
 ```
 
 | Entity | Description |
 |--------|-------------|
-| **Milestone** | Release cycle ("M2-api", "M3-dashboard") |
-| **Phase** | Work unit within a milestone ("ph.1-board-engine") |
-| **Change** | Implementation unit — goes through plan→apply→review→archive |
-| **Adhoc Change** | Independent change outside a milestone/phase |
+| **Roadmap** | Living document (`bp/roadmap.md`) defining milestones, phases, and planned changes |
+| **Change** | Implementation unit with structured artifacts — goes through propose → plan → apply → review → archive |
+| **Spec** | Behavioral contracts stored in `bp/specs/<domain>/spec.md` — source of truth maintained via delta merges |
 
-Workflow is a **dual nested loop**:
+### Architecture
 
 ```
-Phase loop:  discuss → research-phase → split → [change loop] → ship
-Change loop: proposal → plan → apply → review → archive
+2-layer: Roadmap (what's planned) + Change (what's being built)
+3 sub-agents: planner (design + tasks + delta specs)
+              executor (TDD waves, isolated)
+              reviewer (triple review gate)
+7 artifact templates: proposal, design, tasks, spec, review, roadmap, config
 ```
 
 ## Quick Start
@@ -43,75 +47,67 @@ bp init
 ```
 
 ```bash
-# Auto-advance through every step
+# Start a change
+bp propose my-change
+bp plan my-change
+bp apply my-change
+bp review my-change
+bp archive my-change
+
+# Auto-advance through the next step
 bp continue
 
-# Advance a specific change
-bp continue change <name>
+# Setup roadmap
+bp roadmap
 ```
 
 ## CLI Reference
 
 | Command | Description |
 |---------|-------------|
-| `bp init` | Initialize project structure with interactive wizard (tech stack, profile, conventions) |
-| `bp continue` | Auto-advance project to the next step |
-| `bp continue change <name>` | Advance a specific change |
-| `bp change new <name>` | Create a new adhoc change |
-| `bp state` | View current state, step, pending work |
-| `bp state set-milestone <id>` | Switch active milestone |
-| `bp list` | List milestones, phases, changes, archive |
-| `bp context <step>` | Output file manifest + state + specs for agent context injection |
-| `bp template <type>` | Generate a file template (proposal, design, tasks, etc.) |
+| `bp init` | Initialize project structure (`bp/config.yaml`, directory skeleton) |
+| `bp roadmap` | Create or update the roadmap (`bp/roadmap.md`) |
+| `bp propose <name>` | Create a change proposal — define intent, scope, deliverables |
+| `bp plan <name>` | Dispatch the planner sub-agent — produce design, tasks, delta specs |
+| `bp apply <name>` | Dispatch executor sub-agents — TDD wave-based implementation |
+| `bp review <name>` | Dispatch reviewer sub-agent — triple review (spec + quality + goal) |
+| `bp archive <name>` | Archive a completed change — delta-spec merge + code backfill |
+| `bp continue` | Auto-advance — detect current state from artifacts, suggest next step |
+
+### Additional commands
+
+| Command | Description |
+|---------|-------------|
+| `bp list` | List active changes, archived changes, spec domains |
 | `bp config [list\|set]` | View or modify project configuration |
-| `bp archive <change>` | Archive a completed change — delta-merge specs + code backfill |
-| `bp commit <msg>` | Commit with conventional format, record commit hash in tasks.md |
+| `bp template <type>` | Generate an artifact template (proposal, design, tasks, spec, review) |
 | `bp dispatch <role>` | Output platform-specific sub-agent dispatch instructions |
-| `bp ship` | Create PR or Release from unpublished changes |
-| `bp audit` | Generate human UAT verification document from change deliverables |
-| `bp milestone archive <id>` | Archive completed milestone |
-| `bp add-phase <name>` | Insert a new phase into the current milestone |
-| `bp upgrade` | Regenerate all platform files to match latest templates |
-| `bp update` | (alias for upgrade) |
-| `bp:loop` | Autonomous loop — full unattended execution |
+| `bp update` | Regenerate all platform files to match latest templates |
 
 ## Validation System
 
-Every artifact is validated at **PEG grammar level** before the state machine allows advancement. 15 formal grammars cover the full document set:
+Artifacts are validated structurally, not against formal grammars:
 
-| Document | PEG file | Validation dimensions |
-|----------|----------|----------------------|
-| **proposal.md** | `proposal.peggy` | PR IDs sequential, refs format (FR-/NFR-/D-), Source annotation |
-| **design.md** | `design.peggy` | DS IDs sequential, refs format (PR-), refs: on separate indented line |
-| **tasks.md** | `tasks.peggy` | T IDs sequential, type validation (behavior/config/refactor/docs/scaffolding), multi-line acceptance |
-| **context.md** | `context.peggy` | D IDs sequential, decision status + reason |
-| **requirements.md** | `requirements.peggy` | FR/NFR IDs sequential |
-| **roadmap.md** | `roadmap.peggy` | Md/Ph IDs sequential, correct nesting |
-| **spec-review.md** | `spec-review.peggy` | R IDs sequential |
-| **quality-review.md** | `quality-review.peggy` | Q IDs sequential |
-| **goal-review.md** | `goal-review.peggy` | G IDs sequential |
-| **uat.md** | `uat.peggy` | UC IDs sequential |
-| **verification.md** | `verification.peggy` | Structure verification |
-| **review-task.md** | `review-task.peggy` | FT IDs sequential, type validation |
-| 3 research docs | `research-summary.peggy` + `phase-research.peggy` + `change-summary.peggy` | Structural validation |
+| Artifact | Validation checks |
+|----------|-------------------|
+| **proposal.md** | Must have ## Intent, ## Scope, ## Deliverables; check for unreplaced placeholders; warn if no PR-N items |
+| **design.md** | Must have ## Design Items, ## Technical Approach, ## File Manifest; check DS-N IDs; warn about decisions |
+| **tasks.md** | Must have ## Wave sections; check T-N tasks; behavior tasks must have spec_ref and RED description |
+| **spec.md (delta)** | Must have ADDED/MODIFIED/REMOVED sections; check SHALL/MUST/SHOULD/MAY keywords; require GIVEN/WHEN/THEN scenarios |
+| **review.md** | Must have ## Spec Review, ## Quality Review, ## Goal Review, ## Overall Verdict; verdict must be PASS/FAIL/NEEDS_REVISION |
 
-**Coverage chain**: `checkCoverage(PR → DS → T)` verifies every deliverable has a corresponding design item, every design has a corresponding task. Cross-phase integration is validated before apply.
-
-**Exit gates**: Each step pre-validates before advancing. All checks produce specific error messages pinpointing the exact line and format violation.
+Validation runs when the CLI advances to the next step. Errors block progression with a specific message.
 
 ## Templates
 
-27 artifact templates, generated by `bp template <type>`:
+7 artifact templates:
 
 | Category | Templates |
 |----------|-----------|
-| **Change** | proposal, design, tasks, verification, spec-review, quality-review, goal-review, uat |
-| **Phase** | context, research, summary, phase-research, change-summary |
-| **Project** | roadmap, requirements, spec, global-spec |
-| **Research** | research-stack, research-architecture, research-pitfalls |
-| **Codebase** | codebase-summary, codebase-actions, codebase-directory, codebase-structure, codebase-interfaces, codebase-dataflow, codebase-constants |
-| **Design** | design-preview, review-design, review-tasks |
-| **Other** | loop.md |
+| **Change** | proposal, design, tasks, spec, review |
+| **Project** | roadmap, config |
+
+3 sub-agent system prompts (planner, executor, reviewer).
 
 Platform files (agents, commands, hooks) are generated from TypeScript source:
 
@@ -121,63 +117,48 @@ bp update    # regenerates all platform files
 
 ## Workflow
 
-### Project Loop
-
-```
-init → grill → research → roadmap → discuss → research-phase → split → [change loop] → ship
-```
-
-Each step advances via `bp continue`. The CLI tracks state in `bp/state.md`.
-
 ### Change Loop
 
 ```
-proposal → plan → apply → review → archive
+propose → plan → apply → review → archive
 ```
 
-- **proposal**: Define PR items with refs to requirements (FR-N) and decisions (D-N)
-- **plan**: Create design items (DS-N) with refs to PR items, then task items (T-N) with types
-- **apply**: Wave-based execution with parallel sub-agents, TDD for behavior tasks
+- **propose**: Write `proposal.md` — intent, scope (in/out), approach, deliverables (PR-N)
+- **plan**: Dispatch planner agent → `design.md` (DS-N items, D-N decisions), `tasks.md` (T-N tasks, waves), `specs/` (delta specs)
+- **apply**: Wave-based execution with parallel executor sub-agents, TDD for behavior tasks
 - **review**: Triple review — spec review + quality review + goal review
-- **archive**: Delta-spec merge + code backfill + state cleanup
+- **archive**: Delta-spec merge into global specs + code backfill + cleanup
 
 ### Loop Diagram
 
 ```mermaid
 flowchart TD
-    A[/bp init/] --> B[/bp grill/]
-    B --> C[/bp research/]
-    C --> D[/bp roadmap/]
-    D --> E[Phase Loop]
-    E --> F[/bp discuss/]
-    F --> G[/bp research-phase/]
-    G --> H[/bp split/]
-    H --> I[/bp proposal/]
-    I --> J[/bp plan/]
-    J --> K[/bp apply/]
-    K --> L[/bp review/]
-    L --> M[/bp archive/]
-    M --> N{More changes?}
-    N -->|Yes| I
-    N -->|No| O{More phases?}
-    O -->|Yes| F
-    O -->|No| P[/bp ship/]
-    P --> Q[Done]
+    A[/bp init/] --> B[/bp roadmap/]
+    B --> C[/bp propose/]
+    C --> D[/bp plan/]
+    D --> E[/bp apply/]
+    E --> F[/bp review/]
+    F --> G[/bp archive/]
+    G --> H{More changes?}
+    H -->|Yes| C
+    H -->|No| I[Done]
 ```
+
+Fix loops use `--fix` flag: `bp plan --fix` or `bp apply --fix` re-runs the step with review findings injected.
 
 ## Configuration
 
-`bp/project.yml`:
+`bp/config.yaml`:
 
 | Key | Description | Default |
 |-----|-------------|---------|
-| `profile` | Workflow strictness: `lite`, `standard`, `strict` | `standard` |
-| `platform` | Target agent platform: `omp`, `claude-code`, `agent` | `omp` |
-| `spec.stack` | Tech stack spec template | `generic` |
-| `workflow.tdd` | Enforce RED→GREEN→REFACTOR for behavior tasks | `true` |
-| `workflow.commitDocs` | Auto-commit doc changes with code | `false` |
-| `review.gate` | Review gate mode: `all-pass`, `any-pass` | `all-pass` |
-| `release.template` | PR body template: `standard`, `detailed` | `standard` |
+| `profile` | Workflow strictness: `lite`, `standard` | `standard` |
+| `platform` | Target agent platform(s) | `['omp']` |
+| `schema` | Schema name (custom in `bp/schemas/` or `spec-driven`) | `spec-driven` |
+| `rules` | Per-role rule overrides | `{}` |
+| `models` | Per-role model overrides | `{}` |
+| `conventions.inject` | Auto-inject coding conventions into sub-agents | `true` |
+| `git.create_tag` | Create git tag on archive | `true` |
 
 ### Profiles
 
@@ -185,15 +166,14 @@ flowchart TD
 |---------|-----|------------|-------------|
 | **Lite** | Optional | Sequential | Any pass |
 | **Standard** | Enforced | Parallel (3 agents) | All pass |
-| **Strict** | Enforced | Parallel + regression check | All pass + manual UAT |
 
 ## Tech Stack
 
 - Language: TypeScript (strict, ESM, ES2022)
 - Runtime: Node.js ≥ 20
-- Tests: Vitest (155+)
-- Validation: PEG grammars via Peggy
-- State persistence: Zod-validated Markdown with `flock` concurrency locking
+- Tests: Vitest (16 test files)
+- Validation: YAML schema + regex artifact checks
+- CLI: Commander.js
 
 ## Install
 
@@ -215,7 +195,7 @@ npm test
 
 ```bash
 # Quick CLI smoke test
-node bin/cli.js state
+node bin/cli.js continue
 ```
 
 ## License

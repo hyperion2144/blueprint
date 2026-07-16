@@ -9,77 +9,50 @@ import type { ProjectConfig } from '../../types/index.js';
 import { WORKFLOW_REGISTRY, type WorkflowStep } from '../../templates/workflows/registry.js';
 
 /**
- * $1 含义取决于 step 类型，和 expandTemplateVars() 的 primaryId 推断一致：
- *   上下文为 milestone → [BP:MILESTONE_ID]
- *   上下文为 phase → [BP:PHASE_ID]
- *   上下文为 change → [BP:CHANGE_NAME]
- *   无上下文 (init/grill/…) → 保持 $1 原样
+ * $1 —— meaning depends on step type, consistent with expandTemplateVars() primaryId inference:
+ *   context is milestone -> [BP:MILESTONE_ID]
+ *   context is phase     -> [BP:PHASE_ID]
+ *   context is change    -> [BP:CHANGE_NAME]
+ *   no context           -> keep $1 as-is
  */
 const STEP_PARAM: Record<string, string> = {
-  design: '',
-  milestone: '[BP:MILESTONE_ID]',
-  discuss: '[BP:PHASE_ID]',
-  'research-phase': '[BP:PHASE_ID]',
-  split: '[BP:PHASE_ID]',
-  adhoc: '[BP:CHANGE_NAME]',
-  proposal: '[BP:CHANGE_NAME]',
+  propose: '[BP:CHANGE_NAME]',
   plan: '[BP:CHANGE_NAME]',
   apply: '[BP:CHANGE_NAME]',
   review: '[BP:CHANGE_NAME]',
   archive: '[BP:CHANGE_NAME]',
   continue: '[BP:CHANGE_NAME]',
-  audit: '[BP:CHANGE_NAME]',
-  ship: '[BP:CHANGE_NAME]',
-  'fix-plan': '[BP:CHANGE_NAME]',
-  'fix-apply': '[BP:CHANGE_NAME]',
 };
 
 function resolveBody(step: string): string {
   const entry = WORKFLOW_REGISTRY[step as WorkflowStep];
   let body = entry ? entry.command().content : `# bp-${step}\n\nWorkflow guide.`;
 
-  // $ARGUMENTS/$1 根据 step 类型映射到对应的 [BP:xxx]
+  // Map $ARGUMENTS/$1 to the appropriate [BP:xxx] placeholder
   const param = STEP_PARAM[step];
   body = body.replaceAll('$ARGUMENTS', param ?? '$ARGUMENTS');
   body = body.replaceAll('$1', param ?? '$1');
   for (let i = 2; i <= 9; i++) body = body.replaceAll(`$${i}`, '');
 
-  // [BP:xxx] 变量原样保留（agent 运行时替换）
+  // [BP:xxx] variables remain as-is (agent replaces at runtime)
   return body;
 }
 
 function skillDescription(step: string): string {
   const map: Record<string, string> = {
     init: 'Initialize bp project structure and generate platform files',
-    grill: 'Requirements exploration — detailed questioning until shared understanding',
-    research: 'Project-level technical research',
     roadmap: 'Roadmap definition',
-    milestone: 'Milestone management',
-    design: 'UI design direction',
-    discuss: 'Phase discussion',
-    'research-phase': 'Phase research',
-    split: 'Change splitting',
-    adhoc: 'Create adhoc change',
+    propose: 'Create a change folder with proposal.md',
     plan: 'Change design',
     apply: 'Code implementation',
     review: 'Triple review',
     archive: 'Verify and archive',
-    proposal: 'Fill change proposal',
-    ship: 'Ship',
-    continue: 'Auto-advance',
-    audit: 'Human UAT verification',
-    loop: 'Autonomous loop',
-    config: 'Interactive configuration',
-    commit: 'Commit changes',
-    'fix-plan': 'Fix design',
-    'fix-apply': 'Fix implementation',
-    upgrade: 'Upgrade output files — check unarchived files against templates + PEG grammars, auto-fix format mismatches',
-    'add-phase': 'Add phase — insert a new phase into the current milestone, renumber subsequent phases, rename directories, update roadmap and state',
+    continue: 'Check progress and suggest next step',
   };
   return map[step] ?? '';
 }
 
-const STEPS = ['init', 'design', 'grill', 'research', 'roadmap', 'milestone', 'discuss', 'research-phase', 'split', 'adhoc', 'plan', 'apply', 'review', 'archive', 'proposal', 'ship', 'continue', 'audit', 'loop', 'config', 'commit', 'fix-plan', 'fix-apply', 'upgrade', 'add-phase'];
+const STEPS = ['init', 'roadmap', 'propose', 'plan', 'apply', 'review', 'archive', 'continue'];
 
 export function generateAgentSkills(_config: ProjectConfig): { path: string; content: string }[] {
   return STEPS.map((step) => {

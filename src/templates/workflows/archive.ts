@@ -1,93 +1,102 @@
-import { CLASSIFY_CHANGE, CHANGE_NAME_RESOLVE } from './shared.js';
 import type { SkillTemplate, CommandTemplate } from '../types.js';
 
 const instructions = `## Input
 
-### Parameters
-- **\`$ARGUMENTS\`** (required) — the change to verify and archive. Provided by \`bp continue\` output or user.
+- **\`$ARGUMENTS\`** (optional): change name. If empty, use the most recently reviewed change.
+- **\`--force\`** (optional): skip review check (use with caution).
 
-### Prerequisites
-- Review phase complete: spec-review.md, quality-review.md, goal-review.md
-- All review blockers resolved
+## Prerequisites
+
+- \`review.md\` exists and Overall Verdict is PASS (or \`--force\` is used)
+- No unresolved issues in review.md \`## Issues\` section (or \`--force\`)
 
 ## Steps
 
-${CLASSIFY_CHANGE}${CHANGE_NAME_RESOLVE('reviewing', 'archive')}### Step 2: Run verification checks
+### Step 1: Resolve change name and paths
 
-Run checks first — do NOT write verification.md yet:
+Same as plan workflow Step 1.
 
-**All changes:**
-- Run \`npx tsc --noEmit\` — must pass
-- Run \`npx vitest run\` — must pass
+### Step 2: Verify review status (unless --force)
 
-**Full changes additionally:**
-- Verify each delta-spec SHALL/MUST has a passing test
-- Verify TDD commit integrity: RED→GREEN→REFACTOR sequence for each type:behavior task
+Read \`bp/changes/$1/review.md\`:
+- Check Overall Verdict is PASS
+- Check \`## Issues\` section has no \`- [ ]\` entries (all should be [x] or empty)
 
-### Step 3: Write verification.md + route
+If review is not PASS and \`--force\` is not used:
+\`\`\`
+Cannot archive: review not passed
+  Verdict: FAIL/NEEDS_REVISION
+  Unresolved issues: N
 
-**All checks passed:**
-1. Get template: \`bp template verification\`
-2. Write \`verification.md\` to the change directory
-3. Status: \`passed\`
-4. Continue through the workflow
-
-**Any check failed:**
-1. Write verification.md with \`gaps_found\`, listing what failed
-2. Route back using loopback commands:
-   - \`bp continue change $1 --command reapply\` — re-implement (goes back to apply)
-   - \`bp continue change $1 --command replan\` — re-design (goes back to plan)
-   - \`bp continue change $1 --command fix\` — quick fix (goes back to apply)
-3. Do NOT archive — stop here
-
-### Step 4: Execute archival
-Run \`bp archive [BP:CHANGE_DIR]\`. The CLI handles: delta-spec merge, directory move to archive/, state.md update.
-verification.md is moved to archive together with the change.
-
-### Step 5: Verify merge result
-Check the global spec \`bp/specs/<domain>/spec.md\` (<domain> = directory under \`bp/specs/\`):
-- ADDED Requirements from delta are present
-- REMOVED Requirements from delta are gone
-- No duplicate \`### Requirement: xxx\` headers
-- If the CLI warned about a skipped domain, the delta-spec directory name didn't match any domain in \`bp/specs/\` — fix the domain name in the change's \`specs/\` directory and re-archive
-
-### Step 6: Commit + check if last change
-Run \`bp state\`, check the \`pending\` list.
-
-**If more pending changes remain:**
-\`\`\`bash
-bp commit "docs(archive): archive $1" \\
-  --files "bp/archive/[BP:MILESTONE_ID]/[BP:PHASE_ID]/$1/" \\
-  --scope docs --record
+  Fix issues first: bp apply --fix $1
+  Or force archive: bp archive $1 --force
 \`\`\`
 
-**If this was the LAST change in the phase:**
-1. Write phase summary: \`bp template summary\` → \`bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/summary.md\`
-2. Commit archive + summary:
+### Step 3: Merge delta specs
+
+For each \`specs/<domain>/spec.md\` in the change directory:
+
+1. Read the delta spec
+2. Read the corresponding global spec: \`bp/specs/<domain>/spec.md\`
+   - If global spec doesn't exist: create it from the delta spec's ADDED requirements
+3. Apply deltas:
+   - **ADDED Requirements**: Append each requirement to the global spec's Requirements section
+   - **MODIFIED Requirements**: Find the matching requirement header in global spec, replace the entire requirement block
+   - **REMOVED Requirements**: Find the matching requirement header in global spec, delete the entire requirement block
+4. Write the updated global spec
+
+### Step 4: Move change to archive
+
 \`\`\`bash
-bp commit "docs(archive): archive $1, phase complete" \\
-  --files "bp/archive/[BP:MILESTONE_ID]/[BP:PHASE_ID]/$1/,bp/milestones/[BP:MILESTONE_ID]/phases/[BP:PHASE_ID]/summary.md" \\
-  --scope docs --record
+# Create archive directory with date prefix
+ARCHIVE_DIR="bp/changes/archive/$(date +%Y-%m-%d)-$1"
+mkdir -p "$ARCHIVE_DIR"
+
+# Move all change files to archive
+mv bp/changes/$1/* "$ARCHIVE_DIR/"
+
+# Remove the now-empty change directory
+rmdir bp/changes/$1
 \`\`\`
 
-### Step 7: Advance (last change only — ask user)
+### Step 5: Update roadmap
 
-**If the archived change was the LAST in its phase:**
-1. The CLI outputs: \`✓ Phase [name] complete.\`
-2. Ask the user: "Phase X is complete. Proceed to the next phase?"
-   - **yes** → run \`bp continue --auto\` (auto-advances to next phase's discuss)
-   - **later** → done for now. Run \`bp state set-phase <next-id>\` manually to enter next phase.
+Read \`bp/roadmap.md\`:
 
-**If more changes remain:**
-Run \`bp continue\` to proceed to the next change's planning.
+1. Find the change name in the changes list under its phase
+2. Change \`- [ ]\` to \`- [x]\` and add archive date
+3. Increment the phase's change count: \`{{completed}}/{{total}}\` -> \`{{completed+1}}/{{total}}\`
+4. If all changes in the phase are [x]: change phase status to [COMPLETED]
+5. If all phases in the milestone are [COMPLETED]: change milestone status to [SHIPPED]
+6. Write updated roadmap.md
+
+If the change is adhoc (no roadmap reference), skip roadmap update.
+
+### Step 6: Commit and output
+
+\`\`\`bash
+git add bp/specs/ bp/changes/archive/ bp/roadmap.md
+git commit -m "archive: $1 - specs merged, roadmap updated"
+\`\`\`
+
+Output:
+\`\`\`
+Archived $1
+  - Delta specs merged into bp/specs/<domain>/spec.md
+  - Change moved to bp/changes/archive/<date>-$1/
+  - Roadmap updated: <phase> progress <done>/<total>
+
+  Next: bp propose <new-change> (or: bp continue)
+\`\`\`
 
 ## Guardrails
-- No sub-agent — run checks yourself
-- Verify FIRST, then write verification.md — if verification fails, do NOT archive
-- verification.md goes IN the change directory, archived together with the change
-- Commit --files points to \`bp/archive/\` directory (the archived location)
-- Last change in phase: must write summary.md before advancing
-- Test suite must pass completely — never archive a failing change`;
+
+- **Review must PASS before archive** (unless --force).
+- **Delta spec merge is the critical operation.** If a MODIFIED requirement header doesn't match the global spec, flag it.
+- **Archive preserves full context.** All artifacts (proposal, design, tasks, specs, review) move to archive together.
+- **Roadmap update is automatic.** Don't ask the user to manually update it.
+- If the change is adhoc (no Roadmap Reference in proposal.md), skip the roadmap update step.
+`;
 
 export function getArchiveSkillTemplate(): SkillTemplate {
   return {

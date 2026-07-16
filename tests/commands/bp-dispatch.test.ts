@@ -10,7 +10,6 @@ const testDir = join(tmpdir(), `bp-dispatch-test-${Date.now()}`);
 beforeAll(() => {
   mkdirSync(testDir, { recursive: true });
   execSync(`node ${cliPath} init --dir ${testDir} --yes`, { encoding: 'utf-8', cwd: testDir });
-  // Default platform is omp after init --yes
 });
 
 afterAll(() => {

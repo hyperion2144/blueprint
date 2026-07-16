@@ -6,7 +6,7 @@ describe('generateClaudeAgents', () => {
   it('generates all agent files with correct frontmatter', () => {
     const config = {} as ProjectConfig;
     const files = generateClaudeAgents(config);
-    expect(files).toHaveLength(7);
+    expect(files).toHaveLength(3);
     for (const file of files) {
       expect(file.path).toMatch(/^\.claude\/agents\/bp-[a-z-]+\.md$/);
       expect(file.content).toContain('---');

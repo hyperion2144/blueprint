@@ -2,7 +2,9 @@
 
 ## Project Overview
 
-Blueprint (`@hyperion2144/blueprint` v0.5.0) is a **spec-driven development workflow CLI for AI coding agents**. It structures software projects into a nested state machine (Project → Milestone → Phase → Change) with PEG-validated artifacts, fresh-context sub-agents, and a CLI auto-advancer (`bp continue`).
+Blueprint (`@hyperion2144/blueprint` v2) is a **spec-driven development workflow CLI for AI coding agents**. It structures software changes into a 2-layer architecture (Roadmap + Change) with artifact-based progress detection, YAML schema validation, and fresh-context sub-agents (planner, executor, reviewer).
+
+No state machine — progress is derived from file existence in change directories. Delta specs (ADDED/MODIFIED/REMOVED) capture behavioral contracts at the change level and merge into global specs on archive.
 
 The project dogfoods its own workflow — the `bp/` directory in this repo is an active blueprint project.
 
@@ -14,40 +16,50 @@ The project dogfoods its own workflow — the `bp/` directory in this repo is an
 
 ```
 src/cli.ts (Commander entry)
-  → src/commands/bp-*.ts (15 subcommands)
-  → src/core/*.ts (state machine, validation, continue engine)
+  → src/commands/bp-*.ts (13 subcommands; 8 core)
+  → src/core/*.ts (schema, artifact validation, config, continue engine)
   → src/templates/ (workflow instructions, artifact definitions, agent prompts)
   → src/integrations/*/ (platform-specific generators: OMP, Claude Code, .agent)
-  → src/generators/index.ts (multi-platform dispatcher)
 ```
 
 ### Core modules
 
 | Module | Purpose |
 |--------|---------|
-| `src/core/state-file.ts` | `state.md` read/write with Zod validation + file-based locking (`.state.lock`, spin-wait 3s) |
-| `src/core/state-machine.ts` | Pure-function state machine: `canTransition`/`getTransition`/`getNextSteps` from `STATE_TRANSITIONS` table |
-| `src/core/continue.ts` | Auto-advance engine — determines next step from state, maps workflow templates, expands template variables |
-| `src/core/state-validator.ts` | Exit condition validation per step — PEG-validates documents, checks task completion, artifact presence |
-| `src/core/config.ts` | `project.yml` read/write with Zod validation + model resolution (profile → ModelMap) |
-| `src/core/validate/index.ts` | Document validation engine — 5 dimensions (FORM/FILL/ENUM/REFS/COVERAGE), per-type validators |
-| `src/core/validate/grammar/` | 15 PEG grammar files (`.peggy` → `.cjs`): requirements, context, proposal, design, tasks, 3 reviews, etc. |
-| `src/core/file-tree.ts` | `bp/` directory operations — create skeleton, milestone/phase/change dirs, archive, list |
-| `src/core/delta-merge.ts` | Three-way spec merge: heading-tree + SHA-256 fingerprints + semantic merge (ADDED/MODIFIED/REMOVED) |
+| `src/core/schema.ts` | YAML schema loading — artifact dependency graph, built-in "spec-driven" schema |
+| `src/core/artifact-validator.ts` | Lightweight regex-based validation — checks sections, placeholders, IDs per artifact type |
+| `src/core/continue.ts` | Auto-advance engine — artifact-based progress detection, determines next step from file existence |
+| `src/core/config.ts` | `config.yaml` read/write with Zod validation + model resolution (profile → ModelMap) |
+| `src/core/file-tree.ts` | `bp/` directory operations — create skeleton, change/archive dirs, list active/changes |
+| `src/core/delta-merge.ts` | Three-way spec merge: heading-tree + SHA-256 fingerprints + semantic merge (ADDED/MODIFIED/REMOVED) — reused from v1 |
 | `src/core/spec-injector.ts` | Context injection per step — determines which specs/conventions/artifacts to inject into agent prompts |
 | `src/core/code-extract.ts` | Git diff analysis → behavior/constraint extraction → AUTO-EXTRACTED section backfill |
 | `src/core/brownfield.ts` | Existing project detection — detect language/framework/test framework, generate codebase report |
 | `src/core/platform-registry.ts` | Plugin system — `PlatformProvider` interface + singleton `PlatformRegistry` for platform file generators |
 
-### State machine transitions
+### Artifact-based progress
+
+Progress is derived from file existence in the change directory — no state machine, no `state.md`:
 
 ```
-init → grill → research → roadmap → discuss → research-phase → split
-  → proposal → plan → apply → review → archive → [next change or next phase]
-  → ship (milestone complete)
+proposal.md  →  design.md + tasks.md  →  code  →  review.md  →  archive
 ```
 
-Feedback loops: `review → fix-plan → fix-apply → review` (reapply) and `review → replan` (redesign).
+Each artifact becomes available when all its prerequisites exist. The schema defines the artifact dependency graph:
+
+- **proposal.md**: captures WHY and WHAT (intent, scope, approach, deliverables)
+- **design.md**: structured technical design (DS-N components, D-N decisions, file manifest)
+- **tasks.md**: implementation checklist (T-N tasks, waves, TDD annotations)
+- **specs/**: delta specs (ADDED/MODIFIED/REMOVED requirements per domain)
+- **review.md**: triple review (spec + quality + goal) with verdict
+
+`bp continue` checks which artifacts exist, calculates the next step, and outputs the appropriate workflow instructions.
+
+```
+Change loop: propose → plan → apply → review → archive
+```
+
+Feedback loop: `review` with `--fix` flag re-runs the affected step (plan or apply) with review findings injected.
 
 ---
 
@@ -55,30 +67,39 @@ Feedback loops: `review → fix-plan → fix-apply → review` (reapply) and `re
 
 | Directory | Contents |
 |-----------|---------|
-| `src/core/` | State machine, validation engine, config, file operations |
-| `src/commands/` | 15 CLI subcommand implementations |
-| `src/types/` | TypeScript interfaces (`state.ts`, `project.ts`, `config.ts`, `spec.ts`) |
-| `src/templates/artifacts/` | 27 output document templates (proposal, design, tasks, reviews, specs, etc.) |
-| `src/templates/workflows/` | Step instruction templates (apply, archive, discuss, plan, review, etc.) |
-| `src/templates/agents/` | Sub-agent system prompts (researcher, planner, executor, reviewer, etc.) |
+| `src/core/` | Schema, artifact validation, config, file operations |
+| `src/commands/` | 13 CLI subcommand implementations (8 core: init, roadmap, propose, plan, apply, review, archive, continue) |
+| `src/types/` | TypeScript interfaces (`config.ts`, `spec.ts`, `project.ts`) |
+| `src/templates/artifacts/` | 7 output document templates (proposal, design, tasks, spec, review, roadmap, config) |
+| `src/templates/workflows/` | Step instruction templates (8 steps: init, roadmap, propose, plan, apply, review, archive, continue) |
+| `src/templates/agents/` | Sub-agent system prompts (planner, executor, reviewer) |
 | `src/templates/spec-stacks/` | Tech-stack-specific spec templates (typescript-cli, react-web, python-api, etc.) |
 | `src/integrations/omp/` | OMP platform generator (commands, skills, agents, hooks) |
 | `src/integrations/claude-code/` | Claude Code platform generator (commands, agents) |
 | `src/integrations/agent/` | Generic .agent platform generator (skills, agents) |
-| `src/generators/` | Multi-platform file generation dispatcher |
 | `src/prompts/` | Interactive init wizard (`@clack/prompts`) |
 | `tests/core/` | Unit tests for core modules |
 | `tests/integration/` | Integration tests (lifecycle.test.ts, e2e.test.ts, bp.test.ts) |
 | `tests/commands/` | CLI subcommand tests |
-| `tests/e2e/` | OMP RPC E2E test protocol (Python driver) |
+| `tests/parser/` | Parser unit tests (frontmatter, heading-tree, spec-parser, yaml) |
+
+### bp/ structure
+
+| Path | Contents |
+|------|---------|
+| `bp/specs/<domain>/spec.md` | Global behavioral specs (source of truth, merged from delta specs on archive) |
+| `bp/changes/<name>/` | Active change directory — contains proposal.md, design.md, tasks.md, specs/, review.md |
+| `bp/changes/archive/<date>-<name>/` | Completed changes archived by date |
+| `bp/conventions/` | Coding conventions auto-injected into sub-agent context |
+| `bp/schemas/` | Custom YAML schema definitions (optional, defaults to built-in "spec-driven") |
 
 ---
 
 ## Development Commands
 
 ```bash
-npm run build       # Compile PEG grammars → tsup bundle → bin/cli.js + declarations
-npm test            # Vitest: all tests (unit + integration + e2e)
+npm run build       # tsup bundle → bin/cli.js + declarations
+npm test            # Vitest: all tests (unit + integration)
 npx vitest run      # Same as npm test
 npx vitest          # Watch mode
 npx vitest run --update  # Update snapshots
@@ -97,7 +118,7 @@ node bin/cli.js     # Run CLI in dev mode (no install needed)
 
 ### Naming
 - Source files: `kebab-case.ts`
-- Markdown files: **lowercase** (`state.md`, `roadmap.md`, not `STATE.md`)
+- Markdown files: **lowercase** (`roadmap.md`, `proposal.md`, `design.md`, `tasks.md`)
 - Functions/variables: `camelCase`
 - Classes/types/interfaces: `PascalCase`
 - Constants: `UPPER_SNAKE_CASE`
@@ -111,22 +132,26 @@ node bin/cli.js     # Run CLI in dev mode (no install needed)
 
 ### Sub-agent patterns
 - System prompts in `src/templates/agents/index.ts` exported as template literals
+- 3 agents: planner (design + tasks + delta specs), executor (TDD waves), reviewer (triple review)
 - Each agent has: role, description, tools, execution flow, deviation rules, verification criteria
 - Shared constraints (`AGENT_CONSTRAINTS`, `READONLY_CONSTRAINTS`) injected via template variables
 - Executor follows strict TDD: RED test → GREEN implementation → REFACTOR (3 commits per behavior task)
 - Parallel waves dispatched via `task` tool batch, each wave is one sub-agent
 
 ### Validation
-- PEG grammars (`.peggy`) compiled to `.cjs` via Peggy
-- Validation pipeline: FORM (syntax) → FILL (no placeholders) → ENUM (allowed values) → REFS (cross-doc refs) → COVERAGE (PR→DS→T chain)
-- `error()` in PEG actions for specific error messages (avoids silent `?`/`*` fallthrough)
-- Semantic checks in `src/core/validate/index.ts` per document type
+- YAML schema (`bp/schemas/`) defines artifact dependency graph — optional, defaults to built-in "spec-driven"
+- Artifact validator (`src/core/artifact-validator.ts`) uses lightweight regex checks:
+  - Section presence (`## Intent`, `## Wave`, etc.)
+  - Unreplaced template placeholders (`{{...}}`)
+  - ID patterns (PR-N, DS-N, T-N)
+  - Delta spec structure (ADDED/MODIFIED/REMOVED, SHALL/MUST keywords, Given/When/Then scenarios)
+- No formal grammar (PEG) compilation — artifacts are validated structurally, not syntactically
 
-### State management
-- `state.md` is the single source of truth — Zod-validated YAML-like markdown
-- `flock`-based file locking (`.state.lock`) prevents concurrent-process corruption
-- State transitions are pure functions — no side effects in `canTransition`/`getTransition`
-- `bp continue` reads state, validates exit conditions, advances, outputs step instructions
+### Progress management
+- File existence in `bp/changes/<name>/` is the source of truth — no `state.md`, no state machine
+- `bp continue` reads change directory, checks artifact presence, determines next step
+- No concurrent-process locking (single-user CLI)
+- Fix loops use `--fix` flag — `bp plan --fix` or `bp apply --fix` injects review findings
 
 ---
 
@@ -134,21 +159,20 @@ node bin/cli.js     # Run CLI in dev mode (no install needed)
 
 | File | Purpose |
 |------|---------|
-| `src/cli.ts` | CLI entry point — Commander.js, registers all subcommands |
-| `src/core/state-file.ts` | State persistence + locking |
-| `src/core/state-machine.ts` | State transition logic |
-| `src/core/continue.ts` | Auto-advance engine |
-| `src/core/validate/index.ts` | Document validation dispatcher |
-| `src/core/config.ts` | Config management |
-| `src/templates/agents/index.ts` | All 7 sub-agent system prompts |
-| `src/templates/workflows/` | Step-by-step instructions for each workflow stage |
-| `src/templates/artifacts/index.ts` | All 27 output document templates |
-| `src/commands/bp-continue.ts` | Most complex command — orchestrates advancement + phase transitions |
+| `src/cli.ts` | CLI entry point — Commander.js, registers 13 subcommands (8 core) |
+| `src/core/schema.ts` | YAML schema loading + artifact dependency graph |
+| `src/core/artifact-validator.ts` | Lightweight regex validation for artifacts |
+| `src/core/continue.ts` | Auto-advance engine — artifact-based progress detection |
+| `src/core/config.ts` | Config management (`config.yaml`) |
+| `src/templates/agents/index.ts` | All 3 sub-agent system prompts (planner, executor, reviewer) |
+| `src/templates/workflows/registry.ts` | 8-step workflow registry (init, roadmap, propose, plan, apply, review, archive, continue) |
+| `src/templates/artifacts/index.ts` | All 7 output document templates (proposal, design, tasks, spec, review, roadmap, config) |
+| `src/commands/bp-continue.ts` | Artifact-based continue — determines next step without state machine |
 | `src/commands/bp-archive.ts` | Change archiving + delta-merge + code backfill |
-| `src/types/state.ts` | `STATE_TRANSITIONS` table — defines all legal state changes |
-| `bp/project.yml` | Project configuration (profile, platform, workflow toggles) |
+| `src/types/config.ts` | `Profile`, `ProjectConfig`, `ModelMap` types |
+| `bp/config.yaml` | Project configuration (profile, schema, platform, rules) |
+| `bp/roadmap.md` | Living document — defines milestones, phases, planned changes |
 | `bp/conventions/coding.md` | Official coding conventions (auto-injected into sub-agent context) |
-| `bp/state.md` | Current state file (auto-managed) |
 
 ---
 
@@ -158,7 +182,7 @@ node bin/cli.js     # Run CLI in dev mode (no install needed)
 - **Package manager**: npm
 - **Build**: `tsup` (ESM bundle with shebang + declarations)
 - **Test**: Vitest v4+ (node environment)
-- **Validation**: Peggy (PEG grammar compiler)
+- **Schema**: YAML (custom schemas in `bp/schemas/`, built-in default)
 - **CLI**: Commander.js
 - **Prompts**: `@clack/prompts` (interactive wizard)
 - **Lint**: biome (format + lint)
@@ -177,8 +201,7 @@ node bin/cli.js     # Run CLI in dev mode (no install needed)
 tests/core/           — Unit tests (pure logic, minimal disk I/O)
 tests/integration/    — Integration tests (temp dir + execSync + bp CLI)
 tests/commands/       — Single-command tests
-tests/e2e/            — OMP RPC E2E (Python driver + fixtures)
-tests/parser/         — Parser unit tests (no file I/O)
+tests/parser/         — Parser unit tests (frontmatter, heading-tree, spec-parser, yaml)
 ```
 
 ### Test patterns
@@ -197,7 +220,7 @@ npx vitest run --update  # Update snapshots
 ```
 
 ### Coverage
-- Full test suite: 155+ tests, 24 test files (v0.5.0)
-- Integration lifecycle test covers the full init→archive→ship flow
+- Full test suite: 16 test files
+- Integration lifecycle test covers the full init→archive flow
 - Snapshot tests cover all 3 platform generators
 - No official coverage threshold enforced

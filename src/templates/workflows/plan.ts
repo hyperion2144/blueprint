@@ -1,77 +1,100 @@
 import { ORCHESTRATOR_RULE } from '../types.js';
-import { RESOLVE_PATHS, READ_CONTEXT, CLASSIFY_CHANGE, CHANGE_NAME_RESOLVE, COMMIT_ADVANCE, CHANGE_TYPE_GUIDE } from './shared.js';
 import type { SkillTemplate, CommandTemplate } from '../types.js';
 
 const instructions = ORCHESTRATOR_RULE + `## Input
 
-### Parameters
-- **\`$ARGUMENTS\`** (required) — the change to plan. Provided by \`bp continue\` output or user.
+- **\`$ARGUMENTS\`** (optional): change name. If empty, use most recently proposed change.
+- **\`--fix\`** (optional): fix mode — planner reads review.md D-issues and redesigns.
 
-### Prerequisites
-- Change \`proposal.md\` must be confirmed (not template)
+## Prerequisites
+
+- \`proposal.md\` exists in change directory and is not a template (no \`{{\` placeholders)
 
 ## Steps
 
-${RESOLVE_PATHS}${CHANGE_TYPE_GUIDE}${READ_CONTEXT}${CLASSIFY_CHANGE}${CHANGE_NAME_RESOLVE('planning', 'plan')}### Step 3: Execute design
+### Step 1: Resolve change name and paths
 
-**Domain guidance for planner sub-agent:**
-- A domain is a logical group of related behaviors (think "chapter" of specs)
-- Group by what behaviors relate to, NOT implementation layers
-- Use existing \`bp/specs/\` domains; create new ones only when behavior doesn't fit
-- Domain name = kebab-case (e.g. \`cli\`, \`user-auth\`, \`data-export\`)
-- 3-15 Requirements per domain
+If \`$ARGUMENTS\` is empty:
+- List \`bp/changes/\` for active changes (not in \`archive/\`)
+- If multiple exist, ask the user which one
+- If none exist, suggest \`bp propose <name>\`
+
+Change directory: \`bp/changes/$1/\`
+
+### Step 2: Classify change (lightweight vs full)
+
+Read \`proposal.md\` deliverables:
+- **Lightweight**: All deliverables are config/docs/refactor/scaffolding (no new behavior)
+- **Full**: Any deliverable introduces new behavior
+
+### Step 3: Dispatch planner (Full mode)
+
+**If FULL: dispatch planner sub-agent. Do NOT write design/tasks/specs yourself.**
+
+1. Prepare planner context:
+   - Change name and directory path
+   - List files to read: proposal.md, bp/specs/<domain>/spec.md (per affected domain), bp/conventions/coding.md, bp/config.yaml
+   - Instruction: "Read planner agent prompt, produce design.md, tasks.md, specs/<domain>/spec.md"
+   - In --fix mode: also include review.md, focus on D-prefixed issues
+
+2. Dispatch via task tool. Wait for planner to complete.
+
+3. Verify planner output (see Step 4).
 
 **If LIGHTWEIGHT:**
+1. Fill design.md template directly
+2. Fill tasks.md with 1 wave
+3. No delta specs needed (no behavioral changes)
 
-1. Run \`bp template design\`, fill Design Items with DS-N numbering:
-   - Read proposal.md → extract PR-1, PR-2 from ## Deliverables
-   - Decompose into DS by module boundary (controller/service/repository — not one per function)
-   - Each DS gets \`refs: PR-{id}\`; multiple PRs can share one DS
-   - Every PR must be referenced by at least one DS (validation checks)
-2. Run \`bp template tasks\`, list tasks:
-   - Decompose each DS into T by independently testable behavior path
-   - Each T gets \`refs: DS-{id}\`; multiple DS can merge into one T only if not separately testable
-   - Every DS must be referenced by at least one Task (validation checks)
-   - RED→GREEN→REFACTOR is how to EXECUTE one behavior task, not how to split it
-   - Behavior tasks require \`spec_ref\`; \`files\` field is REQUIRED
-3. Skip delta-specs (not needed for non-behavioral changes)
-4. **Leave all task boxes UNCHECKED** — apply marks them done
-5. 1 wave by default; add more only when layer dependencies exist
-6. Run \`bp continue\`
-
-**If FULL — you MUST dispatch the planner sub-agent. Do NOT write design/tasks/specs yourself:**
-
-1. Run \`bp dispatch planner --change $1\` — outputs the sub-agent tool to call and its parameters.
-2. Call the tool it specifies. Set the sub-agent's prompt to:
-   **IMPORTANT: Do NOT include output file format or writing instructions in the prompt.** The sub-agent reads templates via \`bp template design\`, \`bp template tasks\`, \`bp template spec\` on its own. Only specify WHAT to produce, not HOW.
-   - Task: produce design.md, tasks.md (boxes UNCHECKED), delta-specs
-   - Delta-specs go UNDER the change's \`specs/\` directory, organized by **business domain**:
-     \`changes/<name>/specs/<domain>/spec.md\`
-   - One subdirectory per affected domain. One change can affect multiple domains.
-   - First, run \`ls bp/specs/\` to list existing domains. Use those names. If this change needs a new domain, create \`mkdir -p bp/specs/<new-domain>\` first.
-   - Domain = business domain (e.g. order-processing, user-auth), NOT technical layer (frontend, database)
-   - Archive merges each by matching directory name: \`changes/<name>/specs/<domain>/\` → \`bp/specs/<domain>/\`
-   - Read: requirements.md, roadmap.md (this phase), research.md, context.md, proposal.md, bp/specs/<domain>/spec.md (global spec for affected domain — domain = directory under bp/specs/), bp/conventions/coding-standards.md, specs/, conventions/
-   - Design must reference specific requirements and research decisions — not generic
-   - Delta-specs must use \`## ADDED Requirements\` / \`## MODIFIED Requirements\` / \`## REMOVED Requirements\` sections
-   - Each delta-spec Requirement must reference the global spec it modifies (if any)
-   - Output: design.md, tasks.md, specs/<domain>/spec.md
 ### Step 4: Verify output
-Check produced files:
-- \`design.md\` — architecture, data flow, approach
-- \`tasks.md\` — type annotations, RED triples, wave grouping; **boxes must be UNCHECKED** (apply marks them)
-- \`specs/<domain>/spec.md\` — must have ≥1 non-template SHALL/MUST (reject if all \`<name>\`/\`<behavior>\` placeholders)
-- All must_haves from proposal.md covered
-- No contradictions with context.md
 
-${COMMIT_ADVANCE('docs', 'plan for [BP:CHANGE_NAME]')}
+**Traceability:**
+- Every PR-N in proposal.md referenced by at least one DS-N in design.md
+- Every DS-N in design.md referenced by at least one T-N in tasks.md
+- Every type:behavior task has \`spec_ref\` pointing to delta spec
+
+**Completeness:**
+- design.md has: Design Items, Architecture Decisions, Technical Approach, File Manifest
+- tasks.md has: TDD Type Annotations, at least 1 Wave, Pre-Archive Checklist
+- Delta specs exist for affected domain (specs/<domain>/spec.md)
+- Delta specs use correct sections (ADDED/MODIFIED/REMOVED)
+- File manifest lists every file (no "etc.")
+
+**Quality:**
+- No \`{{\` template placeholders remaining in any file
+- DS-N components have clear single responsibility
+- D-N decisions have real alternatives
+- type:behavior tasks have RED descriptions (GIVEN/WHEN/THEN)
+- Requirements use SHALL/MUST/SHOULD correctly
+- Each requirement has at least 1 scenario
+
+If any check fails: re-dispatch planner with specific feedback on what's missing.
+
+### Step 5: Commit and suggest next step
+
+\`\`\`bash
+git add bp/changes/$1/
+git commit -m "docs(plan): design + tasks + delta specs for $1"
+\`\`\`
+
+Output:
+\`\`\`
+Planner completed for $1
+  - design.md: N design items, N decisions
+  - tasks.md: N tasks in N wave(s)
+  - specs/: N delta spec(s)
+
+  Next: bp apply $1
+  (or: bp continue $1)
+\`\`\`
 
 ## Guardrails
-- FULL: MUST dispatch planner sub-agent; do NOT write design/tasks/specs yourself
-- type:behavior tasks need RED→GREEN→REFACTOR triples
-- Delta-specs for behavior, not implementation — skip for LIGHTWEIGHT
-- tasks.md stays UNCHECKED after plan — apply marks each done
-- Too large to split? Return to split phase`;
+
+- **Full mode: MUST dispatch sub-agent.** Do NOT write design/tasks/specs yourself.
+- Lightweight mode: write templates directly (no sub-agent needed)
+- tasks.md boxes must remain UNCHECKED
+- In --fix mode: planner only redesigns — does NOT modify tasks.md or specs
+`;
 
 export function getPlanSkillTemplate(): SkillTemplate {
   return {

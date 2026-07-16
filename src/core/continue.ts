@@ -1,402 +1,200 @@
-import { loadState } from './state-file.js';
-import { getNextSteps } from './state-machine.js';
-import type { StateFile } from '../types/index.js';
-import { WORKFLOW_REGISTRY, type WorkflowStep } from '../templates/workflows/registry.js';
-
-export interface StepInfo {
-  command: string;
-  description: string;
-  artifacts: string[];
-  fileRef: string;
-  /** Full workflow instructions from the TypeScript template */
-  instructions?: string;
-}
-
-export interface ContinueResult {
-  currentStep: string;
-  context: string;
-  type: string;
-  status: string;
-  nextCommand: string | null;
-  slashCommand: string | null;
-  needsSubagent: boolean;
-  availableSteps: { command: string; slashCommand: string; subagent: boolean }[];
-  hint: string | null;
-  /** Detailed info for the next step */
-  nextStepInfo?: StepInfo;
-  /** Full inline instructions for the next step (from TS template) */
-  instructions?: string;
-  /** Pending changes for hint display */
-  pending?: { name: string; status: string; depends_on?: string[] }[];
-}
-
-export function determineNextStep(bpDir: string): ContinueResult {
-  return determineFromState(loadState(bpDir));
-}
-
 /**
- * Get next step for a specific change.
- * Looks in both state.changes and state.adhoc.
+ * v2 continue - artifact-based progress detection
+ * Replaces the v1 state machine with file-existence checks.
+ * "State" is derived from which artifacts exist in the change directory.
  */
-export function determineChangeNextStep(
-  bpDir: string,
-  changeName: string,
-): ContinueResult | { error: string } {
-  const state = loadState(bpDir);
 
-  // Look in regular changes first
-  const change = state.changes.find((c) => c.name === changeName);
-  if (change) {
-    return determineFromChangeStatus(changeName, `change-${change.status}`, 'change');
-  }
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { listActiveChanges, changeDir } from './file-tree.js';
+import { WORKFLOW_REGISTRY, type WorkflowStep } from '../templates/workflows/registry.js';
+import type { ArtifactStatus, ChangeProgress, ChangeStage, ContinueResult, NextStep } from '../types/index.js';
 
-  // Then look in adhoc changes
-  const adhoc = state.adhoc.find((c) => c.name === changeName);
-  if (adhoc) {
-    // adhoc changes use change- prefix once past proposal (only proposal uses adhoc-)
-    const prefix = adhoc.status === 'proposal' ? 'adhoc' : 'change';
-    return determineFromChangeStatus(
-      changeName,
-      `${prefix}-${adhoc.status}`,
-      'adhoc',
-    );
+/** Check which artifacts exist in a change directory */
+export function checkArtifacts(bpDir: string, changeName: string): ArtifactStatus {
+  const dir = changeDir(bpDir, changeName);
+
+  const hasProposal = existsSync(join(dir, 'proposal.md'));
+  const hasDesign = existsSync(join(dir, 'design.md'));
+  const hasTasks = existsSync(join(dir, 'tasks.md'));
+  const hasSpecs = existsSync(join(dir, 'specs'));
+  const hasReview = existsSync(join(dir, 'review.md'));
+
+  // Count completed tasks from tasks.md
+  let tasksCompleted = 0;
+  let tasksTotal = 0;
+  let allTasksDone = false;
+
+  if (hasTasks) {
+    const content = readFileSync(join(dir, 'tasks.md'), 'utf-8');
+    const checked = content.match(/^- \[x\]/gm);
+    const unchecked = content.match(/^- \[ \]/gm);
+    tasksCompleted = checked?.length ?? 0;
+    tasksTotal = (checked?.length ?? 0) + (unchecked?.length ?? 0);
+    allTasksDone = tasksTotal > 0 && tasksCompleted === tasksTotal;
   }
 
   return {
-    error: `Change not found: ${changeName}. Available: ${listAvailableChanges(state)}`,
+    proposal: hasProposal,
+    design: hasDesign,
+    tasks: hasTasks,
+    specs: hasSpecs,
+    review: hasReview,
+    tasksCompleted,
+    tasksTotal,
+    allTasksDone,
   };
 }
 
-/** 步骤信息表 */
-const STEP_INFO: Record<string, StepInfo> = {
-  grill: {
-    command: 'grill',
-    description: 'Requirements exploration — 5W1H questioning, output requirements.md',
-    artifacts: ['bp/requirements.md'],
-    fileRef: '',
-  },
-  research: {
-    command: 'research',
-    description: 'Parallel technical research — dispatch researcher sub-agents',
-    artifacts: ['bp/research/stack.md', 'bp/research/architecture.md', 'bp/research/pitfalls.md', 'bp/research/summary.md'],
-    fileRef: '',
-  },
-  'research-done': {
-    command: 'research-done',
-    description: 'Mark research complete, proceed to roadmap',
-    artifacts: [],
-    fileRef: '',
-  },
-  roadmap: {
-    command: 'roadmap',
-    description: 'Split project into Milestones x Phases',
-    artifacts: ['bp/roadmap.md'],
-    fileRef: '',
-  },
-  discuss: {
-    command: 'discuss',
-    description: 'Phase discussion — capture implementation decisions into context.md',
-    artifacts: ['context.md'],
-    fileRef: '',
-  },
-  'research-phase': {
-    command: 'research-phase',
-    description: 'Phase-level technical research — dispatch phase-researcher sub-agent',
-    artifacts: ['research.md'],
-    fileRef: '',
-  },
-  split: {
-    command: 'split',
-    description: 'Split phase into changes with dependency graph',
-    artifacts: ['bp/changes/<name>/'],
-    fileRef: '',
-  },
-  plan: {
-    command: 'plan',
-    description: 'Change design — dispatch planner sub-agent for design + tasks + delta-specs',
-    artifacts: ['design.md', 'tasks.md', 'specs/<domain>/spec.md'],
-    fileRef: '',
-  },
-  apply: {
-    command: 'apply',
-    description: 'Code implementation — dispatch executor sub-agent for TDD',
-    artifacts: ['code changes', 'tests', 'change-summary.md'],
-    fileRef: '',
-  },
-  review: {
-    command: 'review',
-    description: 'Triple review — dispatch three reviewer sub-agents in parallel',
-    artifacts: ['spec-review.md', 'quality-review.md', 'goal-review.md'],
-    fileRef: '',
-  },
-  archive: {
-    command: 'archive',
-    description: 'Verify & archive — run checks, then delta-spec merge + move to archive/',
-    artifacts: ['verification.md', 'archive/<change-id>/'],
-    fileRef: '',
-  },
-  'ship-phase': {
-    command: 'ship-phase',
-    description: 'Phase ship — create PR, update state.md',
-    artifacts: ['GitHub PR'],
-    fileRef: '',
-  },
-  'ship-milestone': {
-    command: 'ship-milestone',
-    description: 'Milestone ship — release tag, update version',
-    artifacts: ['git tag', 'RELEASE.md'],
-    fileRef: '',
-  },
-  'next-change': {
-    command: 'next-change',
-    description: 'Auto: check pending changes, route to next or mark phase ready',
-    artifacts: [],
-    fileRef: '',
-  },
-  'phase-ready': {
-    command: 'phase-ready',
-    description: 'Phase complete. Advancing to next phase or milestone ship.',
-    artifacts: [],
-    fileRef: '',
-  },
-  'phase-start': {
-    command: 'phase-start',
-    description: 'Phase activated. bp continue to begin.',
-    artifacts: [],
-    fileRef: '',
-  },
-  'discuss-start': {
-    command: 'discuss-start',
-    description: 'Starting discuss — outputting /bp:discuss instructions.',
-    artifacts: [],
-    fileRef: '',
-  },
-  'fix-planning': {
-    command: 'fix-plan',
-    description: 'Fix design — correct architecture/approach based on review BLOCKERs',
-    artifacts: ['review-design.md', 'review-task.md'],
-    fileRef: '',
-  },
-  'fix-applying': {
-    command: 'fix-apply',
-    description: 'Fix implementation — wave-based dispatch for review finding fixes',
-    artifacts: ['code fixes', 'tests'],
-    fileRef: '',
-  },
-};
+/** Read review verdict and issue count from review.md */
+function readReviewStatus(dir: string): { verdict?: 'PASS' | 'FAIL' | 'NEEDS_REVISION'; unresolved: number; hasDesignIssues: boolean } {
+  const reviewPath = join(dir, 'review.md');
+  if (!existsSync(reviewPath)) {
+    return { unresolved: 0, hasDesignIssues: false };
+  }
 
-/** Step name → WorkflowStep mapping for template lookup */
-export const STEP_TO_WORKFLOW: Record<string, WorkflowStep> = {
-  // Project-level steps
-  grill: 'grill',
-  'ui-design': 'design',
-  research: 'research',
-  roadmap: 'roadmap',
-  // Phase-level steps (after strip prefix)
-  discuss: 'discuss',
-  split: 'split',
-  // Change-level steps (after strip prefix)
-  planning: 'plan',
-  proposal: 'adhoc',
-  applying: 'apply',
-  reviewing: 'review',
-  archiving: 'archive',
-  // Other
-  'research-phase': 'research-phase',
-  plan: 'plan',
-  apply: 'apply',
-  review: 'review',
-  archive: 'archive',
-  'ship-phase': 'ship',
-  'ship-milestone': 'ship',
-  'phase-ready': 'ship',
-  'phase-start': 'discuss',
-  'discuss-start': 'discuss',
-  shipped: 'ship',
-  init: 'init',
-  adhoc: 'adhoc',
-  continue: 'continue',
-  milestone: 'milestone',
-  'fix-planning': 'fix-plan',
-  'fix-applying': 'fix-apply',
-};
+  const content = readFileSync(reviewPath, 'utf-8');
 
-function getStepInfo(command: string): StepInfo | undefined {
-  const info = STEP_INFO[command];
-  if (!info) return undefined;
+  // Extract verdict
+  let verdict: 'PASS' | 'FAIL' | 'NEEDS_REVISION' | undefined;
+  const verdictMatch = content.match(/## Overall Verdict:\s*(PASS|FAIL|NEEDS_REVISION)/i);
+  if (verdictMatch) {
+    verdict = verdictMatch[1].toUpperCase() as 'PASS' | 'FAIL' | 'NEEDS_REVISION';
+  }
 
-  // Populate instructions from the TypeScript template
-  const wfStep = STEP_TO_WORKFLOW[command];
-  if (wfStep && WORKFLOW_REGISTRY[wfStep]) {
+  // Count unresolved issues (- [ ] but not - [x])
+  const unresolvedMatches = content.match(/^- \[ \] [RQGD]\d+/gm);
+  const unresolved = unresolvedMatches?.length ?? 0;
+
+  // Check for D-prefixed issues (design issues)
+  const dIssues = content.match(/^- \[ \] D\d+/gm);
+  const hasDesignIssues = (dIssues?.length ?? 0) > 0;
+
+  return { verdict, unresolved, hasDesignIssues };
+}
+
+/** Determine change stage from artifact status */
+function determineStage(artifacts: ArtifactStatus, reviewStatus: { verdict?: string; unresolved: number; hasDesignIssues: boolean }): ChangeStage {
+  if (!artifacts.proposal) return 'proposed';
+  if (!artifacts.design || !artifacts.tasks) return 'proposed';
+  if (!artifacts.allTasksDone) return 'in-progress';
+  if (!artifacts.review) return 'implemented';
+  if (reviewStatus.verdict === 'PASS' && reviewStatus.unresolved === 0) return 'reviewed';
+  return 'implemented';
+}
+
+/** Determine next step based on progress */
+function determineNextStep(
+  changeName: string,
+  progress: ChangeProgress,
+): NextStep | null {
+  const { stage, artifacts, reviewVerdict, unresolvedIssues, hasDesignIssues } = progress;
+
+  let command: string;
+  let description: string;
+
+  if (!artifacts.proposal) {
+    command = 'propose';
+    description = 'Create change folder and proposal.md';
+  } else if (!artifacts.design || !artifacts.tasks) {
+    command = 'plan';
+    description = 'Dispatch planner sub-agent for design + tasks + delta specs';
+  } else if (!artifacts.allTasksDone) {
+    command = 'apply';
+    description = `Dispatch executor sub-agents (${artifacts.tasksCompleted}/${artifacts.tasksTotal} tasks done)`;
+  } else if (!artifacts.review) {
+    command = 'review';
+    description = 'Dispatch reviewer sub-agent for triple review';
+  } else if (reviewVerdict === 'PASS' && unresolvedIssues === 0) {
+    command = 'archive';
+    description = 'Merge delta specs, archive change, update roadmap';
+  } else if (hasDesignIssues) {
+    command = 'plan --fix';
+    description = `Fix design issues (D-prefixed, ${unresolvedIssues} unresolved)`;
+  } else {
+    command = 'apply --fix';
+    description = `Fix code issues (${unresolvedIssues} unresolved)`;
+  }
+
+  // Get workflow instructions from registry
+  const stepKey = command.split(' ')[0] as WorkflowStep;
+  const registry = WORKFLOW_REGISTRY[stepKey];
+  const instructions = registry?.command?.()?.content;
+
+  return {
+    stage,
+    command: `${command} ${changeName}`.trim(),
+    description,
+    instructions,
+  };
+}
+
+/** Get progress for a specific change */
+export function getChangeProgress(bpDir: string, changeName: string): ChangeProgress | null {
+  const dir = changeDir(bpDir, changeName);
+  if (!existsSync(dir)) return null;
+
+  const artifacts = checkArtifacts(bpDir, changeName);
+  const reviewStatus = readReviewStatus(dir);
+  const stage = determineStage(artifacts, reviewStatus);
+
+  return {
+    name: changeName,
+    stage,
+    artifacts,
+    reviewVerdict: reviewStatus.verdict,
+    unresolvedIssues: reviewStatus.unresolved,
+    hasDesignIssues: reviewStatus.hasDesignIssues,
+  };
+}
+
+/** Main entry: determine next step for a change (or list active changes) */
+export function determineNextStepForChange(bpDir: string, changeName?: string): ContinueResult {
+  // If change name provided, get progress for that change
+  if (changeName) {
+    const progress = getChangeProgress(bpDir, changeName);
+    if (!progress) {
+      return {
+        changeName: null,
+        progress: null,
+        nextStep: null,
+        activeChanges: listActiveChanges(bpDir),
+      };
+    }
+    const nextStep = determineNextStep(changeName, progress);
     return {
-      ...info,
-      instructions: WORKFLOW_REGISTRY[wfStep].command().content,
+      changeName,
+      progress,
+      nextStep,
+      activeChanges: [],
     };
   }
-  return info;
-}
 
-function determineFromChangeStatus(
-  name: string,
-  statusKey: string,
-  type: 'change' | 'adhoc',
-): ContinueResult {
-  const available = getNextSteps(statusKey);
-  const availableSteps = available.map((t) => ({
-    command: t.command,
-    slashCommand: t.slashCommand,
-    subagent: t.subagent ?? false,
-  }));
-  const first = available[0];
-  const stepInfo = first ? getStepInfo(first.command) : undefined;
+  // No change name: list active changes
+  const active = listActiveChanges(bpDir);
+  if (active.length === 0) {
+    return {
+      changeName: null,
+      progress: null,
+      nextStep: {
+        stage: 'no-changes',
+        command: 'bp roadmap',
+        description: 'No active changes. View roadmap for next planned change.',
+      },
+      activeChanges: [],
+    };
+  }
 
+  // If only one active change, use it
+  if (active.length === 1) {
+    return determineNextStepForChange(bpDir, active[0]);
+  }
+
+  // Multiple active changes: return list
   return {
-    currentStep: statusKey,
-    context: `${type === 'adhoc' ? 'Adhoc Change' : 'Change'} (${name})`,
-    type,
-    status: statusKey,
-    nextCommand: first?.command ?? null,
-    slashCommand: first?.slashCommand || null,
-    needsSubagent: first?.subagent ?? false,
-    availableSteps,
-    hint: available.length === 0
-      ? 'This change has no available next steps. Create a new change to continue.'
-      : null,
-    nextStepInfo: stepInfo,
-    instructions: stepInfo?.instructions,
+    changeName: null,
+    progress: null,
+    nextStep: null,
+    activeChanges: active,
   };
-}
-
-function listAvailableChanges(state: StateFile): string {
-  const names = [
-    ...state.changes.map((c) => c.name),
-    ...state.adhoc.map((c) => c.name),
-  ];
-  return names.join(', ') || '(none)';
-}
-
-export function determineFromState(state: StateFile): ContinueResult {
-  const ctx = state.active_context;
-  const currentStatus = resolveStatus(state);
-  const available = getNextSteps(currentStatus);
-
-  const availableSteps = available.map((t) => ({
-    command: t.command,
-    slashCommand: t.slashCommand,
-    subagent: t.subagent ?? false,
-  }));
-
-  const first = available[0];
-  const hint = available.length === 0 ? generateHint(state) : null;
-  const stepInfo = first ? getStepInfo(first.command) : undefined;
-
-  return {
-    currentStep: ctx.step,
-    context: formatContext(state),
-    type: ctx.type,
-    status: state.project.status,
-    nextCommand: first?.command ?? null,
-    slashCommand: first?.slashCommand || null,
-    needsSubagent: first?.subagent ?? false,
-    availableSteps,
-    hint,
-    nextStepInfo: stepInfo,
-    instructions: stepInfo?.instructions,
-  };
-}
-
-export function resolveStatus(state: StateFile): string {
-  const ctx = state.active_context;
-  switch (ctx.type) {
-    case 'project':
-      return state.project.status;
-    case 'milestone':
-      return ctx.step === 'active' ? 'milestone-active' : ctx.step;
-    case 'phase':
-      return `phase-${ctx.step}`;
-    case 'change':
-      return ctx.step === 'pending' ? 'change-pending' : `change-${ctx.step}`;
-    case 'adhoc':
-      return ctx.step === 'pending' ? 'adhoc-pending' : ctx.step === 'proposal' ? `adhoc-${ctx.step}` : `change-${ctx.step}`;
-    case 'changes':
-      return 'changes';
-    default:
-      return state.project.status;
-  }
-}
-
-function formatContext(state: StateFile): string {
-  const { type, ref, step } = state.active_context;
-  switch (type) {
-    case 'project': return `Project (${step})`;
-    case 'milestone': return `Milestone ${state.project.current_milestone ?? '?'} — ${step}`;
-    case 'phase': return `Phase ${state.project.current_phase ?? '?'} — ${step}`;
-    case 'change': return `Change (${ref ?? '?'}) — ${step}`;
-    case 'adhoc': return `Adhoc Change (${ref ?? '?'}) — ${step}`;
-    default: return step;
-  }
-}
-
-function generateHint(state: StateFile): string | null {
-  const status = state.project.status;
-  if (status === 'milestone-shipped') {
-    return 'Milestone shipped. Run `bp state set-milestone <next-id>` to activate the next milestone.';
-  }
-  if (status === 'phase-shipped') {
-    return 'Phase shipped. Run `bp state set-phase <next-phase-id>` to activate the next phase.';
-  }
-  return null;
-}
-
-/** 展开模板变量 → state 中的实际值。在 bp continue 输出前调用。
- *  \$1 根据 active_context.type 推断：change→changeName, phase→phaseId, milestone→milestoneId
- */
-export function expandTemplateVars(
-  instructions: string,
-  state: StateFile,
-  step: string,
-  isAuto: boolean,
-): string {
-  const milestone = state.project.current_milestone ?? '';
-  const phase = state.project.current_phase ?? '';
-  const ctx = state.active_context;
-
-  // \$1 推断——根据 context 类型取不同的标识符
-  const isChange = ctx.type === 'change' || ctx.type === 'adhoc';
-  const changeName = isChange ? (ctx.ref?.split('/').pop() ?? '') : '';
-  const changeDir = isChange && milestone && phase
-    ? `bp/milestones/${milestone}/phases/${phase}/changes/${changeName}/`
-    : isChange ? `bp/changes/${changeName}/` : '';
-
-  let primaryId = '';
-  if (isChange) primaryId = changeName;
-  else if (ctx.type === 'phase') primaryId = phase;
-  else if (ctx.type === 'milestone') primaryId = milestone;
-
-  const vars: Record<string, string> = {
-    '[BP:MILESTONE_ID]': milestone,
-    '[BP:PHASE_ID]': phase,
-    '[BP:CHANGE_NAME]': changeName,
-    '[BP:CHANGE_DIR]': changeDir,
-    '[BP:CHANGE_TYPE]': ctx.type === 'adhoc' ? 'adhoc' : 'phase',
-    '[BP:AUTO_FLAG]': isAuto ? '--auto' : '',
-    '[BP:MILESTONE_DIR]': milestone ? `bp/milestones/${milestone}/` : '',
-    '[BP:PHASE_DIR]': milestone && phase ? `bp/milestones/${milestone}/phases/${phase}/` : '',
-    '$ARGUMENTS': primaryId,
-    '$1': primaryId,
-    '$2': '',
-    '$3': '',
-    '$4': '',
-    '$5': '',
-    '$6': '',
-    '$7': '',
-    '$8': '',
-    '$9': '',
-  };
-
-  let result = instructions;
-  for (const [key, value] of Object.entries(vars)) {
-    result = result.replaceAll(key, value);
-  }
-  return result;
 }

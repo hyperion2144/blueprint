@@ -1,23 +1,21 @@
 /**
- * file-tree — 产物目录树操作
- * 创建 bp/ 骨架、遍历目录、查找 change
+ * v2 file-tree - simplified directory operations
+ * Two-layer: specs/ (truth) + changes/ (proposed) + changes/archive/ (completed)
  */
 
-import { mkdirSync, existsSync, writeFileSync, readFileSync, readdirSync, statSync, rmSync, renameSync, copyFileSync } from 'node:fs';
-import { join, basename } from 'node:path';
+import { mkdirSync, existsSync, readdirSync, statSync, rmSync, copyFileSync } from 'node:fs';
+import { join } from 'node:path';
 
-/** bp/ 目录骨架的子目录 */
+/** bp/ directory skeleton subdirectories */
 const BP_DIRS = [
   'specs',
-  'conventions',
-  'research',
-  'milestones',
   'changes',
-  'archive',
-  'workspace',
+  'changes/archive',
+  'conventions',
+  'schemas',
 ];
 
-/** 创建 bp/ 目录骨架 */
+/** Create bp/ directory skeleton */
 export function createBlueprintStructure(bpDir: string): void {
   mkdirSync(bpDir, { recursive: true });
   for (const dir of BP_DIRS) {
@@ -25,92 +23,33 @@ export function createBlueprintStructure(bpDir: string): void {
   }
 }
 
-/** 检查 bp/ 是否已初始化 */
+/** Check if bp/ is initialized (config.yaml exists) */
 export function isInitialized(bpDir: string): boolean {
-  return existsSync(join(bpDir, 'project.yml')) &&
-         existsSync(join(bpDir, 'state.md'));
+  return existsSync(join(bpDir, 'config.yaml'));
 }
 
-/** 创建 milestone 目录 */
-export function createMilestoneDir(bpDir: string, milestoneId: string): string {
-  const dir = join(bpDir, 'milestones', milestoneId);
-  mkdirSync(dir, { recursive: true });
-  return dir;
-}
-
-/** 创建 phase 目录 */
-export function createPhaseDir(
-  bpDir: string,
-  milestoneId: string,
-  phaseId: string,
-): string {
-  const dir = join(bpDir, 'milestones', milestoneId, 'phases', phaseId);
-  mkdirSync(dir, { recursive: true });
-  return dir;
-}
-
-/** 创建 change 目录 */
-export function createChangeDir(
-  bpDir: string,
-  milestoneId: string,
-  phaseId: string,
-  changeName: string,
-): string {
-  const dir = join(
-    bpDir,
-    'milestones',
-    milestoneId,
-    'phases',
-    phaseId,
-    'changes',
-    changeName,
-  );
-  mkdirSync(dir, { recursive: true });
-  mkdirSync(join(dir, 'specs'), { recursive: true });
-  return dir;
-}
-
-/** 创建临时 change 目录 */
-export function createAdhocChangeDir(bpDir: string, changeName: string): string {
+/** Create a change directory: bp/changes/<name>/ */
+export function createChangeDir(bpDir: string, changeName: string): string {
   const dir = join(bpDir, 'changes', changeName);
   mkdirSync(dir, { recursive: true });
-  mkdirSync(join(dir, 'specs'), { recursive: true });
   return dir;
 }
 
-/** 归档 change — organized by milestone/phase/change */
-export function archiveChangeDir(
-  bpDir: string,
-  changeDir: string,
-): string {
-  const changeName = basename(changeDir);
+/** Get change directory path */
+export function changeDir(bpDir: string, changeName: string): string {
+  return join(bpDir, 'changes', changeName);
+}
+
+/** Archive a change: move to bp/changes/archive/<date>-<name>/ */
+export function archiveChangeDir(bpDir: string, changeName: string): string {
   const date = new Date().toISOString().slice(0, 10);
+  const sourceDir = join(bpDir, 'changes', changeName);
+  const archiveDir = join(bpDir, 'changes', 'archive', `${date}-${changeName}`);
 
-  // Extract milestone/phase from path: .../milestones/<mid>/phases/<pid>/changes/<name>
-  const parts = changeDir.split(/[/\\]/);
-  const msIdx = parts.indexOf('milestones');
-  const chIdx = parts.indexOf('changes');
-  if (msIdx >= 0 && chIdx > msIdx) {
-    // Phase-scoped change: archive/<milestone>/<phase>/<change>/
-    const ms = parts[msIdx + 1];
-    const ph = parts[chIdx - 1]; // phase ID is before 'changes'
-    const archiveRoot = join(bpDir, 'archive', ms, ph);
-    mkdirSync(archiveRoot, { recursive: true });
-    const archiveDir = join(archiveRoot, `${date}-${changeName}`);
-    if (existsSync(changeDir)) {
-      copyDirRecursive(changeDir, archiveDir);
-      rmSync(changeDir, { recursive: true, force: true });
-    }
-    return archiveDir;
-  }
-
-  // Adhoc change: archive/changes/<date>-<name>/
-  const archiveRoot = join(bpDir, 'archive', 'changes');
-  mkdirSync(archiveRoot, { recursive: true });
-  const archiveDir = join(archiveRoot, `${date}-${changeName}`);
-  if (existsSync(changeDir)) {
-    copyDirRecursive(changeDir, archiveDir);
-    rmSync(changeDir, { recursive: true, force: true });
+  if (existsSync(sourceDir)) {
+    mkdirSync(archiveDir, { recursive: true });
+    copyDirRecursive(sourceDir, archiveDir);
+    rmSync(sourceDir, { recursive: true, force: true });
   }
   return archiveDir;
 }
@@ -128,75 +67,30 @@ function copyDirRecursive(src: string, dest: string): void {
   }
 }
 
-/** 归档 milestone 到 archive/milestones/ */
-export function archiveMilestoneDir(
-  bpDir: string,
-  milestoneId: string,
-): string {
-  const sourceDir = join(bpDir, 'milestones', milestoneId);
-  const archiveDir = join(bpDir, 'archive', 'milestones', milestoneId);
-  
-  if (!existsSync(sourceDir)) {
-    return archiveDir;
-  }
-  
-  mkdirSync(join(bpDir, 'archive', 'milestones'), { recursive: true });
-  
-  // 移动整个 milestone 目录
-  renameSync(sourceDir, archiveDir);
-  
-  return archiveDir;
-}
-
-
-
-/** 列出所有 milestones */
-export function listMilestones(bpDir: string): string[] {
-  const dir = join(bpDir, 'milestones');
-  if (!existsSync(dir)) return [];
-  return readdirSync(dir).filter((e) => {
-    const stat = statSync(join(dir, e));
-    return stat.isDirectory();
-  });
-}
-
-/** 列出 milestone 下的 phases */
-export function listPhases(bpDir: string, milestoneId: string): string[] {
-  const dir = join(bpDir, 'milestones', milestoneId, 'phases');
-  if (!existsSync(dir)) return [];
-  return readdirSync(dir).filter((e) => {
-    const stat = statSync(join(dir, e));
-    return stat.isDirectory();
-  });
-}
-
-/** 列出 phase 下的 changes */
-export function listChanges(
-  bpDir: string,
-  milestoneId: string,
-  phaseId: string,
-): string[] {
-  const dir = join(bpDir, 'milestones', milestoneId, 'phases', phaseId, 'changes');
-  if (!existsSync(dir)) return [];
-  return readdirSync(dir).filter((e) => {
-    const stat = statSync(join(dir, e));
-    return stat.isDirectory();
-  });
-}
-
-/** 列出临时 changes */
-export function listAdhocChanges(bpDir: string): string[] {
+/** List active changes (directories in bp/changes/, excluding archive/) */
+export function listActiveChanges(bpDir: string): string[] {
   const dir = join(bpDir, 'changes');
   if (!existsSync(dir)) return [];
   return readdirSync(dir).filter((e) => {
+    if (e === 'archive') return false;
     const stat = statSync(join(dir, e));
     return stat.isDirectory();
   });
 }
 
-/** 列出归档的 changes（在 archive/changes/ 下） */
-export function listArchived(bpDir: string): string[] {
-  const dir = join(bpDir, 'archive', 'changes');
+/** List archived changes (directories in bp/changes/archive/) */
+export function listArchivedChanges(bpDir: string): string[] {
+  const dir = join(bpDir, 'changes', 'archive');
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir).filter((e) => {
+    const stat = statSync(join(dir, e));
+    return stat.isDirectory();
+  });
+}
+
+/** List spec domains (directories in bp/specs/) */
+export function listSpecDomains(bpDir: string): string[] {
+  const dir = join(bpDir, 'specs');
   if (!existsSync(dir)) return [];
   return readdirSync(dir).filter((e) => {
     const stat = statSync(join(dir, e));

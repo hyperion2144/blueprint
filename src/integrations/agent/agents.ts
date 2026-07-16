@@ -14,13 +14,9 @@ export interface AgentAgentDef {
 }
 
 export const AGENT_DEFS: AgentAgentDef[] = [
-  { role: 'researcher', description: 'Technical research', tools: ['read', 'grep', 'glob', 'lsp', 'web_search', 'write', 'bash'] },
   { role: 'planner', description: 'Change design', tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'] },
   { role: 'executor', description: 'Code implementation', tools: ['read', 'edit', 'write', 'bash', 'grep', 'glob', 'lsp', 'ast_grep', 'ast_edit'] },
   { role: 'reviewer', description: 'Triple review', tools: ['read', 'grep', 'glob', 'lsp', 'ast_grep', 'bash'] },
-  { role: 'phase-researcher', description: 'Phase research', tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'] },
-  { role: 'codebase-mapper', description: 'Codebase mapping', tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'] },
-  { role: 'spec-bootstrapper', description: 'Spec bootstrapping', tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'] },
 ];
 
 export function generateAgentAgent(def: AgentAgentDef): string {

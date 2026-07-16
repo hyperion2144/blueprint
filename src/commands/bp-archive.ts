@@ -1,245 +1,331 @@
 /**
- * bp archive <change> — 归档 change（delta 合并 + 代码认知回灌 + 目录移动）
+ * bp archive [name] [--force] — verify & archive a change
+ *
+ * 1. Verifies review.md exists and verdict is PASS (unless --force).
+ * 2. Merges each delta spec (specs/<domain>/spec.md) into the global spec
+ *    (bp/specs/<domain>/spec.md) via mergeDeltaSpec().
+ * 3. Archives the change directory to bp/changes/archive/<date>-<name>/.
+ * 4. Updates bp/roadmap.md: marks the change [x], increments phase counters,
+ *    flags phase/milestone completion.
  */
 
-import { join, basename } from 'node:path';
-import { existsSync, readdirSync, readFileSync, writeFileSync, copyFileSync, mkdirSync } from 'node:fs';
-import { spawnSync } from 'node:child_process';
-import { loadState, updateState } from '../core/state-file.js';
-import { mergeAndWrite } from '../core/delta-merge.js';
-import { extractFromGitDiff, writeExtractionToSpec } from '../core/code-extract.js';
-import { archiveChangeDir } from '../core/file-tree.js';
+import { existsSync, readFileSync, writeFileSync, readdirSync, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { findBpDir } from './_utils.js';
+import { listActiveChanges, changeDir, archiveChangeDir } from '../core/file-tree.js';
+import { mergeDeltaSpec } from '../core/delta-merge.js';
 
 export function register(program: any): void {
   program
-    .command('archive <change>')
-    .description('Archive change (delta merge + code backfill)')
+    .command('archive [name]')
+    .description('Archive a change (merge delta specs, archive dir, update roadmap)')
+    .option('--force', 'Skip review verification')
     .action(archiveHandler);
 }
 
-function archiveHandler(changePath: string) {
-  const bpDir = join(process.cwd(), 'bp');
+function resolveChangeName(bpDir: string, name?: string): string | null {
+  if (name) return name;
 
-  // 解析 change 路径
-  const fullChangePath = join(process.cwd(), changePath);
-  if (!existsSync(fullChangePath)) {
-    console.error(`Error: change directory not found: ${changePath}`);
-    process.exit(1);
+  const active = listActiveChanges(bpDir);
+  if (active.length === 0) {
+    console.error('No active changes found.');
+    return null;
   }
+  if (active.length === 1) return active[0];
 
-  // 1. delta-spec merge
-  const specsDir = join(fullChangePath, 'specs');
-  if (existsSync(specsDir)) {
-    mergeDeltaSpecs(specsDir, bpDir);
-    console.log('✓ delta-specs merged');
+  console.log('Multiple active changes:');
+  for (const c of active) {
+    console.log(`  - ${c}`);
   }
-
-  // 2. Check change-summary.md
-  const summaryPath = join(fullChangePath, 'change-summary.md');
-  if (!existsSync(summaryPath)) {
-    console.error('✗ change-summary.md not found. Run `bp template change-summary` to generate it first.');
-    process.exit(1);
-  }
-
-  // 3. Code cognition extraction
-  const repoDir = process.cwd();
-  const extractResult = extractFromGitDiff(repoDir, fullChangePath);
-  if (extractResult.available && extractResult.extractions.length > 0) {
-    for (const extraction of extractResult.extractions) {
-      writeExtractionToSpec(join(bpDir, 'specs'), extraction);
-    }
-    if (extractResult.extractions.length > 0) {
-      console.log(`✓ Code extraction complete (${extractResult.extractions.length} domains)`);
-    }
-  }
-  // 4. Update state.md BEFORE moving directory (avoids inconsistent state if move fails)
-  const changeName = basename(changePath);
-  try {
-    updateState(bpDir, (state) => {
-      const change = state.changes.find((c) => c.name === changeName);
-      const adhoc = state.adhoc.find((c) => c.name === changeName);
-
-      if (change) state.changes = state.changes.filter((c) => c.name !== changeName);
-      if (adhoc) state.adhoc = state.adhoc.filter((c) => c.name !== changeName);
-
-      // Write to completed list
-      const date = new Date().toISOString().slice(0, 10);
-      const normalizedPath = changePath.replace(/\\/g, '/');
-      const isPhaseChange = normalizedPath.includes('/milestones/') && normalizedPath.includes('/phases/');
-      const parts = normalizedPath.split('/');
-      const msIdx = parts.indexOf('milestones');
-      const chIdx = parts.indexOf('changes');
-      const msId = msIdx >= 0 ? parts[msIdx + 1] : null;
-      const phId = chIdx > 0 ? parts[chIdx - 1] : null;
-      const archiveDir = join('bp', 'archive', msId ?? 'changes', phId ?? '', `${date}-${changeName}`);
-      if (!state.completed) state.completed = [];
-      state.completed.push({
-        name: changeName,
-        type: isPhaseChange ? 'change' : 'adhoc',
-        milestone: msId,
-        phase: phId,
-        archived_at: date,
-      });
-
-      // Clean up contexts if in parallel mode
-      if (state.active_context.type === 'changes' && state.active_context.contexts) {
-        delete state.active_context.contexts[changeName];
-        const remaining = Object.keys(state.active_context.contexts);
-        if (remaining.length === 0) {
-          // No remaining parallel contexts — check if we're in a milestone/phase to mark ready
-          if (state.project.current_milestone && state.project.current_phase) {
-            state.active_context = { type: 'phase', ref: `milestones/${state.project.current_milestone}/phases/${state.project.current_phase}`, step: 'ready' };
-          } else {
-            state.active_context = { type: 'project', ref: null, step: state.project.status };
-          }
-        } else if (remaining.length === 1) {
-          const last = state.active_context.contexts[remaining[0]];
-          state.active_context = { type: last.type, ref: last.ref, step: last.step };
-        }
-      } else {
-        // Single change mode: reset active_context
-        const nextChange = state.changes[0];
-        const nextAdhoc = state.adhoc[0];
-        if (nextAdhoc) {
-          state.active_context = { type: 'adhoc', ref: 'changes/' + nextAdhoc.name, step: nextAdhoc.status };
-        } else if (nextChange) {
-          state.active_context = { type: 'change', ref: 'changes/' + nextChange.name, step: nextChange.status };
-        } else if ((isPhaseChange && msId && phId) || (state.project.current_milestone && state.project.current_phase)) {
-          // Last change in phase — stay at phase level, mark ready for next phase
-          const mid = (isPhaseChange && msId) ? msId : state.project.current_milestone;
-          const pid = (isPhaseChange && phId) ? phId : state.project.current_phase;
-          state.active_context = { type: 'phase', ref: `milestones/${mid}/phases/${pid}`, step: 'ready' };
-        }
-      }
-    });
-    console.log('✓ state.md updated');
-
-    // Append history for non-adhoc (phase-scoped) changes
-    const normalizedPath = changePath.replace(/\\/g, '/');
-    const isPhaseChange = normalizedPath.includes('/milestones/') && normalizedPath.includes('/phases/');
-    if (isPhaseChange) {
-      const parts = normalizedPath.split('/');
-      const msIdx = parts.indexOf('milestones');
-      const chIdx = parts.indexOf('changes');
-      const msId = msIdx >= 0 ? parts[msIdx + 1] : '?';
-      const phId = chIdx > 0 ? parts[chIdx - 1] : '?';
-      const date = new Date().toISOString().slice(0, 10);
-      const entry = `[${date}] Archived \`${changeName}\` (${msId} / ${phId})`;
-
-      const statePath = join(bpDir, 'state.md');
-      let body = readFileSync(statePath, 'utf-8');
-      if (body.includes('## History')) {
-        body = body.replace('## History', `## History\n- ${entry}`);
-      } else {
-        body += `\n## History\n- ${entry}\n`;
-      }
-      writeFileSync(statePath, body, 'utf-8');
-    }
-  } catch (e: unknown) {
-    console.error(`✗ Failed to update state.md: ${e instanceof Error ? e.message : String(e)}`);
-    console.error('  state.md unchanged — archive aborted.');
-    process.exit(1);
-  }
-
-  // 5. Move to archive/
-  const archiveDir = archiveChangeDir(bpDir, fullChangePath);
-  console.log(`✓ Archived to: ${archiveDir}`);
-
-  // 6. Remove old path from git tracking (best-effort)
-  try {
-    const gitPath = changePath.replace(/\\/g, '/');
-    if (!gitPath.startsWith('bp/')) {
-      console.error(`✗ Invalid change path: "${gitPath}" — must start with bp/`);
-      process.exit(1);
-    }
-    spawnSync('git', ['rm', '-r', gitPath], { cwd: process.cwd() });
-  } catch { /* non-critical */ }
-
-  // 7. Auto-mark roadmap phase as COMPLETED
-  try {
-    const roadmapPath = join(bpDir, 'roadmap.md');
-    if (existsSync(roadmapPath)) {
-      // Extract milestone/phase from change path, fall back to state
-      let milestoneDir: string | null = null;
-      let phaseDir: string | null = null;
-      const pathMatch = changePath.match(/milestones\/([^/]+)\/phases\/([^/]+)\/changes\//);
-      if (pathMatch) {
-        milestoneDir = pathMatch[1];
-        phaseDir = pathMatch[2];
-      } else {
-        const state = loadState(bpDir);
-        milestoneDir = state.project.current_milestone;
-        phaseDir = state.project.current_phase;
-      }
-      if (milestoneDir && phaseDir) {
-        // Extract integer IDs from directory names: M2-claude-code → 2, ph.1-engine → 1
-        const msMatch = milestoneDir.match(/^M(\d+)/i);
-        const phMatch = phaseDir.match(/^ph\.(\d+)/i);
-        if (msMatch && phMatch) {
-          const mid = msMatch[1];
-          const pid = phMatch[1];
-          let roadmap = readFileSync(roadmapPath, 'utf-8');
-          const phasePattern = new RegExp(`(### Ph-${mid}\\.${pid}: .*?) \\[ACTIVE\\]`);
-          if (phasePattern.test(roadmap)) {
-            roadmap = roadmap.replace(phasePattern, `$1 [COMPLETED]`);
-            // Check if all phases under this milestone are COMPLETED
-            const milestonePhaseActive = new RegExp(`### Ph-${mid}\\.\\d+: .*? \\[ACTIVE\\]`, 's');
-            const allDone = !milestonePhaseActive.test(roadmap);
-            if (allDone) {
-              roadmap = roadmap.replace(
-                new RegExp(`(## Md-${mid}: .*?) \\[ACTIVE\\]`),
-                `$1 [COMPLETED]`
-              );
-            }
-            writeFileSync(roadmapPath, roadmap, 'utf-8');
-            console.log(`✓ roadmap.md: Ph-${mid}.${pid} marked COMPLETED`);
-          }
-        }
-      }
-    }
-  } catch { /* non-critical */ }
-  // 8. Check if phase is complete — output hint about next phase
-  try {
-    const currentState = loadState(bpDir);
-    if (currentState.active_context.step === 'ready' && currentState.active_context.type === 'phase') {
-      console.log(`\n✓ Phase ${currentState.project.current_phase} complete.`);
-      console.log('  Run `bp continue` to check for available next steps, or ask user whether to proceed to the next phase.');
-    }
-  } catch { /* non-critical */ }
+  console.log('\nSpecify a change: bp archive <name>');
+  return null;
 }
 
-/** 合并 delta-specs 到全局 specs/ */
-function mergeDeltaSpecs(deltaDir: string, bpDir: string): void {
-  const entries = readdirSync(deltaDir, { withFileTypes: true });
-  const globalSpecsDir = join(bpDir, 'specs');
-  const existingDomains = existsSync(globalSpecsDir)
-    ? readdirSync(globalSpecsDir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name)
-    : [];
+function archiveHandler(name: string, options: { force?: boolean }): void {
+  const bpDir = findBpDir();
+  if (!bpDir) {
+    console.error('Not in a blueprint project. Run "bp init" first.');
+    process.exit(1);
+  }
 
-  for (const entry of entries) {
-    if (!entry.isDirectory()) continue;
+  const changeName = resolveChangeName(bpDir, name);
+  if (!changeName) process.exit(1);
 
-    const domain = entry.name;
-    const deltaSpecPath = join(deltaDir, domain, 'spec.md');
-    const liveSpecPath = join(globalSpecsDir, domain, 'spec.md');
+  const changePath = changeDir(bpDir, changeName);
+  if (!existsSync(changePath)) {
+    console.error(`Change "${changeName}" not found.`);
+    process.exit(1);
+  }
 
-    if (!existsSync(deltaSpecPath)) continue;
-
-    // If domain doesn't exist in bp/specs/, create it (no longer skip)
-    if (!existsSync(liveSpecPath)) {
-      mkdirSync(join(globalSpecsDir, domain), { recursive: true });
-      copyFileSync(deltaSpecPath, liveSpecPath);
-      console.log(`  ✓ Created bp/specs/${domain}/spec.md from delta`);
-      continue;
+  // ---- Step 2: Verify review status (unless --force) ----
+  if (!options.force) {
+    const reviewPath = join(changePath, 'review.md');
+    if (!existsSync(reviewPath)) {
+      console.error(`Cannot archive: review.md not found for "${changeName}".`);
+      console.error('Run "bp review" first, or use --force to skip review check.');
+      process.exit(1);
     }
 
-    const result = mergeAndWrite(liveSpecPath, deltaSpecPath);
+    const reviewContent = readFileSync(reviewPath, 'utf-8');
+    const verdictMatch = reviewContent.match(
+      /## Overall Verdict:\s*(PASS|FAIL|NEEDS_REVISION)/i,
+    );
+    const verdict = verdictMatch ? verdictMatch[1].toUpperCase() : 'UNKNOWN';
 
-    if (result.type === 'conflict') {
-      console.warn('Merge conflict: ' + domain + '/spec.md');
-      for (const c of result.conflicts) {
-        console.warn('   Section: ' + c.section);
+    if (verdict !== 'PASS') {
+      console.error(`Cannot archive: review verdict is ${verdict} (expected PASS).`);
+      console.error(`  Fix issues first: bp apply --fix ${changeName}`);
+      console.error(`  Or force archive: bp archive ${changeName} --force`);
+      process.exit(1);
+    }
+
+    const unresolved = (reviewContent.match(/^- \[ \] [RQGD]\d+/gm) || []).length;
+    if (unresolved > 0) {
+      console.error(`Cannot archive: ${unresolved} unresolved issue(s) in review.md.`);
+      console.error(`  Fix issues first: bp apply --fix ${changeName}`);
+      console.error(`  Or force archive: bp archive ${changeName} --force`);
+      process.exit(1);
+    }
+  }
+
+  // ---- Step 3: Merge delta specs into global specs ----
+  const specsDir = join(changePath, 'specs');
+  let mergedCount = 0;
+
+  if (existsSync(specsDir)) {
+    const entries = readdirSync(specsDir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+
+      const domain = entry.name;
+      const deltaSpecPath = join(specsDir, domain, 'spec.md');
+      if (!existsSync(deltaSpecPath)) continue;
+
+      const globalSpecDir = join(bpDir, 'specs', domain);
+      const globalSpecPath = join(globalSpecDir, 'spec.md');
+
+      // Read or bootstrap the global spec
+      let baseSpec: string;
+      if (existsSync(globalSpecPath)) {
+        baseSpec = readFileSync(globalSpecPath, 'utf-8');
+      } else {
+        baseSpec = `# ${domain}\n\n## Requirements\n\n`;
+      }
+
+      const deltaSpec = readFileSync(deltaSpecPath, 'utf-8');
+      const result = mergeDeltaSpec(baseSpec, deltaSpec);
+
+      if (result.type === 'conflict') {
+        console.error(`\nMerge conflict in specs/${domain}/spec.md:`);
+        for (const conflict of result.conflicts) {
+          console.error(`  - ${conflict.section}: ${conflict.message}`);
+        }
+        console.error('\nResolve conflicts before archiving.');
+        process.exit(1);
+      }
+
+      mkdirSync(globalSpecDir, { recursive: true });
+      writeFileSync(globalSpecPath, result.merged, 'utf-8');
+      mergedCount++;
+      console.log(`  ✓ Merged specs/${domain}/spec.md`);
+    }
+  }
+
+  // ---- Step 4 / 5: Update roadmap (skip adhoc changes) ----
+  const proposalPath = join(changePath, 'proposal.md');
+  let isAdhoc = false;
+
+  if (existsSync(proposalPath)) {
+    const proposalContent = readFileSync(proposalPath, 'utf-8');
+    if (!proposalContent.includes('## Roadmap Reference')) {
+      isAdhoc = true;
+    }
+  }
+
+  let phaseCompleted = false;
+  let milestoneCompleted = false;
+
+  if (isAdhoc) {
+    console.log('  ~ Adhoc change: skipped roadmap update');
+  } else {
+    const roadmapPath = join(bpDir, 'roadmap.md');
+    if (existsSync(roadmapPath)) {
+      const roadmap = readFileSync(roadmapPath, 'utf-8');
+      const date = new Date().toISOString().slice(0, 10);
+      const result = updateRoadmap(roadmap, changeName, date);
+
+      if (result.updated !== roadmap) {
+        writeFileSync(roadmapPath, result.updated, 'utf-8');
+        console.log('  ✓ Roadmap updated');
+        phaseCompleted = result.phaseCompleted;
+        milestoneCompleted = result.milestoneCompleted;
+      } else {
+        console.log('  ~ Change not found in roadmap, skipping update');
       }
     }
   }
+
+  // ---- Step 4: Archive the change directory ----
+  archiveChangeDir(bpDir, changeName);
+  console.log('  ✓ Change moved to archive');
+
+  // ---- Step 6: Output summary ----
+  const date = new Date().toISOString().slice(0, 10);
+  console.log(`\n✓ Archived ${changeName}`);
+  console.log(`  - ${mergedCount} delta spec(s) merged into bp/specs/`);
+  console.log(`  - Change moved to bp/changes/archive/${date}-${changeName}/`);
+  if (!isAdhoc && phaseCompleted) {
+    console.log('  - Phase COMPLETED');
+  }
+  if (!isAdhoc && milestoneCompleted) {
+    console.log('  - Milestone SHIPPED');
+  }
+  console.log('\n  Next: bp propose <new-change> (or: bp continue)');
+}
+
+// ---- Roadmap helpers ----
+
+interface RoadmapUpdate {
+  updated: string;
+  phaseCompleted: boolean;
+  milestoneCompleted: boolean;
+}
+
+/**
+ * Update bp/roadmap.md after archiving a change:
+ *
+ * 1. Mark the change line `- [ ] <name>` → `- [x] <name> (archived <date>)`.
+ * 2. Walk backward to find the containing phase header.
+ * 3. Increment the phase `- **Changes**: X/Y` counter.
+ * 4. If all changes in the phase are now [x], set phase status to COMPLETED.
+ * 5. If all phases in the milestone are COMPLETED, set milestone to SHIPPED.
+ */
+function updateRoadmap(roadmap: string, changeName: string, date: string): RoadmapUpdate {
+  const lines = roadmap.split('\n');
+  const dateStr = `(archived ${date})`;
+  let changeIdx = -1;
+
+  // Find and update the change line (exact match on trimmed change name)
+  for (let i = 0; i < lines.length; i++) {
+    const match = lines[i].match(/^- \[ \] (.+)$/);
+    if (match && match[1].trim() === changeName) {
+      lines[i] = `- [x] ${changeName} ${dateStr}`;
+      changeIdx = i;
+      break;
+    }
+  }
+
+  // Fallback: try partial/includes match
+  if (changeIdx === -1) {
+    for (let i = 0; i < lines.length; i++) {
+      if (/^- \[ \]/.test(lines[i]) && lines[i].includes(changeName)) {
+        lines[i] = `- [x] ${changeName} ${dateStr}`;
+        changeIdx = i;
+        break;
+      }
+    }
+  }
+
+  if (changeIdx === -1) {
+    return { updated: roadmap, phaseCompleted: false, milestoneCompleted: false };
+  }
+
+  // Walk backward to find containing phase and milestone headers
+  let phaseIdx = -1;
+  let milestoneIdx = -1;
+
+  for (let i = changeIdx - 1; i >= 0; i--) {
+    const trimmed = lines[i].trim();
+    if (trimmed.startsWith('## Milestone:')) {
+      if (milestoneIdx === -1) milestoneIdx = i;
+    }
+    if (trimmed.startsWith('### Phase:')) {
+      phaseIdx = i;
+      break;
+    }
+  }
+
+  if (phaseIdx === -1) {
+    return { updated: lines.join('\n'), phaseCompleted: false, milestoneCompleted: false };
+  }
+
+  // Find phase section end boundary
+  let phaseEnd = lines.length;
+  for (let i = phaseIdx + 1; i < lines.length; i++) {
+    if (lines[i].startsWith('### Phase:') || lines[i].startsWith('## Milestone:')) {
+      phaseEnd = i;
+      break;
+    }
+  }
+
+  // Count [x] and [ ] change lines within this phase to compute the new "done" count
+  let doneCount = 0;
+  let totalCount = 0;
+  for (let i = phaseIdx; i < phaseEnd; i++) {
+    if (/^- \[[x ]\]/.test(lines[i])) totalCount++;
+    if (/^- \[x\]/.test(lines[i])) doneCount++;
+  }
+
+  // Update the `- **Changes**: X/Y completed` line
+  let phaseCompleted = false;
+  for (let i = phaseIdx; i < phaseEnd; i++) {
+    const changesMatch = lines[i].match(/^- \*\*Changes\*\*:\s*(\d+)\/(\d+)/);
+    if (changesMatch) {
+      const total = parseInt(changesMatch[2], 10);
+      lines[i] = `- **Changes**: ${doneCount}/${total} completed`;
+      phaseCompleted = doneCount >= total;
+      break;
+    }
+  }
+
+  // Mark phase COMPLETED if all changes are done
+  if (phaseCompleted) {
+    for (let i = phaseIdx; i < phaseEnd; i++) {
+      const statusMatch = lines[i].match(/^- \*\*Status\*\*:/);
+      if (statusMatch) {
+        lines[i] = '- **Status**: COMPLETED';
+        break;
+      }
+    }
+
+    // Also update the bracket status in the phase header
+    lines[phaseIdx] = lines[phaseIdx].replace(
+      /\[(NOT_STARTED|IN_PROGRESS|ACTIVE)\]/,
+      '[COMPLETED]',
+    );
+  }
+
+  // Check milestone completion if phase was just completed
+  let milestoneCompleted = false;
+  if (phaseCompleted && milestoneIdx >= 0) {
+    // Find milestone section end
+    let milestoneEnd = lines.length;
+    for (let i = milestoneIdx + 1; i < lines.length; i++) {
+      if (lines[i].startsWith('## Milestone:')) {
+        milestoneEnd = i;
+        break;
+      }
+    }
+
+    let allPhasesCompleted = true;
+    for (let i = milestoneIdx + 1; i < milestoneEnd; i++) {
+      const pm = lines[i].match(/^### Phase: .+ \[(.+)\]/);
+      if (pm && pm[1] !== 'COMPLETED') {
+        allPhasesCompleted = false;
+        break;
+      }
+    }
+
+    if (allPhasesCompleted) {
+      lines[milestoneIdx] = lines[milestoneIdx].replace(/\[ACTIVE\]/, '[SHIPPED]');
+      milestoneCompleted = true;
+    }
+  }
+
+  return {
+    updated: lines.join('\n'),
+    phaseCompleted,
+    milestoneCompleted,
+  };
 }

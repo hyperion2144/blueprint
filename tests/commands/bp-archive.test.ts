@@ -25,8 +25,9 @@ beforeEach(() => {
   execSync('git init', { cwd: testDir });
   execSync('git config user.email test@test.com', { cwd: testDir });
   execSync('git config user.name test', { cwd: testDir });
-  // Seed initial commit so git operations have a base to work with
-  write('seed', '');
+  // Init blueprint project
+  execSync(`node ${cliPath} init --dir ${testDir} --yes`, { encoding: 'utf-8', cwd: testDir });
+  // Seed initial commit
   execSync('git add -A', { cwd: testDir });
   execSync('git commit -m "init"', { cwd: testDir });
 });
@@ -45,50 +46,26 @@ describe('bp archive', () => {
   });
 
   it('archives a valid change', () => {
-    // Setup: state.md with a change entry + change-summary.md on disk
-    const stateMd = `---
-project:
-  name: test
-  status: milestone-active
-  current_milestone: M1
-  current_phase: ph.1
-active_context:
-  type: change
-  ref: changes/test-change
-  step: applying
-changes:
-  - name: test-change
-    status: applying
-    depends_on: []
-adhoc: []
----
-# State
-`;
-    write('bp/state.md', stateMd);
-    write('bp/changes/test-change/change-summary.md', '# Change Summary: test-change\n\nchange completed.\n');
-    write('bp/changes/test-change/specs/auth.md', '# Auth Spec\n\nN/A\n');
+    // Create a change with proposal and review
+    cli('propose', 'test-change');
+    write('bp/changes/test-change/design.md', '# Design\n');
+    write('bp/changes/test-change/tasks.md', '# Tasks\n- [x] T-1\n');
+    write('bp/changes/test-change/review.md', '## Overall Verdict: PASS\n');
+    mkdirSync(join(testDir, 'bp', 'changes', 'test-change', 'specs', 'auth'), { recursive: true });
+    write('bp/changes/test-change/specs/auth/auth.md', '# Auth Spec\n');
 
-    // Commit so the repo tracks these files (git rm step is best-effort)
     execSync('git add -A', { cwd: testDir });
     execSync('git commit -m "add test change"', { cwd: testDir });
 
-    const output = cli('archive', 'bp/changes/test-change');
-
-    expect(output).toContain('\u2713 state.md updated');
-    expect(output).toContain('\u2713 Archived to:');
+    const output = cli('archive', 'test-change');
+    expect(output).toContain('Archived');
 
     // Verify original change directory is gone
     expect(existsSync(join(testDir, 'bp/changes/test-change'))).toBe(false);
 
-    // Verify archive exists — adhoc style since the path has no 'milestones/' segment
-    const date = new Date().toISOString().slice(0, 10);
-    const archivePath = join(testDir, 'bp/archive/changes', `${date}-test-change`);
-    expect(existsSync(archivePath)).toBe(true);
-    expect(existsSync(join(archivePath, 'change-summary.md'))).toBe(true);
-    expect(existsSync(join(archivePath, 'specs', 'auth.md'))).toBe(true);
-
-    // Verify state.md has a completed section (the change was removed from changes and added to completed)
-    const updatedState = readFileSync(join(testDir, 'bp/state.md'), 'utf-8');
-    expect(updatedState).toContain('completed:');
+    // Verify archive exists
+    expect(existsSync(join(testDir, 'bp/changes/archive'))).toBe(true);
+    const archiveEntries = execSync(`ls -1 ${join(testDir, 'bp/changes/archive')}`, { encoding: 'utf-8' }).trim().split('\n');
+    expect(archiveEntries.some((e) => e.includes('test-change'))).toBe(true);
   });
 });

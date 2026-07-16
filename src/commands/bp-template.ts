@@ -2,15 +2,41 @@
  * bp template <type> — generate artifact from TypeScript template registry
  *
  * Templates are imported from src/templates/artifacts/index.ts — no disk reads.
+ * Supports:
+ * - v2 artifact templates: proposal, design, tasks, spec, review, roadmap, config, global-spec
+ * - Workflow step templates: discuss, plan, apply, review, archive, etc.
  */
 
 import { join, dirname } from 'node:path';
 import { mkdirSync, writeFileSync } from 'node:fs';
+import type { Command } from 'commander';
 import { ARTIFACT_TEMPLATES, TEMPLATE_IDS } from '../templates/artifacts/index.js';
-import { WORKFLOW_REGISTRY, type WorkflowStep } from '../templates/workflows/registry.js';
-import { STEP_TO_WORKFLOW } from '../core/continue.js';
+import { WORKFLOW_REGISTRY } from '../templates/workflows/registry.js';
+import type { WorkflowStep } from '../templates/workflows/registry.js';
+/** Mapping from template type name to workflow step key */
+const STEP_TO_WORKFLOW: Record<string, WorkflowStep> = {
+  init: 'init',
+  roadmap: 'roadmap',
+  propose: 'propose',
+  plan: 'plan',
+  apply: 'apply',
+  review: 'review',
+  archive: 'archive',
+  continue: 'continue',
+};
+/** v2 artifact template filename mapping */
+const FILENAMES: Record<string, string> = {
+  proposal: 'proposal.md',
+  design: 'design.md',
+  tasks: 'tasks.md',
+  spec: 'spec.md',
+  review: 'review.md',
+  roadmap: 'roadmap.md',
+  config: 'config.yaml',
+  'global-spec': 'global-spec.md',
+};
 
-export function register(program: any): void {
+export function register(program: Command): void {
   program
     .command('template <type>')
     .description(`Generate template file (${TEMPLATE_IDS.join('|')})`)
@@ -22,7 +48,7 @@ export function register(program: any): void {
 
 function templateHandler(type: string, options: { name?: string; dir?: string; stdout?: boolean }) {
   // 1. Try artifact template
-  let template = ARTIFACT_TEMPLATES[type];
+  const template = ARTIFACT_TEMPLATES[type];
   if (template) {
     const name = options.name || 'unknown';
     const date = new Date().toISOString().slice(0, 10);
@@ -45,37 +71,7 @@ function templateHandler(type: string, options: { name?: string; dir?: string; s
       return;
     }
 
-    const filenames: Record<string, string> = {
-      proposal: 'proposal.md',
-      design: 'design.md',
-      tasks: 'tasks.md',
-      context: 'context.md',
-      research: 'research.md',
-      summary: 'summary.md',
-      verification: 'verification.md',
-      'spec-review': 'spec-review.md',
-      'quality-review': 'quality-review.md',
-      'goal-review': 'goal-review.md',
-      'change-summary': 'change-summary.md',
-      'codebase-stack': 'codebase/stack.md',
-      'codebase-architecture': 'codebase/architecture.md',
-      'codebase-structure': 'codebase/structure.md',
-      'codebase-conventions': 'codebase/conventions.md',
-      'codebase-testing': 'codebase/testing.md',
-      'codebase-integrations': 'codebase/integrations.md',
-      'codebase-concerns': 'codebase/concerns.md',
-      'codebase-pitfalls': 'codebase/concerns.md',
-      'spec': 'spec.md',
-      'completion': 'completion.md',
-      'requirements': 'requirements.md',
-      'roadmap': 'roadmap.md',
-      'research-stack': 'research/stack.md',
-      'research-architecture': 'research/architecture.md',
-      'research-pitfalls': 'research/pitfalls.md',
-      'loop.md': 'loop.md',
-      'phase-research': 'phase-research.md',
-    };
-    const filename = filenames[type] ?? `${type}.md`;
+    const filename = FILENAMES[type] ?? `${type}.md`;
 
     mkdirSync(targetDir, { recursive: true });
     const fullPath = join(targetDir, filename);
@@ -88,8 +84,7 @@ function templateHandler(type: string, options: { name?: string; dir?: string; s
     return;
   }
 
-  // 2. Try workflow step template (e.g. bp template grill, bp template discuss)
-  const wfStep = (STEP_TO_WORKFLOW as Record<string, WorkflowStep>)[type];
+  const wfStep = STEP_TO_WORKFLOW[type];
   if (wfStep && WORKFLOW_REGISTRY[wfStep]) {
     const cmd = WORKFLOW_REGISTRY[wfStep].command();
     console.log(cmd.content);

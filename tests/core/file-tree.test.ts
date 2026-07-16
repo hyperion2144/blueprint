@@ -1,7 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdirSync, rmSync, existsSync } from 'node:fs';
+import { mkdirSync, rmSync, existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { createBlueprintStructure, isInitialized, createMilestoneDir, createPhaseDir, createChangeDir, createAdhocChangeDir, listMilestones, listPhases, listChanges, listAdhocChanges, listArchived } from '../../src/core/file-tree.js';
+import {
+  createBlueprintStructure, isInitialized,
+  createChangeDir, changeDir, archiveChangeDir,
+  listActiveChanges, listArchivedChanges, listSpecDomains,
+} from '../../src/core/file-tree.js';
 
 const tmpDir = join(process.cwd(), 'tests/tmp-filetree');
 
@@ -14,52 +18,81 @@ afterEach(() => {
 });
 
 describe('createBlueprintStructure', () => {
-  it('创建完整目录骨架', () => {
+  it('creates directory skeleton', () => {
     createBlueprintStructure(tmpDir);
     expect(existsSync(join(tmpDir, 'specs'))).toBe(true);
     expect(existsSync(join(tmpDir, 'conventions'))).toBe(true);
-    expect(existsSync(join(tmpDir, 'milestones'))).toBe(true);
-    expect(existsSync(join(tmpDir, 'archive'))).toBe(true);
+    expect(existsSync(join(tmpDir, 'changes'))).toBe(true);
+    expect(existsSync(join(tmpDir, 'changes', 'archive'))).toBe(true);
+    expect(existsSync(join(tmpDir, 'schemas'))).toBe(true);
+    // No milestones/ directory in v2
+    expect(existsSync(join(tmpDir, 'milestones'))).toBe(false);
   });
 });
 
-describe('createMilestoneDir + createPhaseDir + createChangeDir', () => {
-  it('创建嵌套目录结构', () => {
-    createMilestoneDir(tmpDir, 'm1');
-    createPhaseDir(tmpDir, 'm1', 'p1');
-    const changeDir = createChangeDir(tmpDir, 'm1', 'p1', 'add-auth');
+describe('isInitialized', () => {
+  it('returns true when config.yaml exists', () => {
+    createBlueprintStructure(tmpDir);
+    writeFileSync(join(tmpDir, 'config.yaml'), '', 'utf-8');
+    expect(isInitialized(tmpDir)).toBe(true);
+  });
 
-    expect(existsSync(join(tmpDir, 'milestones', 'm1'))).toBe(true);
-    expect(existsSync(join(tmpDir, 'milestones', 'm1', 'phases', 'p1'))).toBe(true);
-    expect(existsSync(changeDir)).toBe(true);
-    expect(existsSync(join(changeDir, 'specs'))).toBe(true);
+  it('returns false when config.yaml missing', () => {
+    createBlueprintStructure(tmpDir);
+    expect(isInitialized(tmpDir)).toBe(false);
   });
 });
 
-describe('createAdhocChangeDir', () => {
-  it('创建临时 change 目录', () => {
-    const dir = createAdhocChangeDir(tmpDir, 'fix-typo');
+describe('createChangeDir + changeDir + archiveChangeDir', () => {
+  it('creates change directory under changes/', () => {
+    const dir = createChangeDir(tmpDir, 'add-auth');
     expect(existsSync(dir)).toBe(true);
-    expect(existsSync(join(dir, 'specs'))).toBe(true);
+    expect(dir).toContain('changes/add-auth');
+  });
+
+  it('changeDir returns correct path', () => {
+    const dir = changeDir(tmpDir, 'add-auth');
+    expect(dir).toContain('changes/add-auth');
+  });
+
+  it('archiveChangeDir moves change to archive', () => {
+    createChangeDir(tmpDir, 'add-auth');
+    writeFileSync(join(tmpDir, 'changes', 'add-auth', 'proposal.md'), '# test', 'utf-8');
+
+    const archivePath = archiveChangeDir(tmpDir, 'add-auth');
+    expect(existsSync(archivePath)).toBe(true);
+    expect(existsSync(join(archivePath, 'proposal.md'))).toBe(true);
+    // Original is gone
+    expect(existsSync(join(tmpDir, 'changes', 'add-auth'))).toBe(false);
   });
 });
 
 describe('list functions', () => {
-  it('列出 milestones/phases/changes', () => {
-    createChangeDir(tmpDir, 'm1', 'p1', 'change-a');
-    createChangeDir(tmpDir, 'm1', 'p1', 'change-b');
-    createChangeDir(tmpDir, 'm1', 'p2', 'change-c');
-    createAdhocChangeDir(tmpDir, 'adhoc-1');
-
-    expect(listMilestones(tmpDir)).toContain('m1');
-    expect(listPhases(tmpDir, 'm1').sort()).toEqual(['p1', 'p2']);
-    expect(listChanges(tmpDir, 'm1', 'p1').sort()).toEqual(['change-a', 'change-b']);
-    expect(listAdhocChanges(tmpDir)).toContain('adhoc-1');
+  it('listActiveChanges returns active changes', () => {
+    createChangeDir(tmpDir, 'change-a');
+    createChangeDir(tmpDir, 'change-b');
+    expect(listActiveChanges(tmpDir).sort()).toEqual(['change-a', 'change-b']);
   });
 
-  it('空目录返回空数组', () => {
-    expect(listMilestones(tmpDir)).toEqual([]);
-    expect(listAdhocChanges(tmpDir)).toEqual([]);
-    expect(listArchived(tmpDir)).toEqual([]);
+  it('listArchivedChanges returns archived changes', () => {
+    createChangeDir(tmpDir, 'change-a');
+    writeFileSync(join(tmpDir, 'changes', 'change-a', 'proposal.md'), '# test', 'utf-8');
+    archiveChangeDir(tmpDir, 'change-a');
+    expect(listArchivedChanges(tmpDir).length).toBeGreaterThanOrEqual(1);
+    expect(listArchivedChanges(tmpDir)[0]).toContain('change-a');
+    expect(listActiveChanges(tmpDir)).not.toContain('change-a');
+  });
+
+  it('listSpecDomains returns spec directories', () => {
+    mkdirSync(join(tmpDir, 'specs', 'auth'), { recursive: true });
+    mkdirSync(join(tmpDir, 'specs', 'core'), { recursive: true });
+    expect(listSpecDomains(tmpDir).sort()).toEqual(['auth', 'core']);
+  });
+
+  it('empty directories return empty arrays', () => {
+    createBlueprintStructure(tmpDir);
+    expect(listActiveChanges(tmpDir)).toEqual([]);
+    expect(listArchivedChanges(tmpDir)).toEqual([]);
+    expect(listSpecDomains(tmpDir)).toEqual([]);
   });
 });

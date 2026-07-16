@@ -1,16 +1,26 @@
+/**
+ * bp init — initialize blueprint project structure
+ *
+ * Creates bp/ directory skeleton and initial files:
+ * - config.yaml (from template)
+ * - roadmap.md (from template)
+ - conventions/coding.md (empty)
+ * - specs/ (domain stubs, greenfield only)
+* - conventions/coding.md (empty)
+ */
+
 import { join, basename } from 'node:path';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import type { Command } from 'commander';
-import { saveConfig } from '../core/config.js';
-import type { ProjectConfig, SpecConfig } from '../types/index.js';
+import type { Profile, ProjectConfig } from '../types/index.js';
 import { createBlueprintStructure, isInitialized } from '../core/file-tree.js';
-import { saveState } from '../core/state-file.js';
 import { runInitWizard } from '../prompts/init-wizard.js';
 import { detectProjectInfo, runBrownfieldInit } from '../core/brownfield.js';
 import { generateAll } from '../generators/index.js';
-import { REQUIREMENTS_TEMPLATE } from '../templates/artifacts/index.js';
+import { ARTIFACT_TEMPLATES } from '../templates/artifacts/index.js';
 import { writeGeneratedFiles } from './_utils.js';
 import { getSpecStack, detectSpecStack } from '../templates/spec-stacks/detect.js';
+import type { SpecStackTemplate } from '../templates/spec-stacks/index.js';
 import { commitDocChanges } from '../core/git-doc.js';
 
 export function register(program: Command): void {
@@ -18,7 +28,7 @@ export function register(program: Command): void {
     .command('init')
     .description('Initialize blueprint project structure')
     .option('--dir <path>', 'target directory', '.')
-    .option('--profile <profile>', 'workflow strictness (lite|standard|strict)', 'standard')
+    .option('--profile <profile>', 'workflow strictness (lite|standard)', 'standard')
     .option('--brownfield', 'brownfield mode (codebase mapping + spec bootstrap)')
     .option('--yes', 'skip confirmation, use defaults')
     .action(initHandler);
@@ -60,44 +70,32 @@ async function initHandler(options: {
   createBlueprintStructure(bpDir);
   console.log('✓ bp/ directory structure created');
 
-  const config: ProjectConfig = {
-    version: 1,
-    platform,
-    profile,
-    context: wizard.context + (isBrownfield ? ' [BROWNFIELD]' : ''),
-    workflow: { commitDocs: wizard.commitDocs },
-    review: {},
-    change: {},
-    git: { branching: 'none' as const, create_tag: true },
-    release: { template: wizard.releaseTemplate as 'standard' | 'detailed' | 'minimal' },
-    spec: { stack: specStackId } as SpecConfig,
-    conventions: { inject: true },
-    models: {},
-  };
-  saveConfig(bpDir, config);
-  console.log('✓ project.yml created (profile: ' + profile + ', spec stack: ' + specStackId + ')');
+  // Write config.yaml from template
+  const projectName = basename(baseDir) || 'project';
+  const date = new Date().toISOString().slice(0, 10);
+  let configContent = ARTIFACT_TEMPLATES.config;
+  configContent = configContent.replace(/\{\{project-name\}\}/g, projectName);
+  configContent = configContent.replace(/\{\{date\}\}/g, date);
+  configContent = configContent.replace(/\{\{tech-stack\}\}/g, wizard.context || 'TypeScript');
+  configContent = configContent.replace(/\{\{test-framework\}\}/g, 'vitest');
+  configContent = configContent.replace(/\{\{response-language\}\}/g, 'English');
+  configContent = configContent.replace(/profile: standard/, `profile: ${profile}`);
+  writeFileSync(join(bpDir, 'config.yaml'), configContent, 'utf-8');
+  console.log('✓ config.yaml created');
 
-  saveState(bpDir, {
-    project: {
-      name: basename(baseDir) || 'project',
-      status: 'initialized',
-      current_milestone: null,
-      current_phase: null,
-    },
-    active_context: {
-      type: 'project',
-      ref: null,
-      step: 'init',
-    },
-    changes: [],
-    adhoc: [],
-  });
-  console.log('✓ state.md created');
+  // Write roadmap.md from template
+  let roadmapContent = ARTIFACT_TEMPLATES.roadmap;
+  roadmapContent = roadmapContent.replace(/\{\{project-name\}\}/g, projectName);
+  writeFileSync(join(bpDir, 'roadmap.md'), roadmapContent, 'utf-8');
+  console.log('✓ roadmap.md created');
 
-  // Create requirements.md template
-  const reqContent = REQUIREMENTS_TEMPLATE.replace(/\{\{name\}\}/g, basename(baseDir) || 'project');
-  writeFileSync(join(bpDir, 'requirements.md'), reqContent, 'utf-8');
-  console.log('✓ requirements.md created (template)');
+  // Write conventions/coding.md (empty template)
+  writeFileSync(
+    join(bpDir, 'conventions', 'coding.md'),
+    '# Coding Conventions\n\n<!-- Add project-specific coding conventions here -->\n',
+    'utf-8',
+  );
+  console.log('✓ conventions/coding.md created');
 
   // Initialize spec directories with tech stack templates (greenfield only)
   const specsDir = join(bpDir, 'specs');
@@ -113,22 +111,27 @@ async function initHandler(options: {
     console.log('✓ specs/ directory created (brownfield — specs generated from code scanning)');
   }
 
-  // Create conventions from stack template
-  const convDir = join(bpDir, 'conventions');
-  mkdirSync(convDir, { recursive: true });
-  writeFileSync(join(convDir, 'coding-standards.md'), stack.conventions, 'utf-8');
-  console.log('✓ conventions/coding-standards.md created');
-
   if (isBrownfield) {
     const info = detectProjectInfo(process.cwd());
-    const domains = await runBrownfieldInit(process.cwd(), bpDir, info, stack);
-    console.log("✓ Project structure scanned. Dispatch bp-codebase-mapper and bp-spec-bootstrapper sub-agents to complete analysis.");
+    await runBrownfieldInit(process.cwd(), bpDir, info, stack);
+    console.log('✓ Project structure scanned. Dispatch bp-codebase-mapper and bp-spec-bootstrapper sub-agents to complete analysis.');
   }
 
   console.log('Blueprint initialized.');
 
   // Generate platform files
   try {
+    const config: ProjectConfig = {
+      version: 2,
+      platform,
+      profile: profile as Profile,
+      context: wizard.context + (isBrownfield ? ' [BROWNFIELD]' : ''),
+      rules: {},
+      schema: 'spec-driven',
+      models: {},
+      conventions: { inject: true },
+      git: { create_tag: true },
+    };
     const files = generateAll(config);
     writeGeneratedFiles(files);
     console.log(`✓ Platform files generated (${files.length})`);
@@ -137,7 +140,7 @@ async function initHandler(options: {
   }
 
   // Auto git init + commit if commitDocs enabled
-  if (config.workflow?.commitDocs) {
+  if (wizard.commitDocs) {
     commitDocChanges(bpDir, baseDir, 'init: blueprint project scaffolding', ['bp/']);
   }
 }

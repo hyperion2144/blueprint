@@ -24,34 +24,19 @@ function skillName(step: string): string {
 
 function skillDescription(step: string): string {
   const map: Record<string, string> = {
-    init: 'Initialize bp project structure, generate platform files',
-    grill: 'Requirements exploration — detailed questioning until shared understanding is reached',
-    research: 'Project-level technical research — parallel multi-direction investigation',
-    roadmap: 'Roadmap definition — split project into Milestones × Phases',
-    milestone: 'Milestone management — switch/create milestones, set current phase',
-    design: 'UI design direction — define aesthetic, color, typography, layout',
-    discuss: 'Phase discussion — capture implementation decisions into context.md',
-    'research-phase': 'Phase research — implementation path investigation',
-    split: 'Change splitting — dependency graph + N changes',
-    adhoc: 'Create adhoc change — independent change unrelated to milestone/phase',
-    plan: 'Change design — technical design + task breakdown + delta-specs',
-    apply: 'Code implementation — TDD RED→GREEN→REFACTOR',
-    review: 'Triple review — spec review, quality review, goal review in parallel',
-    archive: 'Verify & archive — run checks, then delta-spec merge + directory move + state update',
-    ship: 'Ship — create PR + update state / release tag',
-    continue: 'Auto-advance — read STATE and route to next step',
-    audit: 'Human UAT verification — generate uat.md, interactive testing, create adhoc fixes',
-    loop: 'Autonomous loop — auto-advance all steps, AI fills decisions without asking',
-    config: 'Interactive configuration — set workflow, model, conventions, etc.',
-    commit: 'Commit changes — conventional commits + hash recording to tasks.md',
-    proposal: 'Fill change proposal — intent, scope, approach, must-haves, non-goals',
-    upgrade: 'Upgrade output files — check unarchived files against templates + PEG grammars, auto-fix format mismatches',
-    'add-phase': 'Add phase — insert a new phase into the current milestone, renumber subsequent phases, rename directories, update roadmap and state',
+    init: 'Initialize blueprint project structure and generate platform files',
+    roadmap: 'View or modify roadmap.md',
+    propose: 'Create a change folder with proposal.md',
+    plan: 'Dispatch planner sub-agent (produce design, tasks, delta specs)',
+    apply: 'Dispatch executor sub-agents (implement tasks per wave)',
+    review: 'Triple review of a change - outputs dispatch instructions',
+    archive: 'Archive a change (merge delta specs, archive dir, update roadmap)',
+    continue: 'Check progress and suggest next step',
   };
   return map[step] ?? '';
 }
 
-const STEPS = ['init', 'design', 'grill', 'research', 'roadmap', 'milestone', 'discuss', 'research-phase', 'split', 'adhoc', 'plan', 'apply', 'review', 'archive', 'proposal', 'ship', 'continue', 'audit', 'loop', 'config', 'commit', 'upgrade', 'add-phase'] as const;
+const STEPS = ['init', 'roadmap', 'propose', 'plan', 'apply', 'review', 'archive', 'continue'] as const;
 
 export const SKILL_DEFS: SkillDef[] = STEPS.map((step) => ({
   step,

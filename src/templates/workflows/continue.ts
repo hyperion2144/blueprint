@@ -1,98 +1,90 @@
-import type { SkillTemplate, CommandTemplate } from '../types';
+import type { SkillTemplate, CommandTemplate } from '../types.js';
 
 const instructions = `## Input
 
-### Parameters
-- **\`$ARGUMENTS\`** — change name (optional). Use for change-level advancement: \`bp continue change <name>\`.
-- **\`--auto\`** flag — enable autonomous mode (auto-fill decisions without asking).
-
-### Two commands — two scopes
-
-| Command | Scope | When to use |
-|---------|-------|------------|
-| \`bp continue\` | Project-level / Phase-level | After init, grill, research, roadmap, discuss, research-phase, split, ship |
-| \`bp continue change <name>\` | Single change | Advance a specific change through plan → apply → review → verify → archive |
-
-### Prerequisites
+- **\`$ARGUMENTS\`** (optional): change name. If empty, find the most recently active change.
 
 ## Steps
 
-### Scenario A: Project-level advancement (\`bp continue\`)
+### Step 1: Find active change
 
-Use this after project-level steps (init, grill, research, roadmap, discuss, research-phase, split, ship).
+If \`$ARGUMENTS\` is empty:
+1. List \`bp/changes/\` (exclude \`archive/\`)
+2. If no active changes:
+   - Read \`bp/roadmap.md\`
+   - Find the first phase with [ ] changes or NOT_STARTED status
+   - Output roadmap summary and suggest next change to propose
+3. If one active change: use it
+4. If multiple active changes: list them and ask the user which one
 
-Run \`bp continue\`. The CLI:
-1. Reads \`active_context\` from state.md to determine what's current
-2. Validates the current step's exit conditions
-3. Advances state to the next step
-4. Outputs the next step's inline instructions
+### Step 2: Check artifact existence
 
-Examples:
-- After \`bp init\` → \`bp continue\` routes to grill
-- After grill → routes to research
-- After research → routes to roadmap
-- After roadmap → routes to discuss (first phase)
-- After discuss → routes to research-phase
-- After research-phase → routes to split
-- After split → routes to plan (for first change)
+For the resolved change, check which artifacts exist:
 
-If \`bp continue\` says "No available next step" but the project has pending changes, switch to Scenario B for those changes.
-
-### Scenario B: Change-level advancement (\`bp continue change <name>\`)
-
-Use this to advance an individual change through its cycle. The change name comes from:
-- The \`bp continue\` output (which tells you which change to work on)
-- \`bp state\` output (lists pending changes with their status)
-- User explicitly naming a change
-
-**With a name**: run \`bp continue change <name>\`. The CLI advances that change's state and outputs the next step's inline instructions.
-
-**Without a name**: run \`bp state\`, read the pending changes list, and present options:
-
-\`\`\`
-Which change should I advance?
-
-1. <change-name> [planning] — ready for apply
-2. <change-name> [applying] — ready for review
-3. <change-name> [proposal] — ready for plan
-
-Pick a number or name.
+\`\`\`bash
+ls bp/changes/$1/proposal.md 2>/dev/null
+ls bp/changes/$1/design.md 2>/dev/null
+ls bp/changes/$1/tasks.md 2>/dev/null
+ls bp/changes/$1/specs/ 2>/dev/null
+ls bp/changes/$1/review.md 2>/dev/null
 \`\`\`
 
-Then run \`bp continue change <selected-name>\`.
+Also check task completion status in tasks.md:
+- Count [x] vs [ ] entries
+- If all [x] and tests pass -> code is implemented
 
-### Scenario C: No pending work
+### Step 3: Determine progress and suggest next step
 
-If both \`bp continue\` and all pending changes report "No available next step":
+| Condition | Status | Next Step |
+|-----------|--------|-----------|
+| No proposal.md | Not started | \`bp propose $1\` |
+| proposal.md exists, no design.md | Proposed | \`bp plan $1\` |
+| design.md + tasks.md exist, tasks all [ ] | Planned | \`bp apply $1\` |
+| Some tasks [x], some [ ] | In progress | \`bp apply $1\` (resume) |
+| All tasks [x], no review.md | Implemented | \`bp review $1\` |
+| review.md exists, verdict = PASS | Reviewed | \`bp archive $1\` |
+| review.md exists, has R/Q/G issues | Needs fix | \`bp apply --fix $1\` |
+| review.md exists, has D issues | Needs redesign | \`bp plan --fix $1\` |
+
+### Step 4: Output status and recommendation
 
 \`\`\`
-All work is complete or blocked.
+Change: $1
 
-Current state:
-- Project status: <status>
-- Active milestone: <name>
-- Pending changes: <list or "none">
-- Adhoc changes: <list or "none">
+Artifacts:
+  proposal.md    (check)
+  design.md      (check)
+  tasks.md       (check) (3/5 complete)
+  specs/         (check) (2 domains)
+  review.md      (cross)
 
-Run \`bp state\` to inspect. To start new work:
-- \`bp state set-milestone [BP:MILESTONE_ID]\` then \`bp state set-phase [BP:PHASE_ID]\` to activate the next milestone/phase
-- \`bp change new [BP:CHANGE_NAME]\` for an adhoc change
-- \`bp continue\` after completing blocking prerequisites
+Status: In Progress
+Next: bp apply $1 (implement remaining 2 tasks)
+
+Run: bp apply $1
 \`\`\`
 
-## Output
-Inline instructions for the next workflow step, including:
-- Current position and context
-- Next command name and slash command
-- Whether sub-agents are needed
-- Full step instructions (Input, Steps, Output, Guardrails)
+Or if no active change:
+
+\`\`\`
+No active changes.
+
+Roadmap:
+  M1 - Core Engine [ACTIVE]
+    P1.1 - Auth System [IN_PROGRESS] (3/4 changes done)
+      Next: add-password-reset
+
+Suggest: bp propose add-password-reset --phase M1/P1.1
+\`\`\`
 
 ## Guardrails
-- **CRITICAL**: Check \`---END---\` marker exists at the end of output AND \`chars:\` value matches total received chars. If missing or mismatch, output was truncated — re-run \`bp continue\` to get the full output.
-- \`bp continue\` (no args) = project/phase level; \`bp continue change <name>\` = change level — do not mix them
-- Continue does NOT advance state if exit conditions are not met — it reports what's blocking
-- In loop mode (\`--auto\` flag): after completing this step, the loop controller checks \`bp/loop.md\` stop conditions before advancing further. Continue as normal — do not alter behavior based on loop context.
-- When multiple changes are pending, always present choices — do not silently pick one`;
+
+- **continue only SUGGESTS.** It does not execute the next step automatically.
+- **If multiple changes are active**, let the user choose. Don't auto-pick.
+- **If tasks are partially complete**, suggest \`bp apply\` to resume (executor will skip [x] tasks).
+- **If review has issues**, suggest the correct fix command based on issue type (D -> plan --fix, R/Q/G -> apply --fix).
+- **If no active changes**, suggest the next change based on roadmap. Don't create it automatically.
+`;
 
 export function getContinueSkillTemplate(): SkillTemplate {
   return {
@@ -106,7 +98,7 @@ export function getContinueCommandTemplate(): CommandTemplate {
   return {
     description: 'Auto-advance — project-level or change-level, present pending work, route to next step',
     category: 'Workflow',
-    tags: ['bp', 'continue', 'state-machine'],
+    tags: ['bp', 'continue', 'state', 'advance'],
     content: instructions,
   };
 }

@@ -1,125 +1,109 @@
 import { ORCHESTRATOR_RULE } from '../types.js';
-import { CLASSIFY_CHANGE, CHANGE_NAME_RESOLVE, COMMIT_ADVANCE, REVIEW_LOOPBACK } from './shared.js';
 import type { SkillTemplate, CommandTemplate } from '../types.js';
 
 const instructions = ORCHESTRATOR_RULE + `## Input
 
-### Parameters
-- **\`$ARGUMENTS\`** (required) — the change to review. Provided by \`bp continue\` output or user.
-- **\`--fix\`** (flag) — set when reviewing after fix-apply. Indicates this is a re-review of fixes.
+- **\`$ARGUMENTS\`** (optional): change name. If empty, use the most recently applied change.
+- **\`--fix\`** (optional): re-review mode — reviewer marks resolved issues in existing review.md.
 
-### Prerequisites
-- Apply phase complete: implementation code, tests, summary.md
-- If --fix: fix-apply phase complete, review-task.md and original review files exist
+## Prerequisites
+
+- Code is implemented (tasks.md has [x] entries with commit hashes)
+- \`tsc --noEmit\` and \`vitest run\` pass (run these BEFORE dispatching reviewer)
+- In --fix mode: \`review.md\` exists with unresolved issues, fixes have been applied
 
 ## Steps
 
-### Step 0: Determine review mode
+### Step 1: Resolve change name and paths
 
-Check if \`fix: true\` is present in the bp continue output.
+Same as plan workflow Step 1.
 
-**Normal mode** (first review):
-- Proceed to Step 1 below — create three review files from scratch.
+### Step 2: Pre-review verification
 
-**Fix mode** (re-review after fixes):
-- Read existing \`spec-review.md\`, \`quality-review.md\`, \`goal-review.md\`
-- Read \`review-task.md\` to understand what was fixed
-- Proceed to Step 5 (in-place update) — do NOT create new files.
-
-${CLASSIFY_CHANGE}${CHANGE_NAME_RESOLVE('applying', 'review')}
-
-### Step 2: Execute review (Normal mode only)
-
-Issue numbering rules (used in all three review files):
-| Prefix | Source | Meaning | Loopback |
-|--------|--------|---------|----------|
-| R1, R2 | Spec Review | Specification non-compliance | reapply |
-| Q1, Q2 | Quality Review | Code quality issues | reapply |
-| G1, G2 | Goal Review | Goal not achieved | reapply |
-| D1, D2 | Any review | **Design/architecture flaw** — needs redesign, not code fix | **replan** |
-
-**D prefix identification**: Mark as D if the issue cannot be fixed by modifying code alone:
-1. SHALL/MUST requires a new module or architecture change
-2. Core abstraction/component responsibility is wrong
-3. Technology stack does not support requirements
-4. Data model does not support planned extensions
-
-Each finding gets a unique number (R1, R2, Q1, Q2, G1, G2, D1, D2...) written in the checklist/Issues table, AND a corresponding \`- [ ]\` entry in the \`## Issues\` section at the bottom.
-
-**Verdict constraint — strict rule for ALL modes:**
-- Spec Review: if any row in Constraint Checklist is FAIL, or any Issues entry exists → overall MUST be FAIL or NEEDS_REVISION
-- Quality Review: if any issue exists (BLOCKER/MAJOR/MINOR/INFO), or any Issues entry exists → overall MUST be FAIL or NEEDS_REVISION
-- Goal Review: if any goal is PARTIAL or NOT_ACHIEVED, or any Issues entry exists → overall MUST be FAIL or NEEDS_REVISION
-**In short: any problem → not PASS. Only write PASS when truly clean.**
-
-1. Run \`bp template spec-review\` → read template → fill it → write to \`spec-review.md\`
-2. Run \`bp template quality-review\` → read template → fill it → write to \`quality-review.md\`
-3. Run \`bp template goal-review\` → read template → fill it → write to \`goal-review.md\`
-4. Use the numbering rules above (R/Q/G/D prefixes) when filling
-5. \`tsc\` + \`vitest\` must pass before writing reviews; include evidence in the review files
-6. Leave all \`## Issues\` entries as \`- [ ]\` (unchecked) — they are checked during re-review. If no issues exist, leave the \`## Issues\` section empty (heading only, do NOT write \`NO_ISSUES_FOUND\`).
-7. All three files MUST be written — never skip a review file
-
-**If FULL — dispatch reviewer sub-agent. DO NOT write review files yourself.**
-1. Run \`bp dispatch reviewer --change $1\` — this outputs the sub-agent tool name and parameters
-2. **Call that tool.** Do NOT read/write review files. The sub-agent handles everything:
-   - Runs spec-review → quality-review → goal-review sequentially
-   - Uses templates (\`bp template spec-review\` etc.) to produce properly formatted files
-   - Applies numbering rules (R/Q/G/D prefixes, D identification criteria, Issues section)
-   - Commits all three files
-3. **Wait for the sub-agent to complete.** Only then read the output files at Step 3 below.
-4. If the sub-agent fails or times out, re-run \`bp dispatch reviewer --change $1\` and call the tool again.
-
-### Step 3: Collect and classify issues
-Read all three review files. Extract all \`## Issues\` entries.
-
-**Check for reference chain completeness** (proposal→design→tasks):
-- Read \`proposal.md\` → list all PR-{id}
-- Read \`design.md\` → list DS-{id} and their refs: PR-{id}
-- Read \`tasks.md\` → list T-{id} and their refs: DS-{id}
-- Any PR not referenced by any DS → issue (replan)
-- Any DS not referenced by any task → issue (reapply)
-
-**Check for D-prefixed issues** (design/architecture problems):
-- Search for \`- [ ] D\` in all three files
-- If any D issue exists → design flaw identified
-
-### Step 4: Route based on findings
-
-**If any D issue found** → **replan** (design loopback):
+Run before dispatching reviewer:
 \`\`\`bash
-bp continue change [BP:CHANGE_NAME] --command replan
-\`\`\`
-The design needs to be reworked before code fixes make sense.
-
-**If only R/Q/G issues found and any report is FAIL or NEEDS_REVISION** → **reapply** (code fix loopback):
-\`\`\`bash
-bp continue change [BP:CHANGE_NAME] --command reapply
+tsc --noEmit
+npx vitest run
 \`\`\`
 
-**If all three reports PASS** → commit review files → advance to archive.
-\`\`\`bash
-bp commit "docs(review): triple review for [BP:CHANGE_NAME]" --files "spec-review.md,quality-review.md,goal-review.md" --scope review --record
+If either fails: do NOT dispatch reviewer. Report the failures and suggest \`bp apply --fix\` to fix them first.
+
+### Step 3: Classify change (lightweight vs full)
+
+- **Lightweight** (all non-behavior tasks, no delta specs): orchestrator does a quick review directly
+  - Check: all tasks [x], tests pass, no obvious issues
+  - Write a simplified review.md (may skip spec review if no delta specs)
+- **Full** (any behavior task, has delta specs): dispatch reviewer sub-agent
+
+### Step 4: Dispatch reviewer (Full mode)
+
+**Do NOT write review.md yourself. Dispatch reviewer sub-agent.**
+
+1. Prepare reviewer context:
+   - Change name and directory path
+   - List of files to read: proposal.md, design.md, tasks.md, specs/<domain>/spec.md, bp/specs/<domain>/spec.md, bp/conventions/coding.md
+   - Instruction: "Read the reviewer agent prompt, then perform triple review and write review.md"
+   - In --fix mode: "Read existing review.md, mark resolved issues [x], add new findings if any"
+
+2. Dispatch via task tool:
+   - Agent type: reviewer (or default task agent with reviewer prompt injected)
+   - Fresh context: yes
+   - Isolated: no (reviewer is read-only on source code, writes only review.md)
+
+3. Wait for reviewer to complete.
+
+### Step 5: Read review.md and route
+
+After reviewer completes:
+
+1. Read \`bp/changes/$1/review.md\`
+2. Extract the Overall Verdict and Issues list
+3. Route based on findings:
+
+**If Overall Verdict is PASS (zero issues):**
+\`\`\`
+Review PASSED for $1
+  All three dimensions clean.
+
+  Next: bp archive $1
 \`\`\`
 
-${REVIEW_LOOPBACK}
+**If D-prefixed issues exist (design flaw):**
+\`\`\`
+Review FAILED for $1
+  D issues found (design/architecture problems):
+  - D1: {{description}}
 
-### Step 5: In-place re-review (Fix mode only)
+  These require redesign, not code fix.
+  Next: bp plan --fix $1
+\`\`\`
 
-Read original review files + review-task.md. The issues in the original review files should still have \`- [ ]\` entries.
+**If only R/Q/G issues (code fixable):**
+\`\`\`
+Review NEEDS_REVISION for $1
+  Issues found (code fixable):
+  - R1: {{description}}
+  - Q1: {{description}}
+  - G1: {{description}}
 
-**Mark fixed issues:**
-- For each issue referenced in review-task.md as fixed → find in \`## Issues\` and change \`- [ ]\` to \`- [x]\`
- - Do NOT modify the report content above Issues (no "fixed" or status annotations in report text — only change the checkbox [ ] to [x])
+  Next: bp apply --fix $1
+\`\`\`
 
-**New issues found:**
-- Continue numbering from the existing highest number
-- Add new entries to the report content AND to \`## Issues\` as \`- [ ]\`
-- New D issues → use D prefix, continue D numbering
+### Step 6: Commit review.md
 
-**After in-place update:**
-- Check if \`## Issues\` has any remaining \`- [ ]\` → if yes, write new review-task.md → loop back
-- If all \`- [x]\` → commit → advance to archive
+\`\`\`bash
+git add bp/changes/$1/review.md
+git commit -m "docs(review): triple review for $1"
+\`\`\`
+
+## Guardrails
+
+- **Full mode: MUST dispatch sub-agent.** Do NOT write review.md yourself.
+- **tsc + vitest must pass before review.** Don't review broken code.
+- **Do NOT fix issues yourself.** You identify them; the executor fixes them.
+- **D issues -> replan (bp plan --fix). R/Q/G issues -> reapply (bp apply --fix).** Never mix.
+- In --fix re-review: reviewer marks [x] in existing review.md, does NOT create new file.
+- Do NOT run bp archive automatically - let the user review the findings first.
 `;
 
 export function getReviewSkillTemplate(): SkillTemplate {

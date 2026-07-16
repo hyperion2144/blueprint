@@ -1,6 +1,6 @@
 /**
  * OMP Agent generator
- * Generates .omp/agents/bp-<role>.md files (7 agent definitions).
+ * Generates .omp/agents/bp-<role>.md files (v2: planner, executor, reviewer).
  *
  * Agent system prompts are imported from TypeScript modules in src/templates/agents/
  * instead of reading markdown files.
@@ -22,65 +22,26 @@ export interface AgentDef {
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /* ================================================================
- * Agent definitions (8 total — model/thinkingLevel resolved from profile)
+ * Agent definitions (3 total for v2: planner, executor, reviewer)
  * ================================================================ */
 
-/** 7 agent definitions */
 export const AGENT_DEFS: AgentDef[] = [
-  // bp-researcher
-  {
-    role: 'researcher',
-    description: 'Technical research — produce STACK/ARCH/PITFALLS/RESEARCH docs',
-    tools: ['read', 'grep', 'glob', 'lsp', 'web_search', 'write', 'bash'],
-    spawns: '*',
-  },
-  // bp-planner
   {
     role: 'planner',
     description: 'Change design — produce proposal/design/tasks/delta-specs',
     tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'],
     spawns: '*',
   },
-  // bp-executor
   {
     role: 'executor',
-    description: 'Code implementation — TDD RED→GREEN→REFACTOR',
+    description: 'Code implementation — TDD RED/GREEN/REFACTOR',
     tools: ['read', 'edit', 'write', 'bash', 'grep', 'glob', 'lsp', 'ast_grep', 'ast_edit'],
     spawns: '*',
   },
-  // bp-reviewer
   {
     role: 'reviewer',
     description: 'Triple review — spec review + quality review + goal review',
     tools: ['read', 'grep', 'glob', 'lsp', 'ast_grep', 'bash'],
-    spawns: '*',
-  },
-  // bp-phase-researcher
-  {
-    role: 'phase-researcher',
-    description: 'Phase research — produce RESEARCH.md for planner',
-    tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'],
-    spawns: '*',
-  },
-  // bp-codebase-mapper — brownfield codebase analysis
-  {
-    role: 'codebase-mapper',
-    description: 'Codebase mapping — analyze existing code, produce technical reports',
-    tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'],
-    spawns: '*',
-  },
-  // bp-designer — UI/UX design direction
-  {
-    role: 'designer',
-    description: 'UI/UX design — define aesthetic, color, typography, layout',
-    tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash', 'generate_image'],
-    spawns: '*',
-  },
-  // bp-spec-bootstrapper — extract behavioral contracts from code
-  {
-    role: 'spec-bootstrapper',
-    description: 'Spec bootstrapping — extract behavioral contracts from existing code',
-    tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'],
     spawns: '*',
   },
 ];
@@ -91,12 +52,12 @@ export const AGENT_DEFS: AgentDef[] = [
 
 /**
  * Resolve agent model from project config.
- * Priority: agentModels[role] (per-agent override) > models[role] (resolved from profile/tier) > pi/default
+ * Priority: models[role] (per-agent override) > resolved profile defaults > pi/default
  */
 export function resolveAgentModel(role: string, config: ProjectConfig): string {
-  // 1. Per-agent override (highest priority)
-  if (config.agentModels && config.agentModels[role]) {
-    return config.agentModels[role];
+  // 1. Per-agent override from models map (highest priority)
+  if (config.models && config.models[role]) {
+    return config.models[role];
   }
   // 2. Resolved from profile or tier defaults
   const resolved = resolveModels(config);
@@ -109,7 +70,7 @@ export function resolveAgentModel(role: string, config: ProjectConfig): string {
 
 /** Resolve agent thinking level */
 export function resolveThinkingLevel(role: string): string {
-  const xhighThinkingRoles = ['planner', 'researcher', 'reviewer'];
+  const xhighThinkingRoles = ['planner', 'reviewer'];
   return xhighThinkingRoles.includes(role) ? 'xhigh' : 'high';
 }
 

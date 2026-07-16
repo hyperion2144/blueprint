@@ -20,11 +20,10 @@ export async function runInitWizard(defaults: { profile: string; yes: boolean })
 
     // 1. Workflow profile
     const val = await clack.select({
-      message: 'Workflow strictness — controls how strictly BP enforces quality gates:',
+      message: 'Workflow profile — controls how strictly BP enforces quality gates:',
       options: [
         { value: 'lite', label: 'Lite', hint: 'skip TDD verification for non-behavioral changes' },
         { value: 'standard', label: 'Standard (recommended)', hint: 'TDD enforced, triple review mandatory, plan check enabled' },
-        { value: 'strict', label: 'Strict', hint: 'extra validation gates, no auto-advance, all checks required' },
       ],
       initialValue: defaults.profile,
     });

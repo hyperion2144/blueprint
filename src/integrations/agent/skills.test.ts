@@ -6,7 +6,7 @@ describe('generateAgentSkills', () => {
   it('generates all skill files with correct paths', () => {
     const config = {} as ProjectConfig;
     const files = generateAgentSkills(config);
-    expect(files.length).toBeGreaterThanOrEqual(20);
+    expect(files.length).toBe(8);
     for (const file of files) {
       expect(file.path).toMatch(/^\.agent\/skills\/bp-[a-z-]+\/SKILL\.md$/);
       expect(file.content).toContain('---');
@@ -24,21 +24,20 @@ describe('generateAgentSkills', () => {
     expect(planFile!.content).not.toContain('$ARGUMENTS');
   });
 
-  it('replaces $1 with [BP:MILESTONE_ID] for milestone step', () => {
+  it('generates propose skill file with frontmatter', () => {
     const config = {} as ProjectConfig;
     const files = generateAgentSkills(config);
-    const msFile = files.find((f) => f.path.includes('bp-milestone'));
+    const msFile = files.find((f) => f.path.includes('bp-propose'));
     expect(msFile).toBeDefined();
-    expect(msFile!.content).toContain('[BP:MILESTONE_ID]');
+    expect(msFile!.content).toContain('name: bp-propose');
   });
 
-  it('keeps $1 unchanged for context-free steps (grill)', () => {
+  it('generates apply skill file with frontmatter', () => {
     const config = {} as ProjectConfig;
     const files = generateAgentSkills(config);
-    const grillFile = files.find((f) => f.path.includes('bp-grill'));
+    const grillFile = files.find((f) => f.path.includes('bp-apply'));
     expect(grillFile).toBeDefined();
-    // grill has no context param mapping; $ARGUMENTS stays as-is
-    expect(grillFile!.content).toContain('$ARGUMENTS');
+    expect(grillFile!.content).toContain('name: bp-apply');
   });
 
   it('generates matching snapshot', () => {

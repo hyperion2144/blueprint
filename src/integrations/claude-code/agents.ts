@@ -17,13 +17,9 @@ export interface ClaudeAgentDef {
 }
 
 export const AGENT_DEFS: ClaudeAgentDef[] = [
-  { role: 'researcher', description: 'Technical research — produce STACK/ARCH/PITFALLS/RESEARCH docs', tools: ['read', 'grep', 'glob', 'lsp', 'web_search', 'write', 'bash'], model: 'opus', effort: 'high' },
   { role: 'planner', description: 'Change design — produce proposal/design/tasks/delta-specs', tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'], model: 'opus', effort: 'high' },
   { role: 'executor', description: 'Code implementation — TDD RED→GREEN→REFACTOR', tools: ['read', 'edit', 'write', 'bash', 'grep', 'glob', 'lsp', 'ast_grep', 'ast_edit'], model: 'sonnet', effort: 'high' },
   { role: 'reviewer', description: 'Triple review — spec review + quality review + goal review', tools: ['read', 'grep', 'glob', 'lsp', 'ast_grep', 'bash'], model: 'opus', effort: 'high' },
-  { role: 'phase-researcher', description: 'Phase research — produce RESEARCH.md for planner', tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'], model: 'sonnet', effort: 'medium' },
-  { role: 'codebase-mapper', description: 'Codebase mapping — analyze existing code, produce technical reports', tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'], model: 'sonnet', effort: 'medium' },
-  { role: 'spec-bootstrapper', description: 'Spec bootstrapping — extract behavioral contracts from existing code', tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'], model: 'sonnet', effort: 'medium' },
 ];
 
 export function generateClaudeAgent(def: ClaudeAgentDef): string {

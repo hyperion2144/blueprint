@@ -1,51 +1,44 @@
 /**
- * bp list — 列出 milestones/phases/changes
+ * bp list — list active changes, archived changes, and spec domains
  */
 
 import { join } from 'node:path';
-import { listMilestones, listPhases, listChanges, listAdhocChanges, listArchived } from '../core/file-tree.js';
+import { listActiveChanges, listArchivedChanges, listSpecDomains } from '../core/file-tree.js';
+import { findBpDir } from './_utils.js';
 
 export function register(program: any): void {
   program
     .command('list')
-    .description('List milestones/phases/changes')
+    .description('List active/archived changes and spec domains')
     .option('--all', 'include archived')
     .action(listHandler);
 }
 
 function listHandler(options: { all?: boolean }) {
-  const bpDir = join(process.cwd(), 'bp');
+  const bpDir = findBpDir() ?? join(process.cwd(), 'bp');
   let hasItems = false;
 
-  const milestones = listMilestones(bpDir);
-  if (milestones.length > 0) {
-    console.log('Milestones:');
-    for (const ms of milestones) {
-      console.log(`  ${ms}/`);
-      const phases = listPhases(bpDir, ms);
-      for (const ph of phases) {
-        console.log(`    ${ph}/`);
-        const changes = listChanges(bpDir, ms, ph);
-        for (const ch of changes) {
-          console.log(`      ${ch}/`);
-        }
-      }
-    }
-    hasItems = true;
-  }
-
-  const adhoc = listAdhocChanges(bpDir);
-  if (adhoc.length > 0) {
-    if (hasItems) console.log('');
-    console.log('Adhoc Changes:');
-    for (const ch of adhoc) {
+  const changes = listActiveChanges(bpDir);
+  if (changes.length > 0) {
+    console.log('Active Changes:');
+    for (const ch of changes) {
       console.log(`  ${ch}/`);
     }
     hasItems = true;
   }
 
+  const domains = listSpecDomains(bpDir);
+  if (domains.length > 0) {
+    if (hasItems) console.log('');
+    console.log('Spec Domains:');
+    for (const d of domains) {
+      console.log(`  ${d}/`);
+    }
+    hasItems = true;
+  }
+
   if (options.all) {
-    const archived = listArchived(bpDir);
+    const archived = listArchivedChanges(bpDir);
     if (archived.length > 0) {
       if (hasItems) console.log('');
       console.log('Archived:');

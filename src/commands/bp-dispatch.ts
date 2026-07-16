@@ -7,7 +7,6 @@
 
 import { join } from 'node:path';
 import { loadConfig } from '../core/config.js';
-import { loadState } from '../core/state-file.js';
 
 interface IsolationInfo {
   type: 'auto' | 'param' | 'none';
@@ -44,15 +43,11 @@ interface DispatchFormat {
   params: Record<string, string>;
 }
 
-/** Agent role → artifact template IDs for output files */
+/** Agent role -> artifact template IDs for output files */
 const ROLE_TEMPLATES: Record<string, string[]> = {
   planner: ['design', 'tasks', 'spec', 'global-spec'],
   executor: [],  // produces code, no artifact templates
   reviewer: ['spec-review', 'quality-review', 'goal-review'],
-  researcher: ['research-stack', 'research-architecture', 'research-pitfalls'],
-  'phase-researcher': ['phase-research'],
-  'codebase-mapper': ['codebase-stack', 'codebase-architecture', 'codebase-structure', 'codebase-conventions', 'codebase-testing', 'codebase-integrations', 'codebase-concerns'],
-  'spec-bootstrapper': ['spec'],
 };
 
 const FORMATS: Record<string, DispatchFormat> = {
@@ -111,21 +106,9 @@ function dispatchHandler(role: string, options: { change?: string; dir: string }
       const resolved = value.replace('<role>', role);
       lines.push(`  ${key}: ${resolved}`);
     }
-
     if (changeName) {
-      const state = loadState(bpDir);
-      const change = state.changes.find((c) => c.name === changeName);
-      const adhoc = state.adhoc.find((c) => c.name === changeName);
-      const actualChange = change || adhoc;
-      if (actualChange) {
-        const isPhaseChange = state.changes.includes(actualChange);
-        const path = isPhaseChange && state.project.current_milestone && state.project.current_phase
-          ? 'bp/milestones/' + state.project.current_milestone + '/phases/' + state.project.current_phase + '/changes/' + changeName + '/'
-          : 'bp/changes/' + changeName + '/';
-        lines.push('  context: Change ' + changeName + ' at ' + path);
-      }
+      lines.push('  context: Change ' + changeName + ' at bp/changes/' + changeName + '/');
     }
-
     // Isolation info
     lines.push('');
     lines.push('### Isolation');

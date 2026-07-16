@@ -1,56 +1,27 @@
 /**
- * bp 实体类型
- * 4 层实体：Project → Milestone → Phase → Change
+ * v2 entity types
+ * Two-layer: Roadmap (living document) + Change (spec-driven unit)
  */
 
-/** 实体类型 */
-export type EntityType = 'project' | 'milestone' | 'phase' | 'change' | 'adhoc' | 'changes';
+/** Change type */
+export type ChangeType = 'phase' | 'adhoc';
 
-/** Change 状态 */
-export type ChangeStatus =
-  | 'pending'
-  | 'proposal'
-  | 'planning'
-  | 'applying'
-  | 'reviewing'
-  | 'verifying'
-  | 'archiving'
-  | 'blocked'
-  | 'archived';
+/** Change lifecycle stage (derived from artifact existence, not stored) */
+export type ChangeStage =
+  | 'proposed'    // proposal.md exists
+  | 'planned'     // design.md + tasks.md exist
+  | 'in-progress' // some tasks [x]
+  | 'implemented' // all tasks [x]
+  | 'reviewed'    // review.md exists with PASS
+  | 'archived';   // moved to changes/archive/
 
-/** Milestone — 版本周期（可发布增量） */
-export interface Milestone {
-  id: string;
-  name: string;
-  version: string;
-  goal?: string;
-  phases: Phase[];
-}
-
-/** Phase — 工作单元 */
-export interface Phase {
-  id: string;
-  name: string;
-  milestoneId: string;
-  changes: Change[];
-}
-
-/** Change — 变更单元 */
-export interface Change {
-  name: string;
-  /** change 类型：phase 归属 phase | adhoc 临时 change */
-  type: 'phase' | 'adhoc';
-  status: ChangeStatus;
-  /** 依赖的其他 change 名（依赖图并行） */
-  dependsOn: string[];
-}
-
-/** Change 元数据（.bp.yaml） */
+/** Change metadata (stored in .bp.yaml per change) */
 export interface ChangeMeta {
   name: string;
-  type: 'phase' | 'adhoc';
-  phaseId?: string;
-  milestoneId?: string;
-  dependsOn: string[];
+  type: ChangeType;
+  /** Optional roadmap reference */
+  milestone?: string;
+  phase?: string;
+  /** Created timestamp */
   createdAt: string;
 }

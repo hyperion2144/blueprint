@@ -52,7 +52,7 @@ function configSet(key: string, value: string) {
   // Validate in-memory before writing
   const result = ProjectConfigSchema.safeParse(currentConfig);
   if (!result.success) {
-    const firstError = result.error.errors[0];
+    const firstError = result.error.issues[0];
     console.error(`✗ Invalid config value for "${key}": ${firstError.message}`, '');
     process.exit(1);
   }

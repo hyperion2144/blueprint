@@ -1,105 +1,184 @@
 /**
- * Artifact output templates — English versions.
+ * Artifact output templates — English (v2).
  *
- * Templates for output documents (proposal, design, tasks, etc.).
+ * Templates for output documents (proposal, design, tasks, spec, review, roadmap, config).
  * Each export is a string with {{placeholder}} variables for CLI rendering.
- * Used by bp-template command and bp change new.
  */
 
 export const PROPOSAL_TEMPLATE = `# Proposal: {{name}}
 
-> Change proposal — intent, references, deliverables. Fill each section.
+<!--
+  This is the human-AI agreement document. It captures WHY and WHAT, not HOW.
+  The planner agent reads this to produce design.md, tasks.md, and delta specs.
 
----
+  Quality bar:
+  - Intent explains the problem, not just the solution
+  - Scope boundaries are explicit and justified
+  - Deliverables are observable (you can verify each one)
+  - Each deliverable traces to a spec domain
+-->
 
 ## Intent
 
-{{what, why, who affected}}
+<!--
+  What problem does this change solve? Why now?
+  Don't describe the solution here - that goes in Approach.
+  2-4 sentences.
+-->
 
----
+{{intent}}
 
-## References
+## Scope
 
-<!-- Phase change only: list FR/NFR and D IDs. Adhoc: remove section -->
+### In Scope
 
-- FR-{{id}}: {{brief}}  (bp/requirements.md)
-- D-{{id}}: {{brief}}  (context.md)
+<!--
+  What specific capabilities will this change add or modify?
+  Be concrete: "Add theme toggle in header" not "Improve UI".
+  List each item as a bullet.
+-->
 
----
+- {{item-1}}
+- {{item-2}}
 
-## External References
+### Out of Scope
 
-<!-- Key specs, documents, or APIs referenced by this proposal. -->
+<!--
+  What is explicitly NOT included? This prevents scope creep.
+  Include things that might seem related but are deferred.
+-->
 
-- specs/{{domain}}/spec.md: {{relevant sections}}
+- {{excluded-1}}
+- {{excluded-2}}
 
+## Approach
+
+<!--
+  High-level method description. 2-4 sentences.
+  Don't include technical details (class names, library choices) - those go in design.md.
+  Do mention if there are alternative approaches worth considering.
+-->
+
+{{approach}}
 
 ## Deliverables
 
 <!--
-PR splitting guidance:
-- Each PR = one observable deliverable (not one file, not one method).
-- Split by user-visible capability, not by implementation layer.
-- If you can describe it as "User can X" → that's one PR.
-- If two capabilities depend on the same underlying change, they can share a PR.
-- Keep PR count ≤ 5 per change. If more, consider splitting the change.
-- PR-1: {{title}}
-  refs: FR-{{id}}, D-{{id}}
-  Source: FR-{{id}} (bp/requirements.md)
-  System SHALL {{observable behavior}}.
-  Verify: {{command, test, or manual step to confirm it works}}.
-  Files: {{file paths}}
-- PR-2: {{title}}
-  refs: FR-{{id}}
-  Source: D-{{id}} (context.md)
-  System SHALL {{observable behavior}}.
-  Verify: {{confirmation method}}.
-  Files: {{file paths}}
+  Each deliverable is an observable, verifiable capability.
+  Split by user-visible behavior, not by implementation layer.
 
----
+  Rules:
+  - Each PR-N has a SHALL statement describing observable behavior
+  - Each PR-N has a Verify method (command, test, or manual step)
+  - Source traces to a spec domain (existing or new)
+  - Keep PR count ≤ 5. If more, consider splitting this change.
+-->
 
-## Scope
+### PR-1: {{deliverable-title}}
 
-{{what's included}}
+- **Source**: specs/{{domain}}/spec.md ({{existing-or-new}})
+- **Behavior**: The system SHALL {{observable-behavior}}
+- **Verify**: {{command-or-test-or-manual-step}}
+- **Files**: {{expected-file-paths}}
 
----
+### PR-2: {{deliverable-title}}
 
-## Out of Scope
+- **Source**: specs/{{domain}}/spec.md
+- **Behavior**: The system SHALL {{observable-behavior}}
+- **Verify**: {{verification-method}}
+- **Files**: {{expected-file-paths}}
 
-{{what's excluded}}
+## Roadmap Reference
+
+<!--
+  Optional. If this change belongs to a milestone/phase in roadmap.md,
+  reference it here. This helps track progress and prevent direction drift.
+  Remove this section for adhoc changes (--adhoc).
+-->
+
+- **Milestone**: {{milestone-name}}
+- **Phase**: {{phase-name}}
 `;
 
 export const DESIGN_TEMPLATE = `# Design: {{name}}
 
-> Change design — component decomposition with DS-N numbering. Each Design Item references proposal deliverables (PR-N).
+<!--
+  Structured technical design. Produced by the planner agent.
+  This is the blueprint executors follow - its quality determines implementation quality.
 
----
+  Quality bar:
+  - Every DS-N is a module boundary with single responsibility
+  - Every D-N decision has real alternatives considered
+  - Architecture diagram shows data flow, not just boxes
+  - File manifest is complete (no "etc." or "and other files")
+  - Every interface includes error responses
+  - Every DS-N traces to a PR-N in proposal.md
+-->
 
 ## Design Items
 
-- DS-1: {{component-name}}
-  refs: PR-{{id}}, PR-{{id}}
-  {{core responsibilities, interfaces, data flow}}
-  Source: PR-{{id}} (proposal.md)
-- DS-2: {{component-name}}
-  refs: PR-{{id}}
-  {{responsibilities}}
-  Source: PR-{{id}} (proposal.md)
----
+<!--
+  Component decomposition. Each DS-N is a module boundary.
+  One module = a cohesive set of functions/classes with a single responsibility.
 
-## Context & Goals
+  Rules:
+  - Every PR-N in proposal.md must be referenced by at least one DS-N
+  - Each DS-N has: refs (PR-N), Source (PR-N), Responsibility
+  - A single PR may need multiple DS if it spans layers
+  - Multiple PRs may share a DS if they modify the same module
+-->
 
-<!-- Context/constraints + core design goals (≤3). Must align with proposal Intent and Must-haves. -->
+### DS-1: {{component-name}}
 
-{{background-and-goals}}
+- **Refs**: PR-{{id}}
+- **Source**: PR-{{id}} (proposal.md)
+- **Responsibility**: {{what this component is responsible for - one sentence}}
+- **Key Interfaces**: {{public functions/classes this component exposes}}
 
----
+### DS-2: {{component-name}}
+
+- **Refs**: PR-{{id}}, PR-{{id}}
+- **Source**: PR-{{id}} (proposal.md)
+- **Responsibility**: {{responsibility}}
+- **Key Interfaces**: {{interfaces}}
+
+## Architecture Decisions
+
+<!--
+  Record decisions that have real alternatives. Skip trivial choices.
+  Each D-N must answer: What did you decide? Why? What else did you consider?
+
+  Good: "Context over Redux - simple binary state, no complex transitions"
+  Bad: "Use TypeScript - project uses TypeScript" (no alternative considered)
+-->
+
+### D-1: {{decision-title}}
+
+- **Status**: ACCEPTED
+- **Decision**: {{what was decided}}
+- **Reason**: {{why this choice - include the constraint or tradeoff that drove it}}
+- **Alternatives**: {{what else was considered and why rejected}}
+
+### D-2: {{decision-title}}
+
+- **Status**: ACCEPTED
+- **Decision**: {{what was decided}}
+- **Reason**: {{why}}
+- **Alternatives**: {{rejected alternatives}}
 
 ## Technical Approach
 
 ### Architecture Diagram
 
-<!-- ASCII art showing module relationships. Annotate: [NEW], [MODIFIED], [EXISTING]. -->
+<!--
+  ASCII art showing component relationships for THIS CHANGE only.
+  Annotate every node:
+  - [NEW] - being created by this change
+  - [MODIFIED] - existing, being changed
+  - [EXISTING] - existing, not changed (for context)
+
+  Show data flow with arrows. Don't draw the entire system.
+-->
 
 \`\`\`text
 {{architecture-diagram}}
@@ -107,1287 +186,565 @@ export const DESIGN_TEMPLATE = `# Design: {{name}}
 
 ### Core Data Structures
 
-<!-- Key types/interfaces introduced or modified. TypeScript interface format, brief description per type. -->
+<!--
+  Key types/interfaces introduced or modified.
+  Use TypeScript interface format. Brief description per type.
+  Only include types that are part of the component contract,
+  not every internal type.
+-->
 
+\`\`\`typescript
 {{data-structures}}
+\`\`\`
 
 ### Data Flow
 
-<!-- Step-by-step data flow from trigger to effect. -->
-
-{{data-flow}}
-
-### Interface Design
-
-<!-- Each interface: method, path, request/response structure, parameters. Copy from spec if defined. -->
-
-#### {{endpoint}} \`{{HTTP_METHOD}} {{path}}\`
-- **Headers**: {{headers}}
-- **Request body**: 
-  \`\`\`json
-  {{request example}}
-  \`\`\`
-- **Response**: 
-  \`\`\`json
-  {{response example}}
-  \`\`\`
-- **Errors**: {{error codes}}
-- **Source**: specs/{{domain}}/spec.md SHALL-{{id}}
-
-## External Dependencies
-
-<!-- External APIs/services used. Full URL + auth + parameters. -->
-
-| Service | Base URL | Auth | Request | Response | Used By | Source |
-|---------|----------|------|---------|----------|---------|--------|
-| {{name}} | \`{{https://api.example.com}}\` | {{Bearer Token}} | {{params}} | {{response}} | DS-{{id}} | FR-{{id}} |
-
----
-
-## File Manifest
-
-| File Path | Description | Action | Source |
-|-----------|-------------|--------|--------|
-| \`{{file-path-1}}\` | {{description}} | Create | DS-{{id}} |
-| \`{{file-path-2}}\` | {{description}} | Modify | DS-{{id}} |
-
----
-
-## Test Strategy
-
-### Unit Tests
-- <!-- Which modules need unit tests? What needs mocking? -->
-
-### Integration Tests
-- <!-- Which flows need integration tests? What fixtures needed? -->
-
-### TDD Tasks
-- <!-- List type:behavior tasks requiring RED→GREEN→REFACTOR -->
-
----
-
-## Alternatives
-
-<!-- Evaluated but rejected approaches, with rationale. -->
-
-| Approach | Pros | Cons | Rejection Reason |
-|----------|------|------|-----------------|
-| {{alt-name-1}} | {{pros}} | {{cons}} | {{reason}} |
-| {{alt-name-2}} | {{pros}} | {{cons}} | {{reason}} |
-
----
-
-## Risk Assessment
-
-| Risk | Probability | Impact | Mitigation |
-|------|------------|--------|-----------|
-| {{risk-1}} | {{probability}} | {{impact}} | {{mitigation}} |
-| {{risk-2}} | {{probability}} | {{impact}} | {{mitigation}} |
-`;
-
-export const TASKS_TEMPLATE = `# Tasks: {{name}}
-
-> This document breaks the design into executable tasks grouped by wave. Each task includes refs to design items (DS-N), spec_ref, files, and acceptance criteria. type:behavior tasks must include RED test descriptions (GIVEN/WHEN/THEN format).
-
----
-
-## TDD Type Annotations
-
-| type | Meaning | TDD Protocol |
-|------|---------|-------------|
-| \`behavior\` | Business behavior — implement a concrete, observable/assertable feature | **RED→GREEN→REFACTOR** (mandatory: test first → implement → refactor) |
-| \`config\` | Configuration — env vars, CI/CD, lint, tsconfig, etc. | Direct implementation, no TDD |
-| \`refactor\` | Refactoring — improve internal structure without changing behavior | Verify tests pass → refactor → verify again |
-| \`docs\` | Documentation — README, API docs, comments | Direct implementation, no TDD |
-| \`scaffolding\` | Skeleton code — new module shells, directory structure, templates | Direct implementation, no TDD |
-
-> **Rule**: If a task's core output is "a behavior" (user-perceptible or test-assertable), use \`behavior\`. If it's just "file exists" or "config takes effect", use \`config\`/\`scaffolding\`.
-
----
-
-## Wave 1: {{theme}}
-
 <!--
-Decomposition guidance:
-- T = one independently testable behavior path per task. If a DS has 3 endpoints → 3 tasks.
-- Multiple DS merge into one T only when they cannot compile/test separately.
-- 1 wave by default. Add Wave 2, 3 only when layer dependencies exist (model→service→api).
+  Step-by-step flow from trigger to effect.
+  Number each step. Include file paths for key operations.
 -->
 
-- [ ] T-1: [type:{{type}}] {{title}}
-  - **refs**: DS-{{id}}
-  - **files**: {{full relative paths from project root, comma-separated}}
-  - **spec_ref**: specs/{{domain}}/spec.md <!-- required for behavior type -->
-  - **acceptance**:
-    {{observable, assertable acceptance criteria (GIVEN/WHEN/THEN or bullet list)}}
-  - **depends_on**: [T-{{id}}] <!-- optional -->
-  {{if behavior}}
-  - ***RED test***:
-    \`\`\`
-    GIVEN {{precondition}}
-    WHEN {{trigger action}}
-    THEN {{expected result}}
-    \`\`\`
-  {{/if}}
-
----
-
-## Implementation Verification
-
-> **This is NOT the review step.** These checks confirm the code is correct and tests pass. After passing, run \`bp continue\` to advance to the review/archive workflow step.
-
-- [ ] \`tsc --noEmit\` passes (or equivalent type check)
-- [ ] \`vitest run\` all test suites pass
-- [ ] Each wave's acceptance criteria confirmed (manual or automated)
-- [ ] New code passes lint check
-- [ ] No new type errors or warnings introduced
-`;
-
-export const CONTEXT_TEMPLATE = `# Context: {{name}}
-
-> Phase implementation decisions document. Captures architecture decisions, interface contracts, and implementation constraints for this phase. Written during the discuss phase.
-
----
-
-## Phase Goals
-<!-- What does this phase deliver? -->
-
-{{phase-goals}}
-
----
-
-## Architecture Decisions
-
-<!-- Numbered decisions: D1, D2, ... Each decision records what was chosen and why. -->
-
-## D-1: {{decision-title}}
-- Status: {{ACCEPTED | REJECTED | DEFERRED}}
-- Decision: {{what was decided}}
-- Reason: {{why this decision was made}}
-- Alternatives: {{what else was considered}}
-- References: {{FR-N, D-N}}
-
-## D-2: {{decision-title}}
-- Status: {{ACCEPTED | REJECTED | DEFERRED}}
-- Decision: {{what was decided}}
-- Reason: {{why}}
-- Alternatives: {{what else was considered}}
-- References: {{FR-N, D-N}}
----
-
-## Interface Contracts
-
-<!-- Key APIs and data models for this phase. -->
-
-{{interface-contracts}}
-
----
-
-## Implementation Constraints
-
-<!-- Technical limits and boundaries for this phase. -->
-
-{{constraints}}
-
----
-
-## Change Split Plan
-
-<!-- Preliminary breakdown of this phase into changes. -->
-
-{{change-split-plan}}
-
----
-
-## Non-Goals
-
-<!-- Explicitly excluded from this phase. -->
-
-{{non-goals}}
-`;
-
-export const PHASE_RESEARCH_TEMPLATE = `# Research: {{name}}
-
-## Research Scope
-{{what was researched}}
-
-## Recommendation
-{{recommended implementation path}}
-
-## Risks
-- {{risk-1}}: {{mitigation}}
-`;
-
-export const RESEARCH_TEMPLATE = `# Research: {{name}}
-
-> Technical research document. Compares alternatives, assesses feasibility, and produces recommendations.
-
----
-
-## Research Scope
-
-{{scope}}
-
----
-
-## Candidate Comparison
-
-| Criterion | Option A: {{name-a}} | Option B: {{name-b}} | Option C: {{name-c}} |
-|-----------|---------------------|---------------------|---------------------|
-| {{criterion-1}} | {{score}} | {{score}} | {{score}} |
-| {{criterion-2}} | {{score}} | {{score}} | {{score}} |
-
----
-
-## Recommendation
-
-**Recommended**: {{recommended-option}}
-
-**Rationale**: {{rationale}}
-
----
-
-## Risk Assessment
-
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|-----------|
-| {{risk-1}} | {{likelihood}} | {{impact}} | {{mitigation}} |
-
----
-
-## Open Questions
-
-- {{question-1}}
-- {{question-2}}
-`;
-
-export const RESEARCH_SUMMARY_TEMPLATE = `# Summary: {{name}}
-
-## Recommendation
-{{recommended approach, one paragraph}}
-
-## Rationale
-{{why this approach, key trade-offs considered}}
-`;
-
-export const SUMMARY_TEMPLATE = `# Summary: {{name}}
-
-> Phase completion summary.
-
----
-
-## Intent Recap
-{{intent}}
-
-## Changes
-| Change | Status | Description |
-|--------|--------|-------------|
-| {{change-1}} | {{status}} | {{description}} |
-
-## Files Changed
-| File | Action | Lines |
-|------|--------|-------|
-| {{file-1}} | {{action}} | {{lines}} |
-
-## Key Decisions
-- {{decision-1}}
-- {{decision-2}}
-
-## Verification
-- [ ] All tests pass
-- [ ] Type check passes
-- [ ] Delta-specs covered
-`;
-
-export const VERIFICATION_TEMPLATE = `# Verification: {{name}}
-
-> Goal-backward verification report. Confirms the change delivers what it promised.
-
----
-
-## Status: {{status}}
-
-<!-- passed | gaps_found | human_needed -->
-
-## Delta-Spec Coverage
-
-| Spec Item | Test Coverage | Status |
-|-----------|--------------|--------|
-| {{spec-item-1}} | {{test}} | {{status}} |
-
-## TDD Commit Integrity
-
-| Task | RED | GREEN | REFACTOR | Status |
-|------|-----|-------|----------|--------|
-| {{task-1}} | {{commit}} | {{commit}} | {{commit}} | {{status}} |
-
-## Test Suite
-
-- Total: {{total}}
-- Passed: {{passed}}
-- Failed: {{failed}}
-- Skipped: {{skipped}}
-
-## Findings
-
-{{findings}}
-`;
-
-export const SPEC_REVIEW_TEMPLATE = `# Spec Review: {{name}}
-
-> Specification compliance review. Cross-references delta-spec SHALL/MUST constraints against implementation.
-
----
-
-## Overall: {{verdict}}
-
-<!-- PASS / FAIL / NEEDS_REVISION — If any row below is FAIL, or any Issues entry exists, overall MUST be FAIL or NEEDS_REVISION, NOT PASS. -->
-
-## Constraint Checklist
-
-| # | Constraint | Location | Status | Evidence |
-|---|-----------|----------|--------|----------|
-| R1 | {{constraint}} | {{file:line}} | PASS / FAIL / N/A | {{note}} |
-| R2 | {{constraint}} | {{file:line}} | PASS / FAIL / N/A | {{note}} |
-
-## Edge Case Coverage
-
-| Edge Case | Covered? | Evidence |
-|-----------|---------|----------|
-| {{edge-case}} | {{yes/no}} | {{note}} |
-
-## Issues
-- [ ] R1 — {{brief}} (xref R1)
-- [ ] R2 — {{brief}} (xref R2)
-<!-- Add more: - [ ] R<N> — <brief> (xref R<N>) -->
-<!-- Design issues: - [ ] D1 — <design issue> (replan required) -->
-`;
-
-export const QUALITY_REVIEW_TEMPLATE = `# Quality Review: {{name}}
-
-> Code quality audit. Checks for bugs, security issues, conventions, and common AI mistakes.
-
----
-
-## Overall: {{verdict}}
-
-<!-- PASS / FAIL / NEEDS_REVISION — If any issue below (BLOCKER/MAJOR/MINOR/INFO) or any Issues entry exists, overall MUST be FAIL or NEEDS_REVISION, NOT PASS. -->
-
-## Issues
-
-| # | Severity | Category | Location | Description |
-|---|----------|----------|----------|-------------|
-| Q1 | BLOCKER / MAJOR / MINOR / INFO | {{category}} | {{file:line}} | {{description}} |
-| Q2 | BLOCKER / MAJOR / MINOR / INFO | {{category}} | {{file:line}} | {{description}} |
-
-## Convention Compliance
-
-| Rule | Status | Note |
-|------|--------|------|
-| {{rule}} | {{status}} | {{note}} |
-
-## Issues
-- [ ] Q1 — {{brief}} (xref Q1)
-- [ ] Q2 — {{brief}} (xref Q2)
-<!-- Add more: - [ ] Q<N> — <brief> (xref Q<N>) -->
-<!-- Design issues: - [ ] D<N> — <design issue> (replan required) -->
-`;
-
-export const GOAL_REVIEW_TEMPLATE = `# Goal Review: {{name}}
-
-> Goal achievement review. Cross-references proposal.md goals and must_haves against implementation.
-
----
-
-## Overall: {{verdict}}
-
-<!-- PASS / FAIL / NEEDS_REVISION — If any goal below is PARTIAL or NOT_ACHIEVED, or any Issues entry exists, overall MUST be FAIL or NEEDS_REVISION, NOT PASS. -->
-
-## Goal Checklist
-
-| # | Goal / Must-have | Status | Evidence |
-|---|-----------------|--------|----------|
-| G1 | {{goal}} | ACHIEVED / PARTIAL / NOT_ACHIEVED | {{note}} |
-| G2 | {{goal}} | ACHIEVED / PARTIAL / NOT_ACHIEVED | {{note}} |
-
-## Completeness Assessment
-
-{{assessment}}
-
-## Issues
-- [ ] G1 — {{brief}} (xref G1)
-- [ ] G2 — {{brief}} (xref G2)
-<!-- Add more: - [ ] G<N> — <brief> (xref G<N>) -->
-<!-- Design issues: - [ ] D<N> — <design issue> (replan required) -->
-`;
-
-export const CHANGE_SUMMARY_TEMPLATE = `# Change Summary: {{name}}
-
-## Intent
-{{intent}}
-
-## Commits
-- {{hash-1}}: {{message-1}}
-
-## Output Files
-- {{file-1}}: {{action-1}}
-`;
-
-export const REQUIREMENTS_TEMPLATE = `# Requirements: {{name}}
-
-> Populated during grill phase. New milestones append to the top, completed milestones remain as history.
-
----
-
-## FR-1: {{requirement-title}}
-- Priority: {{critical | high | medium | low}}
-- {{description: what the system should do}}
-- Acceptance: {{how to verify}}
-
-## FR-2: {{requirement-title}}
-- Priority: {{critical | high | medium | low}}
-- {{description}}
-- Acceptance: {{how to verify}}
-
-## NFR-1: {{category (performance, security, usability, etc.)}}
-- {{constraint or quality attribute}}
-
-## Constraints
-- {{constraint-1}}
-- {{constraint-2}}
-`;
-
-export const ROADMAP_TEMPLATE = `# Roadmap: {{name}}
-
-> Planning mode: {{mode}}
-
-## Md-1: {{milestone-name}} [NOT_STARTED]
-
-### Ph-1.1: {{first-phase-name}} [NOT_STARTED]
-- **Goal**: {{what this phase delivers — a demonstrable, shippable artifact}}
-- **Deliverable**: {{runnable binary, deployed endpoint, test suite passing, etc.}}
-- **Inputs**: {{specs, conventions, docs}}
-- **Outputs**: {{code, specs, docs}}
-
-### Ph-1.2: {{second-phase-name}} [NOT_STARTED]
-- **Goal**: {{what this phase delivers}}
-- **Deliverable**: {{runnable artifact}}
-- **Inputs**: {{specs, conventions, docs}}
-- **Outputs**: {{code, specs, docs}}
-
-> Add more phases (Ph-1.3, Ph-1.4, ...) and milestones (Md-2, Md-3, ...) below as separate sections.
-> Use \`[NOT_STARTED]\`, \`[ACTIVE]\`, or \`[COMPLETED]\` status tags.
-> Directory naming: milestones/{Md-id}/phases/{Ph-mid.pid}/changes/. Create milestone root + first phase directory only. Remaining dirs created on-demand.`;
-
-export const RESEARCH_STACK_TEMPLATE = `# Tech Stack Research: {{name}}
-
-> Research output — recommended technology stack with alternatives compared.
-
----
-
-## Recommendation
-**{{recommended-stack}}** — {{one-line rationale}}
-
-## Comparison
-| Criterion | Option A: {{option-a}} | Option B: {{option-b}} | Recommendation |
-|-----------|----------------------|----------------------|----------------|
-| {{criterion-1}} | {{score}} | {{score}} | {{winner}} |
-| {{criterion-2}} | {{score}} | {{score}} | {{winner}} |
-
-## Final Selection
-| Component | Choice | Version | Rationale |
-|-----------|--------|---------|----------|
-| {{component-1}} | {{choice}} | {{version}} | {{why}} |
-
-## Risks
-- {{risk-1}}: {{mitigation}}
-`;
-
-export const RESEARCH_ARCHITECTURE_TEMPLATE = `# Architecture Research: {{name}}
-
-> Research output — recommended architecture with rationale and alternatives.
-
----
-
-## Recommendation
-**{{approach-name}}** — {{one-line rationale}}
-
-## Architecture Overview
-\`\`\`text
-{{architecture-diagram}}
-\`\`\`
-
-## Alternatives Evaluated
-| Approach | Strengths | Weaknesses | Verdict |
-|----------|-----------|-----------|---------|
-| {{approach-1}} | {{strengths}} | {{weaknesses}} | {{verdict}} |
-| {{approach-2}} | {{strengths}} | {{weaknesses}} | {{verdict}} |
-
-## Key Decisions
-- {{decision-1}}
-- {{decision-2}}
-
-## Risks & Mitigations
-- {{risk-1}}: {{mitigation}}
-`;
-
-export const RESEARCH_PITFALLS_TEMPLATE = `# Research Pitfalls: {{name}}
-
-> Research output — known risks, anti-patterns to avoid, and mitigation strategies.
-
----
-
-## Known Risks
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|-----------|
-| {{risk-1}} | {{high/medium/low}} | {{high/medium/low}} | {{mitigation}} |
-
-## Anti-Patterns to Avoid
-- **{{anti-pattern-1}}**: {{why it fails and what to do instead}}
-
-## Edge Cases
-- {{edge-case-1}}: {{handling strategy}}
-
-## Dependencies at Risk
-| Dependency | Version | Status | Concern |
-|-----------|---------|--------|---------|
-| {{dep-1}} | {{version}} | {{active/deprecated/unstable}} | {{concern}} |
-`;
-
-export const CODEBASE_STACK_TEMPLATE = `# Technology Stack
-
-**Analysis Date:** {{date}}
-
-## Languages
-
-**Primary:**
-- {{language}} {{version}} — {{where-used}}
-
-**Secondary:**
-- {{secondary-language}} {{version}} — {{where-used}}
-
-## Runtime
-
-**Environment:**
-- {{runtime}} {{version}}
-
-**Package Manager:**
-- {{package-manager}} {{version}}
-- Lockfile: {{lockfile}}
-
-## Frameworks
-
-**Core:**
-- {{framework}} {{version}} — {{purpose}}
-
-**Testing:**
-- {{test-framework}} {{version}} — {{purpose}}
-
-**Build/Dev:**
-- {{build-tool}} {{version}} — {{purpose}}
-
-## Key Dependencies
-
-**Critical:**
-- {{package}} {{version}} — {{why-it-matters}}
-
-**Infrastructure:**
-- {{package}} {{version}} — {{purpose}}
-
-## Configuration
-
-**Environment:**
-- {{how-configured}}
-- Key configs: {{key-configs}}
-
-**Build:**
-- {{build-config-files}}
-
-## Platform Requirements
-
-**Development:**
-- {{dev-requirements}}
-
-**Production:**
-- {{deployment-target}}
-
----
-
-*Stack analysis: {{date}}*`;
-
-export const CODEBASE_ARCHITECTURE_TEMPLATE = `<!-- refreshed: {{date}} -->
-# Architecture
-
-**Analysis Date:** {{date}}
-
-## System Overview
-
-\`\`\`text
-┌─────────────────────────────────────────────────────────────┐
-│                      {{top-layer-name}}                      │
-├──────────────────┬──────────────────┬───────────────────────┤
-│   {{component-a}}   │   {{component-b}}   │    {{component-c}}     │
-│  \`{{path-to-a}}\`   │  \`{{path-to-b}}\`   │   \`{{path-to-c}}\`    │
-└────────┬─────────┴────────┬─────────┴──────────┬────────────┘
-         │                  │                     │
-         ▼                  ▼                     ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    {{middle-layer-name}}                     │
-│         \`{{path-to-layer}}\`                                  │
-└─────────────────────────────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────────────────────────────┐
-│  {{store-or-output}}                                         │
-│  \`{{path-to-store}}\`                                        │
-└─────────────────────────────────────────────────────────────┘
-\`\`\`
-
-## Component Responsibilities
-
-| Component | Responsibility | File |
-|-----------|----------------|------|
-| {{name}} | {{responsibility}} | \`{{path}}\` |
-| {{name}} | {{responsibility}} | \`{{path}}\` |
-
-## Pattern Overview
-
-**Overall:** {{pattern-name}}
-
-**Key Characteristics:**
-- {{characteristic-1}}
-- {{characteristic-2}}
-- {{characteristic-3}}
-
-## Layers
-
-**{{layer-name}}:**
-- Purpose: {{what-this-layer-does}}
-- Location: \`{{location}}\`
-- Depends on: {{depends-on}}
-- Used by: {{used-by}}
-
-**{{layer-name-2}}:**
-- Purpose: {{what-this-layer-does}}
-- Location: \`{{location}}\`
-- Depends on: {{depends-on}}
-- Used by: {{used-by}}
-
-## Data Flow
-
-### Primary Request Path
-1. {{step-1}} (\`{{file:line}}\`)
-2. {{step-2}} (\`{{file:line}}\`)
-3. {{step-3}} (\`{{file:line}}\`)
-
-### {{secondary-flow-name}}
 1. {{step-1}}
 2. {{step-2}}
 3. {{step-3}}
 
-**State Management:** {{state-approach}}
+### Interface Design
 
-## Key Abstractions
+<!--
+  For each external-facing interface (API endpoint, CLI command, public function):
+  - Full request/response schema
+  - Error responses (not just happy path)
+  - Source: trace to delta spec requirement
 
-**{{abstraction-name}}:**
-- Purpose: {{what-it-represents}}
-- Examples: \`{{file-path-examples}}\`
-- Pattern: {{pattern-used}}
+  If this change has no external interfaces, write "No external interfaces."
+-->
 
-## Entry Points
+#### {{endpoint-name}} \`{{HTTP_METHOD}} {{path}}\`
 
-**{{entry-name}}:**
-- Location: \`{{location}}\`
-- Triggers: {{what-invokes-it}}
-- Responsibilities: {{what-it-does}}
+- **Headers**: {{required-headers}}
+- **Request body**:
+  \`\`\`json
+  {{request-example}}
+  \`\`\`
+- **Response 200**:
+  \`\`\`json
+  {{response-example}}
+  \`\`\`
+- **Response 400**: {{error-description}}
+- **Response 401**: {{error-description}}
+- **Source**: specs/{{domain}}/spec.md#{{requirement-id}}
 
-## Architectural Constraints
+## External Dependencies
 
-- **Threading:** {{threading-model}}
-- **Global state:** {{global-state-description}}
-- **Circular imports:** {{circular-imports}}
+<!--
+  External APIs, services, or libraries used by this change.
+  Include full URL, auth method, and what it's used for.
+  If none, write "No external dependencies."
+-->
 
-## Anti-Patterns
+| Service | Base URL | Auth | Used For | Source |
+|---------|----------|------|----------|--------|
+| {{name}} | \`{{url}}\` | {{auth-method}} | {{purpose}} | DS-{{id}} |
 
-### {{anti-pattern-name}}
-**What happens:** {{description}}
-**Why it's wrong:** {{reason}}
-**Do this instead:** {{correct-pattern}} (\`{{file-reference}}\`)
+## File Manifest
 
-## Error Handling
+<!--
+  EVERY file that will be created or modified.
+  No "etc." or "and other files". If you forgot a file, the executor won't know about it.
 
-**Strategy:** {{error-strategy}}
-**Patterns:**
-- {{pattern-1}}
-- {{pattern-2}}
+  Action: Create | Modify | Delete
+-->
 
-## Cross-Cutting Concerns
+| File Path | Description | Action | Source |
+|-----------|-------------|--------|--------|
+| \`{{path}}\` | {{description}} | Create | DS-{{id}} |
+| \`{{path}}\` | {{description}} | Modify | DS-{{id}} |
 
-| Concern | Approach | Files |
-|---------|----------|-------|
-| Logging | {{logging-approach}} | \`{{path}}\` |
-| Validation | {{validation-approach}} | \`{{path}}\` |
-| Auth | {{auth-approach}} | \`{{path}}\` |
+## TDD Strategy
 
----
+<!--
+  How TDD applies to this change.
+  - behavior tasks: RED (failing test) -> GREEN (minimal impl) -> REFACTOR
+  - Other types: direct implementation
+  Note any testing challenges or special setup needed.
+-->
 
-*Architecture analysis: {{date}}*`;
+- **behavior tasks**: RED -> GREEN -> REFACTOR (3 commits per task)
+- **config/scaffolding/docs**: direct implementation (1 commit per task)
+- **refactor**: verify tests pass -> refactor -> verify again
 
-export const CODEBASE_CONVENTIONS_TEMPLATE = `# Coding Conventions
+{{testing-notes}}
 
-**Analysis Date:** {{date}}
+## Risks
 
-## Code Style
+<!--
+  Specific, actionable risks for THIS change.
+  Not generic "might be slow" - say "localStorage write on every toggle may cause performance issues if toggled rapidly".
 
-- Indentation: {{indent}}
-- Quotes: {{quotes}}
-- Semicolons: {{semicolons}}
-- Max line length: {{max-line}}
+  Include mitigation for each risk.
+  If no significant risks, write "No significant risks identified."
+-->
 
-## Naming
-
-**Functions:** {{func-naming}}
-**Variables:** {{var-naming}}
-**Classes:** {{class-naming}}
-**Files:** {{file-naming}}
-**Directories:** {{dir-naming}}
-
-## Import Patterns
-
-**Order:** {{import-order}}
-**Path aliases:** {{aliases}}
-**Barrel exports:** {{barrel-exports}}
-
-## Error Handling
-
-**Expected errors:** {{expected-errors}}
-**Unexpected errors:** {{unexpected-errors}}
-**Pattern:** {{error-pattern}}
-
-## Type System
-
-**Strictness:** {{strictness}}
-**Type vs Interface:** {{type-vs-interface}}
-**Generics usage:** {{generics}}
-**\`any\` usage:** {{any-usage}}
-
-## Async Patterns
-
-**Preferred:** {{async-pattern}}
-**Error handling:** {{async-error-handling}}
+| Risk | Impact | Likelihood | Mitigation |
+|------|--------|------------|------------|
+| {{risk-1}} | {{impact}} | {{likelihood}} | {{mitigation}} |
+| {{risk-2}} | {{impact}} | {{likelihood}} | {{mitigation}} |
 `;
 
-export const SPEC_TEMPLATE = `# Delta-Spec: {{domain-name}}
+export const TASKS_TEMPLATE = `# Tasks: {{name}}
 
-> Change: {{change-name}} | Domain: {{domain-name}}
+<!--
+  Structured implementation checklist. Produced by the planner agent.
+  Executors receive ONE wave at a time and implement its tasks via TDD.
+
+  Quality bar:
+  - Each task is independently testable (one behavioral path)
+  - type:behavior tasks have RED descriptions (GIVEN/WHEN/THEN)
+  - type:behavior tasks have spec_ref pointing to delta spec
+  - Wave decomposition is based on real layer dependencies
+  - depends_on is minimal (only when task B can't compile/test without task A)
+  - Every DS-N in design.md is referenced by at least one task
+-->
+
+## TDD Type Annotations
+
+| type | Meaning | TDD Protocol | Commit type |
+|------|---------|-------------|-------------|
+| \`behavior\` | Business behavior - observable, testable feature | RED -> GREEN -> REFACTOR | test + feat + refactor |
+| \`config\` | Configuration - env vars, CI/CD, lint, tsconfig | Direct implementation | chore |
+| \`refactor\` | Improve structure without changing behavior | Verify tests -> refactor -> verify | refactor |
+| \`docs\` | Documentation - README, API docs, comments | Direct implementation | docs |
+| \`scaffolding\` | Skeleton code - module shells, directory structure | Direct implementation | chore |
+
+## Wave 1: {{theme}}
+
+<!--
+  Wave decomposition:
+  - Default is 1 wave. Add more ONLY when tasks have layer dependencies.
+  - Example of real layer dependency:
+    Wave 1: data model + repository (can test independently)
+    Wave 2: service layer (depends on Wave 1 models)
+    Wave 3: API endpoints (depends on Wave 2 services)
+  - Do NOT create multiple waves for tasks that are merely "related".
+  - Each wave must be independently verifiable (tsc + tests pass after wave completes).
+-->
+
+- [ ] T-1: [type:behavior] {{task-title}}
+  - **refs**: DS-{{id}}
+  - **spec_ref**: specs/{{domain}}/spec.md#{{requirement-id}}
+  - **files**: {{file-path-1}}, {{file-path-1-test}}
+  - **acceptance**: {{binary-criteria - e.g., "toggle() changes theme from 'light' to 'dark'"}}
+  - **RED**: GIVEN {{precondition}}
+    WHEN {{action}}
+    THEN {{observable-result}}
+    AND {{additional-assertion}}
+
+- [ ] T-2: [type:behavior] {{task-title}}
+  - **refs**: DS-{{id}}
+  - **spec_ref**: specs/{{domain}}/spec.md#{{requirement-id}}
+  - **files**: {{file-path}}, {{file-path-test}}
+  - **acceptance**: {{binary-criteria}}
+  - **RED**: GIVEN {{precondition}}
+    WHEN {{action}}
+    THEN {{observable-result}}
+  - **depends_on**: T-1
+
+- [ ] T-3: [type:scaffolding] {{task-title}}
+  - **refs**: DS-{{id}}
+  - **files**: {{file-path}}
+  - **acceptance**: {{criteria - e.g., "component file exists with correct imports"}}
+
+## Wave 2: {{theme}}
+
+<!--
+  Only present if Wave 1 tasks are depended on by Wave 2 tasks.
+  Remove this section if not needed.
+-->
+
+- [ ] T-4: [type:behavior] {{task-title}}
+  - **refs**: DS-{{id}}
+  - **spec_ref**: specs/{{domain}}/spec.md#{{requirement-id}}
+  - **files**: {{file-path}}, {{file-path-test}}
+  - **acceptance**: {{binary-criteria}}
+  - **RED**: GIVEN {{precondition}}
+    WHEN {{action}}
+    THEN {{observable-result}}
+  - **depends_on**: T-3
+
+## Pre-Archive Checklist
+
+<!--
+  Verified by the orchestrator after all waves complete.
+  These are the gates before review can run.
+-->
+
+- [ ] \`tsc --noEmit\` passes with no errors
+- [ ] \`vitest run\` (or project test command) - all suites pass
+- [ ] Every task in every wave is marked \`[x]\` with a commit hash
+- [ ] No \`{{\` template placeholders remaining in any artifact
+- [ ] All wave acceptance criteria confirmed
+`;
+
+export const SPEC_TEMPLATE = `# Delta Spec: {{domain}}
+
+<!--
+  Behavioral contract for this change. Produced by the planner agent.
+  This is NOT implementation documentation - it describes WHAT the system does, not HOW.
+
+  Quality bar:
+  - Requirements describe observable behavior (inputs, outputs, error conditions)
+  - NOT implementation details (class names, library choices, function signatures)
+  - Each requirement has at least 1 scenario (happy path)
+  - Requirements with error conditions have error scenarios
+  - SHALL/MUST used for absolute requirements, SHOULD for recommended, MAY for optional
+  - MODIFIED requirements include the full new version + "was:" annotation
+  - REMOVED requirements include the reason
+
+  On archive:
+  - ADDED -> appended to bp/specs/<domain>/spec.md
+  - MODIFIED -> replaces existing requirement in bp/specs/<domain>/spec.md
+  - REMOVED -> deleted from bp/specs/<domain>/spec.md
+-->
+
+> Change: {{change-name}} | Domain: {{domain}}
 
 ## ADDED Requirements
 
-### Requirement: {{req-name-1}}
-The system SHALL {{behavior-1}}.
+<!--
+  New behavior being introduced by this change.
+  These will be appended to the global spec on archive.
+
+  Requirement naming: use a noun phrase describing the capability.
+  Good: "Theme Selection", "Two-Factor Authentication", "Session Expiration"
+  Bad: "ThemeFeature", "2FA", "SessionStuff"
+-->
+
+### Requirement: {{requirement-name}}
+
+The system SHALL {{behavior-description}}.
 
 #### Scenario: {{scenario-name}}
-- **GIVEN** {{given}}
-- **WHEN** {{when}}
-- **THEN** {{then}}
+
+- **GIVEN** {{precondition}}
+- **WHEN** {{action}}
+- **THEN** {{observable-result}}
+- **AND** {{additional-assertion}}
+
+#### Scenario: {{edge-case-name}}
+
+- **GIVEN** {{edge-precondition}}
+- **WHEN** {{edge-action}}
+- **THEN** {{edge-result}}
+
+#### Scenario: {{error-case-name}}
+
+- **GIVEN** {{error-precondition}}
+- **WHEN** {{error-action}}
+- **THEN** {{error-result}}
+- **AND** {{side-effect}}
 
 ## MODIFIED Requirements
 
-<!-- Use same header as in global spec. Include complete modified requirement. -->
+<!--
+  Existing behavior being changed.
+  Include the FULL new requirement (not just the diff).
+  Add "was:" annotation showing what changed.
 
-### Requirement: {{existing-req-name}}
+  The requirement header MUST match the existing one in bp/specs/<domain>/spec.md
+  so the merge can find and replace it.
+-->
+
+### Requirement: {{existing-requirement-name}}
+
 The system SHALL {{new-behavior}}.
+(was: {{old-behavior-summary}})
 
-#### Scenario: {{scenario-name}}
-- **GIVEN** {{given}}
-- **WHEN** {{when}}
-- **THEN** {{then}}
-← (was: {{old-behavior}})
+#### Scenario: {{updated-scenario-name}}
+
+- **GIVEN** {{precondition}}
+- **WHEN** {{action}}
+- **THEN** {{new-result}}
 
 ## REMOVED Requirements
 
-<!-- List removed requirement headers with reason -->
-- ` + '`### Requirement: {{removed-req-name}}`' + ` — Reason: {{reason}}
+<!--
+  Existing behavior being removed.
+  List the requirement header (must match global spec) and reason.
+  Do NOT include scenarios - they're being deleted.
+
+  Verify before removing:
+  - No other code depends on this behavior
+  - The removal is intentional, not accidental
+-->
+
+### Requirement: {{removed-requirement-name}}
+
+**Reason**: {{why this behavior is being removed}}
 `;
 
-export const GLOBAL_SPEC_TEMPLATE = `# {{domain-name}} Specification
+export const REVIEW_TEMPLATE = `# Review: {{name}}
+
+<!--
+  Triple review result. Produced by the reviewer agent.
+  This is the gate between apply and archive.
+
+  Three dimensions:
+  1. Spec Review (Spec Gate): delta spec requirements vs implementation
+  2. Quality Review (Quality Gate): code bugs, security, conventions
+  3. Goal Review (Goal Gate): proposal deliverables vs implementation
+
+  Issue prefixes:
+  - R-N: Spec non-compliance -> reapply (bp apply --fix)
+  - Q-N: Quality issue -> reapply (bp apply --fix)
+  - G-N: Goal not achieved -> reapply (bp apply --fix)
+  - D-N: Design/architecture flaw -> replan (bp plan --fix)
+
+  Verdict rules:
+  - Zero issues -> PASS
+  - Any D issue -> FAIL
+  - Any BLOCKER severity -> FAIL
+  - Only R/Q/G (no D, no BLOCKER) -> NEEDS_REVISION
+-->
+
+## Overall Verdict: {{PASS | FAIL | NEEDS_REVISION}}
+
+---
+
+## Spec Review
+
+### Constraint Checklist
+
+| # | Requirement | Type | Status | Evidence |
+|---|-------------|------|--------|----------|
+| R1 | {{requirement-name}} | ADDED | {{PASS/FAIL/N/A}} | {{file:line}} |
+| R2 | {{requirement-name}} | MODIFIED | {{PASS/FAIL/N/A}} | {{file:line}} |
+| R3 | {{requirement-name}} | REMOVED | {{PASS/FAIL/N/A}} | {{file:line}} |
+
+### Scenario Coverage
+
+| Scenario | Test Location | Status |
+|----------|--------------|--------|
+| {{scenario-name}} | {{test-file:line}} | PASS |
+| {{scenario-name}} | {{test-file:line}} | PASS |
+| {{scenario-name}} | - | MISSING |
+
+### Spec Verdict: {{PASS | FAIL | NEEDS_REVISION}}
+
+---
+
+## Quality Review
+
+### Issues
+
+| # | Severity | Category | Location | Description | Fix |
+|---|----------|----------|----------|-------------|-----|
+| Q1 | {{BLOCKER/MAJOR/MINOR}} | {{Bug/Security/Convention/AI-Smell}} | {{file:line}} | {{specific-description}} | {{actionable-fix}} |
+
+### Convention Compliance
+
+| Rule | Status | Note |
+|------|--------|------|
+| {{convention-rule}} | {{PASS/FAIL}} | {{note}} |
+
+### Quality Verdict: {{PASS | FAIL | NEEDS_REVISION}}
+
+---
+
+## Goal Review
+
+### Goal Checklist
+
+| # | Deliverable | Status | Evidence |
+|---|-------------|--------|----------|
+| G1 | PR-1: {{deliverable-title}} | {{ACHIEVED/PARTIAL/NOT_ACHIEVED}} | {{evidence}} |
+| G2 | PR-2: {{deliverable-title}} | {{ACHIEVED/PARTIAL/NOT_ACHIEVED}} | {{evidence}} |
+
+### Goal Verdict: {{PASS | FAIL | NEEDS_REVISION}}
+
+---
+
+## Issues
+
+- [ ] {{R/Q/G/D}}{{N}} - {{brief-description}} ({{spec/quality/goal}})
+
+## Routing
+
+- **D issues**: {{count}} ({{list or "none"}})
+- **R/Q/G issues**: {{count}} ({{list or "none"}})
+
+**Recommendation**: \`bp {{action}} {{name}}\`
+`;
+
+export const ROADMAP_TEMPLATE = `# Roadmap: {{project-name}}
+
+<!--
+  Living document. Tracks project direction and progress.
+  NOT a state machine - it doesn't gate change execution.
+
+  Purpose:
+  1. Make direction explicit (prevent drift)
+  2. Track progress (count of archived changes per phase)
+  3. Show what's planned next
+
+  Updated automatically by \`bp archive\` (marks changes as [x], increments counts).
+  Updated manually by \`bp roadmap\` (add milestones, phases, planned changes).
+
+  Format rules:
+  - Status tags: [NOT_STARTED], [ACTIVE], [IN_PROGRESS], [COMPLETED], [SHIPPED]
+  - Milestone: M{id} (e.g., M1, M2)
+  - Phase: P{milestone}.{id} (e.g., P1.1, P1.2)
+  - Change: listed under phase with [x] (done) or [ ] (pending)
+-->
+
+## Milestone: M1 - {{milestone-name}} [ACTIVE]
+
+**Goal**: {{what this milestone achieves}}
+**Status**: {{PLANNED | ACTIVE | SHIPPED}}
+
+### Phase: P1.1 - {{phase-name}} [{{STATUS}}]
+
+- **Goal**: {{what this phase delivers}}
+- **Spec domain**: {{domain-name}}
+- **Changes**: {{completed}}/{{total}} completed
+- **Status**: {{NOT_STARTED | IN_PROGRESS | COMPLETED}}
+
+**Changes**:
+
+- [x] {{change-name}} (archived {{date}})
+- [x] {{change-name}} (archived {{date}})
+- [ ] {{change-name}}
+
+**Next**: {{next-change-or "All changes completed"}}
+
+### Phase: P1.2 - {{phase-name}} [NOT_STARTED]
+
+- **Goal**: {{what this phase delivers}}
+- **Spec domain**: {{domain-name}}
+- **Changes**: 0/{{total}}
+- **Status**: NOT_STARTED
+
+**Planned changes**:
+- {{change-name}} (not yet proposed)
+- {{change-name}} (not yet proposed)
+
+---
+
+## Milestone: M1 - {{milestone-name}} [COMPLETED]
+
+**Goal**: {{what this milestone achieved}}
+**Status**: COMPLETED
+
+---
+
+## Progress Summary
+
+| Milestone | Phases | Changes | Status |
+|-----------|--------|---------|--------|
+| M1 - {{name}} | {{done}}/{{total}} | {{done}}/{{total}} | {{status}} |
+`;
+
+export const CONFIG_TEMPLATE = `# Blueprint Project Configuration (v2)
+# Generated by bp init - {{date}}
+
+version: 2
+
+# Multi-platform - CLI generates slash commands + skills + agent definitions per platform
+platform:
+  - omp
+  - claude-code
+  - agent
+
+# Workflow profile - controls rigor vs speed
+# lite:     no review gate, TDD optional, single agent for lightweight changes
+# standard: review gate (must PASS before archive), TDD for behavior, sub-agent waves
+profile: standard
+
+# Project context - injected into ALL sub-agent prompts
+context: |
+  Project: {{project-name}}
+  Tech stack: {{tech-stack}}
+  Testing: {{test-framework}}
+  Language: {{response-language}}
+
+# Artifact rules - injected into specific sub-agent prompts
+rules:
+  proposal:
+    - "Each deliverable must have an observable SHALL statement and a Verify method"
+    - "Keep PR count ≤ 5 per change; if more, suggest splitting"
+  specs:
+    - "Use Given/When/Then format for all scenarios"
+    - "Each Requirement must have at least 1 scenario"
+    - "Use MUST for security/data-integrity, SHOULD for UX, MAY for optional features"
+  design:
+    - "Each DS-N must have Source: PR-{id} annotation tracing to proposal"
+    - "Architecture diagram must annotate [NEW]/[MODIFIED]/[EXISTING]"
+    - "File manifest must list every file - no 'etc.' or 'and other files'"
+    - "Every interface must include error responses, not just happy path"
+  tasks:
+    - "type:behavior tasks must have RED test description (GIVEN/WHEN/THEN)"
+    - "depends_on only when task B cannot compile/test without task A"
+    - "Default to 1 wave; add waves only for real layer dependencies"
+    - "acceptance criteria must be binary (pass/fail), not subjective"
+
+# Default schema - defines artifact dependency graph
+schema: spec-driven
+
+# Model configuration - maps roles to platform model tiers
+models: {}
+
+# Conventions injection
+conventions:
+  inject: true
+
+# Git configuration
+git:
+  create_tag: true
+`;
+
+export const GLOBAL_SPEC_TEMPLATE = `# Global Spec: {{domain}}
+
+> Accumulated behavioral contract for the {{domain}} domain.
 
 ## Purpose
 
-{{purpose-description}}
+The {{domain}} domain governs the {{domain-purpose}} aspects of the system. This spec accumulates all behavioral requirements for this domain as changes are archived.
+
+Requirements follow RFC 2119: MUST/SHALL for absolute requirements, SHOULD for recommended, MAY for optional capabilities.
 
 ## Requirements
 
-### Requirement: {{req-name-1}}
-The system SHALL {{behavior-1}}.
+### Requirement: {{requirement-name-1}}
+
+The system SHALL {{behavior-description}}.
 
 #### Scenario: {{scenario-name}}
-- **GIVEN** {{given}}
-- **WHEN** {{when}}
-- **THEN** {{then}}
+
+- **GIVEN** {{precondition}}
+- **WHEN** {{action}}
+- **THEN** {{observable-result}}
+
+### Requirement: {{requirement-name-2}}
+
+The system SHALL {{behavior-description}}.
+
+#### Scenario: {{scenario-name}}
+
+- **GIVEN** {{precondition}}
+- **WHEN** {{action}}
+- **THEN** {{observable-result}}
 `;
 
-export const CODEBASE_CONCERNS_TEMPLATE = `# Codebase Concerns
-
-**Analysis Date:** {{date}}
-
-## Tech Debt
-
-**{{area}}:**
-- Issue: {{shortcut}}
-- Why: {{why}}
-- Impact: {{what-breaks}}
-- Fix approach: {{how-to-fix}}
-- Location: \`{{path}}\`
-
-## Known Bugs
-
-**{{bug-description}}:**
-- Symptoms: {{what-happens}}
-- Trigger: {{how-to-reproduce}}
-- Workaround: {{mitigation}}
-- Root cause: {{root-cause}}
-- Location: \`{{path}}\`
-
-## Security Considerations
-
-**{{area}}:**
-- Risk: {{what-could-go-wrong}}
-- Current mitigation: {{whats-in-place}}
-- Recommendations: {{what-should-be-added}}
-- Location: \`{{path}}\`
-
-## Performance Bottlenecks
-
-**{{operation}}:**
-- Problem: {{whats-slow}}
-- Measurement: {{actual-numbers}}
-- Cause: {{why-slow}}
-- Improvement path: {{how-to-speed-up}}
-- Location: \`{{path}}\`
-
-## Fragile Areas
-
-**{{module}}:**
-- Why fragile: {{what-makes-it-break}}
-- Common failures: {{what-goes-wrong}}
-- Safe modification: {{how-to-change}}
-- Test coverage: {{coverage}}
-- Location: \`{{path}}\`
-
-## Dependencies at Risk
-
-| Dependency | Version | Latest | Risk | Migration |
-|-----------|---------|--------|------|----------|
-| {{dep}} | {{version}} | {{latest}} | {{risk}} | {{migration}} |
-
-## Test Coverage Gaps
-
-**{{untested-area}}:**
-- What's not tested: {{functionality}}
-- Risk: {{what-could-break}}
-- Priority: {{priority}}
-- Difficulty: {{why-not-tested}}
-
----
-
-*Concerns audit: {{date}}*`;
-
-export const CODEBASE_STRUCTURE_TEMPLATE = `# Codebase Structure
-
-**Analysis Date:** {{date}}
-
-## Directory Layout
-
-\`\`\`
-{{project-root}}/
-├── {{dir-1}}/          # {{purpose-1}}
-├── {{dir-2}}/          # {{purpose-2}}
-│   ├── {{subdir}}/     # {{purpose}}
-│   └── {{file}}        # {{purpose}}
-├── {{dir-3}}/          # {{purpose-3}}
-└── {{file}}            # {{purpose}}
-\`\`\`
-
-## Directory Purposes
-
-**{{dir-1}}/**
-- Purpose: {{purpose}}
-- Contains: {{file-types}}
-- Key files: {{key-files}}
-
-**{{dir-2}}/**
-- Purpose: {{purpose}}
-- Contains: {{file-types}}
-- Key files: {{key-files}}
-
-## Key File Locations
-
-**Entry Points:**
-- \`{{path}}\` — {{purpose}}
-
-**Configuration:**
-- \`{{path}}\` — {{purpose}}
-
-**Core Logic:**
-- \`{{path}}\` — {{purpose}}
-
-**Testing:**
-- \`{{path}}\` — {{purpose}}
-
-## Naming Conventions
-
-**Files:** {{file-pattern}} (e.g. \`{{example}}\`)
-**Directories:** {{dir-pattern}} (e.g. \`{{example}}\`)
-**Special:** {{special-pattern}}
-
-## Where to Add New Code
-
-**New Feature:**
-- Primary code: \`{{path}}\`
-- Tests: \`{{path}}\`
-- Config if needed: \`{{path}}\`
-
-**New Module:**
-- Implementation: \`{{path}}\`
-- Types: \`{{path}}\`
-- Tests: \`{{path}}\`
-
-**Utilities:**
-- Shared helpers: \`{{path}}\`
-- Type definitions: \`{{path}}\`
-
-## Special Directories
-
-**{{special-dir}}/**
-- Purpose: {{purpose}}
-- Source: {{source}}
-- Committed: {{committed}}
-
----
-
-*Structure analysis: {{date}}*`;
-
-export const CODEBASE_TESTING_TEMPLATE = `# Testing Patterns
-
-**Analysis Date:** {{date}}
-
-## Test Framework
-
-**Runner:** {{test-runner}} {{version}}
-**Assertion Library:** {{assertion-lib}}
-**Mocking:** {{mock-lib}}
-**Config:** \`{{config-file}}\`
-
-**Run Commands:**
-\`\`\`bash
-{{run-command}}              # Run all tests
-{{watch-command}}            # Watch mode
-{{coverage-command}}         # Coverage
-\`\`\`
-
-## Test File Organization
-
-**Location:** {{test-location}} (co-located with source or separate \`tests/\`)
-**Naming:** {{test-naming}} (e.g. \`*.test.ts\`)
-
-## Test Structure
-
-**Suite Organization:**
-\`\`\`{{language}}
-{{test-suite-example}}
-\`\`\`
-
-**Patterns:**
-- Setup: {{setup-pattern}}
-- Teardown: {{teardown-pattern}}
-- Assertion: {{assertion-pattern}}
-
-## Mocking
-
-**Framework:** {{mock-lib}}
-
-**Patterns:**
-\`\`\`{{language}}
-{{mock-example}}
-\`\`\`
-
-**What to Mock:**
-- {{mock-guidelines}}
-
-**What NOT to Mock:**
-- {{no-mock-guidelines}}
-
-## Fixtures and Factories
-
-**Test Data:**
-\`\`\`{{language}}
-{{fixture-example}}
-\`\`\`
-
-**Location:** {{fixture-location}}
-
-## Coverage
-
-**Requirements:** {{coverage-target}} (or "None enforced")
-**Current:** {{coverage}}
-**View Coverage:** \`{{coverage-command}}\`
-
-## Test Types
-
-**Unit Tests:**
-- Scope: {{unit-scope}}
-- Example: \`{{unit-example-file}}\`
-
-**Integration Tests:**
-- Scope: {{integration-scope}}
-- Example: \`{{integration-example-file}}\`
-
-**E2E Tests:**
-- Framework: {{e2e-framework}} (or "Not used")
-
-## Common Patterns
-
-**Async Testing:**
-\`\`\`{{language}}
-{{async-pattern}}
-\`\`\`
-
-**Error Testing:**
-\`\`\`{{language}}
-{{error-pattern}}
-\`\`\`
-
----
-
-*Testing analysis: {{date}}*`;
-
-export const CODEBASE_INTEGRATIONS_TEMPLATE = `# External Integrations
-
-**Analysis Date:** {{date}}
-
-## APIs & External Services
-
-**{{category}}:**
-- {{service}} — {{what-its-used-for}}
-  - SDK/Client: \`{{package}}\`
-  - Auth: \`{{env-var}}\`
-
-## Data Storage
-
-**Databases:**
-- {{type}} ({{provider}})
-  - Connection: \`{{env-var}}\`
-  - Client: \`{{orm}}\`
-
-**File Storage:**
-- {{service}}
-
-**Caching:**
-- {{service}}
-
-## Authentication & Identity
-
-**Auth Provider:** {{provider}}
-- Implementation: {{approach}}
-- Middleware: \`{{middleware-path}}\`
-
-## Webhooks & Events
-
-**Incoming:**
-- {{endpoint}} — {{purpose}}
-
-**Outgoing:**
-- {{target}} — {{purpose}}
-## Monitoring & Observability
-
-**Error Tracking:** {{error-tracking}} (or "None")
-**Logging:** {{logging-approach}}
-**Metrics:** {{metrics-approach}} (or "None")
-
-## CI/CD & Deployment
-
-**Hosting:** {{hosting-platform}}
-**CI Pipeline:** {{ci-service}} (or "None")
-**Deploy Command:** \`{{deploy-command}}\`
-
-## Environment Configuration
-
-**Required env vars:** {{env-var-list}}
-**Secrets location:** {{secrets-location}}
-
-## Third-Party Libraries
-
-## Webhooks & Events
-
----
-
-*Integrations analysis: {{date}}*`;
-
-export const CODEBASE_PITFALLS_TEMPLATE = `# Pitfalls: {{name}}
-
-> Codebase analysis — known pitfalls, anti-patterns, and technical debt identified from brownfield scan.
-
----
-
-## Anti-Patterns
-| Pattern | Location | Risk |
-|---------|----------|------|
-| {{anti-1}} | {{location}} | {{risk}} |
-
-## Technical Debt
-| Item | Impact | Effort to Fix |
-|------|--------|--------------|
-| {{debt-1}} | {{impact}} | {{effort}} |
-
-## Risky Areas
-| Area | Why Risky | Mitigation |
-|------|----------|-----------|
-| {{area-1}} | {{reason}} | {{mitigation}} |
-
-## Dependencies at Risk
-| Dependency | Version | Latest | Risk |
-|-----------|---------|--------|------|
-| {{dep-1}} | {{version}} | {{latest}} | {{risk}} |
-`;
-
-
-export const UAT_TEMPLATE = `---
-status: testing
-scope: {{scope}}
-name: {{name}}
-source: {{source}}
-started: {{started}}
-updated: {{updated}}
----
-
-## Current Test
-
-number: 1
-name: {{first_test_name}}
-expected: |
-  {{first_test_expected}}
-awaiting: user response
-
-## Tests
-
-{{tests}}
-
-## Summary
-
-total: {{total}}
-passed: 0
-issues: 0
-pending: {{total}}
-skipped: 0
-blocked: 0
-
-## Gaps
-
-[none yet]
-`;
-
-export const DESIGN_PREVIEW_TEMPLATE = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Design Preview — {{name}}</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family={{display-font-url}}&family={{body-font-url}}&display=swap');
-:root {
-  --primary: {{primary-color}};
-  --bg: {{bg-color}};
-  --text: {{text-color}};
-  --font-display: '{{display-font}}', serif;
-  --font-body: '{{body-font}}', sans-serif;
-}
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: var(--font-body); color: var(--text); background: var(--bg); }
-.hero { padding: 120px 24px; text-align: center; }
-.hero h1 { font-family: var(--font-display); font-size: clamp(2.5rem, 6vw, 5rem); color: var(--primary); }
-.hero p { margin-top: 24px; font-size: 1.25rem; max-width: 640px; margin-inline: auto; opacity: 0.8; }
-.palette { padding: 80px 24px; display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
-.swatch { width: 120px; height: 120px; border-radius: 12px; display: flex; align-items: flex-end; padding: 8px; font-size: 0.75rem; color: #fff; }
-</style>
-</head>
-<body>
-<section class="hero">
-  <h1>{{name}}</h1>
-  <p>{{tagline}}</p>
-</section>
-<section class="palette">
-  <div class="swatch" style="background:{{primary-color}}">{{primary-color}}</div>
-  <div class="swatch" style="background:{{secondary-color}}">{{secondary-color}}</div>
-</section>
-</body>
-</html>`;
-
-export const LOOP_MD_TEMPLATE = `# Loop Configuration
-
-## Goal
-{{goal}}
-
-## Stop Condition
-{{stop_condition}}
-
-## Verification
-command: "{{verification_command}}"
-check: "{{verification_check}}"
-
-## Limits
-max_iterations: {{max_iterations}}
-no_progress_threshold: {{no_progress_threshold}}
-
-## Progress
-iteration: 0
-last_progress_at: ""
-status: running
-`;
-
-/** Template registry — maps template ID → body string */
+/** Template IDs mapped to their content. */
 export const ARTIFACT_TEMPLATES: Record<string, string> = {
   proposal: PROPOSAL_TEMPLATE,
   design: DESIGN_TEMPLATE,
   tasks: TASKS_TEMPLATE,
-  context: CONTEXT_TEMPLATE,
-  'research-doc': RESEARCH_TEMPLATE,
-  summary: SUMMARY_TEMPLATE,
-  verification: VERIFICATION_TEMPLATE,
-  'spec-review': SPEC_REVIEW_TEMPLATE,
-  'quality-review': QUALITY_REVIEW_TEMPLATE,
-  'goal-review': GOAL_REVIEW_TEMPLATE,
-  'change-summary': CHANGE_SUMMARY_TEMPLATE,
-  // Project-level planning
-  'requirements': REQUIREMENTS_TEMPLATE,
-  'roadmap': ROADMAP_TEMPLATE,
-  // Project research (produced by bp-researcher)
-  'research-stack': RESEARCH_STACK_TEMPLATE,
-  'research-architecture': RESEARCH_ARCHITECTURE_TEMPLATE,
-  'research-pitfalls': RESEARCH_PITFALLS_TEMPLATE,
-  // Codebase analysis (brownfield — produced by bp-codebase-mapper)
-  'codebase-stack': CODEBASE_STACK_TEMPLATE,
-  'codebase-architecture': CODEBASE_ARCHITECTURE_TEMPLATE,
-  'codebase-structure': CODEBASE_STRUCTURE_TEMPLATE,
-  'codebase-conventions': CODEBASE_CONVENTIONS_TEMPLATE,
-  'codebase-testing': CODEBASE_TESTING_TEMPLATE,
-  'codebase-integrations': CODEBASE_INTEGRATIONS_TEMPLATE,
-  'codebase-concerns': CODEBASE_CONCERNS_TEMPLATE,
-  // Change lifecycle
-  'spec': SPEC_TEMPLATE,
+  spec: SPEC_TEMPLATE,
+  review: REVIEW_TEMPLATE,
+  roadmap: ROADMAP_TEMPLATE,
+  config: CONFIG_TEMPLATE,
   'global-spec': GLOBAL_SPEC_TEMPLATE,
-  'completion': SUMMARY_TEMPLATE,  // archiver completion.md
-  // Phase research (produced by bp-phase-researcher)
-  'phase-research': PHASE_RESEARCH_TEMPLATE,
-  'uat': UAT_TEMPLATE,
-  // Design preview
-  'design-preview': DESIGN_PREVIEW_TEMPLATE,
-  // Loop configuration
-  'loop.md': LOOP_MD_TEMPLATE,
-  // Fix cycle (review loopback)
-  'review-design': DESIGN_TEMPLATE.replace('# Design: {{name}}', '# Fix Design: {{name}}'),
-  'review-tasks': TASKS_TEMPLATE.replace('# Tasks: {{name}}', '# Fix Tasks: {{name}}'),
 };
 
-/** All template IDs for CLI listing */
-export const TEMPLATE_IDS = Object.keys(ARTIFACT_TEMPLATES);
+/** Ordered list of artifact template identifiers. */
+export const TEMPLATE_IDS: readonly string[] = Object.keys(ARTIFACT_TEMPLATES);

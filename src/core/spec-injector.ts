@@ -1,12 +1,11 @@
 /**
- * spec-injector — context 命令核心
- * 读 state.md 确定作用域 → 按步骤类型确定注入范围 → 输出文件路径 + 行范围
+ * spec-injector — context command core.
+ * Given a bpDir, step, and optional changeName, collects relevant
+ * specs, conventions, and change artifacts. No state.md dependency.
  */
 
 import { join } from 'node:path';
 import { readdirSync, existsSync, readFileSync, statSync } from 'node:fs';
-import { loadState } from './state-file.js';
-import type { StateFile } from '../types/index.js';
 
 export interface FileRef {
   path: string;
@@ -23,70 +22,37 @@ export interface ContextResult {
   globalSpecs: FileRef[];
   conventions: FileRef[];
   changeArtifacts: FileRef[];
-  requirements: FileRef[];
 }
 
-/** 步骤类型分类 */
-const PROJECT_STEPS = ['init', 'grill', 'research', 'roadmap'];
-const PHASE_STEPS = ['discuss', 'research-phase', 'split'];
-const CHANGE_STEPS = ['plan', 'apply', 'review', 'archive'];
-
-function isProjectStep(step: string): boolean {
-  return PROJECT_STEPS.includes(step);
-}
-
-function isPhaseStep(step: string): boolean {
-  return PHASE_STEPS.includes(step);
-}
-
-function isChangeStep(step: string): boolean {
-  return CHANGE_STEPS.includes(step);
-}
-
-/** 生成 context 输出 */
-export function generateContext(bpDir: string, step: string): ContextResult {
-  const state = loadState(bpDir);
-  const ctx = state.active_context;
-
+/** Generate context output */
+export function generateContext(bpDir: string, step: string, changeName?: string): ContextResult {
   const result: ContextResult = {
     step,
-    scope: { type: ctx.type, ref: ctx.ref },
+    scope: { type: 'bp', ref: changeName ?? null },
     specs: [],
     globalSpecs: [],
     conventions: [],
     changeArtifacts: [],
-    requirements: [],
   };
 
-  // conventions 总是注入
+  // Conventions always injected
   result.conventions = getAllConventions(bpDir).map(withContent(bpDir));
 
-  // requirements.md 总是注入
-  if (existsSync(join(bpDir, 'requirements.md'))) {
-    const reqPath = join(bpDir, 'requirements.md');
-    result.requirements.push({
-      path: 'requirements.md',
-      description: 'Requirements specification',
-      content: readContent(reqPath),
-    });
-  }
+  // Global specs from bp/specs/
+  result.globalSpecs = getAllSpecs(bpDir).map(withContent(bpDir));
 
-  if (isProjectStep(step)) {
-    result.specs = getAllSpecs(bpDir).map(withContent(bpDir));
-    result.globalSpecs = result.specs;
-  } else if (isPhaseStep(step)) {
-    result.specs = getRelatedSpecs(bpDir, state).map(withContent(bpDir));
-    result.globalSpecs = result.specs;
-  } else if (isChangeStep(step)) {
-    // Global specs from bp/specs/ (the live behavioral contracts)
-    result.globalSpecs = getRelatedSpecs(bpDir, state).map(withContent(bpDir));
+  // If a change name is given, collect change artifacts
+  if (changeName) {
     // Delta-specs from change directory (proposed changes to global specs)
-    result.specs = getChangeArtifacts(bpDir, state)
+    result.specs = getChangeArtifacts(bpDir, changeName)
       .filter((a) => a.path.startsWith('specs/'))
       .map(withContent(bpDir));
-    result.changeArtifacts = getChangeArtifacts(bpDir, state)
+    result.changeArtifacts = getChangeArtifacts(bpDir, changeName)
       .filter((a) => !a.path.startsWith('specs/'))
       .map(withContent(bpDir));
+  } else {
+    // Without change scope, return global specs directly
+    result.specs = result.globalSpecs;
   }
 
   return result;
@@ -110,31 +76,13 @@ function withContent(bpDir: string): (ref: FileRef) => FileRef {
   });
 }
 
-/** 获取所有 specs */
+/** Get all specs */
 function getAllSpecs(bpDir: string): FileRef[] {
   const specsDir = join(bpDir, 'specs');
   return listSpecFiles(specsDir, 'specs');
 }
 
-/** 获取相关 specs（按域匹配） */
-function getRelatedSpecs(bpDir: string, state: StateFile): FileRef[] {
-  const allSpecs = getAllSpecs(bpDir);
-  if (allSpecs.length === 0) return [];
-
-  // 简化：如果 change 名称包含域关键词，匹配 specs 目录
-  const ref = state.active_context.ref ?? '';
-  const changeName = ref.split('/').pop() ?? '';
-
-  const related = allSpecs.filter((spec) => {
-    const domain = spec.path.split('/')[1] ?? '';
-    return changeName.toLowerCase().includes(domain.toLowerCase());
-  });
-
-  // 无匹配时返回全部
-  return related.length > 0 ? related : allSpecs;
-}
-
-/** 获取所有 conventions */
+/** Get all conventions */
 function getAllConventions(bpDir: string): FileRef[] {
   const convDir = join(bpDir, 'conventions');
   if (!existsSync(convDir)) return [];
@@ -143,33 +91,30 @@ function getAllConventions(bpDir: string): FileRef[] {
     .map((f) => ({ path: `conventions/${f}`, description: 'Project Conventions' }));
 }
 
-/** 获取 change artifact文件 */
-function getChangeArtifacts(bpDir: string, state: StateFile): FileRef[] {
-  const ref = state.active_context.ref;
-  if (!ref) return [];
-
-  const changeDir = join(bpDir, ref);
+/** Get change artifact files for a named change */
+function getChangeArtifacts(bpDir: string, changeName: string): FileRef[] {
+  const changeDir = join(bpDir, 'changes', changeName);
   if (!existsSync(changeDir)) return [];
 
   const artifacts: FileRef[] = [];
   for (const file of ['proposal.md', 'design.md', 'tasks.md', '.bp.yaml']) {
     const fullPath = join(changeDir, file);
     if (existsSync(fullPath)) {
-      artifacts.push({ path: `${ref}/${file}`, description: 'change artifact' });
+      artifacts.push({ path: `changes/${changeName}/${file}`, description: 'change artifact' });
     }
   }
 
   // delta-specs
   const specsDir = join(changeDir, 'specs');
   if (existsSync(specsDir)) {
-    const deltaSpecs = listSpecFiles(specsDir, `${ref}/specs`);
+    const deltaSpecs = listSpecFiles(specsDir, `changes/${changeName}/specs`);
     artifacts.push(...deltaSpecs);
   }
 
   return artifacts;
 }
 
-/** 递归列出 spec 文件 */
+/** Recursively list spec files */
 function listSpecFiles(dir: string, prefix: string): FileRef[] {
   if (!existsSync(dir)) return [];
   const results: FileRef[] = [];
@@ -187,7 +132,7 @@ function listSpecFiles(dir: string, prefix: string): FileRef[] {
   return results;
 }
 
-/** 格式化为终端输出 */
+/** Format as terminal output */
 export function formatContextTerminal(result: ContextResult): string {
   const lines: string[] = [
     `=== bp context for step: ${result.step} ===`,
@@ -215,14 +160,6 @@ export function formatContextTerminal(result: ContextResult): string {
     lines.push('Current change artifacts:');
     for (const art of result.changeArtifacts) {
       lines.push(`  ${art.path}`);
-    }
-    lines.push('');
-  }
-
-  if (result.requirements.length > 0) {
-    lines.push('Requirements:');
-    for (const req of result.requirements) {
-      lines.push(`  ${req.path}`);
     }
     lines.push('');
   }

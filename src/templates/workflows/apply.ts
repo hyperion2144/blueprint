@@ -1,101 +1,118 @@
 import { ORCHESTRATOR_RULE } from '../types.js';
-import { RESOLVE_PATHS, CLASSIFY_CHANGE, CHANGE_NAME_RESOLVE, WAVE_SPLIT, COMMIT_ADVANCE } from './shared.js';
 import type { SkillTemplate, CommandTemplate } from '../types.js';
 
 const instructions = ORCHESTRATOR_RULE + `## Input
 
-### Parameters
-- **\`$ARGUMENTS\`** (required) — the change to implement. Provided by \`bp continue\` output or user.
+- **\`$ARGUMENTS\`** (optional): change name. If empty, use the most recently planned change.
+- **\`--fix\`** (optional): fix mode — executors read review.md issues and fix them.
 
-### Prerequisites
-- Plan phase complete: \`design.md\`, \`tasks.md\`, delta-specs ready
+## Prerequisites
+
+- \`design.md\` exists and is not a template
+- \`tasks.md\` exists, has at least 1 wave, checkboxes are unchecked (normal mode)
+- Delta specs exist for each affected domain
+- In --fix mode: \`review.md\` exists with unresolved R/Q/G issues
 
 ## Steps
 
-${RESOLVE_PATHS}${CLASSIFY_CHANGE}${CHANGE_NAME_RESOLVE('planning', 'apply')}
-${WAVE_SPLIT}
-### Step: Dispatch executor per wave
+### Step 1: Resolve change name and paths
 
-**If LIGHTWEIGHT** — implement tasks yourself, one by one. After each: verify with \`npx vitest run <test-file>\`, then commit (auto-marks \`[x]\` + commit hash):
+Same as plan workflow Step 1.
+
+### Step 2: Classify change (lightweight vs full)
+
+Read \`tasks.md\` task types:
+- **Lightweight**: ALL tasks are type:config|docs|refactor|scaffolding (no type:behavior)
+- **Full**: any type:behavior task
+
+### Step 3: Wave analysis (Full mode)
+
+Read \`tasks.md\` and parse into execution plan:
+
+1. **Extract waves**: Read all \`## Wave N: <theme>\` sections. Keep wave order.
+
+2. **Build inter-wave dependency graph**:
+   - For each task, extract \`depends_on\` field
+   - If task in Wave B has \`depends_on\` referencing a task in Wave A -> Wave B depends on Wave A
+   - Result: DAG where nodes = waves, edges = cross-wave depends_on
+
+3. **Generate execution plan**:
+   - Waves with NO unmet cross-wave dependencies -> can run concurrently
+   - Waves WITH cross-wave dependencies -> must wait for predecessor wave(s)
+
+4. **For each wave, prepare executor context**:
+   - Change name and path
+   - ALL tasks in this wave (ids, types, descriptions, files, acceptance, RED tests)
+   - ALL referenced specs (from \`spec_ref\` fields across tasks)
+   - Design context (relevant DS-N items)
+   - Conventions file path
+   - In --fix mode: review.md issue list for this wave
+
+### Step 4: Dispatch executor waves (Full mode)
+
+**Execute round by round:**
+
+Each round:
+1. Identify waves with no unmet dependencies -> ready to run
+2. Dispatch ALL ready waves CONCURRENTLY (one task tool call per wave, all in one batch)
+   - Each wave gets its own executor sub-agent
+   - Fresh context: yes
+   - Isolated: yes (executors modify source files and make git commits concurrently)
+3. Wait for ALL waves in this round to complete
+
+**After each round, verify each wave's output:**
+
+For each completed wave:
+1. **Check git log**: \`git log --oneline -5\` - confirm new commits exist with correct hashes
+2. **Check git diff**: \`git diff --stat HEAD~N\` - confirm files actually changed (not no-op)
+3. **Check tasks.md**: confirm tasks marked [x] with \`<!-- commit: HASH -->\` annotation
+4. **Run wave's tests**: \`npx vitest run <test-files>\` - confirm tests pass
+5. **If any task missing commit annotation**: re-run that task manually or re-dispatch
+
+**If any wave fails verification:**
+- Re-dispatch the failed wave with specific feedback
+- Do NOT proceed to next round until all waves in current round pass
+
+**After all rounds complete:**
+1. Run full test suite: \`tsc --noEmit && vitest run\`
+2. If failures: identify which wave caused them, re-dispatch with fix instructions
+3. If all pass: proceed to Step 5
+
+### Step 5: Lightweight mode (if classified as lightweight)
+
+If all tasks are non-behavior:
+1. Implement tasks yourself, one by one
+2. After each task: run relevant tests, commit with \`bp commit\` or direct git
+3. Mark [x] with commit hash in tasks.md
+4. After all tasks: run full test suite
+
+### Step 6: Commit and suggest next step
+
 \`\`\`bash
-bp commit "<type>(<scope>): <description>" --files "<changed-files>" --task <id> --tasks-path [BP:CHANGE_DIR]tasks.md --record
+git add bp/changes/$1/
+git commit -m "feat: implementation complete for $1"
 \`\`\`
 
-**If FULL — dispatch executor sub-agents. Do NOT implement type:behavior tasks yourself:**
-
-For each wave in the current round:
-1. Run \`bp dispatch executor --change $1\` — outputs the sub-agent tool, its parameters, and isolation information.
-2. **Check the isolation type from the dispatch output:**
-
-   **If \`isolation.type=param\`** (OMP, Claude Code):
-   - Pass the isolation field to the spawn tool:
-     - OMP (\`task\` tool): add \`isolated: true\` to the task item
-     - Claude Code (\`agent\` tool): add \`worktree: exec-$1-wave<N>\` to the agent call
-   - The platform automatically creates an isolated worktree; no manual setup needed.
-
-   **If \`isolation.type=none\`** (generic agent platform):
-   - Create a dedicated git worktree before spawning:
-     \`\`\`bash
-     git worktree add ../exec-$1-wave<N> -b exec-$1-wave<N>
-     \`\`\`
-   - Include \`cd ../exec-$1-wave<N>\` at the start of the sub-agent's prompt so all work happens in the worktree.
-   - After the sub-agent finishes:
-     \`\`\`bash
-     git merge exec-$1-wave<N> --ff-only
-     git branch -d exec-$1-wave<N>
-     git worktree remove ../exec-$1-wave<N>
-     \`\`\`
-
-3. Call the tool it specifies. Set the sub-agent's prompt to:
-   - Change: $1 (path from resolve step)
-   - Wave: <Wave N: theme> — implement ALL tasks in this wave
-   - Tasks: <full task list for this wave with ids, types, descriptions, files, acceptance, RED tests>
-   - Read: design.md, tasks.md (this wave only), delta-specs referenced by spec_ref fields, bp/conventions/coding-standards.md
-   - For type:behavior: RED test first → GREEN → REFACTOR
-   - After each task: run \`npx vitest run <test-file>\` to verify, then:
-     \`bp commit "<type>(<scope>): <description>" --files <changed-files> --task <id> --tasks-path <tasks.md path> --record\`
-   - Do NOT touch tasks outside this wave
-   - Return when all tasks in this wave are implemented and committed
-4. For concurrent waves in the same round: run \`bp dispatch executor\` once per wave, dispatch ALL in one task tool call (parallel). Each wave gets its own isolation.
-5. Wait for ALL wave sub-agents in this round to finish before proceeding to verify.
-
-### Step: Verify each sub-agent's output
-
-**After each wave finishes, verify the sub-agent actually implemented what it promised:**
-
-For each task in the completed wave:
-- **Check git log**: \`git log --oneline -5\` — confirm new commits exist with commit hashes.
-- **Check git diff**: \`git diff --stat HEAD~<N>\` — confirm files were actually changed (not just a no-op).
-- **Check tasks.md marking**: read \`[BP:CHANGE_DIR]tasks.md\` — confirm task \`[x]\` is checked AND \`<!-- commit: HASH -->\` annotation exists next to the task.
-- **Run task's tests**: \`npx vitest run <test-file>\` (from task's \`files\` field) — must pass.
-- **If lightweight** (you implemented tasks yourself): same checks — confirm your commits actually landed.
-
-Any task missing \`<!-- commit: -->\` annotation → re-run \`bp commit\` for that task manually:
-\`\`\`bash
-bp commit "<type>(<scope>): <description>" --files <changed-files> --task <id> --tasks-path [BP:CHANGE_DIR]tasks.md --record
+Output:
 \`\`\`
+Implementation complete for $1
+  - N tasks implemented in N wave(s)
+  - N commits created
+  - All tests pass
 
-Any task with failing tests → re-dispatch the wave with failure details.
-
-After all tasks in the wave pass verification, proceed to round verify.
-
-### Step: Final implementation verify and change summary
-
-After ALL waves complete and all tests pass:
-- Run \`bp template change-summary --stdout\` to read the template, then write to \`[BP:CHANGE_DIR]change-summary.md\` using the Write tool. Fill with actual details.
-- Ensure all tasks.md checkboxes are \`[x]\`
-
-**CRITICAL: Implementation verification is NOT review.** After this step, run \`bp continue\` — it will advance to the review step. NEVER skip review and go directly to archive.
-
-${COMMIT_ADVANCE('docs', 'apply complete for $1')}
+  Next: bp review $1
+  (or: bp continue $1)
+\`\`\`
 
 ## Guardrails
-- Each wave = ONE sub-agent; dispatch concurrent waves in one task tool call
-- Sub-agents implement and commit; main agent verifies
-- **After each wave: verify git log, tasks.md marking (\`[x]\` + \`<!-- commit: -->\`), and test pass** — no-op or incomplete tasks are treated as failures
-- NEVER skip implementation verify between rounds
-- **NEVER skip review.** "Implementation Verification" in tasks.md confirms the code compiles and tests pass — it does NOT replace the review step (\`/bp:review\`). After apply, always run \`bp continue\` to advance to review.
-- Summary mandatory: no advance without filled change-summary.md`;
+
+- **Full mode: MUST dispatch sub-agents per wave.** Do NOT implement behavior tasks yourself.
+- **Concurrent waves in the same round: dispatch ALL in one task tool call (parallel).**
+- **After each wave: verify git log, tasks.md marking, test pass.** No-op or incomplete = failure.
+- **NEVER skip review.** Apply's test pass is NOT a replacement for review.
+- In --fix mode: executors read review.md, fix R/Q/G issues. Do NOT fix D issues (those need replan).
+- Do NOT run bp review automatically - let the user decide.
+`;
 
 export function getApplySkillTemplate(): SkillTemplate {
   return {

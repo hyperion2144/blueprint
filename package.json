@@ -7,7 +7,6 @@
     "bp": "bin/cli.js"
   },
   "scripts": {
-    "build:grammar": "node scripts/prepare.mjs",
     "build": "node scripts/prepare.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -27,7 +26,6 @@
     "@clack/prompts": "^1.6.0",
     "commander": "^15.0.0",
     "gray-matter": "^4.0.3",
-    "peggy": "^5.1.0",
     "yaml": "^2.9.0",
     "zod": "^4.4.0"
   },

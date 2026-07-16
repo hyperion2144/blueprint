@@ -1,33 +1,24 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdirSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { loadConfig, saveConfig, updateConfig, resolveModels, configPath } from '../../src/core/config.js';
-import type { ProjectConfig } from '../../src/types/index.js';
 
 const tmpDir = join(process.cwd(), 'tests/tmp-config');
 
-const testConfigYml = `# 项目配置
-version: 1
+const testConfigYml = `# Blueprint Project Configuration (v2)
+version: 2
 platform:
   - omp
 profile: standard
 context: |
-  测试项目
-workflow:
-  research: true
-  plan_check: true
-review:
-  gate: all-pass
-  parallel: true
-change:
-  parallel: dependency-graph
-  isolation: true
-git:
-  branching: none
-  create_tag: true
+  Test project
+rules: {}
+schema: spec-driven
+models: {}
 conventions:
   inject: true
-models: {}
+git:
+  create_tag: true
 `;
 
 beforeEach(() => {
@@ -40,85 +31,64 @@ afterEach(() => {
 });
 
 describe('loadConfig', () => {
-  it('读取并验证 project.yml', () => {
+  it('reads and validates config.yaml', () => {
     const config = loadConfig(tmpDir);
-    expect(config.version).toBe(1);
+    expect(config.version).toBe(2);
     expect(config.profile).toBe('standard');
     expect(config.platform).toEqual(['omp']);
-    expect(config.workflow.research).toBe(true);
-    expect(config.review.gate).toBe('all-pass');
+    expect(config.schema).toBe('spec-driven');
+    expect(config.conventions.inject).toBe(true);
+    expect(config.git.create_tag).toBe(true);
   });
 
-  it('保留 absent=enabled 默认值', () => {
+  it('preserves default values for absent fields', () => {
     const config = loadConfig(tmpDir);
-    // tdd 没写但应该默认 true（absent=enabled）
-    // 实际未在 zod schema 设默认 true，所以是 undefined
-    // 这里只验证已写的字段
-    expect(config.change.parallel).toBe('dependency-graph');
+    expect(config.rules).toEqual({});
+    expect(config.models).toEqual({});
+    expect(config.context).toBe('Test project\n');
   });
 });
 
-describe('saveConfig + 保留注释', () => {
-  it('修改后写回保留注释', () => {
+describe('saveConfig + updateConfig', () => {
+  it('write-back preserves updates', () => {
     updateConfig(tmpDir, (config) => {
-      config.profile = 'strict';
+      config.profile = 'lite';
     });
-    const { readFileSync } = require('node:fs');
     const content = readFileSync(configPath(tmpDir), 'utf-8');
-    expect(content).toContain('# 项目配置');
-    expect(content).toContain('profile: strict');
+    expect(content).toContain('profile: lite');
   });
 });
 
 describe('resolveModels', () => {
-  it('standard profile 默认映射（7 agent 完整）', () => {
+  it('standard profile default mapping', () => {
     const config = loadConfig(tmpDir);
     const models = resolveModels(config);
-    expect(models.researcher).toBe('pi/task');
-    expect(models.planner).toBe('pi/plan');
-    expect(models.executor).toBe('pi/slow');
-    expect(models.reviewer).toBe('pi/slow');
-    expect(models['phase-researcher']).toBe('pi/task');
-    expect(models['codebase-mapper']).toBe('pi/task');
-    expect(models['spec-bootstrapper']).toBe('pi/task');
+    expect(models.plan).toBe('slow');
+    expect(models.execute).toBe('default');
+    expect(models.review).toBe('slow');
+    expect(models.archive).toBe('default');
   });
 
-  it('用户 models 覆盖 profile 默认', () => {
+  it('user models override profile defaults', () => {
     updateConfig(tmpDir, (config) => {
-      config.models = { executor: 'pi/default' };
+      config.models = { execute: 'fast' };
     });
     const config2 = loadConfig(tmpDir);
     const models = resolveModels(config2);
-    expect(models.executor).toBe('pi/default');
-    // 其他角色保持 profile 默认
-    expect(models.researcher).toBe('pi/task');
+    expect(models.execute).toBe('fast');
+    // Other roles keep profile default
+    expect(models.plan).toBe('slow');
   });
 
-  it('strict profile 默认映射', () => {
-    updateConfig(tmpDir, (config) => {
-      config.profile = 'strict';
-    });
-    const config = loadConfig(tmpDir);
-    const models = resolveModels(config);
-    expect(models.researcher).toBe('pi/slow');
-    expect(models.planner).toBe('pi/plan');
-    expect(models.executor).toBe('pi/plan');
-    expect(models.reviewer).toBe('pi/plan');
-    expect(models['phase-researcher']).toBe('pi/slow');
-  });
-
-  it('lite profile 全部 agent 为 pi/task', () => {
+  it('lite profile mapping', () => {
     updateConfig(tmpDir, (config) => {
       config.profile = 'lite';
     });
     const config = loadConfig(tmpDir);
     const models = resolveModels(config);
-    expect(models.researcher).toBe('pi/task');
-    expect(models.planner).toBe('pi/task');
-    expect(models.executor).toBe('pi/task');
-    expect(models.reviewer).toBe('pi/task');
-    expect(models['phase-researcher']).toBe('pi/task');
-    expect(models['codebase-mapper']).toBe('pi/task');
-    expect(models['spec-bootstrapper']).toBe('pi/task');
+    expect(models.plan).toBe('default');
+    expect(models.execute).toBe('default');
+    expect(models.review).toBe('default');
+    expect(models.archive).toBe('smol');
   });
 });
