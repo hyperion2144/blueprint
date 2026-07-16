@@ -7,12 +7,12 @@
     "bp": "bin/cli.js"
   },
   "scripts": {
-    "build:grammar": "ls src/core/validate/grammar/*.peggy 2>/dev/null | while read f; do b=\"${f%.peggy}\"; echo \"compile $(basename $f)\"; npx peggy -o \"${b}.cjs\" --format commonjs \"$f\"; done",
-    "build": "npm run build:grammar && tsup && mkdir -p bin/grammar && cp src/core/validate/grammar/*.cjs bin/grammar/ && cp bin/cli.js bin/bp.js",
+    "build:grammar": "node scripts/prepare.mjs",
+    "build": "node scripts/prepare.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepare": "npm run build:grammar 2>/dev/null; npx tsup; mkdir -p bin/grammar; cp src/core/validate/grammar/*.cjs bin/grammar/; cp bin/cli.js bin/bp.js",
+    "prepare": "node scripts/prepare.mjs",
     "prepublishOnly": "npm run typecheck && npm run test && npm run build"
   },
   "engines": {
