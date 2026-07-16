@@ -149,8 +149,7 @@ function determineChangeNextStep(
   const dir = changeDir(bpDir, changeName);
   const { artifacts, reviewVerdict, unresolvedIssues, hasDesignIssues } = progress;
 
-  // Phase 1: Check artifact-producing steps (proposal, design, specs, tasks)
-  // Find the first artifact that doesn't exist but whose requirements are met
+  // Build artifact existence set from schema
   const existingArtifacts = new Set<string>();
   for (const a of schema.artifacts) {
     if (artifactExists(dir, a.generates)) {
@@ -158,9 +157,24 @@ function determineChangeNextStep(
     }
   }
 
+  // Phase 0: Check for partial plan execution
+  // Some plan artifacts exist but others missing - planner was interrupted
+  const planArtifacts = ['design', 'specs', 'tasks'];
+  const planExisting = planArtifacts.filter((a) => existingArtifacts.has(a));
+  const planMissing = planArtifacts.filter((a) => !existingArtifacts.has(a));
+  if (planExisting.length > 0 && planMissing.length > 0) {
+    return {
+      stage: 'incomplete',
+      command: `plan ${changeName}`,
+      description: `[INCOMPLETE] Planner only produced: ${planExisting.join(', ')}. Missing: ${planMissing.join(', ')}. Follow the instructions below to complete the plan step.`,
+      instructions: getWorkflowInstructions('plan'),
+    };
+  }
+
+  // Phase 1: Check artifact-producing steps (proposal, design, specs, tasks)
+  // Find the first artifact that doesn't exist but whose requirements are met
   for (const artifact of schema.artifacts) {
     if (existingArtifacts.has(artifact.id)) continue;
-    // Check if all requirements are met
     const requirementsMet = artifact.requires.every((req) => existingArtifacts.has(req));
     if (requirementsMet && artifact.command) {
       return {
@@ -171,9 +185,7 @@ function determineChangeNextStep(
       };
     }
   }
-
   // Phase 2: Check action steps (apply, review, archive)
-  // Build a map of step completion
   const stepCompletion = new Map<string, boolean>();
   for (const step of schema.steps) {
     // Check if requirements are met

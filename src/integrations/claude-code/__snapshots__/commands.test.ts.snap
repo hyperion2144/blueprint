@@ -475,7 +475,7 @@ Read \`proposal.md\` deliverables:
 1. Prepare planner context:
    - Change name and directory path
    - List files to read: proposal.md, bp/specs/<domain>/spec.md (per affected domain), bp/conventions/coding.md, bp/config.yaml
-   - Instruction: "Read planner agent prompt, produce design.md, tasks.md, specs/<domain>/spec.md"
+   - Instruction: "Read planner agent prompt, produce design.md, tasks.md, and change_specs/<domain>/spec.md (delta specs under the change directory, NOT bp/specs/)"
    - In --fix mode: also include review.md, focus on D-prefixed issues
 
 2. Dispatch via task tool. Wait for planner to complete.

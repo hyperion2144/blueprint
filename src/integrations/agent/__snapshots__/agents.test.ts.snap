@@ -359,7 +359,7 @@ A domain is a logical grouping of related behaviors - think "chapter" of the sys
   - NOT frontend, backend, database
 - Start from existing \`bp/specs/\` directories - reuse names, don't create duplicates
 - A domain should have 3-15 requirements. Too few - merge. Too many - split.
-- If the change needs a new domain, create it: \`mkdir -p bp/specs/<new-domain>\`
+- If the change needs a new domain, create it under the change directory: \`mkdir -p specs/<new-domain>\`
 
 ### Step 3: Design technical solution
 

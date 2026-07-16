@@ -35,11 +35,15 @@ function continueHandler(name?: string) {
 
   // Output the next step's workflow instructions directly
   if (result.nextStep) {
+    // Always output description first (may contain [INCOMPLETE] warnings)
+    if (result.nextStep.description) {
+      console.log(result.nextStep.description);
+      console.log('');
+    }
     if (result.nextStep.instructions) {
       console.log(result.nextStep.instructions);
     } else {
-      console.log(result.nextStep.description);
-      console.log(`\nRun: ${result.nextStep.command}`);
+      console.log(`Run: ${result.nextStep.command}`);
     }
     return;
   }
