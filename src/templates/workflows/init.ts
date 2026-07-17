@@ -63,7 +63,7 @@ Check \`bp/conventions/coding.md\`:
 
 ### Step 5: Suggest next step
 
-Suggest running \`bp continue\` (which will detect empty roadmap and suggest \`bp roadmap\`):
+Suggest running \`bp continue\`:
 
 \`\`\`
 Project initialized. Run \`bp continue\` to check project status and discover next steps.
@@ -75,7 +75,7 @@ Project initialized. Run \`bp continue\` to check project status and discover ne
 - NEVER run \`bp init\` or \`bp update\` - user did this already
 - Brownfield: dispatch codebase-scanner sub-agent. Do NOT scan code yourself.
 - Greenfield: write coding conventions into bp/conventions/coding.md, verify specs exist
-- ALWAYS suggest \`bp continue\`, not \`bp roadmap\` directly
+- ALWAYS suggest \`bp continue\`
 `;
 
 export function getInitSkillTemplate(): SkillTemplate {
