@@ -564,11 +564,18 @@ export const REVIEW_TEMPLATE = `# Review: {{name}}
 
 ## Issues
 
+<!--
+  Every finding gets ONE checkbox line: - [ ] R1 - description (source)
+  Prefixes: R=spec, Q=quality, G=goal, D=design
+  In fix mode: resolved issues become - [x], unresolved stay - [ ]
+  The verdict MUST match the Issues section: any [ ] = not PASS.
+-->
+
 - [ ] R1 - {{spec requirement not implemented}} (spec)
 - [ ] Q1 - {{code quality issue description}} (quality)
 - [ ] G1 - {{goal not achieved}} (goal)
 - [ ] D1 - {{design/architecture flaw}} (design)
-<!-- Add one - [ ] line per issue found. In fix mode, mark resolved: - [ ] -> - [x] -->
+<!-- Remove placeholder lines above. Add as many - [ ] lines as there are findings. -->
 
 ## Routing
 

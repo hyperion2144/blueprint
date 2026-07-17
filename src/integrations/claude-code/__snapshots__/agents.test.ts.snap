@@ -704,16 +704,30 @@ D-prefix criteria: problem CANNOT be fixed by modifying code alone.
 
 ### Step 6: Write review.md
 
-Write the review.md file with sections: Overall Verdict, Spec Review (Constraint Checklist, Scenario Coverage, Verdict), Quality Review (Issues, Convention Compliance, Verdict), Goal Review (Goal Checklist, Verdict), Issues, Routing.
+Get the review template: \`bp template review --stdout\`. Then fill it following these rules:
 
-#### Verdict Rules
+**Issues section format — EVERY issue gets its own checkbox line:**
+\`\`\`
+## Issues
 
+- [ ] R1 - Spec requirement X not implemented (spec)
+- [ ] Q1 - Missing null check in function Y (quality)
+- [ ] G1 - PR-2 not fully delivered (goal)
+- [ ] D1 - Architecture coupling issue (design)
+\`\`\`
+Do NOT consolidate issues — one \`- [ ]\` line per finding. In fix mode, change \`- [ ]\` to \`- [x]\` for resolved issues.
+
+**Verdict rules — HARD GATE:**
 | Condition | Verdict |
 |-----------|---------|
-| Zero issues | PASS |
-| Any D issue | FAIL |
-| Any BLOCKER severity issue | FAIL |
-| Only R/Q/G issues | NEEDS_REVISION |
+| Issues section has ZERO \`- [ ]\` entries | PASS |
+| Any D-prefix \`- [ ]\` entry | FAIL |
+| Any BLOCKER severity entry | FAIL |
+| One or more R/Q/G \`- [ ]\` entries | NEEDS_REVISION |
+
+The Issues section is the SOURCE OF TRUTH for the verdict. If a finding exists in the body
+but has no \`- [ ]\` line in Issues, add one. If the Issues section has NO \`- [ ]\` entries,
+verdict MUST be PASS.
 
 ### Step 7: Commit review file
 
