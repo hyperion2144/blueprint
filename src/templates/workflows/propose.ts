@@ -7,9 +7,10 @@ const instructions = `## Input
 
 ## Steps
 
-### Step 1: Discuss with the user
+### Step 1: Clarify requirements with the user (ITERATIVE - do NOT skip)
 
-Before writing anything, understand what the user wants to build.
+Before writing anything, you must reach FULL agreement with the user on what to build.
+This is NOT a single Q&A round. It is an iterative loop: ask -> research -> find gaps -> ask again.
 
 Use \`ask\` to discuss:
 - **Problem**: What problem does this change solve? What would the user like to achieve?
@@ -20,9 +21,9 @@ Use \`ask\` to discuss:
 
 Take notes. These will inform the proposal.
 
-### Step 1b: Research existing code (do this yourself)
+### Step 1b: Research existing code (do this yourself, do NOT ask)
 
-Before writing the proposal, understand the current state of the codebase:
+Research the current state of the codebase:
 - Read source files related to what the user described
 - Check \`bp/specs/<domain>/spec.md\` for existing behavioral contracts that this change might modify
 - Use \`grep\` to find existing implementations of similar features
@@ -30,22 +31,36 @@ Before writing the proposal, understand the current state of the codebase:
 
 This research ensures your proposal fits into the existing codebase.
 
-### Step 1c: Follow-up questions (if needed)
+### Step 1c: Gap analysis and follow-up questions (MANDATORY - not optional)
 
-After research, assess each potential deliverable (PR-N). If ANY are ambiguous, use \`ask\` to clarify:
+After research, you MUST assess EACH potential deliverable (PR-N) for ambiguity.
+For EACH deliverable, answer these 4 questions. If you cannot answer any of them, you MUST ask the user:
+
+1. **What exactly does it do?** (concrete behavior, not "support auth" but "validate JWT tokens and reject expired ones")
+2. **What is explicitly NOT included?** (scope boundary - e.g., "no OAuth, only JWT")
+3. **What are the inputs and outputs?** (data flow, error conditions)
+4. **Does existing code already partially implement this?** (if so, extend or rewrite?)
+
+If ANY answer is unclear, use \`ask\` to clarify. Common patterns:
 - User described a feature but didn't specify the approach -> ask which approach they prefer
 - User described a capability but didn't specify requirements -> ask for clarity
 - User said "improve performance" -> ask "Which specific operation? What's the target?"
-- Research shows existing code already partially implements the feature -> ask: "Should we extend the existing implementation or rewrite?"
+- Research shows existing code already partially implements the feature -> ask: "Extend existing or rewrite?"
 
-### Step 1d: Completeness check (before writing proposal)
+**Loop back**: After the user answers, go back to Step 1b (research again if the answer revealed new context),
+then re-assess. Repeat until ALL deliverables pass the 4-question check.
 
-Before writing, verify EACH deliverable has:
-- **Clear behavior**: not "support auth" but a concrete description of what the system does
-- **Clear scope boundary**: what's included and what's explicitly NOT
-- **Clear constraints**: if the user specified a library, approach, or limitation
+### Step 1d: Hard exit gate - do NOT proceed to Step 2 until ALL pass
 
-If a deliverable is still ambiguous after follow-up, add \`[ASSUMPTION: xxx]\` in the proposal's Approach section so the planner and reviewer can see it.
+Before writing the proposal, verify EACH deliverable (PR-N) has:
+- **Concrete behavior**: Can you describe what the system does in one sentence without using vague words ("support", "handle", "manage")?
+- **Clear scope boundary**: Can you state what is explicitly NOT included?
+- **Clear inputs/outputs**: Can you name the input data and the expected output/error?
+- **No ambiguity remaining**: If you have to guess or assume, you have NOT reached agreement.
+
+**CRITICAL: Do NOT use [ASSUMPTION] tags as a substitute for asking.** If you are about to write
+\`[ASSUMPTION: xxx]\`, STOP. Ask the user instead. Assumptions are failure modes, not shortcuts.
+The only exception: the user explicitly said "use your best judgment" on a specific point.
 
 ### Step 2: Create change directory
 

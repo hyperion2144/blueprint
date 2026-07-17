@@ -6,9 +6,10 @@ const instructions = `## Input
 
 ## Steps
 
-### Step 1: Discuss project requirements
+### Step 1: Clarify project requirements with the user (ITERATIVE - do NOT skip)
 
-Before defining milestones, understand the project goals and requirements:
+Before defining milestones, you must reach FULL agreement with the user on what to build.
+This is NOT a single Q&A round. It is an iterative loop: ask -> research -> find gaps -> ask again.
 
 Use \`ask\` to discuss:
 - **Project goal**: What is this project trying to achieve? What problem does it solve?
@@ -17,23 +18,42 @@ Use \`ask\` to discuss:
 - **Constraints**: Any technical, timeline, or resource constraints?
 - **Existing codebase**: If brownfield, what exists already? What needs to change?
 
-Take notes. These inform the roadmap structure.
+Take notes. These will inform the roadmap structure.
 
 ### Step 1b: Research (do this yourself, do NOT ask the user)
 
-After the initial discussion, research the project context:
+Research the project context:
 - If brownfield: read existing source code, understand current architecture, identify what exists vs what needs to change
 - Read the project's dependency and config files to understand the tech stack
 - Read \`bp/specs/\` if specs exist (brownfield after codebase-scanner)
 - Check for linting and formatting configuration to understand conventions
 
-### Step 1c: Follow-up questions (if needed)
+### Step 1c: Gap analysis and follow-up questions (MANDATORY - not optional)
 
-After research, assess whether you have enough to define milestones. If ANY of these are unclear, use \`ask\` to follow up:
+After research, you MUST assess whether you have enough to define milestones.
+For EACH feature the user mentioned, answer these 4 questions. If you cannot answer any, you MUST ask:
+
+1. **What exactly does it do?** (concrete behavior, not "user management" but "create/read/update/delete user accounts")
+2. **What is the priority?** (must-have vs nice-to-have, which features belong in the first milestone)
+3. **What are the dependencies between features?** (which feature requires another to be built first)
+4. **Does existing code already partially implement this?** (if brownfield, extend or rewrite?)
+
+If ANY answer is unclear, use \`ask\` to clarify. Common patterns:
 - User described a feature but didn't specify the approach -> ask which approach they prefer
 - User's stated tech stack contradicts what the codebase actually uses -> clarify the contradiction
 - User's scope is too large (>5 phases in one milestone) -> suggest splitting
 - User mentioned a feature but you don't know if existing code already partially implements it -> ask
+
+**Loop back**: After the user answers, go back to Step 1b (research again if the answer revealed new context),
+then re-assess. Repeat until ALL features pass the 4-question check.
+
+### Step 1d: Hard exit gate - do NOT proceed to Step 2 until ALL pass
+
+Before defining milestones, verify:
+- **Every feature has concrete behavior**: Can you describe what it does without vague words?
+- **Priorities are clear**: Can you separate must-haves from nice-to-haves?
+- **Dependencies are mapped**: Can you draw a dependency graph between features?
+- **No ambiguity remaining**: If you have to guess, you have NOT reached agreement.
 
 Do NOT proceed to Step 2 until you can answer: "What are the concrete, unambiguous deliverables for each phase?"
 
