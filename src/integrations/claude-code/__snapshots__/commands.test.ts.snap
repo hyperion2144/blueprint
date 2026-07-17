@@ -86,7 +86,12 @@ For each completed wave:
 **After all rounds complete:**
 1. Run full test suite: \`tsc --noEmit && vitest run\`
 2. If failures: identify which wave caused them, re-dispatch with fix instructions
-3. If all pass: proceed to Step 5
+3. If all pass: mark the \`## Pre-Archive Checklist\` in \`tasks.md\`:
+   - \`- [ ] tsc --noEmit passes\` → \`- [x]\`
+   - \`- [ ] vitest run (or project test command) - all suites pass\` → \`- [x]\`
+   - \`- [ ] Every task in every wave is marked [x] with a commit hash\` → \`- [x]\` (verify this first)
+   - \`- [ ] All wave acceptance criteria confirmed\` → \`- [x]\`
+   (Skip \`No template placeholders\` — that's verified by the planner during planning.)
 
 ### Step 5: Lightweight mode (if classified as lightweight)
 
@@ -95,6 +100,7 @@ If all tasks are non-behavior:
 2. After each task: run relevant tests, commit with \`bp commit\` or direct git
 3. Mark [x] with commit hash in tasks.md
 4. After all tasks: run full test suite
+5. Mark the \`## Pre-Archive Checklist\` in tasks.md (same as Step 4 item 3)
 
 ### Step 6: Commit and suggest next step
 
