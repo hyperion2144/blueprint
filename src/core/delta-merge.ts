@@ -79,14 +79,24 @@ function hasSemanticSections(deltaSpec: string): boolean {
     deltaSpec.includes('## REMOVED Requirements');
 }
 
-/** Extract `### Requirement: X` nodes from under a specific `## ` section */
+/** Recursively find a heading node by level and text in the full tree */
+function findHeadingRecursive(nodes: HeadingNode[], level: number, text: string): HeadingNode | undefined {
+  for (const n of nodes) {
+    if (n.level === level && n.text === text) return n;
+    if (n.children.length > 0) {
+      const found = findHeadingRecursive(n.children, level, text);
+      if (found) return found;
+    }
+  }
+  return undefined;
+}
+
+/** Extract `### Requirement: X` nodes from under a specific `## ` section (searches full tree) */
 function extractRequirementsFromSection(
   tree: HeadingNode[],
   sectionTitle: string,
 ): HeadingNode[] {
-  const sectionNode = tree.find(
-    (n) => n.level === 2 && n.text === sectionTitle,
-  );
+  const sectionNode = findHeadingRecursive(tree, 2, sectionTitle);
   if (!sectionNode) return [];
   return sectionNode.children.filter(
     (n) => n.level === 3 && n.text.startsWith('Requirement:'),
