@@ -649,9 +649,9 @@ Single file: \`review.md\` containing three review sections + issue list + routi
 
 **Task completion check (before spec review):**
 Read \`tasks.md\`. Check every task is marked \`[x]\` with a commit hash annotation.
-- Any \`- [ ]\` task remaining = **HARD FAIL** (implementation incomplete). Report as R-N: "Task T-N not marked complete"
-- Any \`- [x]\` without \`<!-- commit: <hash> -->\` = **HARD FAIL** (commit not recorded). Report as R-N: "Task T-N missing commit hash". Do NOT proceed to spec/quality/goal reviews until all hashes are present.
-This check runs BEFORE the spec/quality/goal reviews. If this check fails, write review.md with ONLY the task completion findings and route as reapply (do NOT waste time on spec/quality review since the implementation isn't complete).
+- Any \`- [ ]\` task remaining = FAIL (implementation incomplete). Report as R-N: "Task T-N not marked complete"
+- Any \`- [x]\` without \`<!-- commit: <hash> -->\` = FAIL (commit not recorded). Report as R-N: "Task T-N missing commit hash"
+This check runs BEFORE the spec/quality/goal reviews. Note findings and include them in review.md, but proceed with ALL three review gates (do not skip spec/quality/goal due to missing hashes).
 
 ### Step 2: Spec Review (Spec Gate)
 
