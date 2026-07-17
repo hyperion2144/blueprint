@@ -73,7 +73,7 @@ Check before finishing:
 - Each phase has a concrete, verifiable deliverable
 - Phase count per milestone: small 1-2, medium 2-3, large 3-4
 - First phase is always the thinnest possible end-to-end path
-- No template placeholders remaining (\`{{\`)
+- No template placeholders remaining
 
 ## Output
 

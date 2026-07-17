@@ -450,7 +450,7 @@ hide: false
 
 ## Prerequisites
 
-- \`proposal.md\` exists in change directory and is not a template (no \`{{\` placeholders)
+- \`proposal.md\` exists in change directory and is not a template
 
 ## Steps
 
@@ -503,7 +503,7 @@ Read \`proposal.md\` deliverables:
 - File manifest lists every file (no "etc.")
 
 **Quality:**
-- No \`{{\` template placeholders remaining in any file
+- No template placeholders remaining in any file
 - DS-N components have clear single responsibility
 - D-N decisions have real alternatives
 - type:behavior tasks have RED descriptions (GIVEN/WHEN/THEN)
@@ -620,7 +620,7 @@ Before finishing, check:
 - [ ] Intent clearly states the problem
 - [ ] Scope has both In Scope and Out of Scope sections
 - [ ] Each deliverable (PR-N) has a SHALL statement and Verify method
-- [ ] No \`{{\` template placeholders remaining
+- [ ] No template placeholders remaining
 - [ ] PR count <= 5 (if more, suggest splitting)
 - [ ] The proposal reflects what the user described (not AI guesswork)
 
@@ -833,7 +833,7 @@ Check before finishing:
 - Each phase has a concrete, verifiable deliverable
 - Phase count per milestone: small 1-2, medium 2-3, large 3-4
 - First phase is always the thinnest possible end-to-end path
-- No template placeholders remaining (\`{{\`)
+- No template placeholders remaining
 
 ## Output
 

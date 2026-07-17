@@ -74,7 +74,7 @@ Before finishing, check:
 - [ ] Intent clearly states the problem
 - [ ] Scope has both In Scope and Out of Scope sections
 - [ ] Each deliverable (PR-N) has a SHALL statement and Verify method
-- [ ] No \`{{\` template placeholders remaining
+- [ ] No template placeholders remaining
 - [ ] PR count <= 5 (if more, suggest splitting)
 - [ ] The proposal reflects what the user described (not AI guesswork)
 

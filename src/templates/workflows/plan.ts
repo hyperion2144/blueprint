@@ -8,7 +8,7 @@ const instructions = ORCHESTRATOR_RULE + `## Input
 
 ## Prerequisites
 
-- \`proposal.md\` exists in change directory and is not a template (no \`{{\` placeholders)
+- \`proposal.md\` exists in change directory and is not a template
 
 ## Steps
 
@@ -61,7 +61,7 @@ Read \`proposal.md\` deliverables:
 - File manifest lists every file (no "etc.")
 
 **Quality:**
-- No \`{{\` template placeholders remaining in any file
+- No template placeholders remaining in any file
 - DS-N components have clear single responsibility
 - D-N decisions have real alternatives
 - type:behavior tasks have RED descriptions (GIVEN/WHEN/THEN)

@@ -254,7 +254,7 @@ If you skip this, the orchestrator will treat the task as not-done and the chang
 1. **Hash annotations** — Every \`[x]\` task in \`tasks.md\` has \`<!-- commit: <hash> -->\`. Read \`tasks.md\` and verify. If missing: run \`git rev-parse HEAD\` and add the hash.
 2. **TypeScript** — \`tsc --noEmit\` exits with code 0. Fix any compilation errors.
 3. **Tests** — Tests for your implemented tasks pass when run individually.
-4. **No placeholder code** — No \`{{...}}\`, \`TODO\`, \`FIXME\`, or unimplemented stubs in source files.
+4. **No placeholder code** — No unreplaced template placeholders, \`TODO\`, \`FIXME\`, or unimplemented stubs in source files.
 
 Only return when all items pass. If any item fails, fix it immediately — do NOT skip or defer.
 
@@ -584,7 +584,7 @@ Check before finishing:
 - design.md covers all must_haves from proposal.md
 - Every PR from proposal is referenced by at least one DS item
 - Every DS from design is referenced by at least one task
-- tasks.md has no {{...}} placeholders remaining (no {{name}}, {{date}}, etc.) — keep \`<!-- commit: -->\` INTACT, it is for the executor to fill
+- tasks.md has no template placeholders remaining — keep \`<!-- commit: -->\` INTACT, it is for the executor to fill
 - specs/<domain>/spec.md has at least one non-template SHALL/MUST
 - No contradictions with existing decisions
 - All files written in the correct change directory
@@ -1218,7 +1218,7 @@ hide: false
 
 ## Prerequisites
 
-- \`proposal.md\` exists in change directory and is not a template (no \`{{\` placeholders)
+- \`proposal.md\` exists in change directory and is not a template
 
 ## Steps
 
@@ -1271,7 +1271,7 @@ Read \`proposal.md\` deliverables:
 - File manifest lists every file (no "etc.")
 
 **Quality:**
-- No \`{{\` template placeholders remaining in any file
+- No template placeholders remaining in any file
 - DS-N components have clear single responsibility
 - D-N decisions have real alternatives
 - type:behavior tasks have RED descriptions (GIVEN/WHEN/THEN)
@@ -1388,7 +1388,7 @@ Before finishing, check:
 - [ ] Intent clearly states the problem
 - [ ] Scope has both In Scope and Out of Scope sections
 - [ ] Each deliverable (PR-N) has a SHALL statement and Verify method
-- [ ] No \`{{\` template placeholders remaining
+- [ ] No template placeholders remaining
 - [ ] PR count <= 5 (if more, suggest splitting)
 - [ ] The proposal reflects what the user described (not AI guesswork)
 
@@ -1601,7 +1601,7 @@ Check before finishing:
 - Each phase has a concrete, verifiable deliverable
 - Phase count per milestone: small 1-2, medium 2-3, large 3-4
 - First phase is always the thinnest possible end-to-end path
-- No template placeholders remaining (\`{{\`)
+- No template placeholders remaining
 
 ## Output
 
@@ -1869,7 +1869,7 @@ If you skip this, the orchestrator will treat the task as not-done and the chang
 1. **Hash annotations** — Every \`[x]\` task in \`tasks.md\` has \`<!-- commit: <hash> -->\`. Read \`tasks.md\` and verify. If missing: run \`git rev-parse HEAD\` and add the hash.
 2. **TypeScript** — \`tsc --noEmit\` exits with code 0. Fix any compilation errors.
 3. **Tests** — Tests for your implemented tasks pass when run individually.
-4. **No placeholder code** — No \`{{...}}\`, \`TODO\`, \`FIXME\`, or unimplemented stubs in source files.
+4. **No placeholder code** — No unreplaced template placeholders, \`TODO\`, \`FIXME\`, or unimplemented stubs in source files.
 
 Only return when all items pass. If any item fails, fix it immediately — do NOT skip or defer.
 
@@ -2201,7 +2201,7 @@ Check before finishing:
 - design.md covers all must_haves from proposal.md
 - Every PR from proposal is referenced by at least one DS item
 - Every DS from design is referenced by at least one task
-- tasks.md has no {{...}} placeholders remaining (no {{name}}, {{date}}, etc.) — keep \`<!-- commit: -->\` INTACT, it is for the executor to fill
+- tasks.md has no template placeholders remaining — keep \`<!-- commit: -->\` INTACT, it is for the executor to fill
 - specs/<domain>/spec.md has at least one non-template SHALL/MUST
 - No contradictions with existing decisions
 - All files written in the correct change directory
@@ -2834,7 +2834,7 @@ argument-hint: "[change-name]"
 
 ## Prerequisites
 
-- \`proposal.md\` exists in change directory and is not a template (no \`{{\` placeholders)
+- \`proposal.md\` exists in change directory and is not a template
 
 ## Steps
 
@@ -2887,7 +2887,7 @@ Read \`proposal.md\` deliverables:
 - File manifest lists every file (no "etc.")
 
 **Quality:**
-- No \`{{\` template placeholders remaining in any file
+- No template placeholders remaining in any file
 - DS-N components have clear single responsibility
 - D-N decisions have real alternatives
 - type:behavior tasks have RED descriptions (GIVEN/WHEN/THEN)
@@ -3004,7 +3004,7 @@ Before finishing, check:
 - [ ] Intent clearly states the problem
 - [ ] Scope has both In Scope and Out of Scope sections
 - [ ] Each deliverable (PR-N) has a SHALL statement and Verify method
-- [ ] No \`{{\` template placeholders remaining
+- [ ] No template placeholders remaining
 - [ ] PR count <= 5 (if more, suggest splitting)
 - [ ] The proposal reflects what the user described (not AI guesswork)
 
@@ -3216,7 +3216,7 @@ Check before finishing:
 - Each phase has a concrete, verifiable deliverable
 - Phase count per milestone: small 1-2, medium 2-3, large 3-4
 - First phase is always the thinnest possible end-to-end path
-- No template placeholders remaining (\`{{\`)
+- No template placeholders remaining
 
 ## Output
 
@@ -3495,7 +3495,7 @@ If you skip this, the orchestrator will treat the task as not-done and the chang
 1. **Hash annotations** — Every \`[x]\` task in \`tasks.md\` has \`<!-- commit: <hash> -->\`. Read \`tasks.md\` and verify. If missing: run \`git rev-parse HEAD\` and add the hash.
 2. **TypeScript** — \`tsc --noEmit\` exits with code 0. Fix any compilation errors.
 3. **Tests** — Tests for your implemented tasks pass when run individually.
-4. **No placeholder code** — No \`{{...}}\`, \`TODO\`, \`FIXME\`, or unimplemented stubs in source files.
+4. **No placeholder code** — No unreplaced template placeholders, \`TODO\`, \`FIXME\`, or unimplemented stubs in source files.
 
 Only return when all items pass. If any item fails, fix it immediately — do NOT skip or defer.
 
@@ -3832,7 +3832,7 @@ Check before finishing:
 - design.md covers all must_haves from proposal.md
 - Every PR from proposal is referenced by at least one DS item
 - Every DS from design is referenced by at least one task
-- tasks.md has no {{...}} placeholders remaining (no {{name}}, {{date}}, etc.) — keep \`<!-- commit: -->\` INTACT, it is for the executor to fill
+- tasks.md has no template placeholders remaining — keep \`<!-- commit: -->\` INTACT, it is for the executor to fill
 - specs/<domain>/spec.md has at least one non-template SHALL/MUST
 - No contradictions with existing decisions
 - All files written in the correct change directory
@@ -4471,7 +4471,7 @@ argument-hint: "[change-name]"
 
 ## Prerequisites
 
-- \`proposal.md\` exists in change directory and is not a template (no \`{{\` placeholders)
+- \`proposal.md\` exists in change directory and is not a template
 
 ## Steps
 
@@ -4524,7 +4524,7 @@ Read \`proposal.md\` deliverables:
 - File manifest lists every file (no "etc.")
 
 **Quality:**
-- No \`{{\` template placeholders remaining in any file
+- No template placeholders remaining in any file
 - DS-N components have clear single responsibility
 - D-N decisions have real alternatives
 - type:behavior tasks have RED descriptions (GIVEN/WHEN/THEN)
@@ -4641,7 +4641,7 @@ Before finishing, check:
 - [ ] Intent clearly states the problem
 - [ ] Scope has both In Scope and Out of Scope sections
 - [ ] Each deliverable (PR-N) has a SHALL statement and Verify method
-- [ ] No \`{{\` template placeholders remaining
+- [ ] No template placeholders remaining
 - [ ] PR count <= 5 (if more, suggest splitting)
 - [ ] The proposal reflects what the user described (not AI guesswork)
 
@@ -4853,7 +4853,7 @@ Check before finishing:
 - Each phase has a concrete, verifiable deliverable
 - Phase count per milestone: small 1-2, medium 2-3, large 3-4
 - First phase is always the thinnest possible end-to-end path
-- No template placeholders remaining (\`{{\`)
+- No template placeholders remaining
 
 ## Output
 
