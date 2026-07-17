@@ -113,9 +113,7 @@ function semanticMerge(baseSpec: string, deltaSpec: string): MergeResult {
   const conflicts: Conflict[] = [];
 
   // Find or create the `## Requirements` section in base tree
-  let baseReqsSection = baseTree.find(
-    (n) => n.level === 2 && n.text === 'Requirements',
-  );
+  let baseReqsSection = findHeadingRecursive(baseTree, 2, 'Requirements');
   if (!baseReqsSection) {
     // Auto-create if missing — don't block archive with a conflict
     baseReqsSection = { level: 2, text: 'Requirements', children: [], content: '' };
@@ -149,15 +147,13 @@ function semanticMerge(baseSpec: string, deltaSpec: string): MergeResult {
   }
 
   // Also check list-style REMOVED entries (e.g., `- \`### Requirement: X\` — reason`)
-  const removedSection = deltaTree.find(
-    (n) => n.level === 2 && n.text === 'REMOVED Requirements',
-  );
+  const removedSection = findHeadingRecursive(deltaTree, 2, 'REMOVED Requirements');
   if (removedSection) {
     const removedLines = removedSection.content.split('\n');
     for (const line of removedLines) {
-      const match = line.match(/### Requirement:\s*(.+?)(?:`\s*—|$)/);
+      const match = line.match(/### Requirement:\s*(.+?)(?:[`']?\s*[-)]|$)/);
       if (match) {
-        const headerText = `Requirement: ${match[1].trim()}`;
+        const headerText = `Requirement: ${match[1].trim().replace(/[`']/g, '')}`;
         if (baseReqs.has(headerText)) {
           baseReqs.delete(headerText);
         } else if (!conflicts.some((c) => c.section === headerText)) {
