@@ -378,11 +378,23 @@ Commit: \`refactor(<scope>): <description>\`
 
 If you skip this, the orchestrator will treat the task as not-done and the change will fail review.
 
-### Step 4: Return
+### Step 4: Pre-return verification checklist
 
-When all tasks in your wave are done:
+**HARD GATE: Do NOT return until ALL items below pass.**
+
+1. **Hash annotations** — Every \`[x]\` task in \`tasks.md\` has \`<!-- commit: <hash> -->\`. Read \`tasks.md\` and verify. If missing: run \`git rev-parse HEAD\` and add the hash.
+2. **TypeScript** — \`tsc --noEmit\` exits with code 0. Fix any compilation errors.
+3. **Tests** — Tests for your implemented tasks pass when run individually.
+4. **No placeholder code** — No \`{{...}}\`, \`TODO\`, \`FIXME\`, or unimplemented stubs in source files.
+
+Only return when all items pass. If any item fails, fix it immediately — do NOT skip or defer.
+
+### Step 5: Pre-return verification
+
+When all verification items pass:
 - All type:behavior tasks have RED->GREEN->REFACTOR commits
 - All tasks are marked [x] with commit hashes
+- tsc --noEmit exits 0
 - Your wave's tests pass individually
 
 Do NOT run the full test suite. The orchestrator handles full-suite verification after all waves complete.
@@ -471,8 +483,8 @@ Single file: \`review.md\` containing three review sections + issue list + routi
 **Task completion check (before spec review):**
 Read \`tasks.md\`. Check every task is marked \`[x]\` with a commit hash annotation.
 - Any \`- [ ]\` task remaining = FAIL (implementation incomplete). Report as R-N: "Task T-N not marked complete"
-- Any \`- [x]\` without \`<!-- commit: -->\` = FAIL (commit not recorded). Report as R-N: "Task T-N missing commit hash"
-This check runs BEFORE the spec/quality/goal reviews.
+- Any \`- [x]\` without \`<!-- commit: <hash> -->\` = FAIL (commit not recorded). Report as R-N: "Task T-N missing commit hash"
+This check runs BEFORE the spec/quality/goal reviews. Note findings and include them in review.md, but proceed with ALL three review gates (do not skip spec/quality/goal due to missing hashes).
 
 ### Step 2: Spec Review (Spec Gate)
 

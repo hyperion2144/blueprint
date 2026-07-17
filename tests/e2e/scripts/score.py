@@ -509,18 +509,20 @@ def score_review_quality(fixture: str) -> dict:
             checks.append({"check": f"{name}/goal_review", "pass": False, "detail": "Missing Goal Review section"})
 
         # Check for evidence (file:line references)
-        has_evidence = bool(re.search(r'(?:bp/|src/|tests/).*?:\d+', review))
+        has_evidence = bool(re.search(r'(?:bp/|src/|tests/)[\w./-]+(?::\d+)?', review))
         if not has_evidence:
             score -= 2
             checks.append({"check": f"{name}/evidence_refs", "pass": False, "detail": "No file:line evidence references found"})
 
         # Check for issues
-        issues = re.findall(r'(?:^|\n)[-RQGD]\d+[:.]', review)
+        issues = re.findall(r'[-RQGD]-\d+', review)
         issue_count = len(issues)
         total_findings += issue_count
+        if issue_count > 0:
+            all_pass_no_issues = False
 
         # Check verdict
-        verdict_match = re.search(r'Verdict:\s*(PASS|FAIL|NEEDS_REVISION)', review, re.IGNORECASE)
+        verdict_match = re.search(r'(?:Verdict:|\*\*)(PASS|FAIL|NEEDS_REVISION)', review)
         if verdict_match:
             verdict = verdict_match.group(1).upper()
             if verdict == "PASS" and issue_count == 0:
