@@ -280,7 +280,8 @@ Check before finishing:
 - design.md covers all must_haves from proposal.md
 - Every PR from proposal is referenced by at least one DS item
 - Every DS from design is referenced by at least one task
-- tasks.md has no template placeholders remaining — keep \`<!-- commit: -->\` INTACT, it is for the executor to fill
+- tasks.md has no template placeholders remaining - keep \`<!-- commit: -->\` INTACT, it is for the executor to fill
+- tasks.md includes the \`## Pre-Archive Checklist\` section (keep it verbatim from the template - do NOT remove it)
 - specs/<domain>/spec.md has at least one non-template SHALL/MUST
 - No contradictions with existing decisions
 - All files written in the correct change directory
