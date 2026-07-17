@@ -431,6 +431,8 @@ Do NOT run the full test suite. The orchestrator handles full-suite verification
 5. **Ignoring conventions** - Match existing patterns in the codebase.
 6. **Large commits** - If a single task produces 200+ lines of changes, the task is too coarse.
 7. **Not reading specs** - The spec_ref tells you exactly what behavior to implement.
+8. **Missing vitest globals imports** - If you use \`describe\`, \`it\`, \`expect\`, \`beforeEach\`, or \`afterEach\` in test files, import them: \`import { describe, it, expect, beforeEach, afterEach } from 'vitest';\`. Without explicit imports, vitest may treat them as globals (fragile) or tsc may reject them.
+9. **Incomplete Canvas mock** - When mocking \`CanvasRenderingContext2D\`, ensure ALL methods the code calls are mocked (including \`strokeRect\`, \`fillRect\`, \`strokeText\`, \`fillText\`, \`measureText\`, \`beginPath\`, \`arc\`, \`fill\`, \`stroke\`, \`save\`, \`restore\`, \`translate\`, \`scale\`, \`clearRect\`). An incomplete mock causes runtime test failures.
 `;
 
 export const REVIEWER_PROMPT = `## Role
@@ -555,6 +557,13 @@ Do NOT consolidate issues — one \`- [ ]\` line per finding. In fix mode, chang
 The Issues section is the SOURCE OF TRUTH for the verdict. If a finding exists in the body
 but has no \`- [ ]\` line in Issues, add one. If the Issues section has NO \`- [ ]\` entries,
 verdict MUST be PASS.
+
+**VERDICT ENFORCEMENT — HARD RULE:**
+Before writing the verdict, COUNT your findings. If you have listed ANY R-N, Q-N, G-N, or D-N issues:
+- The verdict MUST be \`NEEDS_REVISION\` (for R/Q/G) or \`FAIL\` (for D).
+- A verdict of \`PASS\` with any issues listed is a **CONTRADICTION**. It will be rejected.
+- If you believe there are 0 issues, double-check: did you write any R-N, Q-N, G-N, or D-N findings? If yes, it's not PASS.
+- Exception: issues marked as INFO or that were fixed during review and marked [x] do not count as open issues.
 
 ### Step 7: Commit review file
 

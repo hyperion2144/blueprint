@@ -98,15 +98,16 @@ def score_artifact_completeness(fixture: str) -> dict:
                     "detail": f"Missing {rf} in {status} change {name}"
                 })
 
-        # Check specs/ directory exists
-        specs_dir = os.path.join(path, "specs")
-        if not os.path.isdir(specs_dir) or not find_files(specs_dir, "*.md"):
-            score -= 1
-            checks.append({
-                "check": f"{name}/specs_exist",
-                "pass": False,
-                "detail": f"Missing specs/ in {status} change {name}"
-            })
+        # Check specs/ directory exists (skip for archived - BP merges delta specs into global specs)
+        if status != "archived":
+            specs_dir = os.path.join(path, "specs")
+            if not os.path.isdir(specs_dir) or not find_files(specs_dir, "*.md"):
+                score -= 1
+                checks.append({
+                    "check": f"{name}/specs_exist",
+                    "pass": False,
+                    "detail": f"Missing specs/ in {status} change {name}"
+                })
 
         # Check for template placeholders
         for rf in required_files + ["design.md"]:
