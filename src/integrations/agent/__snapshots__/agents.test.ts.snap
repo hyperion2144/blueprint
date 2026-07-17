@@ -216,25 +216,25 @@ Within your wave, go through tasks top-to-bottom. For each task:
 **RED - Write the failing test first:**
 The test must express the spec scenario as executable code, use Given/When/Then structure, test observable behavior, and FAIL when you run it.
 
-Commit: \`test(<scope>): <description>\`
+Run: \`bp commit -m "test(<scope>): <description>"\`
 
 **GREEN - Write minimal implementation:**
 Write the least code that makes the test pass. Run the test. It must pass.
 
-Commit: \`feat(<scope>): <description>\`
+Run: \`bp commit -m "feat(<scope>): <description>"\`
 
 **REFACTOR - Improve clarity:**
 Extract duplicated logic, improve naming, simplify conditionals. Run the test after every change. If refactoring doesn't improve anything, SKIP this step.
 
-Commit: \`refactor(<scope>): <description>\`
+Run: \`bp commit -m "refactor(<scope>): <description>"\`
 
-#### For type:config tasks: Direct implementation, no TDD. Commit: \`chore(<scope>): <description>\`
+#### For type:config tasks: Direct implementation, no TDD. Run: \`bp commit -m "chore(<scope>): <description>"\`
 
-#### For type:refactor tasks: Verify tests pass first, then refactor, then verify again. Commit: \`refactor(<scope>): <description>\`
+#### For type:refactor tasks: Verify tests pass first, then refactor, then verify again. Run: \`bp commit -m "refactor(<scope>): <description>"\`
 
-#### For type:docs tasks: Direct implementation. Commit: \`docs(<scope>): <description>\`
+#### For type:docs tasks: Direct implementation. Run: \`bp commit -m "docs(<scope>): <description>"\`
 
-#### For type:scaffolding tasks: Direct implementation. Commit: \`chore(<scope>): <description>\`
+#### For type:scaffolding tasks: Direct implementation. Run: \`bp commit -m "chore(<scope>): <description>"\`
 
 ### Step 3: After EACH task commit - mark it IMMEDIATELY
 
@@ -735,7 +735,11 @@ Before writing the verdict, COUNT your findings. If you have listed ANY R-N, Q-N
 - If you believe there are 0 issues, double-check: did you write any R-N, Q-N, G-N, or D-N findings? If yes, it's not PASS.
 - Exception: issues marked as INFO or that were fixed during review and marked [x] do not count as open issues.
 
-### Step 7: Commit review file
+### Step 7: Commit review file with bp commit
+
+\`\`\`
+bp commit -m "docs(review): triple review for <change-name>" --files bp/changes/$1/review.md
+\`\`\`
 ## Fix Mode (Re-review)
 
 Issues have three states:
