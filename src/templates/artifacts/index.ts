@@ -328,7 +328,7 @@ export const TASKS_TEMPLATE = `# Tasks: {{name}}
   - Each wave must be independently verifiable (tsc + tests pass after wave completes).
 -->
 
-- [ ] T-1: [type:behavior] {{task-title}}
+- [ ] T-1: [type:behavior] {{task-title}} <!-- commit: -->
   - **refs**: DS-{{id}}
   - **spec_ref**: specs/{{domain}}/spec.md#{{requirement-id}}
   - **files**: {{file-path-1}}, {{file-path-1-test}}
@@ -338,7 +338,7 @@ export const TASKS_TEMPLATE = `# Tasks: {{name}}
     THEN {{observable-result}}
     AND {{additional-assertion}}
 
-- [ ] T-2: [type:behavior] {{task-title}}
+- [ ] T-2: [type:behavior] {{task-title}} <!-- commit: -->
   - **refs**: DS-{{id}}
   - **spec_ref**: specs/{{domain}}/spec.md#{{requirement-id}}
   - **files**: {{file-path}}, {{file-path-test}}
@@ -348,7 +348,7 @@ export const TASKS_TEMPLATE = `# Tasks: {{name}}
     THEN {{observable-result}}
   - **depends_on**: T-1
 
-- [ ] T-3: [type:scaffolding] {{task-title}}
+- [ ] T-3: [type:scaffolding] {{task-title}} <!-- commit: -->
   - **refs**: DS-{{id}}
   - **files**: {{file-path}}
   - **acceptance**: {{criteria - e.g., "component file exists with correct imports"}}
@@ -360,7 +360,7 @@ export const TASKS_TEMPLATE = `# Tasks: {{name}}
   Remove this section if not needed.
 -->
 
-- [ ] T-4: [type:behavior] {{task-title}}
+- [ ] T-4: [type:behavior] {{task-title}} <!-- commit: -->
   - **refs**: DS-{{id}}
   - **spec_ref**: specs/{{domain}}/spec.md#{{requirement-id}}
   - **files**: {{file-path}}, {{file-path-test}}

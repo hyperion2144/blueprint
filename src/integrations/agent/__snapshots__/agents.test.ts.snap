@@ -235,9 +235,9 @@ Commit: \`refactor(<scope>): <description>\`
 
 **HARD RULE: Do not batch-mark at the end. After every task's commit, IMMEDIATELY:**
 1. Open \`tasks.md\`
-2. Find the \`- [ ] T-N:\` line for that task
+2. Find the \`- [ ] T-N:\` line for that task — it has \`<!-- commit: -->\` already on the line
 3. Change \`- [ ]\` to \`- [x]\`
-4. Add \`<!-- commit: <hash> -->\` on the same line (use \`git rev-parse HEAD\` to get the hash)
+4. Replace \`<!-- commit: -->\` with \`<!-- commit: <hash> -->\` (run \`git rev-parse HEAD\` to get the hash)
 5. Save \`tasks.md\`
 
 If you skip this, the orchestrator will treat the task as not-done and the change will fail review.
@@ -475,11 +475,12 @@ Each task (T-N) is **one independently testable behavioral path**.
 
 **Good tasks:**
 \`\`\`
-T-1: [type:behavior] ThemeContext provides current theme
-T-2: [type:behavior] ThemeContext toggles theme on call
-T-3: [type:behavior] ThemeToggle renders current theme
-T-4: [type:behavior] ThemeToggle calls toggle on click
-T-5: [type:scaffolding] Create ThemeToggle component shell
+- [ ] T-1: [type:behavior] ThemeContext provides current theme <!-- commit: -->
+- [ ] T-2: [type:behavior] ThemeContext toggles theme on call <!-- commit: -->
+- [ ] T-3: [type:behavior] ThemeToggle renders current theme <!-- commit: -->
+- [ ] T-4: [type:behavior] ThemeToggle calls toggle on click <!-- commit: -->
+- [ ] T-5: [type:scaffolding] Create ThemeToggle component shell <!-- commit: -->
+
 \`\`\`
 
 **Bad tasks:**
@@ -578,13 +579,13 @@ Check before finishing:
 - design.md covers all must_haves from proposal.md
 - Every PR from proposal is referenced by at least one DS item
 - Every DS from design is referenced by at least one task
-- tasks.md has no template placeholders remaining (no {{name}}, {{date}}, etc.)
+- tasks.md has no {{...}} placeholders remaining (no {{name}}, {{date}}, etc.) — keep \`<!-- commit: -->\` INTACT, it is for the executor to fill
 - specs/<domain>/spec.md has at least one non-template SHALL/MUST
 - No contradictions with existing decisions
 - All files written in the correct change directory
 - Every Design Item has \`Source: PR-{id}\` annotation
 - Interface Design lists complete method, path, request/response, source spec
-- tasks.md boxes are UNCHECKED (leave for executor)
+- tasks.md boxes are UNCHECKED and \`<!-- commit: -->\` placeholders are PRESERVED (leave both for executor)
 ",
   "reviewer": "---
 name: bp-reviewer
