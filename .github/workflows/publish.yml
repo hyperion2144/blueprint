@@ -23,38 +23,28 @@ jobs:
       - name: Create GitHub Release
         run: |
           git fetch --tags origin 2>/dev/null || true
-          PREV_TAG=$(git tag --sort=-creatordate | sed -n '2p')
-          if [ -n "$PREV_TAG" ]; then
-            LOG_CMD="git log \"$PREV_TAG\"..HEAD --pretty=format:'---%n%s%n%-b' --no-merges"
-          else
-            LOG_CMD="git log --pretty=format:'---%n%s%n%-b' --no-merges $(git rev-list --max-parents=0 HEAD)..HEAD"
-          fi
-          COMMITS=$(eval "$LOG_CMD")
-          FEATS=""; FIXES=""; REFACTORS=""; CHORES=""
-          CURRENT=""
-          while IFS= read -r line; do
-            if [ "$line" = "---" ]; then
-              if [ -n "$CURRENT" ]; then
-                TITLE="${CURRENT%%$'\n'*}"
-                BODY="${CURRENT#*$'\n'}"
-                [ "$TITLE" = "$BODY" ] && BODY=""
-                case "$TITLE" in
-                  "feat:"*) ENTRY="- ${TITLE#feat: }"; [ -n "$BODY" ] && ENTRY="$ENTRY"$'\n'"$(echo "$BODY" | sed 's/^/  /')"; FEATS="$FEATS$ENTRY"$'\n' ;;
-                  "fix:"*)  ENTRY="- ${TITLE#fix: }"; [ -n "$BODY" ] && ENTRY="$ENTRY"$'\n'"$(echo "$BODY" | sed 's/^/  /')"; FIXES="$FIXES$ENTRY"$'\n' ;;
-                  "refactor:"*) ENTRY="- ${TITLE#refactor: }"; [ -n "$BODY" ] && ENTRY="$ENTRY"$'\n'"$(echo "$BODY" | sed 's/^/  /')"; REFACTORS="$REFACTORS$ENTRY"$'\n' ;;
-                  *) ENTRY="- $TITLE"; [ -n "$BODY" ] && ENTRY="$ENTRY"$'\n'"$(echo "$BODY" | sed 's/^/  /')"; CHORES="$CHORES$ENTRY"$'\n' ;;
-                esac
-              fi
-              CURRENT=""
-            else
-              [ -z "$CURRENT" ] && CURRENT="$line" || CURRENT="$CURRENT"$'\n'"$line"
-            fi
-          done <<< "$COMMITS"
-          NOTES=""
-          [ -n "$FEATS" ] && NOTES="${NOTES}### Features\n${FEATS}\n"
-          [ -n "$FIXES" ] && NOTES="${NOTES}### Bug Fixes\n${FIXES}\n"
-          [ -n "$REFACTORS" ] && NOTES="${NOTES}### Refactoring\n${REFACTORS}\n"
-          [ -n "$CHORES" ] && NOTES="${NOTES}### Other\n${CHORES}\n"
+          PREV_TAG=$(git tag --sort=-version:refname | grep -v 'v0.0.0' | tail -1)
+          [ -z "$PREV_TAG" ] && PREV_TAG=$(git rev-list --max-parents=0 HEAD)
+          NOTES=$(git log "${PREV_TAG}..HEAD" --no-merges --format='---%n%n**%s**%n%-b' \
+            | awk -F': ' '
+              /^---$/ { in_block=0; next }
+              /^\\*\\*/ {
+                msg=$0; sub(/^\\*\\*/, "", msg); sub(/\\*\\*$/, "", msg)
+                if (msg ~ /^feat/) { cat="F"; desc=substr(msg, index(msg, ":")+2) }
+                else if (msg ~ /^fix/) { cat="X"; desc=substr(msg, index(msg, ":")+2) }
+                else if (msg ~ /^refactor/) { cat="R"; desc=substr(msg, index(msg, ":")+2) }
+                else { cat="O"; desc=msg }
+                in_block=1
+                entry[cat]=entry[cat] "- " desc "\n"
+                next
+              }
+              /./ && in_block { gsub(/^[[:space:]]*/, "  "); entry[cat]=entry[cat] $0 "\n" }
+              END {
+                if (entry["F"]) printf "### Features\n" entry["F"] "\n"
+                if (entry["X"]) printf "### Bug Fixes\n" entry["X"] "\n"
+                if (entry["R"]) printf "### Refactoring\n" entry["R"] "\n"
+                if (entry["O"]) printf "### Other\n" entry["O"] "\n"
+              }')
           if gh release view "${{ github.ref_name }}" &>/dev/null; then
             gh release edit "${{ github.ref_name }}" --notes "$NOTES"
           else
