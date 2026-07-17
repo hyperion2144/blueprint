@@ -728,7 +728,7 @@ Review PASSED for [BP:CHANGE_NAME]
 \`\`\`
 Review FAILED for [BP:CHANGE_NAME]
   D issues found (design/architecture problems):
-  - D1: {{description}}
+  - D1: <list actual D-issue descriptions from review.md>
 
   These require redesign, not code fix.
   Next: bp plan --fix [BP:CHANGE_NAME]
@@ -738,9 +738,9 @@ Review FAILED for [BP:CHANGE_NAME]
 \`\`\`
 Review NEEDS_REVISION for [BP:CHANGE_NAME]
   Issues found (code fixable):
-  - R1: {{description}}
-  - Q1: {{description}}
-  - G1: {{description}}
+  - R1: <list actual R-issue descriptions from review.md>
+  - Q1: <list actual Q-issue descriptions from review.md>
+  - G1: <list actual G-issue descriptions from review.md>
 
   Next: bp apply --fix [BP:CHANGE_NAME]
 \`\`\`
