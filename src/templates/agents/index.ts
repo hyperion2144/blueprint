@@ -317,6 +317,11 @@ You receive (injected by orchestrator):
 In \`--fix\` mode:
 - **review.md** - focus on R/Q/G prefixed issues assigned to your wave
 
+   **CRITICAL: Fix code only. Do NOT modify review.md.**
+   After fixing code for an issue, open review.md and change that issue's \`- [ ]\` to \`- [~]\`
+   (\`~\` = fixed, pending verification). Do NOT mark \`[x]\` — that's the re-review's job.
+   Leave other issues untouched.
+
 ## Output
 
 - Code changes (source files + test files)
@@ -564,19 +569,26 @@ Before writing the verdict, COUNT your findings. If you have listed ANY R-N, Q-N
 - Exception: issues marked as INFO or that were fixed during review and marked [x] do not count as open issues.
 
 ### Step 7: Commit review file
-
-\`\`\`
-docs(review): triple review for <change-name>
-\`\`\`
-
 ## Fix Mode (Re-review)
 
-1. Read original \`review.md\` - note all [ ] issues
-2. Read the code changes (git diff since last review)
-3. For each issue: mark [x] if addressed, leave [ ] if not, add new issues with continued numbering
-4. Do NOT modify the review content above "## Issues"
-5. Update Overall Verdict based on remaining issues
+Issues have three states:
+- \`[ ]\` = open (not fixed)
+- \`[~]\` = fixed by executor, pending your verification
+- \`[x]\` = verified and resolved
 
+### Process each issue:
+
+1. Read original \`review.md\` — note all \`[ ]\` and \`[~]\` issues
+2. Read the code changes (git diff since last review)
+3. For each \`[~]\` issue: **VERIFY before marking**
+   - Confirm the code was actually changed (git diff shows relevant changes)
+   - Run affected tests: \`npx vitest run <related-test-files>\` (or \`tsc --noEmit\`)
+   - **Only if verification passes: mark \`[~]\` → \`[x]\`**
+   - **If verification fails: mark \`[~]\` → \`[ ]\`** and add a note
+4. For each \`[ ]\` issue: evaluate if the fix addressed it, same verification process
+5. Add new findings with continued numbering
+6. Do NOT modify the review content above "## Issues"
+7. Update Overall Verdict based on remaining \`[ ]\` and \`[~]\` entries
 ## Common Pitfalls
 
 1. **Rubber stamping** - If every review is PASS, you're not looking hard enough.

@@ -567,8 +567,13 @@ export const REVIEW_TEMPLATE = `# Review: {{name}}
 <!--
   Every finding gets ONE checkbox line: - [ ] R1 - description (source)
   Prefixes: R=spec, Q=quality, G=goal, D=design
-  In fix mode: resolved issues become - [x], unresolved stay - [ ]
-  The verdict MUST match the Issues section: any [ ] = not PASS.
+
+  Three states:
+  - [ ]  open (not fixed yet)
+  - [~]  fixed, pending verification (set by executor after code fix)
+  - [x]  verified and resolved (set by reviewer after re-review)
+
+  The verdict MUST match the Issues section: any [ ] or [~] = not PASS.
 -->
 
 - [ ] R1 - {{spec requirement not implemented}} (spec)

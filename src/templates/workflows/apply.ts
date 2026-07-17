@@ -120,7 +120,7 @@ Implementation complete for $1
 - **Concurrent waves in the same round: dispatch ALL in one task tool call (parallel).**
 - **After each wave: verify git log, tasks.md marking, test pass.** No-op or incomplete = failure.
 - **NEVER skip review.** Apply's test pass is NOT a replacement for review.
-- In --fix mode: executors read review.md, fix R/Q/G issues. Do NOT fix D issues (those need replan).
+- In --fix mode: executors read review.md, fix R/Q/G issues, then mark each issue \`[ ]\` → \`[~]\` (\`~\` = fixed, pending verification). Do NOT mark \`[x]\` — that's the re-review's job. Do NOT fix D issues (those need replan).
 - Do NOT run bp review automatically - let the user decide.
 `;
 

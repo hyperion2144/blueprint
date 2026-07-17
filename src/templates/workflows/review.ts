@@ -43,7 +43,7 @@ If either fails: do NOT dispatch reviewer. Report the failures and suggest \`bp 
    - Change name and directory path
    - List of files to read: proposal.md, design.md, tasks.md, specs/<domain>/spec.md, bp/specs/<domain>/spec.md, bp/conventions/coding.md
    - Instruction: "Read the reviewer agent prompt, then perform triple review and write review.md"
-   - In --fix mode: "Read existing review.md, mark resolved issues [x], add new findings if any"
+   - In --fix mode: "Read the reviewer agent prompt (Fix Mode section), verify each [~] issue before marking [x], follow the three-state process ([ ]→[~]→[x])"
 
 2. Dispatch via task tool:
    - Agent type: reviewer (or default task agent with reviewer prompt injected)
