@@ -729,6 +729,13 @@ The Issues section is the SOURCE OF TRUTH for the verdict. If a finding exists i
 but has no \`- [ ]\` line in Issues, add one. If the Issues section has NO \`- [ ]\` entries,
 verdict MUST be PASS.
 
+**VERDICT ENFORCEMENT — HARD RULE:**
+Before writing the verdict, COUNT your findings. If you have listed ANY R-N, Q-N, G-N, or D-N issues:
+- The verdict MUST be \`NEEDS_REVISION\` (for R/Q/G) or \`FAIL\` (for D).
+- A verdict of \`PASS\` with any issues listed is a **CONTRADICTION**. It will be rejected.
+- If you believe there are 0 issues, double-check: did you write any R-N, Q-N, G-N, or D-N findings? If yes, it's not PASS.
+- Exception: issues marked as INFO or that were fixed during review and marked [x] do not count as open issues.
+
 ### Step 7: Commit review file
 
 \`\`\`
