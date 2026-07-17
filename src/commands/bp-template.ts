@@ -11,8 +11,8 @@ import { join, dirname } from 'node:path';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import type { Command } from 'commander';
 import { ARTIFACT_TEMPLATES, TEMPLATE_IDS } from '../templates/artifacts/index.js';
-import { WORKFLOW_REGISTRY } from '../templates/workflows/registry.js';
-import type { WorkflowStep } from '../templates/workflows/registry.js';
+import { resolveTemplate, resolveInstruction } from '../core/schema.js';
+import { findBpDir } from './_utils.js';
 /** Mapping from template type name to workflow step key */
 const STEP_TO_WORKFLOW: Record<string, WorkflowStep> = {
   init: 'init',
@@ -47,8 +47,10 @@ export function register(program: Command): void {
 }
 
 function templateHandler(type: string, options: { name?: string; dir?: string; stdout?: boolean }) {
-  // 1. Try artifact template
-  const template = ARTIFACT_TEMPLATES[type];
+  // 1. Try custom schema template, then built-in artifact template
+  const bpDir = findBpDir();
+  const customTemplate = bpDir ? resolveTemplate(bpDir, type) : undefined;
+  const template = customTemplate ?? ARTIFACT_TEMPLATES[type];
   if (template) {
     const name = options.name || 'unknown';
     const date = new Date().toISOString().slice(0, 10);
@@ -85,10 +87,18 @@ function templateHandler(type: string, options: { name?: string; dir?: string; s
   }
 
   const wfStep = STEP_TO_WORKFLOW[type];
-  if (wfStep && WORKFLOW_REGISTRY[wfStep]) {
-    const cmd = WORKFLOW_REGISTRY[wfStep].command();
-    console.log(cmd.content);
-    return;
+  if (wfStep) {
+    // Try custom schema instruction, then built-in workflow registry
+    const customInstr = bpDir ? resolveInstruction(bpDir, type) : undefined;
+    if (customInstr) {
+      console.log(customInstr);
+      return;
+    }
+    if (WORKFLOW_REGISTRY[wfStep]) {
+      const cmd = WORKFLOW_REGISTRY[wfStep].command();
+      console.log(cmd.content);
+      return;
+    }
   }
 
   console.error(`Unknown template type: ${type}. Available: ${TEMPLATE_IDS.join(', ')}`);

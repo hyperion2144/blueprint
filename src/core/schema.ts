@@ -16,6 +16,8 @@ export interface SchemaArtifact {
   /** Workflow command that produces this artifact */
   command?: string;
   description?: string;
+  /** Template file path (relative to schema dir) for custom schemas */
+  template?: string;
 }
 
 /** Action step (apply/review/archive) in a schema */
@@ -32,6 +34,15 @@ export interface SchemaStep {
   dispatch?: string;
 }
 
+/** Agent definition in a schema */
+export interface SchemaAgent {
+  role: string;
+  description: string;
+  /** Prompt file path (relative to schema dir) for custom schemas */
+  prompt?: string;
+  tools?: string[];
+}
+
 /** Schema definition */
 export interface SchemaDef {
   name: string;
@@ -41,6 +52,8 @@ export interface SchemaDef {
   artifacts: SchemaArtifact[];
   /** Action steps in order (apply, review, archive) */
   steps: SchemaStep[];
+  /** Sub-agent definitions (planner, executor, reviewer, codebase-scanner) */
+  agents?: SchemaAgent[];
 }
 
 /** Built-in default schema (spec-driven) */
@@ -87,4 +100,67 @@ export function loadSchema(bpDir: string, schemaName?: string): SchemaDef {
 
   const content = readFileSync(schemaPath, 'utf-8');
   return parse(content) as SchemaDef;
+}
+
+// ── Resolution functions: custom schema files -> built-in TypeScript fallback ──
+
+/** Get the schema directory path for a custom schema */
+export function getSchemaDir(bpDir: string, schemaName?: string): string | null {
+  if (!schemaName) {
+    try {
+      const configPath = join(bpDir, 'config.yaml');
+      if (existsSync(configPath)) {
+        const content = readFileSync(configPath, 'utf-8');
+        const config = parse(content);
+        schemaName = config?.schema ?? 'spec-driven';
+      }
+    } catch {
+      // ignore
+    }
+  }
+  if (!schemaName || schemaName === 'spec-driven') return null;
+  const dir = join(bpDir, 'schemas', schemaName);
+  return existsSync(dir) ? dir : null;
+}
+
+/** Check if the project uses a custom schema (not built-in spec-driven) */
+export function isCustomSchema(bpDir: string): boolean {
+  return getSchemaDir(bpDir) !== null;
+}
+
+/** Resolve a workflow instruction: custom schema file -> built-in TypeScript */
+export function resolveInstruction(bpDir: string, step: string): string | undefined {
+  const schemaDir = getSchemaDir(bpDir);
+  if (schemaDir) {
+    const filePath = join(schemaDir, 'instructions', `${step}.md`);
+    if (existsSync(filePath)) {
+      return readFileSync(filePath, 'utf-8');
+    }
+  }
+  // Fallback: built-in TypeScript (lazy import to avoid circular deps)
+  return undefined; // caller handles fallback via WORKFLOW_REGISTRY
+}
+
+/** Resolve an artifact template: custom schema file -> built-in TypeScript */
+export function resolveTemplate(bpDir: string, templateType: string): string | undefined {
+  const schemaDir = getSchemaDir(bpDir);
+  if (schemaDir) {
+    const filePath = join(schemaDir, 'templates', `${templateType}.md`);
+    if (existsSync(filePath)) {
+      return readFileSync(filePath, 'utf-8');
+    }
+  }
+  return undefined; // caller handles fallback via ARTIFACT_TEMPLATES
+}
+
+/** Resolve an agent prompt: custom schema file -> built-in TypeScript */
+export function resolveAgentPrompt(bpDir: string, role: string): string | undefined {
+  const schemaDir = getSchemaDir(bpDir);
+  if (schemaDir) {
+    const filePath = join(schemaDir, 'agents', `${role}.md`);
+    if (existsSync(filePath)) {
+      return readFileSync(filePath, 'utf-8');
+    }
+  }
+  return undefined; // caller handles fallback via AGENT_PROMPTS
 }

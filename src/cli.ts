@@ -16,6 +16,7 @@ import { register as registerList } from './commands/bp-list.js';
 import { register as registerDispatch } from './commands/bp-dispatch.js';
 import { register as registerConfig } from './commands/bp-config.js';
 import { register as registerUpdate } from './commands/bp-update.js';
+import { register as registerSchema } from './commands/bp-schema.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
@@ -40,5 +41,6 @@ registerList(program);
 registerDispatch(program);
 registerConfig(program);
 registerUpdate(program);
+registerSchema(program);
 
 program.parse(process.argv);

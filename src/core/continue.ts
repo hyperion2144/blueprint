@@ -12,13 +12,17 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { listActiveChanges, changeDir } from './file-tree.js';
-import { loadSchema } from './schema.js';
+import { loadSchema, resolveInstruction } from './schema.js';
 import { WORKFLOW_REGISTRY, type WorkflowStep } from '../templates/workflows/registry.js';
 import type { ArtifactStatus, ChangeProgress, ChangeStage, ContinueResult, NextStep } from '../types/index.js';
 import type { SchemaDef, SchemaArtifact, SchemaStep } from './schema.js';
 
-/** Get workflow instructions from registry */
-export function getWorkflowInstructions(step: string): string | undefined {
+/** Get workflow instructions: custom schema file -> built-in TypeScript fallback */
+export function getWorkflowInstructions(step: string, bpDir?: string): string | undefined {
+  if (bpDir) {
+    const custom = resolveInstruction(bpDir, step);
+    if (custom) return custom;
+  }
   const registry = WORKFLOW_REGISTRY[step as WorkflowStep];
   return registry?.command?.()?.content;
 }
@@ -176,7 +180,7 @@ function determineChangeNextStep(
         stage: 'incomplete',
         command: `${command} ${changeName}`,
         description: `[INCOMPLETE] ${command} only produced: ${existing.join(', ')}. Missing: ${missingIds.join(', ')}. Follow the instructions below to complete this step.`,
-        instructions: getWorkflowInstructions(command),
+        instructions: getWorkflowInstructions(command, bpDir),
       };
     }
   }
@@ -190,7 +194,7 @@ function determineChangeNextStep(
         stage: progress.stage,
         command: `${artifact.command} ${changeName}`,
         description: `Produce ${artifact.id} (${artifact.generates})`,
-        instructions: getWorkflowInstructions(artifact.command),
+        instructions: getWorkflowInstructions(artifact.command, bpDir),
       };
     }
   }
@@ -226,7 +230,7 @@ function determineChangeNextStep(
         stage: progress.stage,
         command: `${command} ${changeName}`,
         description,
-        instructions: getWorkflowInstructions(command),
+        instructions: getWorkflowInstructions(command, bpDir),
       };
     }
   }
@@ -238,14 +242,14 @@ function determineChangeNextStep(
         stage: progress.stage,
         command: `plan --fix ${changeName}`,
         description: `Fix design issues (D-prefixed, ${unresolvedIssues} unresolved)`,
-        instructions: getWorkflowInstructions('plan'),
+        instructions: getWorkflowInstructions('plan', bpDir),
       };
     }
     return {
       stage: progress.stage,
       command: `apply --fix ${changeName}`,
       description: `Fix code issues (${unresolvedIssues} unresolved)`,
-      instructions: getWorkflowInstructions('apply'),
+      instructions: getWorkflowInstructions('apply', bpDir),
     };
   }
 
@@ -259,7 +263,7 @@ function determineProjectNextStep(bpDir: string): NextStep {
       stage: 'project-setup',
       command: 'bp roadmap',
       description: 'Roadmap is not yet defined. Define milestones and phases for your project.',
-      instructions: getWorkflowInstructions('roadmap'),
+      instructions: getWorkflowInstructions('roadmap', bpDir),
     };
   }
 
@@ -267,7 +271,7 @@ function determineProjectNextStep(bpDir: string): NextStep {
     stage: 'project-ready',
     command: 'bp propose <name>',
     description: 'No active changes. Create a new change based on your roadmap.',
-    instructions: getWorkflowInstructions('propose'),
+    instructions: getWorkflowInstructions('propose', bpDir),
   };
 }
 
