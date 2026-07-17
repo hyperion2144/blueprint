@@ -41,7 +41,7 @@ export const AGENT_DEFS: AgentDef[] = [
   {
     role: 'reviewer',
     description: 'Triple review — spec review + quality review + goal review',
-    tools: ['read', 'grep', 'glob', 'lsp', 'ast_grep', 'bash'],
+    tools: ['read', 'write', 'grep', 'glob', 'lsp', 'ast_grep', 'bash'],
     spawns: '*',
   },
   {
