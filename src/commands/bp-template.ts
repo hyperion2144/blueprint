@@ -13,6 +13,7 @@ import type { Command } from 'commander';
 import { ARTIFACT_TEMPLATES, TEMPLATE_IDS } from '../templates/artifacts/index.js';
 import { resolveTemplate, resolveInstruction } from '../core/schema.js';
 import { findBpDir } from './_utils.js';
+import { WORKFLOW_REGISTRY, type WorkflowStep } from '../templates/workflows/registry.js';
 /** Mapping from template type name to workflow step key */
 const STEP_TO_WORKFLOW: Record<string, WorkflowStep> = {
   init: 'init',

@@ -8,15 +8,23 @@
  * - bp schema list - list available schemas
  */
 
-import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync, rmSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Command } from 'commander';
 import { stringify, parse } from 'yaml';
 import { findBpDir } from './_utils.js';
-import { DEFAULT_SCHEMA, loadSchema, type SchemaDef } from '../core/schema.js';
+import { DEFAULT_SCHEMA, type SchemaDef } from '../core/schema.js';
 import { WORKFLOW_REGISTRY, type WorkflowStep } from '../templates/workflows/registry.js';
 import { ARTIFACT_TEMPLATES, TEMPLATE_IDS } from '../templates/artifacts/index.js';
 import { AGENT_PROMPTS } from '../templates/agents/index.js';
+
+// Map artifact id -> template filename (some artifacts share templates)
+const ARTIFACT_TO_TEMPLATE: Record<string, string> = {
+  proposal: 'proposal.md',
+  design: 'design.md',
+  specs: 'spec.md',      // delta specs use SPEC_TEMPLATE
+  tasks: 'tasks.md',
+};
 
 export function register(program: Command): void {
   const schema = program
@@ -82,7 +90,7 @@ function forkHandler(source: string, target: string): void {
     description: `Custom schema forked from ${source}`,
     artifacts: DEFAULT_SCHEMA.artifacts.map(a => ({
       ...a,
-      template: `${a.id}.md`,
+      template: ARTIFACT_TO_TEMPLATE[a.id] ?? `${a.id}.md`,
     })),
     steps: DEFAULT_SCHEMA.steps,
     agents: [
@@ -119,7 +127,7 @@ function forkHandler(source: string, target: string): void {
   console.log(`  ✓ agents/ (${Object.keys(AGENT_PROMPTS).length} files)`);
 
   console.log(`\n✓ Schema "${target}" created at ${targetDir}`);
-  console.log(`  Edit files to customize. Then set in bp/config.yaml:`);
+  console.log('  Edit files to customize. Then set in bp/config.yaml:');
   console.log(`  schema: ${target}`);
 }
 
@@ -154,14 +162,12 @@ function initHandler(name: string, options: { description?: string }): void {
   });
   writeFileSync(join(targetDir, 'schema.yaml'), schemaYaml, 'utf-8');
 
-  // Create placeholder instruction file
   writeFileSync(
     join(targetDir, 'instructions', 'propose.md'),
     '## Input\n\n- **`$ARGUMENTS`** (required): change name\n\n## Steps\n\nCustomize this instruction file.\n',
     'utf-8',
   );
 
-  // Create placeholder template file
   writeFileSync(
     join(targetDir, 'templates', 'proposal.md'),
     '# Proposal: {{name}}\n\nCustomize this template.\n',
@@ -220,21 +226,24 @@ function validateHandler(name: string): void {
     if (artifactIds.has(art.id)) errors.push(`Duplicate artifact id: ${art.id}`);
     artifactIds.add(art.id);
     if (!art.generates) errors.push(`Artifact "${art.id}" missing "generates"`);
-    // Check template file exists if specified
     if (art.template) {
       const tplPath = join(schemaDir, 'templates', art.template);
       if (!existsSync(tplPath)) errors.push(`Artifact "${art.id}" template not found: templates/${art.template}`);
     }
-    // Check requires reference valid IDs
     for (const req of art.requires || []) {
       if (!artifactIds.has(req) && req !== art.id) {
-        // Might reference a future artifact, warn
         warnings.push(`Artifact "${art.id}" requires "${req}" which is defined later (OK if no circular dep)`);
       }
     }
   }
 
-  // 4. Check for circular dependencies
+  // 3.5 Collect step IDs for cross-step dependency validation
+  const stepIds = new Set<string>();
+  for (const step of schema.steps || []) {
+    stepIds.add(step.id);
+  }
+
+  // 4. Check for circular dependencies in artifacts
   const visited = new Set<string>();
   const stack = new Set<string>();
   function checkCircular(id: string): boolean {
@@ -255,17 +264,16 @@ function validateHandler(name: string): void {
     }
   }
 
-  // 5. Check step references
+  // 5. Check step references (requires can be artifact ID or step ID)
   for (const step of schema.steps || []) {
     if (!step.id) errors.push('Step missing "id"');
     if (!step.command) errors.push(`Step "${step.id}" missing "command"`);
     if (!step.completion) errors.push(`Step "${step.id}" missing "completion"`);
     for (const req of step.requires || []) {
-      if (!artifactIds.has(req)) {
-        errors.push(`Step "${step.id}" requires unknown artifact: "${req}"`);
+      if (!artifactIds.has(req) && !stepIds.has(req)) {
+        errors.push(`Step "${step.id}" requires unknown artifact or step: "${req}"`);
       }
     }
-    // Check instruction file exists
     const instrPath = join(schemaDir, 'instructions', `${step.command}.md`);
     if (!existsSync(instrPath)) {
       warnings.push(`Step "${step.id}" instruction not found: instructions/${step.command}.md (will use built-in)`);
