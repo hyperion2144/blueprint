@@ -63,21 +63,21 @@ describe('resolveModels', () => {
   it('standard profile default mapping', () => {
     const config = loadConfig(tmpDir);
     const models = resolveModels(config);
-    expect(models.plan).toBe('slow');
-    expect(models.execute).toBe('default');
-    expect(models.review).toBe('slow');
-    expect(models.archive).toBe('default');
+    expect(models.planner).toBe('pi/plan');
+    expect(models.executor).toBe('pi/slow');
+    expect(models.reviewer).toBe('pi/task');
+    expect(models['codebase-scanner']).toBe('pi/task');
   });
 
   it('user models override profile defaults', () => {
     updateConfig(tmpDir, (config) => {
-      config.models = { execute: 'fast' };
+      config.models = { executor: 'pi/plan' };
     });
     const config2 = loadConfig(tmpDir);
     const models = resolveModels(config2);
-    expect(models.execute).toBe('fast');
+    expect(models.executor).toBe('pi/plan');
     // Other roles keep profile default
-    expect(models.plan).toBe('slow');
+    expect(models.planner).toBe('pi/plan');
   });
 
   it('lite profile mapping', () => {
@@ -86,9 +86,9 @@ describe('resolveModels', () => {
     });
     const config = loadConfig(tmpDir);
     const models = resolveModels(config);
-    expect(models.plan).toBe('default');
-    expect(models.execute).toBe('default');
-    expect(models.review).toBe('default');
-    expect(models.archive).toBe('smol');
+    expect(models.planner).toBe('pi/task');
+    expect(models.executor).toBe('pi/task');
+    expect(models.reviewer).toBe('pi/task');
+    expect(models['codebase-scanner']).toBe('pi/task');
   });
 });

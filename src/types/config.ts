@@ -32,15 +32,15 @@ export interface ProjectConfig {
 /** Profile -> default model mapping */
 export const PROFILE_MODEL_MAP: Record<Profile, ModelMap> = {
   lite: {
-    plan: 'default',
-    execute: 'default',
-    review: 'default',
-    archive: 'smol',
+    planner: 'pi/task',
+    executor: 'pi/task',
+    reviewer: 'pi/task',
+    'codebase-scanner': 'pi/task',
   },
   standard: {
-    plan: 'slow',
-    execute: 'default',
-    review: 'slow',
-    archive: 'default',
+    planner: 'pi/plan',
+    executor: 'pi/slow',
+    reviewer: 'pi/task',
+    'codebase-scanner': 'pi/task',
   },
 };
