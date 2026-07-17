@@ -40,14 +40,22 @@ Read \`tasks.md\` and parse into execution plan:
    - Waves with NO unmet cross-wave dependencies -> can run concurrently
    - Waves WITH cross-wave dependencies -> must wait for predecessor wave(s)
 
-4. **For each wave, prepare executor context**:
-   - Change name and path
-   - ALL tasks in this wave (ids, types, descriptions, files, acceptance, RED tests)
-   - ALL referenced specs (from \`spec_ref\` fields across tasks)
-   - Design context (relevant DS-N items)
-   - Conventions file path
+4. **For each wave, prepare executor dispatch prompt**:
+   - Change name and directory path
+   - Wave number and which task IDs (T-N) are in this wave
    - Summary of completed tasks from prior waves: task ID, title, files, key public interfaces
-   - In --fix mode: review.md issue list for this wave
+   - In --fix mode: which R/Q/G issue numbers are assigned to this wave
+
+   **CRITICAL: Do NOT inject file contents into the dispatch prompt.**
+   The executor has \`read\` tool access and will read these files itself:
+   - tasks.md (for task details, RED tests, acceptance criteria)
+   - design.md (for DS-N technical context)
+   - specs/<domain>/spec.md (for delta specs)
+   - bp/conventions/coding.md (for coding conventions)
+   - review.md (in --fix mode, for issue details)
+
+   Providing paths saves tokens and prevents the orchestrator from biasing
+   the executor with its interpretation of the content.
 
 ### Step 4: Dispatch executor waves (Full mode)
 
