@@ -102,18 +102,14 @@ function semanticMerge(baseSpec: string, deltaSpec: string): MergeResult {
   const deltaTree = parseHeadings(deltaSpec);
   const conflicts: Conflict[] = [];
 
-  // Find the `## Requirements` section in base tree
-  const baseReqsSection = baseTree.find(
+  // Find or create the `## Requirements` section in base tree
+  let baseReqsSection = baseTree.find(
     (n) => n.level === 2 && n.text === 'Requirements',
   );
   if (!baseReqsSection) {
-    conflicts.push({
-      section: 'Requirements',
-      message: 'Global spec has no `## Requirements` section',
-      baseContent: baseSpec,
-      deltaContent: deltaSpec,
-    });
-    return { type: 'conflict', conflicts };
+    // Auto-create if missing — don't block archive with a conflict
+    baseReqsSection = { level: 2, text: 'Requirements', children: [], content: '' };
+    baseTree.push(baseReqsSection);
   }
 
   // Index base requirements by header text

@@ -177,10 +177,9 @@ For each \`specs/<domain>/spec.md\` in the change directory:
 1. Read the delta spec
 2. Read the corresponding global spec: \`bp/specs/<domain>/spec.md\`
    - If global spec doesn't exist: create it from the delta spec's ADDED requirements
-3. Apply deltas:
-   - **ADDED Requirements**: Append each requirement to the global spec's Requirements section
-   - **MODIFIED Requirements**: Find the matching requirement header in global spec, replace the entire requirement block
-   - **REMOVED Requirements**: Find the matching requirement header in global spec, delete the entire requirement block
+   - **ADDED Requirements**: Insert into the global spec under the correct heading tree (delta-merge handles heading-level merge automatically - no need to check for existing sections)
+   - **MODIFIED Requirements**: Find the matching requirement header in global spec (by heading name), replace the entire block
+   - **REMOVED Requirements**: Find the matching requirement header in global spec, delete the entire block
 4. Write the updated global spec
 
 ### Step 4: Move change to archive
