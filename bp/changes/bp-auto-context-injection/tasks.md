@@ -91,7 +91,7 @@
   - **acceptance**: valid `{file, reason}` parses; missing `file`, missing `reason`, and malformed JSON are rejected.
   - **RED**: GIVEN row JSON with and without required fields WHEN parsed THEN valid rows are returned and invalid rows report a structured error.
 
-- [ ] T-14: [type:behavior] Parse context.jsonl line-by-line while preserving order and line-numbered errors <!-- commit: -->
+- [x] T-14: [type:behavior] Parse context.jsonl line-by-line while preserving order and line-numbered errors <!-- commit: 60b08cd -->
   - **refs**: DS-3
   - **spec_ref**: specs/platform-gen/spec.md#context-jsonl-validation-gate
   - **files**: src/core/context-refs.ts, tests/core/context-refs.test.ts
