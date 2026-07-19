@@ -84,7 +84,90 @@
 
 ## Wave 2: context.jsonl artifact + validation (PR-3)
 
-- [ ] T-13..T-24: Context JSONL artifact, validation, template contracts
+- [x] T-13: [type:behavior] Zod schema accepts valid context row and rejects missing required fields <!-- commit: 7c0f098 -->
+  - **refs**: DS-3
+  - **spec_ref**: specs/platform-gen/spec.md#context-jsonl-reference-list-artifact
+  - **files**: src/types/context-refs.ts, src/core/context-refs.ts, tests/core/context-refs.test.ts
+  - **acceptance**: valid `{file, reason}` parses; missing `file`, missing `reason`, and malformed JSON are rejected.
+  - **RED**: GIVEN row JSON with and without required fields WHEN parsed THEN valid rows are returned and invalid rows report a structured error.
+
+- [ ] T-14: [type:behavior] Parse context.jsonl line-by-line while preserving order and line-numbered errors <!-- commit: -->
+  - **refs**: DS-3
+  - **spec_ref**: specs/platform-gen/spec.md#context-jsonl-validation-gate
+  - **files**: src/core/context-refs.ts, tests/core/context-refs.test.ts
+  - **acceptance**: a three-row file with row 2 malformed returns rows 1 and 3 in order plus a `PARSE_ERROR` at line 2.
+  - **RED**: GIVEN three JSONL lines with a malformed middle line WHEN parsed THEN valid rows preserve order and the error identifies line 2.
+
+- [ ] T-15: [type:behavior] Validate context references against repository paths and file ranges <!-- commit: -->
+  - **refs**: DS-3
+  - **spec_ref**: specs/platform-gen/spec.md#context-jsonl-validation-gate
+  - **files**: src/core/context-refs.ts, tests/core/context-refs.test.ts
+  - **acceptance**: unresolved files report `PATH_UNRESOLVED`; ranges outside file bounds report `RANGE_OOB`.
+  - **RED**: GIVEN a missing file and an out-of-bounds range WHEN validated THEN each row receives its corresponding structured error.
+
+- [ ] T-16: [type:behavior] Filter context rows by workflow phase and report required phase mismatches <!-- commit: -->
+  - **refs**: DS-3
+  - **spec_ref**: specs/platform-gen/spec.md#context-jsonl-validation-gate
+  - **files**: src/core/context-refs.ts, tests/core/context-refs.test.ts
+  - **acceptance**: rows for another phase are silently filtered; no phase mismatch error is emitted, and `phase: all` rows apply at every step.
+  - **RED**: GIVEN plan/apply/review rows WHEN validated for one current phase THEN only matching/all rows remain, filtered rows are counted, and filtered rows produce no errors.
+
+- [ ] T-17: [type:behavior] Artifact validation surfaces context.jsonl errors with line numbers <!-- commit: -->
+  - **refs**: DS-3
+  - **spec_ref**: specs/platform-gen/spec.md#context-jsonl-validation-gate
+  - **files**: src/core/artifact-validator.ts, tests/core/artifact-validator.test.ts
+  - **acceptance**: `validateChange()` returns `contextJsonl.errors` containing line-numbered errors and marks the result invalid.
+  - **RED**: GIVEN a change with invalid context.jsonl WHEN the change is validated THEN context errors include their source line numbers.
+
+- [ ] T-18: [type:behavior] Planner writes context.jsonl from design.md references <!-- commit: -->
+  - **refs**: DS-5
+  - **spec_ref**: specs/platform-gen/spec.md#context-jsonl-planner-write-contract
+  - **files**: tests/integration/planner-writes-context-jsonl.test.ts
+  - **acceptance**: `bp plan` on a fixture whose design references three specs and two conventions produces at least five context rows.
+  - **RED**: GIVEN design.md and tasks.md references WHEN the planner workflow runs THEN context.jsonl contains every referenced path.
+
+- [ ] T-19: [type:behavior] Executor prompt reads auto-injected context.jsonl and refuses missing files <!-- commit: -->
+  - **refs**: DS-5
+  - **spec_ref**: specs/platform-gen/spec.md#context-jsonl-executor-read-contract
+  - **files**: src/templates/agents/index.ts, tests/templates/agents-executor.test.ts
+  - **acceptance**: prompt says not to call `bp context <step>` and refuses to start when a row file is missing on disk.
+  - **RED**: GIVEN the executor prompt WHEN inspected THEN it contains both auto-injection and missing-file refusal instructions.
+
+- [ ] T-20: [type:behavior] Reviewer prompt re-validates every context row reason <!-- commit: -->
+  - **refs**: DS-5
+  - **spec_ref**: specs/platform-gen/spec.md#context-jsonl-reviewer-re-validation-contract
+  - **files**: src/templates/agents/index.ts, tests/templates/agents-reviewer.test.ts
+  - **acceptance**: prompt tells the reviewer to check every row's `reason` is still satisfied.
+  - **RED**: GIVEN the reviewer prompt WHEN inspected THEN it contains the row reason re-validation contract.
+
+- [ ] T-21: [type:behavior] Planner prompt writes context.jsonl for all referenced specs, conventions, and artifacts <!-- commit: -->
+  - **refs**: DS-5
+  - **spec_ref**: specs/platform-gen/spec.md#context-jsonl-planner-write-contract
+  - **files**: src/templates/agents/index.ts, tests/templates/agents-planner.test.ts
+  - **acceptance**: prompt instructs writing `context.jsonl` covering every spec path from design.md and tasks.md plus every convention path.
+  - **RED**: GIVEN the planner prompt WHEN inspected THEN it contains the complete context.jsonl write contract.
+
+- [ ] T-22: [type:behavior] Plan workflow relies on OMP auto-injection instead of bp context calls <!-- commit: -->
+  - **refs**: DS-5
+  - **spec_ref**: specs/platform-gen/spec.md#workflow-template-auto-injection-contract
+  - **files**: src/templates/workflows/plan.ts, tests/templates/workflow-plan.test.ts
+  - **acceptance**: plan workflow has no `Run \`bp context plan\`` instruction and says context is auto-injected by the OMP Extension.
+  - **RED**: GIVEN the plan workflow template WHEN inspected THEN the legacy self-call is absent and auto-injection is explicit.
+
+- [ ] T-23: [type:behavior] Apply and review workflows rely on OMP auto-injection <!-- commit: -->
+  - **refs**: DS-5
+  - **spec_ref**: specs/platform-gen/spec.md#workflow-template-auto-injection-contract
+  - **files**: src/templates/workflows/apply.ts, src/templates/workflows/review.ts, tests/templates/workflow-apply-review.test.ts
+  - **acceptance**: apply and review templates omit their bp context self-calls and both mention auto-injection.
+  - **RED**: GIVEN apply and review workflow templates WHEN inspected THEN neither asks the agent to run bp context and both describe auto-injection.
+
+- [ ] T-24: [type:behavior] Shared workflow exports the context.jsonl schema reminder <!-- commit: -->
+  - **refs**: DS-5
+  - **spec_ref**: specs/platform-gen/spec.md#workflow-template-auto-injection-contract
+  - **files**: src/templates/workflows/shared.ts, tests/templates/workflow-shared.test.ts
+  - **acceptance**: `CONTEXT_JSONL_REMINDER` is exported and contains literal `file:`, `reason:`, `phase:`, `read:`, and `range:` fields.
+  - **RED**: GIVEN the shared workflow constants WHEN inspected THEN the context.jsonl reminder names every schema field.
+***
 
 ## Wave 3: OMP Extension generator pipeline (PR-4)
 
