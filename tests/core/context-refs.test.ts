@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { ContextRefRowSchema } from '../../src/types/context-refs.js';
-import { parseContextJsonl } from '../../src/core/context-refs.js';
+import { parseContextJsonl, validateContextJsonl } from '../../src/core/context-refs.js';
 
 describe('context.jsonl row schema', () => {
   it('accepts a row with required file and reason fields', () => {
@@ -42,5 +44,29 @@ describe('context.jsonl parsing', () => {
     expect(result.errors).toEqual([
       expect.objectContaining({ line: 2, code: 'PARSE_ERROR' }),
     ]);
+  });
+});
+
+describe('context.jsonl path and range validation', () => {
+  it('rejects unresolved files and ranges outside file bounds', () => {
+    const bpDir = join(process.cwd(), 'tests/tmp-context-refs');
+    mkdirSync(bpDir, { recursive: true });
+    writeFileSync(join(bpDir, 'existing.md'), 'one\ntwo\n', 'utf-8');
+
+    try {
+      const rows = [
+        ContextRefRowSchema.parse({ file: 'missing.md', reason: 'missing reference' }),
+        ContextRefRowSchema.parse({ file: 'existing.md', reason: 'bad range', read: 'range', range: [1, 99] }),
+      ];
+      const result = validateContextJsonl(rows, { bpDir, currentPhase: 'plan' });
+
+      expect(result.valid).toBe(false);
+      expect(result.errors).toEqual([
+        expect.objectContaining({ code: 'PATH_UNRESOLVED' }),
+        expect.objectContaining({ code: 'RANGE_OOB' }),
+      ]);
+    } finally {
+      rmSync(bpDir, { recursive: true, force: true });
+    }
   });
 });
