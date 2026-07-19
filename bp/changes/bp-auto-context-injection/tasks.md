@@ -105,7 +105,7 @@
   - **acceptance**: unresolved files report `PATH_UNRESOLVED`; ranges outside file bounds report `RANGE_OOB`.
   - **RED**: GIVEN a missing file and an out-of-bounds range WHEN validated THEN each row receives its corresponding structured error.
 
-- [ ] T-16: [type:behavior] Filter context rows by workflow phase without phase errors <!-- commit: -->
+- [x] T-16: [type:behavior] Filter context rows by workflow phase without phase errors <!-- commit: 1e0f592 -->
   - **refs**: DS-3
   - **spec_ref**: specs/platform-gen/spec.md#context-jsonl-validation-gate
   - **files**: src/core/context-refs.ts, tests/core/context-refs.test.ts
