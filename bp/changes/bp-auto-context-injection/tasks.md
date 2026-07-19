@@ -140,7 +140,7 @@
   - **acceptance**: prompt tells the reviewer to check every row's `reason` is still satisfied.
   - **RED**: GIVEN the reviewer prompt WHEN inspected THEN it contains the row reason re-validation contract.
 
-- [ ] T-21: [type:behavior] Planner prompt writes context.jsonl for all referenced specs, conventions, and artifacts <!-- commit: -->
+- [x] T-21: [type:behavior] Planner prompt writes context.jsonl for all referenced specs, conventions, and artifacts <!-- commit: 4403e45 -->
   - **refs**: DS-5
   - **spec_ref**: specs/platform-gen/spec.md#context-jsonl-planner-write-contract
   - **files**: src/templates/agents/index.ts, tests/templates/agents-planner.test.ts
