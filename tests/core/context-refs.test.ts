@@ -29,3 +29,18 @@ describe('context.jsonl row schema', () => {
     ]);
   });
 });
+
+describe('context.jsonl parsing', () => {
+  it('keeps valid rows in source order while reporting malformed line numbers', () => {
+    const result = parseContextJsonl([
+      '{"file":"first.md","reason":"first"}',
+      '{not-json}',
+      '{"file":"third.md","reason":"third"}',
+    ].join('\n'));
+
+    expect(result.rows.map((row) => row.file)).toEqual(['first.md', 'third.md']);
+    expect(result.errors).toEqual([
+      expect.objectContaining({ line: 2, code: 'PARSE_ERROR' }),
+    ]);
+  });
+});
