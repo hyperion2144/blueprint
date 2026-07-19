@@ -1,7 +1,8 @@
+import { CONTEXT_JSONL_REMINDER } from './shared.js';
 import { ORCHESTRATOR_RULE } from '../types.js';
 import type { SkillTemplate, CommandTemplate } from '../types.js';
 
-const instructions = ORCHESTRATOR_RULE + `## Input
+const instructions = ORCHESTRATOR_RULE + `${CONTEXT_JSONL_REMINDER}## Input
 
 - **\`$ARGUMENTS\`** (optional): change name. If empty, use the most recently planned change.
 - **\`--fix\`** (optional): fix mode — executors read review.md issues and fix them.
@@ -124,6 +125,7 @@ Implementation complete for $1
 
 ## Guardrails
 
+- **Context is auto-injected by the OMP Extension.** Do NOT call \`bp context apply\`; the extension already supplies the same material at every turn.
 - **Full mode: MUST dispatch sub-agents per wave.** Do NOT implement behavior tasks yourself.
 - **Concurrent waves in the same round: dispatch ALL in one task tool call (parallel).**
 - **After each wave: verify git log, tasks.md marking, test pass.** No-op or incomplete = failure.

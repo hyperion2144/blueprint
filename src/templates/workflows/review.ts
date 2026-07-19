@@ -1,7 +1,8 @@
+import { CONTEXT_JSONL_REMINDER } from './shared.js';
 import { ORCHESTRATOR_RULE } from '../types.js';
 import type { SkillTemplate, CommandTemplate } from '../types.js';
 
-const instructions = ORCHESTRATOR_RULE + `## Input
+const instructions = ORCHESTRATOR_RULE + `${CONTEXT_JSONL_REMINDER}## Input
 
 - **\`$ARGUMENTS\`** (optional): change name. If empty, use the most recently applied change.
 - **\`--fix\`** (optional): re-review mode — reviewer marks resolved issues in existing review.md.
@@ -95,8 +96,8 @@ Review NEEDS_REVISION for $1
 # Update roadmap: If the change is linked to a roadmap phase, update it to \`- [x] $1 (reviewed YYYY-MM-DD)\`.
 git add .
 bp commit "docs(review): triple review for $1" --files bp/changes/$1/review.md
-\`\`\`
 - Do NOT run bp archive automatically - let the user review the findings first.
+- **Context is auto-injected by the OMP Extension.** Do NOT call \`bp context review\`; the extension already supplies the same material at every turn.
 `;
 
 export function getReviewSkillTemplate(): SkillTemplate {
