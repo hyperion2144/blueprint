@@ -21,7 +21,6 @@ import { ARTIFACT_TEMPLATES } from '../templates/artifacts/index.js';
 import { writeGeneratedFiles } from './_utils.js';
 import { getSpecStack, detectSpecStack } from '../templates/spec-stacks/detect.js';
 import type { SpecStackTemplate } from '../templates/spec-stacks/index.js';
-import { HOOK_TEMPLATE } from './bp-update.js';
 import { commitDocChanges } from '../core/git-doc.js';
 
 export function register(program: Command): void {
@@ -136,19 +135,6 @@ async function initHandler(options: {
     console.log(`✓ Platform files generated (${files.length})`);
   } catch {
     console.log('⚠ Platform file generation failed. Run `bp update` to retry.');
-  }
-
-  // Deploy OMP hook (for OMP platform only)
-  if (platform.includes('omp')) {
-    try {
-      const cwd = process.cwd();
-      const hookDir = join(cwd, '.omp', 'hooks', 'pre');
-      mkdirSync(hookDir, { recursive: true });
-      writeFileSync(join(hookDir, 'bp.ts'), HOOK_TEMPLATE, 'utf-8');
-      console.log('  ✓ .omp/hooks/pre/bp.ts');
-    } catch {
-      console.log('⚠ OMP hook deployment failed. Run `bp update` to retry.');
-    }
   }
 
   // Auto-create .gitignore when commitDocs is false (bp/ files should not be tracked)
