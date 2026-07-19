@@ -23,3 +23,24 @@ Read \`tasks.md\` task types:
 - **Full**: any type:behavior task
 
 `;
+
+/** Schema reminder for `context.jsonl` rows used by the OMP auto-injection contract. */
+export const CONTEXT_JSONL_REMINDER = `### Context injection (OMP Extension)
+
+Context is auto-injected by the OMP Extension at session_start. Do NOT call \`bp context <step>\` yourself — the extension already provides the same material at every turn.
+
+When reading \`bp/changes/<name>/context.jsonl\`, every row follows the schema:
+
+\`\`\`json
+{ "file": "<path>", "reason": "<why>", "phase": "plan|apply|review|archive|all", "tag": "<label>", "read": "full|range", "range": [<start>, <end>] }
+\`\`\`
+
+Row fields:
+
+- \`file:\` repository-relative path the change depends on. Required.
+- \`reason:\` short invariant or invariant-style reason the file exists in the change. Required, ≤ 200 chars.
+- \`phase:\` one of \`plan\`, \`apply\`, \`review\`, \`archive\`, or \`all\`. Optional, default \`all\`.
+- \`tag:\` free-form label such as \`guard-rail\`, \`invariant\`, \`spec\`, \`convention\`, or \`config\`. Optional.
+- \`read:\` either \`full\` (default) or \`range\`. When \`range\`, the row must include \`range:\` as \`[start, end]\` line numbers.
+
+`;

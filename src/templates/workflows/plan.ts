@@ -1,7 +1,8 @@
+import { CONTEXT_JSONL_REMINDER } from './shared.js';
 import { ORCHESTRATOR_RULE } from '../types.js';
 import type { SkillTemplate, CommandTemplate } from '../types.js';
 
-const instructions = ORCHESTRATOR_RULE + `## Input
+const instructions = ORCHESTRATOR_RULE + `${CONTEXT_JSONL_REMINDER}## Input
 
 - **\`$ARGUMENTS\`** (optional): change name. If empty, use most recently proposed change.
 - **\`--fix\`** (optional): fix mode — planner reads review.md D-issues and redesigns.
@@ -93,6 +94,7 @@ Planner completed for $1
 
 ## Guardrails
 
+- **Context is auto-injected by the OMP Extension.** Do NOT call \`bp context plan\`; the extension already supplies the same material at every turn.
 - **Full mode: MUST dispatch sub-agent.** Do NOT write design/tasks/specs yourself.
 - Lightweight mode: write templates directly (no sub-agent needed)
 - tasks.md boxes must remain UNCHECKED
