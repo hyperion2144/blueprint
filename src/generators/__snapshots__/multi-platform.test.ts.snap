@@ -189,6 +189,15 @@ In \`--fix\` mode:
    (\`~\` = fixed, pending verification). Do NOT mark \`[x]\` - that's the re-review's job.
    Leave other issues untouched.
 
+## Context Injection
+
+Context is auto-injected by the OMP Extension at session_start as a &lt;bp-context&gt;...&lt;/bp-context&gt; block plus a context.jsonl reference list for the active change.
+
+- Do NOT call \`bp context <step>\` yourself. The OMP Extension already provides the same material at every turn.
+- Read \`bp/changes/<name>/context.jsonl\` once per wave. Each row is { file, reason, phase, tag, read, range } and explains why the file matters for your wave.
+- Refuse to start work when a row's \`file:\` is missing on disk. Surface the missing row as an [auto-fix] blocker and stop the wave; do not invent a substitute file.
+- Rows whose \`phase\` does not match the current step (\`plan\` | \`apply\` | \`review\` | \`archive\`) are informational only — ignore them.
+
 ## Output
 
 - Code changes (source files + test files)
@@ -352,15 +361,31 @@ In \`--fix\` mode, you also receive:
 
 ## Output
 
-Produce three files in the change directory:
+Produce four files in the change directory:
 
 | File | Purpose |
 |------|---------|
 | \`design.md\` | Structured technical design (DS-N components, D-N decisions, data flow, file manifest) |
 | \`tasks.md\` | Structured task checklist (waves, TDD types, RED tests, dependency graph) |
 | \`specs/<domain>/spec.md\` | Delta specs (ADDED/MODIFIED/REMOVED requirements with scenarios) |
+| \`context.jsonl\` | Reference list of every spec / convention / artifact path the change depends on |
 
 ## Execution Flow
+
+### Step 0: Write \`context.jsonl\` covering every reference
+
+Before returning, write \`bp/changes/<name>/context.jsonl\`. The file lists every spec / convention / artifact path the change touches, one row per line, using the schema:
+
+\`\`\`json
+{ "file": "bp/specs/auth/spec.md#login", "reason": "Authentication invariant", "phase": "all", "tag": "spec", "read": "full" }
+\`\`\`
+
+Required coverage:
+- Every spec path referenced from \`design.md\` and \`tasks.md\` (delta + global specs).
+- Every convention path under \`bp/conventions/\`.
+- Every artifact path listed in the design's File Manifest that the executors will read.
+
+Set \`phase\` to \`plan\` for design-only context, \`apply\` for code reference, \`review\` for review-only, or \`all\` when the row applies to every step. Use \`tag\` to label rows (\`spec\`, \`convention\`, \`guard-rail\`, etc.) and a short \`reason\` naming the invariant or invariant-style reason the file exists in the change.
 
 ### Step 1: Read context and quality-gate the proposal
 
@@ -641,6 +666,14 @@ In \`--fix\` mode:
 
 ## Output
 
+## Context Re-validation
+
+Read \`bp/changes/<name>/context.jsonl\` alongside the source diff. For every row, check every row's \`reason\` is still satisfied by the current code state:
+
+- If the cited file was deleted or refactored, the reason is no longer satisfied — emit a Q-N finding naming the row and the obsolete claim.
+- If the file still exists but no longer encodes the invariant the reason described (different logic, regression, or scope drift), the reason is not satisfied — same finding path.
+- Phase matching against the current step is the validator's job (see \`validateContextJsonl\`); do not re-emit a phase mismatch as a review finding.
+
 Single file: \`review.md\` containing three review sections + issue list + routing recommendation.
 
 ## Execution Flow
@@ -783,6 +816,24 @@ hide: false
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
 
+### Context injection (OMP Extension)
+
+Context is auto-injected by the OMP Extension at session_start. Do NOT call \`bp context <step>\` yourself — the extension already provides the same material at every turn.
+
+When reading \`bp/changes/<name>/context.jsonl\`, every row follows the schema:
+
+\`\`\`json
+{ "file": "<path>", "reason": "<why>", "phase": "plan|apply|review|archive|all", "tag": "<label>", "read": "full|range", "range": [<start>, <end>] }
+\`\`\`
+
+Row fields:
+
+- \`file:\` repository-relative path the change depends on. Required.
+- \`reason:\` short invariant or invariant-style reason the file exists in the change. Required, ≤ 200 chars.
+- \`phase:\` one of \`plan\`, \`apply\`, \`review\`, \`archive\`, or \`all\`. Optional, default \`all\`.
+- \`tag:\` free-form label such as \`guard-rail\`, \`invariant\`, \`spec\`, \`convention\`, or \`config\`. Optional.
+- \`read:\` either \`full\` (default) or \`range\`. When \`range\`, the row must include \`range:\` as \`[start, end]\` line numbers.
+
 ## Input
 
 - **\`[BP:CHANGE_NAME]\`** (optional): change name. If empty, use the most recently planned change.
@@ -906,6 +957,7 @@ Implementation complete for [BP:CHANGE_NAME]
 
 ## Guardrails
 
+- **Context is auto-injected by the OMP Extension.** Do NOT call \`bp context apply\`; the extension already supplies the same material at every turn.
 - **Full mode: MUST dispatch sub-agents per wave.** Do NOT implement behavior tasks yourself.
 - **Concurrent waves in the same round: dispatch ALL in one task tool call (parallel).**
 - **After each wave: verify git log, tasks.md marking, test pass.** No-op or incomplete = failure.
@@ -1224,6 +1276,24 @@ hide: false
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
 
+### Context injection (OMP Extension)
+
+Context is auto-injected by the OMP Extension at session_start. Do NOT call \`bp context <step>\` yourself — the extension already provides the same material at every turn.
+
+When reading \`bp/changes/<name>/context.jsonl\`, every row follows the schema:
+
+\`\`\`json
+{ "file": "<path>", "reason": "<why>", "phase": "plan|apply|review|archive|all", "tag": "<label>", "read": "full|range", "range": [<start>, <end>] }
+\`\`\`
+
+Row fields:
+
+- \`file:\` repository-relative path the change depends on. Required.
+- \`reason:\` short invariant or invariant-style reason the file exists in the change. Required, ≤ 200 chars.
+- \`phase:\` one of \`plan\`, \`apply\`, \`review\`, \`archive\`, or \`all\`. Optional, default \`all\`.
+- \`tag:\` free-form label such as \`guard-rail\`, \`invariant\`, \`spec\`, \`convention\`, or \`config\`. Optional.
+- \`read:\` either \`full\` (default) or \`range\`. When \`range\`, the row must include \`range:\` as \`[start, end]\` line numbers.
+
 ## Input
 
 - **\`[BP:CHANGE_NAME]\`** (optional): change name. If empty, use most recently proposed change.
@@ -1316,6 +1386,7 @@ Planner completed for [BP:CHANGE_NAME]
 
 ## Guardrails
 
+- **Context is auto-injected by the OMP Extension.** Do NOT call \`bp context plan\`; the extension already supplies the same material at every turn.
 - **Full mode: MUST dispatch sub-agent.** Do NOT write design/tasks/specs yourself.
 - Lightweight mode: write templates directly (no sub-agent needed)
 - tasks.md boxes must remain UNCHECKED
@@ -1430,6 +1501,24 @@ hide: false
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
 
+### Context injection (OMP Extension)
+
+Context is auto-injected by the OMP Extension at session_start. Do NOT call \`bp context <step>\` yourself — the extension already provides the same material at every turn.
+
+When reading \`bp/changes/<name>/context.jsonl\`, every row follows the schema:
+
+\`\`\`json
+{ "file": "<path>", "reason": "<why>", "phase": "plan|apply|review|archive|all", "tag": "<label>", "read": "full|range", "range": [<start>, <end>] }
+\`\`\`
+
+Row fields:
+
+- \`file:\` repository-relative path the change depends on. Required.
+- \`reason:\` short invariant or invariant-style reason the file exists in the change. Required, ≤ 200 chars.
+- \`phase:\` one of \`plan\`, \`apply\`, \`review\`, \`archive\`, or \`all\`. Optional, default \`all\`.
+- \`tag:\` free-form label such as \`guard-rail\`, \`invariant\`, \`spec\`, \`convention\`, or \`config\`. Optional.
+- \`read:\` either \`full\` (default) or \`range\`. When \`range\`, the row must include \`range:\` as \`[start, end]\` line numbers.
+
 ## Input
 
 - **\`[BP:CHANGE_NAME]\`** (optional): change name. If empty, use the most recently applied change.
@@ -1524,8 +1613,8 @@ Review NEEDS_REVISION for [BP:CHANGE_NAME]
 # Update roadmap: If the change is linked to a roadmap phase, update it to \`- [x] [BP:CHANGE_NAME] (reviewed YYYY-MM-DD)\`.
 git add .
 bp commit "docs(review): triple review for [BP:CHANGE_NAME]" --files bp/changes/[BP:CHANGE_NAME]/review.md
-\`\`\`
 - Do NOT run bp archive automatically - let the user review the findings first.
+- **Context is auto-injected by the OMP Extension.** Do NOT call \`bp context review\`; the extension already supplies the same material at every turn.
 ",
   ".agent/skills/bp-roadmap/SKILL.md": "---
 name: bp-roadmap
@@ -1810,6 +1899,15 @@ In \`--fix\` mode:
    (\`~\` = fixed, pending verification). Do NOT mark \`[x]\` - that's the re-review's job.
    Leave other issues untouched.
 
+## Context Injection
+
+Context is auto-injected by the OMP Extension at session_start as a &lt;bp-context&gt;...&lt;/bp-context&gt; block plus a context.jsonl reference list for the active change.
+
+- Do NOT call \`bp context <step>\` yourself. The OMP Extension already provides the same material at every turn.
+- Read \`bp/changes/<name>/context.jsonl\` once per wave. Each row is { file, reason, phase, tag, read, range } and explains why the file matters for your wave.
+- Refuse to start work when a row's \`file:\` is missing on disk. Surface the missing row as an [auto-fix] blocker and stop the wave; do not invent a substitute file.
+- Rows whose \`phase\` does not match the current step (\`plan\` | \`apply\` | \`review\` | \`archive\`) are informational only — ignore them.
+
 ## Output
 
 - Code changes (source files + test files)
@@ -1975,15 +2073,31 @@ In \`--fix\` mode, you also receive:
 
 ## Output
 
-Produce three files in the change directory:
+Produce four files in the change directory:
 
 | File | Purpose |
 |------|---------|
 | \`design.md\` | Structured technical design (DS-N components, D-N decisions, data flow, file manifest) |
 | \`tasks.md\` | Structured task checklist (waves, TDD types, RED tests, dependency graph) |
 | \`specs/<domain>/spec.md\` | Delta specs (ADDED/MODIFIED/REMOVED requirements with scenarios) |
+| \`context.jsonl\` | Reference list of every spec / convention / artifact path the change depends on |
 
 ## Execution Flow
+
+### Step 0: Write \`context.jsonl\` covering every reference
+
+Before returning, write \`bp/changes/<name>/context.jsonl\`. The file lists every spec / convention / artifact path the change touches, one row per line, using the schema:
+
+\`\`\`json
+{ "file": "bp/specs/auth/spec.md#login", "reason": "Authentication invariant", "phase": "all", "tag": "spec", "read": "full" }
+\`\`\`
+
+Required coverage:
+- Every spec path referenced from \`design.md\` and \`tasks.md\` (delta + global specs).
+- Every convention path under \`bp/conventions/\`.
+- Every artifact path listed in the design's File Manifest that the executors will read.
+
+Set \`phase\` to \`plan\` for design-only context, \`apply\` for code reference, \`review\` for review-only, or \`all\` when the row applies to every step. Use \`tag\` to label rows (\`spec\`, \`convention\`, \`guard-rail\`, etc.) and a short \`reason\` naming the invariant or invariant-style reason the file exists in the change.
 
 ### Step 1: Read context and quality-gate the proposal
 
@@ -2266,6 +2380,14 @@ In \`--fix\` mode:
 
 ## Output
 
+## Context Re-validation
+
+Read \`bp/changes/<name>/context.jsonl\` alongside the source diff. For every row, check every row's \`reason\` is still satisfied by the current code state:
+
+- If the cited file was deleted or refactored, the reason is no longer satisfied — emit a Q-N finding naming the row and the obsolete claim.
+- If the file still exists but no longer encodes the invariant the reason described (different logic, regression, or scope drift), the reason is not satisfied — same finding path.
+- Phase matching against the current step is the validator's job (see \`validateContextJsonl\`); do not re-emit a phase mismatch as a review finding.
+
 Single file: \`review.md\` containing three review sections + issue list + routing recommendation.
 
 ## Execution Flow
@@ -2408,6 +2530,24 @@ argument-hint: "[change-name]"
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
 
+### Context injection (OMP Extension)
+
+Context is auto-injected by the OMP Extension at session_start. Do NOT call \`bp context <step>\` yourself — the extension already provides the same material at every turn.
+
+When reading \`bp/changes/<name>/context.jsonl\`, every row follows the schema:
+
+\`\`\`json
+{ "file": "<path>", "reason": "<why>", "phase": "plan|apply|review|archive|all", "tag": "<label>", "read": "full|range", "range": [<start>, <end>] }
+\`\`\`
+
+Row fields:
+
+- \`file:\` repository-relative path the change depends on. Required.
+- \`reason:\` short invariant or invariant-style reason the file exists in the change. Required, ≤ 200 chars.
+- \`phase:\` one of \`plan\`, \`apply\`, \`review\`, \`archive\`, or \`all\`. Optional, default \`all\`.
+- \`tag:\` free-form label such as \`guard-rail\`, \`invariant\`, \`spec\`, \`convention\`, or \`config\`. Optional.
+- \`read:\` either \`full\` (default) or \`range\`. When \`range\`, the row must include \`range:\` as \`[start, end]\` line numbers.
+
 ## Input
 
 - **\`$ARGUMENTS\`** (optional): change name. If empty, use the most recently planned change.
@@ -2531,6 +2671,7 @@ Implementation complete for $1
 
 ## Guardrails
 
+- **Context is auto-injected by the OMP Extension.** Do NOT call \`bp context apply\`; the extension already supplies the same material at every turn.
 - **Full mode: MUST dispatch sub-agents per wave.** Do NOT implement behavior tasks yourself.
 - **Concurrent waves in the same round: dispatch ALL in one task tool call (parallel).**
 - **After each wave: verify git log, tasks.md marking, test pass.** No-op or incomplete = failure.
@@ -2846,6 +2987,24 @@ argument-hint: "[change-name]"
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
 
+### Context injection (OMP Extension)
+
+Context is auto-injected by the OMP Extension at session_start. Do NOT call \`bp context <step>\` yourself — the extension already provides the same material at every turn.
+
+When reading \`bp/changes/<name>/context.jsonl\`, every row follows the schema:
+
+\`\`\`json
+{ "file": "<path>", "reason": "<why>", "phase": "plan|apply|review|archive|all", "tag": "<label>", "read": "full|range", "range": [<start>, <end>] }
+\`\`\`
+
+Row fields:
+
+- \`file:\` repository-relative path the change depends on. Required.
+- \`reason:\` short invariant or invariant-style reason the file exists in the change. Required, ≤ 200 chars.
+- \`phase:\` one of \`plan\`, \`apply\`, \`review\`, \`archive\`, or \`all\`. Optional, default \`all\`.
+- \`tag:\` free-form label such as \`guard-rail\`, \`invariant\`, \`spec\`, \`convention\`, or \`config\`. Optional.
+- \`read:\` either \`full\` (default) or \`range\`. When \`range\`, the row must include \`range:\` as \`[start, end]\` line numbers.
+
 ## Input
 
 - **\`$ARGUMENTS\`** (optional): change name. If empty, use most recently proposed change.
@@ -2938,6 +3097,7 @@ Planner completed for $1
 
 ## Guardrails
 
+- **Context is auto-injected by the OMP Extension.** Do NOT call \`bp context plan\`; the extension already supplies the same material at every turn.
 - **Full mode: MUST dispatch sub-agent.** Do NOT write design/tasks/specs yourself.
 - Lightweight mode: write templates directly (no sub-agent needed)
 - tasks.md boxes must remain UNCHECKED
@@ -3052,6 +3212,24 @@ argument-hint: "[change-name]"
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
 
+### Context injection (OMP Extension)
+
+Context is auto-injected by the OMP Extension at session_start. Do NOT call \`bp context <step>\` yourself — the extension already provides the same material at every turn.
+
+When reading \`bp/changes/<name>/context.jsonl\`, every row follows the schema:
+
+\`\`\`json
+{ "file": "<path>", "reason": "<why>", "phase": "plan|apply|review|archive|all", "tag": "<label>", "read": "full|range", "range": [<start>, <end>] }
+\`\`\`
+
+Row fields:
+
+- \`file:\` repository-relative path the change depends on. Required.
+- \`reason:\` short invariant or invariant-style reason the file exists in the change. Required, ≤ 200 chars.
+- \`phase:\` one of \`plan\`, \`apply\`, \`review\`, \`archive\`, or \`all\`. Optional, default \`all\`.
+- \`tag:\` free-form label such as \`guard-rail\`, \`invariant\`, \`spec\`, \`convention\`, or \`config\`. Optional.
+- \`read:\` either \`full\` (default) or \`range\`. When \`range\`, the row must include \`range:\` as \`[start, end]\` line numbers.
+
 ## Input
 
 - **\`$ARGUMENTS\`** (optional): change name. If empty, use the most recently applied change.
@@ -3146,8 +3324,8 @@ Review NEEDS_REVISION for $1
 # Update roadmap: If the change is linked to a roadmap phase, update it to \`- [x] $1 (reviewed YYYY-MM-DD)\`.
 git add .
 bp commit "docs(review): triple review for $1" --files bp/changes/$1/review.md
-\`\`\`
 - Do NOT run bp archive automatically - let the user review the findings first.
+- **Context is auto-injected by the OMP Extension.** Do NOT call \`bp context review\`; the extension already supplies the same material at every turn.
 ",
   ".claude/commands/bp-roadmap.md": "---
 name: bp:roadmap
@@ -3442,6 +3620,15 @@ In \`--fix\` mode:
    (\`~\` = fixed, pending verification). Do NOT mark \`[x]\` - that's the re-review's job.
    Leave other issues untouched.
 
+## Context Injection
+
+Context is auto-injected by the OMP Extension at session_start as a &lt;bp-context&gt;...&lt;/bp-context&gt; block plus a context.jsonl reference list for the active change.
+
+- Do NOT call \`bp context <step>\` yourself. The OMP Extension already provides the same material at every turn.
+- Read \`bp/changes/<name>/context.jsonl\` once per wave. Each row is { file, reason, phase, tag, read, range } and explains why the file matters for your wave.
+- Refuse to start work when a row's \`file:\` is missing on disk. Surface the missing row as an [auto-fix] blocker and stop the wave; do not invent a substitute file.
+- Rows whose \`phase\` does not match the current step (\`plan\` | \`apply\` | \`review\` | \`archive\`) are informational only — ignore them.
+
 ## Output
 
 - Code changes (source files + test files)
@@ -3612,15 +3799,31 @@ In \`--fix\` mode, you also receive:
 
 ## Output
 
-Produce three files in the change directory:
+Produce four files in the change directory:
 
 | File | Purpose |
 |------|---------|
 | \`design.md\` | Structured technical design (DS-N components, D-N decisions, data flow, file manifest) |
 | \`tasks.md\` | Structured task checklist (waves, TDD types, RED tests, dependency graph) |
 | \`specs/<domain>/spec.md\` | Delta specs (ADDED/MODIFIED/REMOVED requirements with scenarios) |
+| \`context.jsonl\` | Reference list of every spec / convention / artifact path the change depends on |
 
 ## Execution Flow
+
+### Step 0: Write \`context.jsonl\` covering every reference
+
+Before returning, write \`bp/changes/<name>/context.jsonl\`. The file lists every spec / convention / artifact path the change touches, one row per line, using the schema:
+
+\`\`\`json
+{ "file": "bp/specs/auth/spec.md#login", "reason": "Authentication invariant", "phase": "all", "tag": "spec", "read": "full" }
+\`\`\`
+
+Required coverage:
+- Every spec path referenced from \`design.md\` and \`tasks.md\` (delta + global specs).
+- Every convention path under \`bp/conventions/\`.
+- Every artifact path listed in the design's File Manifest that the executors will read.
+
+Set \`phase\` to \`plan\` for design-only context, \`apply\` for code reference, \`review\` for review-only, or \`all\` when the row applies to every step. Use \`tag\` to label rows (\`spec\`, \`convention\`, \`guard-rail\`, etc.) and a short \`reason\` naming the invariant or invariant-style reason the file exists in the change.
 
 ### Step 1: Read context and quality-gate the proposal
 
@@ -3908,6 +4111,14 @@ In \`--fix\` mode:
 
 ## Output
 
+## Context Re-validation
+
+Read \`bp/changes/<name>/context.jsonl\` alongside the source diff. For every row, check every row's \`reason\` is still satisfied by the current code state:
+
+- If the cited file was deleted or refactored, the reason is no longer satisfied — emit a Q-N finding naming the row and the obsolete claim.
+- If the file still exists but no longer encodes the invariant the reason described (different logic, regression, or scope drift), the reason is not satisfied — same finding path.
+- Phase matching against the current step is the validator's job (see \`validateContextJsonl\`); do not re-emit a phase mismatch as a review finding.
+
 Single file: \`review.md\` containing three review sections + issue list + routing recommendation.
 
 ## Execution Flow
@@ -4051,6 +4262,24 @@ argument-hint: "[change-name]"
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
 
+### Context injection (OMP Extension)
+
+Context is auto-injected by the OMP Extension at session_start. Do NOT call \`bp context <step>\` yourself — the extension already provides the same material at every turn.
+
+When reading \`bp/changes/<name>/context.jsonl\`, every row follows the schema:
+
+\`\`\`json
+{ "file": "<path>", "reason": "<why>", "phase": "plan|apply|review|archive|all", "tag": "<label>", "read": "full|range", "range": [<start>, <end>] }
+\`\`\`
+
+Row fields:
+
+- \`file:\` repository-relative path the change depends on. Required.
+- \`reason:\` short invariant or invariant-style reason the file exists in the change. Required, ≤ 200 chars.
+- \`phase:\` one of \`plan\`, \`apply\`, \`review\`, \`archive\`, or \`all\`. Optional, default \`all\`.
+- \`tag:\` free-form label such as \`guard-rail\`, \`invariant\`, \`spec\`, \`convention\`, or \`config\`. Optional.
+- \`read:\` either \`full\` (default) or \`range\`. When \`range\`, the row must include \`range:\` as \`[start, end]\` line numbers.
+
 ## Input
 
 - **\`$ARGUMENTS\`** (optional): change name. If empty, use the most recently planned change.
@@ -4174,6 +4403,7 @@ Implementation complete for $1
 
 ## Guardrails
 
+- **Context is auto-injected by the OMP Extension.** Do NOT call \`bp context apply\`; the extension already supplies the same material at every turn.
 - **Full mode: MUST dispatch sub-agents per wave.** Do NOT implement behavior tasks yourself.
 - **Concurrent waves in the same round: dispatch ALL in one task tool call (parallel).**
 - **After each wave: verify git log, tasks.md marking, test pass.** No-op or incomplete = failure.
@@ -4489,6 +4719,24 @@ argument-hint: "[change-name]"
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
 
+### Context injection (OMP Extension)
+
+Context is auto-injected by the OMP Extension at session_start. Do NOT call \`bp context <step>\` yourself — the extension already provides the same material at every turn.
+
+When reading \`bp/changes/<name>/context.jsonl\`, every row follows the schema:
+
+\`\`\`json
+{ "file": "<path>", "reason": "<why>", "phase": "plan|apply|review|archive|all", "tag": "<label>", "read": "full|range", "range": [<start>, <end>] }
+\`\`\`
+
+Row fields:
+
+- \`file:\` repository-relative path the change depends on. Required.
+- \`reason:\` short invariant or invariant-style reason the file exists in the change. Required, ≤ 200 chars.
+- \`phase:\` one of \`plan\`, \`apply\`, \`review\`, \`archive\`, or \`all\`. Optional, default \`all\`.
+- \`tag:\` free-form label such as \`guard-rail\`, \`invariant\`, \`spec\`, \`convention\`, or \`config\`. Optional.
+- \`read:\` either \`full\` (default) or \`range\`. When \`range\`, the row must include \`range:\` as \`[start, end]\` line numbers.
+
 ## Input
 
 - **\`$ARGUMENTS\`** (optional): change name. If empty, use most recently proposed change.
@@ -4581,6 +4829,7 @@ Planner completed for $1
 
 ## Guardrails
 
+- **Context is auto-injected by the OMP Extension.** Do NOT call \`bp context plan\`; the extension already supplies the same material at every turn.
 - **Full mode: MUST dispatch sub-agent.** Do NOT write design/tasks/specs yourself.
 - Lightweight mode: write templates directly (no sub-agent needed)
 - tasks.md boxes must remain UNCHECKED
@@ -4695,6 +4944,24 @@ argument-hint: "[change-name]"
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
 
+### Context injection (OMP Extension)
+
+Context is auto-injected by the OMP Extension at session_start. Do NOT call \`bp context <step>\` yourself — the extension already provides the same material at every turn.
+
+When reading \`bp/changes/<name>/context.jsonl\`, every row follows the schema:
+
+\`\`\`json
+{ "file": "<path>", "reason": "<why>", "phase": "plan|apply|review|archive|all", "tag": "<label>", "read": "full|range", "range": [<start>, <end>] }
+\`\`\`
+
+Row fields:
+
+- \`file:\` repository-relative path the change depends on. Required.
+- \`reason:\` short invariant or invariant-style reason the file exists in the change. Required, ≤ 200 chars.
+- \`phase:\` one of \`plan\`, \`apply\`, \`review\`, \`archive\`, or \`all\`. Optional, default \`all\`.
+- \`tag:\` free-form label such as \`guard-rail\`, \`invariant\`, \`spec\`, \`convention\`, or \`config\`. Optional.
+- \`read:\` either \`full\` (default) or \`range\`. When \`range\`, the row must include \`range:\` as \`[start, end]\` line numbers.
+
 ## Input
 
 - **\`$ARGUMENTS\`** (optional): change name. If empty, use the most recently applied change.
@@ -4789,8 +5056,8 @@ Review NEEDS_REVISION for $1
 # Update roadmap: If the change is linked to a roadmap phase, update it to \`- [x] $1 (reviewed YYYY-MM-DD)\`.
 git add .
 bp commit "docs(review): triple review for $1" --files bp/changes/$1/review.md
-\`\`\`
 - Do NOT run bp archive automatically - let the user review the findings first.
+- **Context is auto-injected by the OMP Extension.** Do NOT call \`bp context review\`; the extension already supplies the same material at every turn.
 ",
   ".omp/commands/bp-roadmap.md": "---
 name: bp:roadmap

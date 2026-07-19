@@ -20,6 +20,10 @@ function tagForFile(file: string): string {
   return 'artifact';
 }
 
+function stripAnchor(ref: string): string {
+  return ref.split('#')[0];
+}
+
 function extractSpecReferences(content: string): string[] {
   const direct = content.match(SPEC_REFERENCE_PATTERN) ?? [];
   if (direct.length > 0) return direct;
@@ -38,9 +42,13 @@ function collectReferencesFromBody(
   sourceName: string,
   references: Map<string, ContextRefRow>,
 ): void {
-  const specRefs = extractSpecReferences(content);
+  const specRefs = extractSpecReferences(content).map(stripAnchor);
   const conventionRefs = extractConventionReferences(content);
-  const allRefs = DEDUPE([...specRefs, ...conventionRefs, ...(content.match(BP_REFERENCE_PATTERN) ?? [])]);
+  const allRefs = DEDUPE([
+    ...specRefs,
+    ...conventionRefs,
+    ...(content.match(BP_REFERENCE_PATTERN) ?? []).map(stripAnchor),
+  ]);
   for (const ref of allRefs) {
     const path = ref.startsWith('bp/') ? ref : `bp/${ref}`;
     if (!references.has(path)) {

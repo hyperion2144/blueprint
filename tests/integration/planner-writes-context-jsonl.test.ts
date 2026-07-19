@@ -29,11 +29,20 @@ describe('planner writes context.jsonl from design references', () => {
     write('bp/changes/planner-context/proposal.md', '# Proposal: planner-context\n## Intent\ntest\n');
     write('bp/changes/planner-context/design.md', [
       '## Design Items',
-      '- DS-1 references `specs/auth/spec.md#login` and `specs/payments/spec.md#charge`',
-      '- DS-2 references `specs/audit/spec.md#trail`',
+      '### DS-1: Auth',
+      '- **Source**: PR-1 (proposal.md)',
+      '- **Files**: bp/specs/auth/spec.md#login',
+      '### DS-2: Payments',
+      '- **Source**: PR-1 (proposal.md)',
+      '- **Files**: bp/specs/payments/spec.md#charge',
+      '### DS-3: Audit',
+      '- **Source**: PR-2 (proposal.md)',
+      '- **Files**: bp/specs/audit/spec.md#trail',
       '## File Manifest',
-      '- `conventions/coding.md`',
-      '- `conventions/test.md`',
+      '| File | Action |',
+      '|------|--------|',
+      '| bp/conventions/coding.md | Read |',
+      '| bp/conventions/test.md | Read |',
       '',
     ].join('\n'));
   });
