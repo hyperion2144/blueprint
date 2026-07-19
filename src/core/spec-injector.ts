@@ -340,7 +340,7 @@ export function formatContextCompact(result: CompactContext): string {
   if (result.rules.length > 0) {
     lines.push('## Rules');
     for (const rule of result.rules) {
-      lines.push(`- artifact: ${rule}`);
+      lines.push(`- artifact: ${rule.text}`);
     }
   }
 
