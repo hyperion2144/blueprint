@@ -34,6 +34,15 @@ function schemaErrorMessage(issues: { path: PropertyKey[]; message: string }[]):
     .join('; ');
 }
 
+function attachSourceLine(row: ContextRefRow, line: number): ContextRefRow {
+  Object.defineProperty(row, '__contextJsonlLine', {
+    value: line,
+    enumerable: false,
+    configurable: false,
+  });
+  return row;
+}
+
 /** Parse context.jsonl content while preserving valid row order and source lines. */
 export function parseContextJsonl(content: string): ParseContextJsonlResult {
   const rows: ContextRefRow[] = [];
@@ -66,12 +75,7 @@ export function parseContextJsonl(content: string): ParseContextJsonlResult {
       continue;
     }
 
-    Object.defineProperty(parsed.data, '__contextJsonlLine', {
-      value: lineNumber,
-      enumerable: false,
-      configurable: false,
-    });
-    rows.push(parsed.data);
+    rows.push(attachSourceLine(parsed.data, lineNumber));
   }
 
   return { rows, errors };
