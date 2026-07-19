@@ -169,7 +169,7 @@
   - **RED**: GIVEN the shared workflow constants WHEN inspected THEN the context.jsonl reminder names every schema field.
 ## Wave 3: OMP Extension generator pipeline (PR-4)
 
-- [ ] T-25: [type:scaffolding] Scaffold extension-runtime + extension + legacy-shim modules and .tmpl sources <!-- commit: -->
+- [x] T-25: [type:scaffolding] Scaffold extension-runtime + extension + legacy-shim modules and .tmpl sources <!-- commit: c22efc7 -->
   - **refs**: D-4, D-5, D-6, D-7
   - **spec_ref**: specs/platform-gen/spec.md#omp-extension-generator-surface
   - **files**: src/integrations/omp/extension-runtime.ts, src/integrations/omp/extension.ts, src/integrations/omp/legacy-shim.ts, src/templates/omp/extension.ts.tmpl, src/templates/omp/legacy-shim.ts.tmpl
