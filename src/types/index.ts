@@ -41,3 +41,9 @@ export type {
   CompactContext,
   ChangeStatus,
 } from './spec-injector.js';
+export type {
+  ContextRefRow,
+  ContextJsonlError,
+  ContextJsonlErrorCode,
+} from './context-refs.js';
+export { ContextRefRowSchema } from './context-refs.js';
