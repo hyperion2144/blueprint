@@ -161,7 +161,7 @@
   - **acceptance**: apply and review templates omit their bp context self-calls and both mention auto-injection.
   - **RED**: GIVEN apply and review workflow templates WHEN inspected THEN neither asks the agent to run bp context and both describe auto-injection.
 
-- [ ] T-24: [type:behavior] Shared workflow exports the context.jsonl schema reminder <!-- commit: -->
+- [x] T-24: [type:behavior] Shared workflow exports the context.jsonl schema reminder <!-- commit: 5c44ef7 -->
   - **refs**: DS-5
   - **spec_ref**: specs/platform-gen/spec.md#workflow-template-auto-injection-contract
   - **files**: src/templates/workflows/shared.ts, tests/templates/workflow-shared.test.ts
