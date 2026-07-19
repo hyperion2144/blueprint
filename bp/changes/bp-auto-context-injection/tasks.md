@@ -112,7 +112,7 @@
   - **acceptance**: rows for another phase are silently filtered; no phase mismatch error is emitted, and `phase: all` rows apply at every step.
   - **RED**: GIVEN plan/apply/review rows WHEN validated for one current phase THEN only matching/all rows remain, filtered rows are counted, and filtered rows produce no errors.
 
-- [ ] T-17: [type:behavior] Artifact validation surfaces context.jsonl errors with line numbers <!-- commit: -->
+- [x] T-17: [type:behavior] Artifact validation surfaces context.jsonl errors with line numbers <!-- commit: c7a03ae -->
   - **refs**: DS-3
   - **spec_ref**: specs/platform-gen/spec.md#context-jsonl-validation-gate
   - **files**: src/core/artifact-validator.ts, tests/core/artifact-validator.test.ts
