@@ -7,8 +7,7 @@
 import { join } from 'node:path';
 import { readdirSync, existsSync, readFileSync, statSync } from 'node:fs';
 import { loadConfig } from './config.js';
-import type { CompactSpecRef, CompactConventionRef, ActiveChangeRef, CompactContext, CompactRuleRef } from '../types/spec-injector.js';
-
+import type { CompactSpecRef, CompactConventionRef, ActiveChangeRef, CompactContext } from '../types/spec-injector.js';
 
 export interface FileRef {
   path: string;
@@ -40,15 +39,10 @@ export function generateContext(bpDir: string, step: string, changeName?: string
     rules: [],
   };
 
-  // Conventions always injected
   result.conventions = getAllConventions(bpDir).map(withContent(bpDir));
-
-  // Global specs from bp/specs/
   result.globalSpecs = getAllSpecs(bpDir).map(withContent(bpDir));
 
-  // If a change name is given, collect change artifacts
   if (changeName) {
-    // Delta-specs from change directory (proposed changes to global specs)
     result.specs = getChangeArtifacts(bpDir, changeName)
       .filter((a) => a.path.startsWith('specs/'))
       .map(withContent(bpDir));
@@ -56,11 +50,9 @@ export function generateContext(bpDir: string, step: string, changeName?: string
       .filter((a) => !a.path.startsWith('specs/'))
       .map(withContent(bpDir));
   } else {
-    // Without change scope, return global specs directly
     result.specs = result.globalSpecs;
   }
 
-  // Inject rules from config
   try {
     const config = loadConfig(bpDir);
     if (config.rules && Object.keys(config.rules).length > 0) {
@@ -77,7 +69,6 @@ export function generateContext(bpDir: string, step: string, changeName?: string
   return result;
 }
 
-/** Read file content, capped at 8KB to avoid context bloat */
 function readContent(absPath: string): string | undefined {
   try {
     const content = readFileSync(absPath, 'utf-8');
@@ -87,7 +78,6 @@ function readContent(absPath: string): string | undefined {
   }
 }
 
-/** Create a withContent mapper bound to bpDir */
 function withContent(bpDir: string): (ref: FileRef) => FileRef {
   return (ref: FileRef) => ({
     ...ref,
@@ -95,13 +85,11 @@ function withContent(bpDir: string): (ref: FileRef) => FileRef {
   });
 }
 
-/** Get all specs */
 function getAllSpecs(bpDir: string): FileRef[] {
   const specsDir = join(bpDir, 'specs');
   return listSpecFiles(specsDir, 'specs');
 }
 
-/** Get all conventions */
 function getAllConventions(bpDir: string): FileRef[] {
   const convDir = join(bpDir, 'conventions');
   if (!existsSync(convDir)) return [];
@@ -110,7 +98,6 @@ function getAllConventions(bpDir: string): FileRef[] {
     .map((f) => ({ path: `conventions/${f}`, description: 'Project Conventions' }));
 }
 
-/** Get change artifact files for a named change */
 function getChangeArtifacts(bpDir: string, changeName: string): FileRef[] {
   const changeDir = join(bpDir, 'changes', changeName);
   if (!existsSync(changeDir)) return [];
@@ -123,7 +110,6 @@ function getChangeArtifacts(bpDir: string, changeName: string): FileRef[] {
     }
   }
 
-  // delta-specs
   const specsDir = join(changeDir, 'specs');
   if (existsSync(specsDir)) {
     const deltaSpecs = listSpecFiles(specsDir, `changes/${changeName}/specs`);
@@ -133,7 +119,6 @@ function getChangeArtifacts(bpDir: string, changeName: string): FileRef[] {
   return artifacts;
 }
 
-/** Recursively list spec files */
 function listSpecFiles(dir: string, prefix: string): FileRef[] {
   if (!existsSync(dir)) return [];
   const results: FileRef[] = [];
@@ -200,7 +185,6 @@ export function formatContextTerminal(result: ContextResult): string {
 
 // ── Compact Context (DS-1) ──────────────────────────────────────
 
-/** Extract title from file content: first H1/H2 line, fallback to file stem */
 function extractTitle(absPath: string): string {
   try {
     const content = readFileSync(absPath, 'utf-8');
@@ -217,18 +201,35 @@ function extractTitle(absPath: string): string {
   return absPath.replace(/\.md$/, '').split('/').pop() ?? 'unknown';
 }
 
-/** Count lines in a file */
-function lineCountOf(absPath: string): number {
-  try {
-    const content = readFileSync(absPath, 'utf-8');
-    const lines = content.split('\n');
-    if (lines.length > 0 && lines[lines.length - 1] === '') {
-      lines.pop();
+function readChangeStatus(changeDir: string): string {
+  for (const file of ['tasks.md', 'proposal.md']) {
+    const fp = join(changeDir, file);
+    if (!existsSync(fp)) continue;
+    try {
+      const content = readFileSync(fp, 'utf-8');
+      const m = content.match(/^status:\s*(.+)/m);
+      if (m) return m[1].trim();
+    } catch {
+      // try next file
     }
-    return lines.length;
-  } catch {
-    return 0;
   }
+  return 'in_progress';
+}
+
+/** Read change status from tasks.md or proposal.md content */
+function readChangeStatus(changeDir: string): string {
+  for (const file of ['tasks.md', 'proposal.md']) {
+    const fp = join(changeDir, file);
+    if (!existsSync(fp)) continue;
+    try {
+      const content = readFileSync(fp, 'utf-8');
+      const m = content.match(/^status:\s*(.+)/m);
+      if (m) return m[1].trim();
+    } catch {
+      // try next file
+    }
+  }
+  return 'in_progress';
 }
 
 /** Determine active change: most-recently-modified non-archived change, or null */
@@ -245,15 +246,7 @@ function resolveActiveChange(bpDir: string): ActiveChangeRef | null {
 
   for (const entry of entries) {
     const changeDir = join(changesDir, entry.name);
-
-    // Determine status from directory content
-    let status = '';
-    if (existsSync(join(changeDir, 'review.md'))) status = 'reviewed';
-    else if (existsSync(join(changeDir, 'tasks.md'))) status = 'in_progress';
-    else if (existsSync(join(changeDir, 'design.md'))) status = 'in_progress';
-    else if (existsSync(join(changeDir, 'proposal.md'))) status = 'proposed';
-    else continue;
-
+    const status = readChangeStatus(changeDir);
     if (status === 'archived') continue;
 
     let mtime: Date | null = null;
@@ -276,10 +269,11 @@ function resolveActiveChange(bpDir: string): ActiveChangeRef | null {
 
   const changeDir = best.dir;
   const name = best.name;
+  const status = readChangeStatus(changeDir);
 
   return {
     name,
-    status: 'in_progress' as ActiveChangeRef['status'],
+    status: status as ActiveChangeRef['status'],
     proposalPath: existsSync(join(changeDir, 'proposal.md')) ? `changes/${name}/proposal.md` : undefined,
     designPath: existsSync(join(changeDir, 'design.md')) ? `changes/${name}/design.md` : null,
     tasksPath: existsSync(join(changeDir, 'tasks.md')) ? `changes/${name}/tasks.md` : null,
@@ -288,52 +282,45 @@ function resolveActiveChange(bpDir: string): ActiveChangeRef | null {
   };
 }
 
+function lineCountOf(absPath: string): number {
+  try {
+    const content = readFileSync(absPath, 'utf-8');
+    return content.split('\n').length;
+  } catch {
+    return 0;
+  }
+}
+
 /** Generate compact paths-only context map for OMP session injection */
 export function generateCompactContext(
   bpDir: string,
   _opts?: { step?: string },
 ): CompactContext {
-  const fileRefs = getAllSpecs(bpDir);
-  const specs: CompactSpecRef[] = fileRefs.map((ref) => {
+  const specs: CompactSpecRef[] = getAllSpecs(bpDir).map((ref) => {
     const absPath = join(bpDir, ref.path);
-    return {
-      path: ref.path,
-      title: extractTitle(absPath),
-      lineCount: lineCountOf(absPath),
-    };
+    return { path: ref.path, title: extractTitle(absPath), lineCount: lineCountOf(absPath) };
   });
 
-  const convRefs = getAllConventions(bpDir);
-  const conventions: CompactConventionRef[] = convRefs.map((ref) => {
+  const conventions: CompactConventionRef[] = getAllConventions(bpDir).map((ref) => {
     const absPath = join(bpDir, ref.path);
-    return {
-      path: ref.path,
-      title: extractTitle(absPath),
-      lineCount: lineCountOf(absPath),
-    };
+    return { path: ref.path, title: extractTitle(absPath), lineCount: lineCountOf(absPath) };
   });
 
   const activeChange = resolveActiveChange(bpDir);
 
-  const rules: string[] = [];
+  const rules: CompactContext['rules'] = [];
   try {
     const config = loadConfig(bpDir);
-    for (const [_artifact, ruleList] of Object.entries(config.rules ?? {})) {
+    for (const [artifact, ruleList] of Object.entries(config.rules ?? {})) {
       for (const text of ruleList) {
-        rules.push(text);
+        rules.push({ artifact, text });
       }
     }
   } catch {
     // config not available — skip rules silently
   }
 
-  return {
-    specs,
-    conventions,
-    activeChange,
-    rules,
-    generatedAt: new Date().toISOString(),
-  };
+  return { specs, conventions, activeChange, rules, generatedAt: new Date().toISOString() };
 }
 
 /** Serialise CompactContext as JSON string */
@@ -367,10 +354,15 @@ export function formatContextCompact(result: CompactContext): string {
   if (result.rules.length > 0) {
     lines.push('## Rules');
     for (const rule of result.rules) {
-      lines.push(`- artifact: ${rule}`);
+      lines.push(`- artifact: ${rule.text}`);
     }
   }
 
   lines.push('</bp-context>');
-  return lines.join('\n');
+  const output = lines.join('\n');
+  const byteLen = Buffer.byteLength(output);
+  if (byteLen > 4096) {
+    throw new Error(`payload size exceeded: ${byteLen} bytes > 4096`);
+  }
+  return output;
 }

@@ -37,6 +37,6 @@ export interface CompactContext {
   specs: CompactSpecRef[];
   conventions: CompactConventionRef[];
   activeChange: ActiveChangeRef | null;
-  rules: CompactRuleRef[];
+  rules: string[];
   generatedAt: string;
 }
