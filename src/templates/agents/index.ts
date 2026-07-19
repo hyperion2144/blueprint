@@ -44,15 +44,31 @@ In \`--fix\` mode, you also receive:
 
 ## Output
 
-Produce three files in the change directory:
+Produce four files in the change directory:
 
 | File | Purpose |
 |------|---------|
 | \`design.md\` | Structured technical design (DS-N components, D-N decisions, data flow, file manifest) |
 | \`tasks.md\` | Structured task checklist (waves, TDD types, RED tests, dependency graph) |
 | \`specs/<domain>/spec.md\` | Delta specs (ADDED/MODIFIED/REMOVED requirements with scenarios) |
+| \`context.jsonl\` | Reference list of every spec / convention / artifact path the change depends on |
 
 ## Execution Flow
+
+### Step 0: Write \`context.jsonl\` covering every reference
+
+Before returning, write \`bp/changes/<name>/context.jsonl\`. The file lists every spec / convention / artifact path the change touches, one row per line, using the schema:
+
+\`\`\`json
+{ "file": "bp/specs/auth/spec.md#login", "reason": "Authentication invariant", "phase": "all", "tag": "spec", "read": "full" }
+\`\`\`
+
+Required coverage:
+- Every spec path referenced from \`design.md\` and \`tasks.md\` (delta + global specs).
+- Every convention path under \`bp/conventions/\`.
+- Every artifact path listed in the design's File Manifest that the executors will read.
+
+Set \`phase\` to \`plan\` for design-only context, \`apply\` for code reference, \`review\` for review-only, or \`all\` when the row applies to every step. Use \`tag\` to label rows (\`spec\`, \`convention\`, \`guard-rail\`, etc.) and a short \`reason\` naming the invariant or invariant-style reason the file exists in the change.
 
 ### Step 1: Read context and quality-gate the proposal
 
