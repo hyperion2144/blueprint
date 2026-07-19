@@ -114,6 +114,10 @@ function validateContextRow(
   return undefined;
 }
 
+function isRelevantPhase(row: ContextRefRow, currentPhase: ValidateContextJsonlOpts['currentPhase']): boolean {
+  return row.phase === 'all' || row.phase === currentPhase;
+}
+
 /** Validate rows relevant to the current workflow phase against files under bp/. */
 export function validateContextJsonl(
   rows: ContextRefRow[],
@@ -126,7 +130,7 @@ export function validateContextJsonl(
   for (const [index, rowValue] of rows.entries()) {
     const row = rowValue as ContextRowWithLine;
     const line = row.__contextJsonlLine ?? index + 1;
-    if (row.phase !== 'all' && row.phase !== opts.currentPhase) {
+    if (!isRelevantPhase(row, opts.currentPhase)) {
       byPhase++;
       continue;
     }
