@@ -292,7 +292,7 @@
   - **acceptance**: `package.json` declares `"@oh-my-pi/pi-coding-agent": "^17.0.5"` (or compatible range) under `devDependencies`; no other package.json fields are removed; `npm install` succeeds; `tsc --noEmit` still passes.
   - **RED**: `node -e 'JSON.parse(require("fs").readFileSync("package.json","utf-8")).devDependencies["@oh-my-pi/pi-coding-agent"]'` is non-empty.
 - [x] T-43: [type:behavior] e2e test — fake OMP runtime exercises generated Extension <!-- commit: pending -->
-- [x] T-44: [type:behavior] Extend tests/integration/lifecycle.test.ts to assert generated files <!-- commit: pending -->
+- [x] T-44: [type:behavior] Extend tests/integration/lifecycle.test.ts to assert generated files <!-- commit: 8538567 -->
 - [x] T-45: [type:docs] AGENTS.md extended with Context Injection section <!-- commit: 8f8ea93 -->
 - [x] T-46: [type:docs] docs/platform-integration.md created <!-- commit: 29e0ae5 -->
 - [x] T-47: [type:docs] Refresh stale SHALs in bp/specs/platform-gen/spec.md <!-- commit: dd6b372 -->
