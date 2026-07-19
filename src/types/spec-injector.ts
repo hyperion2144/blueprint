@@ -21,7 +21,7 @@ export type ChangeStatus = 'proposed' | 'in_progress' | 'reviewed' | 'archived';
 export interface ActiveChangeRef {
   name: string;
   status: ChangeStatus;
-  proposalPath?: string;
+  proposalPath?: string | null;
   designPath?: string | null;
   tasksPath?: string | null;
   specsPath?: string | null;
@@ -37,6 +37,6 @@ export interface CompactContext {
   specs: CompactSpecRef[];
   conventions: CompactConventionRef[];
   activeChange: ActiveChangeRef | null;
-  rules: string[];
+  rules: CompactRuleRef[];
   generatedAt: string;
 }
