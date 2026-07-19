@@ -167,12 +167,133 @@
   - **files**: src/templates/workflows/shared.ts, tests/templates/workflow-shared.test.ts
   - **acceptance**: `CONTEXT_JSONL_REMINDER` is exported and contains literal `file:`, `reason:`, `phase:`, `read:`, and `range:` fields.
   - **RED**: GIVEN the shared workflow constants WHEN inspected THEN the context.jsonl reminder names every schema field.
-***
-
 ## Wave 3: OMP Extension generator pipeline (PR-4)
 
-- [ ] T-25..T-33: Extension template, runtime, shim generator
+- [ ] T-25: [type:scaffolding] Scaffold extension-runtime + extension + legacy-shim modules and .tmpl sources <!-- commit: -->
+  - **refs**: D-4, D-5, D-6, D-7
+  - **spec_ref**: specs/platform-gen/spec.md#omp-extension-generator-surface
+  - **files**: src/integrations/omp/extension-runtime.ts, src/integrations/omp/extension.ts, src/integrations/omp/legacy-shim.ts, src/templates/omp/extension.ts.tmpl, src/templates/omp/legacy-shim.ts.tmpl
+  - **acceptance**: extension-runtime.ts exports `EXTENSION_SOURCE` and `SHIM_SOURCE` string constants plus helper types; extension.ts and legacy-shim.ts return file descriptors; .tmpl files exist as string-constant modules; `tsc --noEmit` passes.
+
+- [ ] T-26: [type:behavior] session_start default emits paths-only compact block <!-- commit: -->
+  - **refs**: D-3
+  - **spec_ref**: specs/platform-gen/spec.md#omp-extension-sub-agent-discrimination
+  - **files**: src/integrations/omp/extension-runtime.ts, tests/integration/omp-extension.test.ts
+  - **acceptance**: GIVEN ctx with `agentTemplate` not matching planner/executor/reviewer WHEN handleSessionStart runs THEN it emits a `<bp-context>...</bp-context>` block via `bp context --format=compact` and no augmentation.
+  - **RED**: handler calls sendMessage with customType=bp-context, no roadmap block, no inline rows, no reasons.
+
+- [ ] T-27: [type:behavior] session_start planner appends roadmap state block <!-- commit: -->
+  - **refs**: D-3
+  - **spec_ref**: specs/platform-gen/spec.md#omp-extension-sub-agent-discrimination
+  - **files**: src/integrations/omp/extension-runtime.ts, tests/integration/omp-extension.test.ts
+  - **acceptance**: GIVEN ctx with `agentTemplate` containing 'planner' WHEN handleSessionStart runs THEN the emitted message body contains a `## Roadmap State` section derived from `state.md` (or `bp state` JSON) — current milestone, current phase, next step name.
+  - **RED**: handler sendMessage body contains `## Roadmap State` plus milestone/phase/next.
+
+- [ ] T-28: [type:behavior] session_start executor inlines context.jsonl rows with guard-rail prefix <!-- commit: -->
+  - **refs**: D-3
+  - **spec_ref**: specs/platform-gen/spec.md#omp-extension-sub-agent-discrimination
+  - **files**: src/integrations/omp/extension-runtime.ts, tests/integration/omp-extension.test.ts
+  - **acceptance**: GIVEN ctx with `agentTemplate` containing 'executor' and a fixture context.jsonl whose rows include at least one `tag: guard-rail` row WHEN handleSessionStart runs THEN every row is rendered inline, and guard-rail rows are prefixed with `> GUARD-RAIL: `.
+  - **RED**: handler sendMessage body contains each row's `file:` and `reason:`, and guard-rail rows have `> GUARD-RAIL:` prefix.
+
+- [ ] T-29: [type:behavior] session_start reviewer appends reason bullets and tasks.md acceptance criteria <!-- commit: -->
+  - **refs**: D-3
+  - **spec_ref**: specs/platform-gen/spec.md#omp-extension-sub-agent-discrimination
+  - **files**: src/integrations/omp/extension-runtime.ts, tests/integration/omp-extension.test.ts
+  - **acceptance**: GIVEN ctx with `agentTemplate` containing 'reviewer' and a fixture context.jsonl + tasks.md WHEN handleSessionStart runs THEN each row's `reason:` renders as a bullet under `## Invariants` AND tasks.md acceptance-criteria text appears verbatim.
+  - **RED**: handler sendMessage body contains `- <reason text>` for each row and the literal acceptance string.
+
+- [ ] T-30: [type:behavior] before_agent_start returns workflow-state custom message <!-- commit: -->
+  - **refs**: D-4
+  - **spec_ref**: specs/platform-gen/spec.md#omp-extension-runtime-surface
+  - **files**: src/integrations/omp/extension-runtime.ts, tests/integration/omp-extension.test.ts
+  - **acceptance**: GIVEN ctx with cwd containing bp/config.yaml WHEN handleBeforeAgentStart runs THEN it returns `{ message: { role: 'custom', customType: 'bp-workflow-state', content: [...], timestamp: number } }` derived from `bp continue` output.
+  - **RED**: handler return value is `{ message: { customType: 'bp-workflow-state', ... } }`.
+
+- [ ] T-31: [type:behavior] context post-compaction re-injects when missing <!-- commit: -->
+  - **refs**: D-8
+  - **spec_ref**: specs/platform-gen/spec.md#omp-extension-post-compaction-recovery
+  - **files**: src/integrations/omp/extension-runtime.ts, tests/integration/omp-extension.test.ts
+  - **acceptance**: GIVEN ctx with `lastCompactionTs > lastInjectionTs` and `recentMessages` containing no `bp-workflow-state` entry WHEN handleContext runs THEN it returns `{ message: { customType: 'bp-workflow-state', ... } }` re-injecting the workflow state.
+  - **RED**: handler return value is `{ message: { customType: 'bp-workflow-state', ... } }`.
+
+- [ ] T-32: [type:behavior] context no-compaction fast path returns no message <!-- commit: -->
+  - **refs**: D-8
+  - **spec_ref**: specs/platform-gen/spec.md#omp-extension-post-compaction-recovery
+  - **files**: src/integrations/omp/extension-runtime.ts, tests/integration/omp-extension.test.ts
+  - **acceptance**: GIVEN ctx with `lastCompactionTs <= lastInjectionTs` (or undefined) WHEN handleContext runs THEN it returns `undefined` (no message).
+  - **RED**: handler return value is `undefined`.
+
+- [ ] T-33: [type:behavior] BP_HOOKS=0 short-circuits every handler <!-- commit: -->
+  - **refs**: D-9
+  - **spec_ref**: specs/platform-gen/spec.md#omp-extension-env-bypass
+  - **files**: src/integrations/omp/extension-runtime.ts, tests/integration/omp-extension.test.ts
+  - **acceptance**: GIVEN process.env.BP_HOOKS === '0' (or BP_DISABLE_HOOKS === '1') WHEN any of handleSessionStart / handleBeforeAgentStart / handleContext runs THEN it returns immediately without side effects.
+  - **RED**: handlers return undefined and do not call api.sendMessage.
+
+- [ ] T-34: [type:behavior] handlers skip when bp/config.yaml is missing <!-- commit: -->
+  - **refs**: D-4
+  - **spec_ref**: specs/platform-gen/spec.md#omp-extension-config-skip
+  - **files**: src/integrations/omp/extension-runtime.ts, tests/integration/omp-extension.test.ts
+  - **acceptance**: GIVEN ctx.cwd points to a directory without bp/config.yaml WHEN any handler runs THEN it returns immediately without side effects.
+  - **RED**: handlers return undefined and do not call api.sendMessage.
+
+- [ ] T-35: [type:behavior] generator output is byte-deterministic across consecutive runs <!-- commit: -->
+  - **refs**: D-6
+  - **spec_ref**: specs/platform-gen/spec.md#omp-extension-byte-determinism
+  - **files**: src/integrations/omp/extension.ts, tests/integration/omp-extension.test.ts
+  - **acceptance**: GIVEN the same ProjectConfig WHEN generateExtension is called twice in succession THEN both file descriptors are byte-identical (path and content equal).
+  - **RED**: second-run content === first-run content.
+
+- [ ] T-36: [type:behavior] legacy shim generator emits a 5-line re-export of the Extension default <!-- commit: -->
+  - **refs**: D-7
+  - **spec_ref**: specs/platform-gen/spec.md#omp-extension-legacy-shim
+  - **files**: src/integrations/omp/legacy-shim.ts, tests/integration/omp-extension.test.ts
+  - **acceptance**: generateLegacyShim returns `{ path: '.omp/hooks/pre/bp.ts', content }` where the content is exactly the 5-line shim that re-exports the default export from `../extensions/bp/index.js`.
+  - **RED**: shim content matches the committed 5-line snapshot.
+
+- [ ] T-37: [type:behavior] .tmpl files are the single source of truth for generated sources <!-- commit: -->
+  - **refs**: D-6
+  - **spec_ref**: specs/platform-gen/spec.md#omp-extension-template-source
+  - **files**: src/templates/omp/extension.ts.tmpl, src/templates/omp/legacy-shim.ts.tmpl
+  - **acceptance**: importing from the .tmpl modules resolves to non-empty string constants, and the generator functions in extension.ts / legacy-shim.ts use these constants as their content.
+  - **RED**: imports resolve; constants are non-empty strings.
+
+- [ ] T-38: [type:behavior] snapshot test pins the generated Extension source to a committed file <!-- commit: -->
+  - **refs**: D-6
+  - **spec_ref**: specs/platform-gen/spec.md#omp-extension-template-source
+  - **files**: tests/integration/omp-extension.test.ts, tests/integration/__snapshots__/omp-extension.test.ts.snap
+  - **acceptance**: a vitest `toMatchSnapshot()` assertion records the full EXTENSION_SOURCE in `tests/integration/__snapshots__/omp-extension.test.ts.snap` and the test passes deterministically.
+  - **RED**: test fails when the snapshot is missing, passes when it matches.
+
+- [ ] T-39: [type:behavior] multi-platform snapshot is regenerated to include the new .omp/extensions/bp/index.ts <!-- commit: -->
+  - **refs**: D-4
+  - **spec_ref**: specs/platform-gen/spec.md#omp-extension-generator-surface
+  - **files**: src/generators/__snapshots__/multi-platform.test.ts.snap, src/integrations/omp/index.ts
+  - **acceptance**: `src/generators/multi-platform.test.ts > all-platform golden-file snapshot` includes an entry for `.omp/extensions/bp/index.ts`.
+  - **RED**: `npx vitest run src/generators/multi-platform.test.ts` passes with the regenerated snapshot.
+
+- [ ] T-40: [type:chore] delete src/integrations/omp/hook.ts (single source of truth = Extension generator) <!-- commit: -->
+  - **refs**: D-4, D-6
+  - **spec_ref**: specs/platform-gen/spec.md#omp-extension-generator-surface
+  - **files**: src/integrations/omp/hook.ts
+  - **acceptance**: `src/integrations/omp/hook.ts` is removed from the filesystem and from git; nothing in src/ or tests/ imports from `./omp/hook.js`.
+  - **RED**: `git ls-files src/integrations/omp/hook.ts` returns nothing.
+
+- [ ] T-41: [type:refactor] swap inline HOOK_TEMPLATE for the Extension generator pipeline in bp-update and bp-init <!-- commit: -->
+  - **refs**: D-6, D-7
+  - **spec_ref**: specs/platform-gen/spec.md#omp-extension-template-source
+  - **files**: src/commands/bp-update.ts, src/commands/bp-init.ts, src/integrations/omp/index.ts
+  - **acceptance**: `src/commands/bp-update.ts` and `src/commands/bp-init.ts` no longer define or import a `HOOK_TEMPLATE` constant; the OMP provider's `generate()` returns the extension and shim file descriptors; `bp update` writes both `.omp/extensions/bp/index.ts` and `.omp/hooks/pre/bp.ts`; `bp init` does the same when `platform: [omp]`.
+  - **RED**: `grep -n HOOK_TEMPLATE src/commands/` returns no matches.
+
+- [ ] T-42: [type:config] add @oh-my-pi/pi-coding-agent as a devDependency <!-- commit: -->
+  - **refs**: D-5
+  - **spec_ref**: specs/platform-gen/spec.md#omp-extension-runtime-surface
+  - **files**: package.json
+  - **acceptance**: `package.json` declares `"@oh-my-pi/pi-coding-agent": "^17.0.5"` (or compatible range) under `devDependencies`; no other package.json fields are removed; `npm install` succeeds; `tsc --noEmit` still passes.
+  - **RED**: `node -e 'JSON.parse(require("fs").readFileSync("package.json","utf-8")).devDependencies["@oh-my-pi/pi-coding-agent"]'` is non-empty.
 
 ## Wave 4: Dogfood + e2e + docs (PR-5 + PR-6)
 
-- [ ] T-34..T-52: Dogfood, e2e, stale-spec refresh, docs
+- [ ] T-43..T-47: Dogfood, e2e, stale-spec refresh, docs

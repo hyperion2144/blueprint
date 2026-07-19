@@ -1,5 +1,6 @@
 /**
- * OMP integration — platform-specific generators for commands, skills, and agents.
+ * OMP integration — platform-specific generators for commands, skills,
+ * agents, and the OMP Extension.
  *
  * To add a new platform (e.g. Claude Code):
  * 1. Create src/integrations/<platform>/
@@ -12,6 +13,8 @@ import { PlatformRegistry } from '../../core/platform-registry.js';
 import { generateAllCommands } from './commands.js';
 import { generateAllAgents } from './agents.js';
 import { generateAllSkills } from './skills.js';
+import { generateExtension } from './extension.js';
+import { generateLegacyShim } from './legacy-shim.js';
 
 /** OMP supports slash commands — skills are redundant (same content source). */
 export const supportsCommands = true;
@@ -28,6 +31,8 @@ export function registerOmpProvider(): void {
       const files = [
         ...generateAllCommands(config),
         ...generateAllAgents(config),
+        ...generateExtension(config),
+        ...generateLegacyShim(config),
       ];
       if (!supportsCommands) {
         files.push(...generateAllSkills(config));
@@ -42,3 +47,6 @@ export function registerOmpProvider(): void {
 export { generateAllCommands, STEP_DEFS } from './commands.js';
 export { generateAllAgents, AGENT_DEFS } from './agents.js';
 export { generateAllSkills, SKILL_DEFS } from './skills.js';
+export { generateExtension, EXTENSION_PATH } from './extension.js';
+export { generateLegacyShim, LEGACY_SHIM_PATH } from './legacy-shim.js';
+export { EXTENSION_SOURCE, SHIM_SOURCE } from './extension-runtime.js';
