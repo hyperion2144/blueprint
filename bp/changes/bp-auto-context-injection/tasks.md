@@ -294,7 +294,7 @@
 - [x] T-43: [type:behavior] e2e test — fake OMP runtime exercises generated Extension <!-- commit: pending -->
 - [x] T-44: [type:behavior] Extend tests/integration/lifecycle.test.ts to assert generated files <!-- commit: pending -->
 - [x] T-45: [type:docs] AGENTS.md extended with Context Injection section <!-- commit: 8f8ea93 -->
-- [x] T-46: [type:docs] docs/platform-integration.md created <!-- commit: pending -->
+- [x] T-46: [type:docs] docs/platform-integration.md created <!-- commit: 29e0ae5 -->
 - [x] T-47: [type:docs] Refresh stale SHALs in bp/specs/platform-gen/spec.md <!-- commit: dd6b372 -->
   - **refs**: D-10
   - **spec_ref**: specs/platform-gen/spec.md
