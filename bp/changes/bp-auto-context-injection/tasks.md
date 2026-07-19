@@ -98,14 +98,14 @@
   - **acceptance**: a three-row file with row 2 malformed returns rows 1 and 3 in order plus a `PARSE_ERROR` at line 2.
   - **RED**: GIVEN three JSONL lines with a malformed middle line WHEN parsed THEN valid rows preserve order and the error identifies line 2.
 
-- [ ] T-15: [type:behavior] Validate context references against repository paths and file ranges <!-- commit: -->
+- [x] T-15: [type:behavior] Validate context references against repository paths and file ranges <!-- commit: d3ac318 -->
   - **refs**: DS-3
   - **spec_ref**: specs/platform-gen/spec.md#context-jsonl-validation-gate
   - **files**: src/core/context-refs.ts, tests/core/context-refs.test.ts
   - **acceptance**: unresolved files report `PATH_UNRESOLVED`; ranges outside file bounds report `RANGE_OOB`.
   - **RED**: GIVEN a missing file and an out-of-bounds range WHEN validated THEN each row receives its corresponding structured error.
 
-- [ ] T-16: [type:behavior] Filter context rows by workflow phase and report required phase mismatches <!-- commit: -->
+- [ ] T-16: [type:behavior] Filter context rows by workflow phase without phase errors <!-- commit: -->
   - **refs**: DS-3
   - **spec_ref**: specs/platform-gen/spec.md#context-jsonl-validation-gate
   - **files**: src/core/context-refs.ts, tests/core/context-refs.test.ts
