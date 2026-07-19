@@ -30,6 +30,7 @@
     "zod": "^4.4.0"
   },
   "devDependencies": {
+    "@oh-my-pi/pi-coding-agent": "^17.0.5",
     "@types/node": "^22.0.0",
     "tsup": "^8.5.0",
     "typescript": "^5.7.0",
