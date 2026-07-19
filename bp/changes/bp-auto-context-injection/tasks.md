@@ -251,47 +251,43 @@
   - **files**: src/integrations/omp/legacy-shim.ts, tests/integration/omp-extension.test.ts
   - **acceptance**: generateLegacyShim returns `{ path: '.omp/hooks/pre/bp.ts', content }` where the content is exactly the 5-line shim that re-exports the default export from `../extensions/bp/index.js`.
   - **RED**: shim content matches the committed 5-line snapshot.
+- [x] T-37: [type:behavior] .tmpl files are the single source of truth for generated sources <!-- commit: 6d08c2c -->
   - **refs**: D-6
   - **spec_ref**: specs/platform-gen/spec.md#omp-extension-template-source
   - **files**: src/templates/omp/extension.ts.tmpl, src/templates/omp/legacy-shim.ts.tmpl
   - **acceptance**: importing from the .tmpl modules resolves to non-empty string constants, and the generator functions in extension.ts / legacy-shim.ts use these constants as their content.
   - **RED**: imports resolve; constants are non-empty strings.
 
-- [ ] T-38: [type:behavior] snapshot test pins the generated Extension source to a committed file <!-- commit: -->
+- [x] T-38: [type:behavior] snapshot test pins the generated Extension source to a committed file <!-- commit: 6d08c2c -->
   - **refs**: D-6
   - **spec_ref**: specs/platform-gen/spec.md#omp-extension-template-source
   - **files**: tests/integration/omp-extension.test.ts, tests/integration/__snapshots__/omp-extension.test.ts.snap
   - **acceptance**: a vitest `toMatchSnapshot()` assertion records the full EXTENSION_SOURCE in `tests/integration/__snapshots__/omp-extension.test.ts.snap` and the test passes deterministically.
   - **RED**: test fails when the snapshot is missing, passes when it matches.
 
-- [ ] T-39: [type:behavior] multi-platform snapshot is regenerated to include the new .omp/extensions/bp/index.ts <!-- commit: -->
+- [x] T-39: [type:behavior] multi-platform snapshot is regenerated to include the new .omp/extensions/bp/index.ts <!-- commit: fd42398 -->
   - **refs**: D-4
   - **spec_ref**: specs/platform-gen/spec.md#omp-extension-generator-surface
   - **files**: src/generators/__snapshots__/multi-platform.test.ts.snap, src/integrations/omp/index.ts
   - **acceptance**: `src/generators/multi-platform.test.ts > all-platform golden-file snapshot` includes an entry for `.omp/extensions/bp/index.ts`.
   - **RED**: `npx vitest run src/generators/multi-platform.test.ts` passes with the regenerated snapshot.
-
-- [ ] T-40: [type:chore] delete src/integrations/omp/hook.ts (single source of truth = Extension generator) <!-- commit: -->
+- [x] T-40: [type:chore] delete src/integrations/omp/hook.ts (single source of truth = Extension generator) <!-- commit: d698416 -->
   - **refs**: D-4, D-6
   - **spec_ref**: specs/platform-gen/spec.md#omp-extension-generator-surface
   - **files**: src/integrations/omp/hook.ts
   - **acceptance**: `src/integrations/omp/hook.ts` is removed from the filesystem and from git; nothing in src/ or tests/ imports from `./omp/hook.js`.
   - **RED**: `git ls-files src/integrations/omp/hook.ts` returns nothing.
 
-- [ ] T-41: [type:refactor] swap inline HOOK_TEMPLATE for the Extension generator pipeline in bp-update and bp-init <!-- commit: -->
+- [x] T-41: [type:refactor] swap inline HOOK_TEMPLATE for the Extension generator pipeline in bp-update and bp-init <!-- commit: 4619d5b -->
   - **refs**: D-6, D-7
   - **spec_ref**: specs/platform-gen/spec.md#omp-extension-template-source
   - **files**: src/commands/bp-update.ts, src/commands/bp-init.ts, src/integrations/omp/index.ts
   - **acceptance**: `src/commands/bp-update.ts` and `src/commands/bp-init.ts` no longer define or import a `HOOK_TEMPLATE` constant; the OMP provider's `generate()` returns the extension and shim file descriptors; `bp update` writes both `.omp/extensions/bp/index.ts` and `.omp/hooks/pre/bp.ts`; `bp init` does the same when `platform: [omp]`.
   - **RED**: `grep -n HOOK_TEMPLATE src/commands/` returns no matches.
 
-- [ ] T-42: [type:config] add @oh-my-pi/pi-coding-agent as a devDependency <!-- commit: -->
+- [x] T-42: [type:config] add @oh-my-pi/pi-coding-agent as a devDependency <!-- commit: 05eb777 -->
   - **refs**: D-5
   - **spec_ref**: specs/platform-gen/spec.md#omp-extension-runtime-surface
   - **files**: package.json
   - **acceptance**: `package.json` declares `"@oh-my-pi/pi-coding-agent": "^17.0.5"` (or compatible range) under `devDependencies`; no other package.json fields are removed; `npm install` succeeds; `tsc --noEmit` still passes.
   - **RED**: `node -e 'JSON.parse(require("fs").readFileSync("package.json","utf-8")).devDependencies["@oh-my-pi/pi-coding-agent"]'` is non-empty.
-
-## Wave 4: Dogfood + e2e + docs (PR-5 + PR-6)
-
-- [ ] T-43..T-47: Dogfood, e2e, stale-spec refresh, docs
