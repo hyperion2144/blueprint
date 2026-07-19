@@ -201,6 +201,7 @@ function extractTitle(absPath: string): string {
   return absPath.replace(/\.md$/, '').split('/').pop() ?? 'unknown';
 }
 
+/** Read the status of a change from its tasks.md or proposal.md */
 function readChangeStatus(changeDir: string): string {
   for (const file of ['tasks.md', 'proposal.md']) {
     const fp = join(changeDir, file);
@@ -216,21 +217,6 @@ function readChangeStatus(changeDir: string): string {
   return 'in_progress';
 }
 
-/** Read change status from tasks.md or proposal.md content */
-function readChangeStatus(changeDir: string): string {
-  for (const file of ['tasks.md', 'proposal.md']) {
-    const fp = join(changeDir, file);
-    if (!existsSync(fp)) continue;
-    try {
-      const content = readFileSync(fp, 'utf-8');
-      const m = content.match(/^status:\s*(.+)/m);
-      if (m) return m[1].trim();
-    } catch {
-      // try next file
-    }
-  }
-  return 'in_progress';
-}
 
 /** Determine active change: most-recently-modified non-archived change, or null */
 function resolveActiveChange(bpDir: string): ActiveChangeRef | null {
@@ -274,7 +260,7 @@ function resolveActiveChange(bpDir: string): ActiveChangeRef | null {
   return {
     name,
     status: status as ActiveChangeRef['status'],
-    proposalPath: existsSync(join(changeDir, 'proposal.md')) ? `changes/${name}/proposal.md` : undefined,
+    proposalPath: existsSync(join(changeDir, 'proposal.md')) ? `changes/${name}/proposal.md` : null,
     designPath: existsSync(join(changeDir, 'design.md')) ? `changes/${name}/design.md` : null,
     tasksPath: existsSync(join(changeDir, 'tasks.md')) ? `changes/${name}/tasks.md` : null,
     specsPath: existsSync(join(changeDir, 'specs')) ? `changes/${name}/specs` : null,
@@ -354,7 +340,7 @@ export function formatContextCompact(result: CompactContext): string {
   if (result.rules.length > 0) {
     lines.push('## Rules');
     for (const rule of result.rules) {
-      lines.push(`- artifact: ${rule.text}`);
+      lines.push(`- artifact: ${rule}`);
     }
   }
 
