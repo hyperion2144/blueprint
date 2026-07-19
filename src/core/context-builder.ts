@@ -9,6 +9,7 @@ const BP_REFERENCE_PATTERN = /\bbp\/[A-Za-z0-9._/-]+\.[A-Za-z0-9._-]+\b/g;
 const DEFAULT_REASON_PREFIX = 'referenced from';
 const DEDUPE = (items: string[]): string[] => Array.from(new Set(items));
 const CONVENTIONS_PATH_PREFIX = 'bp/conventions/';
+const PROJECT_CONVENTION_REASON = 'project convention file';
 
 function safeReadFile(path: string): string | null {
   return existsSync(path) ? readFileSync(path, 'utf-8') : null;
@@ -37,6 +38,10 @@ function extractConventionReferences(content: string): string[] {
   return (content.match(BP_REFERENCE_PATTERN) ?? []).filter((entry) => entry.startsWith(CONVENTIONS_PATH_PREFIX));
 }
 
+function makeRow(file: string, reason: string, tag: string): ContextRefRow {
+  return { file, reason, phase: 'all', tag, read: 'full' };
+}
+
 function collectReferencesFromBody(
   content: string,
   sourceName: string,
@@ -52,12 +57,7 @@ function collectReferencesFromBody(
   for (const ref of allRefs) {
     const path = ref.startsWith('bp/') ? ref : `bp/${ref}`;
     if (!references.has(path)) {
-      references.set(path, {
-        file: path,
-        reason: `${DEFAULT_REASON_PREFIX} ${sourceName}`,
-        phase: 'all',
-        tag: tagForFile(path),
-      });
+      references.set(path, makeRow(path, `${DEFAULT_REASON_PREFIX} ${sourceName}`, tagForFile(path)));
     }
   }
 }
@@ -67,12 +67,7 @@ function addConventionsIfMissing(bpDir: string, rows: ContextRefRow[]): void {
   if (!existsSync(conventionsDir)) return;
   if (rows.some((row) => row.file.startsWith(CONVENTIONS_PATH_PREFIX))) return;
   for (const entry of readdirSync(conventionsDir)) {
-    rows.push({
-      file: `${CONVENTIONS_PATH_PREFIX}${entry}`,
-      reason: 'project convention file',
-      phase: 'all',
-      tag: 'convention',
-    });
+    rows.push(makeRow(`${CONVENTIONS_PATH_PREFIX}${entry}`, PROJECT_CONVENTION_REASON, 'convention'));
   }
 }
 
