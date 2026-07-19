@@ -34,6 +34,10 @@ function schemaErrorMessage(issues: { path: PropertyKey[]; message: string }[]):
     .join('; ');
 }
 
+function contextError(line: number, code: ContextJsonlError['code'], message: string): ContextJsonlError {
+  return { line, code, message: `line ${line}: ${message}` };
+}
+
 function attachSourceLine(row: ContextRefRow, line: number): ContextRefRow {
   Object.defineProperty(row, '__contextJsonlLine', {
     value: line,
@@ -57,21 +61,15 @@ export function parseContextJsonl(content: string): ParseContextJsonlResult {
     try {
       value = JSON.parse(trimmed);
     } catch {
-      errors.push({
-        line: lineNumber,
-        code: 'PARSE_ERROR',
-        message: `line ${lineNumber}: malformed JSON`,
-      });
+      errors.push(contextError(lineNumber, 'PARSE_ERROR', 'malformed JSON'));
       continue;
     }
 
     const parsed = ContextRefRowSchema.safeParse(value);
     if (!parsed.success) {
-      errors.push({
-        line: lineNumber,
-        code: 'SCHEMA_ERROR',
-        message: `line ${lineNumber}: ${schemaErrorMessage(parsed.error.issues)}`,
-      });
+      errors.push(
+        contextError(lineNumber, 'SCHEMA_ERROR', schemaErrorMessage(parsed.error.issues)),
+      );
       continue;
     }
 
