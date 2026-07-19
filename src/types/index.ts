@@ -32,3 +32,12 @@ export type {
   DeltaSpec,
   MergedSpec,
 } from './spec.js';
+
+export type {
+  CompactSpecRef,
+  CompactConventionRef,
+  ActiveChangeRef,
+  CompactRuleRef,
+  CompactContext,
+  ChangeStatus,
+} from './spec-injector.js';

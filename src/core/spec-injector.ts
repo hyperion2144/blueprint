@@ -7,6 +7,8 @@
 import { join } from 'node:path';
 import { readdirSync, existsSync, readFileSync, statSync } from 'node:fs';
 import { loadConfig } from './config.js';
+import type { CompactSpecRef, CompactConventionRef, ActiveChangeRef, CompactContext, CompactRuleRef } from '../types/spec-injector.js';
+
 
 export interface FileRef {
   path: string;
@@ -154,7 +156,7 @@ export function formatContextTerminal(result: ContextResult): string {
   const lines: string[] = [
     `=== bp context for step: ${result.step} ===`,
     `Scope: ${result.scope.type}${result.scope.ref ? ` (${result.scope.ref})` : ''}`,
-    '─'.repeat(60),
+    '\u2500'.repeat(60),
   ];
 
   if (result.specs.length > 0) {
@@ -189,9 +191,186 @@ export function formatContextTerminal(result: ContextResult): string {
     lines.push('');
   }
 
-  lines.push('─'.repeat(60));
+  lines.push('\u2500'.repeat(60));
   lines.push('Usage: use `read <path>` to load each file.');
   lines.push('Selectors: `read <path>:50-100` for ranges.');
 
+  return lines.join('\n');
+}
+
+// ── Compact Context (DS-1) ──────────────────────────────────────
+
+/** Extract title from file content: first H1/H2 line, fallback to file stem */
+function extractTitle(absPath: string): string {
+  try {
+    const content = readFileSync(absPath, 'utf-8');
+    const firstLine = content.split('\n')[0]?.trim();
+    if (firstLine) {
+      const h1 = firstLine.match(/^# (.+)/);
+      if (h1) return h1[1].trim();
+      const h2 = firstLine.match(/^## (.+)/);
+      if (h2) return h2[1].trim();
+    }
+  } catch {
+    // fall through to file stem
+  }
+  return absPath.replace(/\.md$/, '').split('/').pop() ?? 'unknown';
+}
+
+/** Count lines in a file */
+function lineCountOf(absPath: string): number {
+  try {
+    const content = readFileSync(absPath, 'utf-8');
+    const lines = content.split('\n');
+    if (lines.length > 0 && lines[lines.length - 1] === '') {
+      lines.pop();
+    }
+    return lines.length;
+  } catch {
+    return 0;
+  }
+}
+
+/** Determine active change: most-recently-modified non-archived change, or null */
+function resolveActiveChange(bpDir: string): ActiveChangeRef | null {
+  const changesDir = join(bpDir, 'changes');
+  if (!existsSync(changesDir)) return null;
+
+  const entries = readdirSync(changesDir, { withFileTypes: true })
+    .filter((d) => d.isDirectory() && d.name !== 'archive');
+
+  if (entries.length === 0) return null;
+
+  let best: { name: string; dir: string; mtime: Date } | null = null;
+
+  for (const entry of entries) {
+    const changeDir = join(changesDir, entry.name);
+
+    // Determine status from directory content
+    let status = '';
+    if (existsSync(join(changeDir, 'review.md'))) status = 'reviewed';
+    else if (existsSync(join(changeDir, 'tasks.md'))) status = 'in_progress';
+    else if (existsSync(join(changeDir, 'design.md'))) status = 'in_progress';
+    else if (existsSync(join(changeDir, 'proposal.md'))) status = 'proposed';
+    else continue;
+
+    if (status === 'archived') continue;
+
+    let mtime: Date | null = null;
+    for (const f of ['tasks.md', 'proposal.md', 'design.md']) {
+      const fp = join(changeDir, f);
+      if (existsSync(fp)) {
+        mtime = statSync(fp).mtime;
+        break;
+      }
+    }
+    if (!mtime) {
+      try { mtime = statSync(changeDir).mtime; } catch { continue; }
+    }
+    if (!best || mtime > best.mtime) {
+      best = { name: entry.name, dir: changeDir, mtime };
+    }
+  }
+
+  if (!best) return null;
+
+  const changeDir = best.dir;
+  const name = best.name;
+
+  return {
+    name,
+    status: 'in_progress' as ActiveChangeRef['status'],
+    proposalPath: existsSync(join(changeDir, 'proposal.md')) ? `changes/${name}/proposal.md` : undefined,
+    designPath: existsSync(join(changeDir, 'design.md')) ? `changes/${name}/design.md` : null,
+    tasksPath: existsSync(join(changeDir, 'tasks.md')) ? `changes/${name}/tasks.md` : null,
+    specsPath: existsSync(join(changeDir, 'specs')) ? `changes/${name}/specs` : null,
+    contextJsonlPath: existsSync(join(changeDir, 'context.jsonl')) ? `changes/${name}/context.jsonl` : null,
+  };
+}
+
+/** Generate compact paths-only context map for OMP session injection */
+export function generateCompactContext(
+  bpDir: string,
+  _opts?: { step?: string },
+): CompactContext {
+  const fileRefs = getAllSpecs(bpDir);
+  const specs: CompactSpecRef[] = fileRefs.map((ref) => {
+    const absPath = join(bpDir, ref.path);
+    return {
+      path: ref.path,
+      title: extractTitle(absPath),
+      lineCount: lineCountOf(absPath),
+    };
+  });
+
+  const convRefs = getAllConventions(bpDir);
+  const conventions: CompactConventionRef[] = convRefs.map((ref) => {
+    const absPath = join(bpDir, ref.path);
+    return {
+      path: ref.path,
+      title: extractTitle(absPath),
+      lineCount: lineCountOf(absPath),
+    };
+  });
+
+  const activeChange = resolveActiveChange(bpDir);
+
+  const rules: string[] = [];
+  try {
+    const config = loadConfig(bpDir);
+    for (const [_artifact, ruleList] of Object.entries(config.rules ?? {})) {
+      for (const text of ruleList) {
+        rules.push(text);
+      }
+    }
+  } catch {
+    // config not available — skip rules silently
+  }
+
+  return {
+    specs,
+    conventions,
+    activeChange,
+    rules,
+    generatedAt: new Date().toISOString(),
+  };
+}
+
+/** Serialise CompactContext as JSON string */
+export function formatContextCompactJson(result: CompactContext): string {
+  return JSON.stringify(result, null, 2);
+}
+
+/** Format CompactContext as <bp-context> markdown block */
+export function formatContextCompact(result: CompactContext): string {
+  const lines: string[] = ['<bp-context>'];
+
+  if (result.specs.length > 0) {
+    lines.push('## Specs');
+    for (const spec of result.specs) {
+      lines.push(`- ${spec.path}`);
+    }
+  }
+
+  if (result.conventions.length > 0) {
+    lines.push('## Conventions');
+    for (const conv of result.conventions) {
+      lines.push(`- ${conv.path}`);
+    }
+  }
+
+  if (result.activeChange) {
+    lines.push('## Active Change');
+    lines.push(`- ${result.activeChange.name} (${result.activeChange.status})`);
+  }
+
+  if (result.rules.length > 0) {
+    lines.push('## Rules');
+    for (const rule of result.rules) {
+      lines.push(`- artifact: ${rule}`);
+    }
+  }
+
+  lines.push('</bp-context>');
   return lines.join('\n');
 }

@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`bp context --format=full (T-8) > matches the terminal snapshot byte-for-byte 1`] = `
+"=== bp context for step: research ===
+Scope: bp
+────────────────────────────────────────────────────────────
+Related specs:
+  specs/core/spec.md                       # Behavioral Contract
+
+Config rules:
+  rules:proposal                           # Rules for proposal artifact
+  rules:specs                              # Rules for specs artifact
+  rules:design                             # Rules for design artifact
+  rules:tasks                              # Rules for tasks artifact
+
+Related conventions:
+  conventions/coding.md                    # Project Conventions
+
+────────────────────────────────────────────────────────────
+Usage: use \`read <path>\` to load each file.
+Selectors: \`read <path>:50-100\` for ranges.
+"
+`;

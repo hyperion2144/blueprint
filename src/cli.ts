@@ -15,6 +15,7 @@ import { register as registerTemplate } from './commands/bp-template.js';
 import { register as registerList } from './commands/bp-list.js';
 import { register as registerDispatch } from './commands/bp-dispatch.js';
 import { register as registerConfig } from './commands/bp-config.js';
+import { register as registerContext } from './commands/bp-context.js';
 import { register as registerUpdate } from './commands/bp-update.js';
 import { register as registerSchema } from './commands/bp-schema.js';
 
@@ -42,5 +43,6 @@ registerDispatch(program);
 registerConfig(program);
 registerUpdate(program);
 registerSchema(program);
+registerContext(program);
 
 program.parse(process.argv);
