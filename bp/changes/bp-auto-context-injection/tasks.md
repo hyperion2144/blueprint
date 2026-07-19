@@ -126,7 +126,7 @@
   - **acceptance**: `bp plan` on a fixture whose design references three specs and two conventions produces at least five context rows.
   - **RED**: GIVEN design.md and tasks.md references WHEN the planner workflow runs THEN context.jsonl contains every referenced path.
 
-- [ ] T-19: [type:behavior] Executor prompt reads auto-injected context.jsonl and refuses missing files <!-- commit: -->
+- [x] T-19: [type:behavior] Executor prompt reads auto-injected context.jsonl and refuses missing files <!-- commit: 1598fa3 -->
   - **refs**: DS-5
   - **spec_ref**: specs/platform-gen/spec.md#context-jsonl-executor-read-contract
   - **files**: src/templates/agents/index.ts, tests/templates/agents-executor.test.ts
