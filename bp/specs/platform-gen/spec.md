@@ -4,9 +4,9 @@
 
 ### SHALL support three platforms: omp, claude-code, agent
 
-- SHALL `blueprint update`: iterate over `project.yml.platform` array and generate files for each listed platform.
+- SHALL `bp update`: iterate over `project.yml.platform` array and generate files for each listed platform.
   - GIVEN `platform: [omp, agent]`
-  - WHEN `blueprint update` runs
+  - WHEN `bp update` runs
   - THEN `.omp/commands/`, `.omp/agents/`, AND `.agent/skills/`, `.agent/agents/` are all generated
 
 ### SHALL generate `.agent/skills/` with [BP:xxx] parameter format
@@ -31,15 +31,15 @@
 
 - MUST all existing OMP generator code: remain functional when `platform` includes `omp`.
   - GIVEN `platform: [omp]` (single entry)
-  - WHEN `blueprint update` runs
+  - WHEN `bp update` runs
   - THEN output is identical to before m2-claude-code changes
 
 ### MUST support single and multiple platform entries
 
-- MUST `blueprint update`: handle both single-platform and multi-platform `platform` arrays.
+- MUST `bp update`: handle both single-platform and multi-platform `platform` arrays.
   - GIVEN `platform: [agent]`
-  - WHEN `blueprint update` runs
+  - WHEN `bp update` runs
   - THEN only `.agent/` files are generated
   - GIVEN `platform: [omp, claude-code, agent]`
-  - WHEN `blueprint update` runs
+  - WHEN `bp update` runs
   - THEN all three platforms' files are generated
