@@ -52,12 +52,13 @@
 
 - **Goal**: Update integrations (OMP, Claude Code, .agent), fix test suite, update docs
 - **Spec domain**: platform-gen
-- **Changes**: 2/2 planned
+- **Changes**: 3/3 planned
 - **Status**: IN_PROGRESS
 
 **Changes**:
 - [x] v2-platform-tests (archived 2026-07-16)
 - [ ] e2e-loop-quality-test (proposed 2026-07-16)
+- [x] bp-auto-context-injection (archived 2026-07-19)
 
 **Next**: M2 planning
 
