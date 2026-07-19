@@ -154,7 +154,7 @@
   - **acceptance**: plan workflow has no `Run \`bp context plan\`` instruction and says context is auto-injected by the OMP Extension.
   - **RED**: GIVEN the plan workflow template WHEN inspected THEN the legacy self-call is absent and auto-injection is explicit.
 
-- [ ] T-23: [type:behavior] Apply and review workflows rely on OMP auto-injection <!-- commit: -->
+- [x] T-23: [type:behavior] Apply and review workflows rely on OMP auto-injection <!-- commit: ebd7a13 -->
   - **refs**: DS-5
   - **spec_ref**: specs/platform-gen/spec.md#workflow-template-auto-injection-contract
   - **files**: src/templates/workflows/apply.ts, src/templates/workflows/review.ts, tests/templates/workflow-apply-review.test.ts
