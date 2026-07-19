@@ -3,13 +3,47 @@
  * Replaces PEG grammar validation with simple structural checks.
  */
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { parseContextJsonl, validateContextJsonl } from './context-refs.js';
+import type { ContextJsonlError, ContextRefRow } from '../types/context-refs.js';
 
 export interface ValidationResult {
   valid: boolean;
   errors: string[];
   warnings: string[];
+}
+
+export interface ContextArtifactValidation {
+  valid: boolean;
+  rows: ContextRefRow[];
+  errors: ContextJsonlError[];
+  filteredOut: {
+    total: number;
+    byPhase: number;
+  };
+}
+
+export interface ChangeValidationResults {
+  [artifact: string]: ValidationResult | ContextArtifactValidation | undefined;
+  contextJsonl?: ContextArtifactValidation;
+}
+
+/** Read and validate one context.jsonl artifact for a workflow phase. */
+export function validateContextJsonlFile(
+  contextPath: string,
+  bpDir: string,
+  currentPhase: 'plan' | 'apply' | 'review' | 'archive',
+): ContextArtifactValidation {
+  const parsed = parseContextJsonl(readFileSync(contextPath, 'utf-8'));
+  const checked = validateContextJsonl(parsed.rows, { bpDir, currentPhase });
+  const errors = [...parsed.errors, ...checked.errors].sort((left, right) => left.line - right.line);
+  return {
+    valid: errors.length === 0,
+    rows: checked.rows,
+    errors,
+    filteredOut: checked.filteredOut,
+  };
 }
 
 /** Check if a file has any unreplaced template placeholders */
@@ -191,9 +225,9 @@ export function validateArtifact(
 }
 
 /** Validate all artifacts in a change directory */
-export function validateChange(bpDir: string, changeName: string): { [artifact: string]: ValidationResult } {
+export function validateChange(bpDir: string, changeName: string): ChangeValidationResults {
   const dir = join(bpDir, 'changes', changeName);
-  const results: { [artifact: string]: ValidationResult } = {};
+  const results: ChangeValidationResults = {};
 
   const files: { name: string; type: string; path: string }[] = [
     { name: 'proposal', type: 'proposal', path: join(dir, 'proposal.md') },
@@ -209,10 +243,13 @@ export function validateChange(bpDir: string, changeName: string): { [artifact: 
     }
   }
 
+  const contextPath = join(dir, 'context.jsonl');
+  if (existsSync(contextPath)) {
+    results.contextJsonl = validateContextJsonlFile(contextPath, bpDir, 'plan');
+  }
   // Validate delta specs
   const specsDir = join(dir, 'specs');
   if (existsSync(specsDir)) {
-    const { readdirSync } = require('node:fs');
     for (const domain of readdirSync(specsDir, { withFileTypes: true })) {
       if (domain.isDirectory()) {
         const specPath = join(specsDir, domain.name, 'spec.md');
