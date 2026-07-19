@@ -147,7 +147,7 @@
   - **acceptance**: prompt instructs writing `context.jsonl` covering every spec path from design.md and tasks.md plus every convention path.
   - **RED**: GIVEN the planner prompt WHEN inspected THEN it contains the complete context.jsonl write contract.
 
-- [ ] T-22: [type:behavior] Plan workflow relies on OMP auto-injection instead of bp context calls <!-- commit: -->
+- [x] T-22: [type:behavior] Plan workflow relies on OMP auto-injection instead of bp context calls <!-- commit: 2c7a6dc -->
   - **refs**: DS-5
   - **spec_ref**: specs/platform-gen/spec.md#workflow-template-auto-injection-contract
   - **files**: src/templates/workflows/plan.ts, tests/templates/workflow-plan.test.ts
