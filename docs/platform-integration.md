@@ -1,0 +1,157 @@
+# Platform Integration — OMP Context Injection
+
+The OMP (Oh My Pi) platform ships a generated Extension that injects `<bp-context>`
+payloads into every sub-agent session automatically. This document describes the
+end-to-end contract and how to disable it.
+
+## Auto-injected `<bp-context>` payload
+
+When a sub-agent session starts, the Extension's `session_start` handler emits
+a `bp-context` custom message containing a markdown block:
+
+```markdown
+<bp-context>
+<see bp context --format=compact>
+</bp-context>
+```
+
+The agent reads the block, invokes `bp context --format=compact` to fetch the
+full paths-only payload, and continues. The full payload covers every entry
+under `bp/specs/` and `bp/conventions/`:
+
+```markdown
+<bp-context>
+# Specs
+- bp/specs/context/spec.md — Context Injection
+- bp/specs/init/spec.md — Project Bootstrap
+- bp/specs/platform-gen/spec.md — Platform-Gen
+- ...
+
+# Conventions
+- bp/conventions/coding.md — Coding Conventions
+- bp/conventions/codebase-conventions.md — Codebase Conventions
+- ...
+
+# Active Change
+- bp-auto-context-injection (in_progress)
+
+# Rules
+- artifact: bp/conventions/coding.md — follow coding conventions
+- artifact: bp/conventions/codebase-conventions.md — follow codebase conventions
+- ...
+
+generatedAt: 2026-07-19T18:00:00Z
+</bp-context>
+```
+
+## Sub-agent layered payload
+
+The Extension discriminates the active sub-agent from `ctx.agentTemplate` and
+augments the `<bp-context>` block with role-specific content:
+
+```
+                ┌──────────────────────────────────┐
+                │ <bp-context>                      │
+                │   paths-only compact payload      │
+                │   (every spec + convention)       │
+                └──────────────────────────────────┘
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        │                     │                     │
+        ▼                     ▼                     ▼
+   ┌─────────┐           ┌──────────┐         ┌──────────┐
+   │ planner │           │ executor │         │ reviewer │
+   └─────────┘           └──────────┘         └──────────┘
+        │                     │                     │
+        ▼                     ▼                     ▼
+  ## Roadmap State      inline context.jsonl    ## Invariants
+  (from bp/state.md)    rows prefixed with      (each row's `reason`
+                        `> GUARD-RAIL:` for     rendered as `- ` bullet)
+                        guard-rail rows         + tasks.md acceptance
+                                                appended verbatim
+```
+
+Detection is substring match against `agentTemplate`:
+
+| `agentTemplate` contains | Agent type  | Augmentation appended                              |
+|--------------------------|-------------|----------------------------------------------------|
+| `planner`                | planner     | `## Roadmap State` block (also referred to as the `roadmap-state` heading) from `bp/state.md` |
+| `executor`               | executor    | inline `context.jsonl` rows; `> GUARD-RAIL:` prefix|
+| `reviewer`               | reviewer    | `## Invariants` bullets + `tasks.md` acceptance    |
+| anything else            | default     | none — paths-only compact                          |
+
+Sub-agents **never** invoke `bp context <step>` themselves — the Extension
+injects the context automatically. This replaces the legacy `Run \`bp context plan\``
+instruction previously embedded in workflow templates.
+
+## Workflow-state custom message (`before_agent_start`)
+
+In addition to the session-start payload, the Extension returns a
+`bp-workflow-state` custom message on `before_agent_start`, derived from
+`bp/state.md`:
+
+```ts
+{
+  message: {
+    role: 'custom',
+    customType: 'bp-workflow-state',
+    content: [{ type: 'text', text: '<state.md content>' }],
+    timestamp: <number>,
+  },
+}
+```
+
+The runtime inserts this message immediately before the user prompt, giving
+the agent a snapshot of the current milestone / phase / next-step.
+
+## Post-compaction recovery (`context` handler)
+
+When the OMP runtime reports `lastCompactionTs > lastInjectionTs`, the
+Extension reverse-scans `ctx.recentMessages` for any `bp-workflow-state`
+entry. If none is found, it re-injects the workflow state. If a recent
+`bp-workflow-state` already exists, the handler returns `undefined` (no-op).
+
+This guarantees that after a context-window compaction the agent still
+sees the current workflow state.
+
+## Disabling the Extension
+
+Set either environment variable before starting the OMP runtime to
+short-circuit every handler (no messages sent, no side effects):
+
+```bash
+BP_HOOKS=0           # preferred
+BP_DISABLE_HOOKS=1   # alias
+```
+
+Handlers also no-op automatically when `bp/config.yaml` is missing at the
+session cwd — i.e., the Extension is a no-op in non-blueprint projects.
+
+## Regenerating the Extension
+
+The Extension source is regenerated by:
+
+```bash
+bp update
+```
+
+This regenerates two files:
+
+- `.omp/extensions/bp/index.ts` — the full Extension source, byte-deterministic
+  from `src/templates/omp/extension.tmpl.ts`.
+- `.omp/hooks/pre/bp.ts` — a 5-line legacy shim re-exporting the Extension
+  default for OMP runtimes without Extension API support.
+
+Both files are emitted by `src/integrations/omp/extension.ts` and
+`src/integrations/omp/legacy-shim.ts` respectively. The string sources are
+exported from `src/integrations/omp/extension-runtime.ts` as
+`EXTENSION_SOURCE` and `SHIM_SOURCE`.
+
+## Source map
+
+| Generated file                   | Source-of-truth                                  |
+|----------------------------------|--------------------------------------------------|
+| `.omp/extensions/bp/index.ts`    | `src/templates/omp/extension.tmpl.ts`            |
+| `.omp/hooks/pre/bp.ts`           | `src/templates/omp/legacy-shim.tmpl.ts`          |
+| `.omp/commands/bp-*.md`          | `src/integrations/omp/commands.ts`               |
+| `.omp/agents/bp-*.md`            | `src/integrations/omp/agents.ts`                 |
