@@ -119,7 +119,7 @@
   - **acceptance**: `validateChange()` returns `contextJsonl.errors` containing line-numbered errors and marks the result invalid.
   - **RED**: GIVEN a change with invalid context.jsonl WHEN the change is validated THEN context errors include their source line numbers.
 
-- [ ] T-18: [type:behavior] Planner writes context.jsonl from design.md references <!-- commit: -->
+- [x] T-18: [type:behavior] Planner writes context.jsonl from design.md references <!-- commit: a8d3c86 -->
   - **refs**: DS-5
   - **spec_ref**: specs/platform-gen/spec.md#context-jsonl-planner-write-contract
   - **files**: tests/integration/planner-writes-context-jsonl.test.ts
