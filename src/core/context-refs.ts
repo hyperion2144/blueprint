@@ -89,6 +89,31 @@ function lineCount(content: string): number {
   return content.split(/\r?\n/).length;
 }
 
+function validateContextRow(
+  row: ContextRowWithLine,
+  bpDir: string,
+  line: number,
+): ContextJsonlError | undefined {
+  const filePath = contextFilePath(bpDir, row.file);
+  if (!existsSync(filePath)) {
+    return contextError(line, 'PATH_UNRESOLVED', `referenced file '${row.file}' does not exist`);
+  }
+
+  if (row.read === 'range' && row.range) {
+    const totalLines = lineCount(readFileSync(filePath, 'utf-8'));
+    const [start, end] = row.range;
+    if (start > totalLines || end > totalLines) {
+      return contextError(
+        line,
+        'RANGE_OOB',
+        `range [${start}, ${end}] exceeds ${totalLines} lines in '${row.file}'`,
+      );
+    }
+  }
+
+  return undefined;
+}
+
 /** Validate rows relevant to the current workflow phase against files under bp/. */
 export function validateContextJsonl(
   rows: ContextRefRow[],
@@ -106,27 +131,10 @@ export function validateContextJsonl(
       continue;
     }
 
-    const filePath = contextFilePath(opts.bpDir, row.file);
-    if (!existsSync(filePath)) {
-      errors.push({
-        line,
-        code: 'PATH_UNRESOLVED',
-        message: `line ${line}: referenced file '${row.file}' does not exist`,
-      });
+    const error = validateContextRow(row, opts.bpDir, line);
+    if (error) {
+      errors.push(error);
       continue;
-    }
-
-    if (row.read === 'range' && row.range) {
-      const totalLines = lineCount(readFileSync(filePath, 'utf-8'));
-      const [start, end] = row.range;
-      if (start > totalLines || end > totalLines) {
-        errors.push({
-          line,
-          code: 'RANGE_OOB',
-          message: `line ${line}: range [${start}, ${end}] exceeds ${totalLines} lines in '${row.file}'`,
-        });
-        continue;
-      }
     }
 
     validRows.push(rowValue);
