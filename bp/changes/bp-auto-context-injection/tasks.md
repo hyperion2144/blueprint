@@ -175,84 +175,82 @@
   - **files**: src/integrations/omp/extension-runtime.ts, src/integrations/omp/extension.ts, src/integrations/omp/legacy-shim.ts, src/templates/omp/extension.ts.tmpl, src/templates/omp/legacy-shim.ts.tmpl
   - **acceptance**: extension-runtime.ts exports `EXTENSION_SOURCE` and `SHIM_SOURCE` string constants plus helper types; extension.ts and legacy-shim.ts return file descriptors; .tmpl files exist as string-constant modules; `tsc --noEmit` passes.
 
-- [ ] T-26: [type:behavior] session_start default emits paths-only compact block <!-- commit: -->
+- [x] T-26: [type:behavior] session_start default emits paths-only compact block <!-- commit: 9ca7818 -->
   - **refs**: D-3
   - **spec_ref**: specs/platform-gen/spec.md#omp-extension-sub-agent-discrimination
   - **files**: src/integrations/omp/extension-runtime.ts, tests/integration/omp-extension.test.ts
   - **acceptance**: GIVEN ctx with `agentTemplate` not matching planner/executor/reviewer WHEN handleSessionStart runs THEN it emits a `<bp-context>...</bp-context>` block via `bp context --format=compact` and no augmentation.
   - **RED**: handler calls sendMessage with customType=bp-context, no roadmap block, no inline rows, no reasons.
 
-- [ ] T-27: [type:behavior] session_start planner appends roadmap state block <!-- commit: -->
+- [x] T-27: [type:behavior] session_start planner appends roadmap state block <!-- commit: 90ed8ed -->
   - **refs**: D-3
   - **spec_ref**: specs/platform-gen/spec.md#omp-extension-sub-agent-discrimination
   - **files**: src/integrations/omp/extension-runtime.ts, tests/integration/omp-extension.test.ts
   - **acceptance**: GIVEN ctx with `agentTemplate` containing 'planner' WHEN handleSessionStart runs THEN the emitted message body contains a `## Roadmap State` section derived from `state.md` (or `bp state` JSON) — current milestone, current phase, next step name.
   - **RED**: handler sendMessage body contains `## Roadmap State` plus milestone/phase/next.
 
-- [ ] T-28: [type:behavior] session_start executor inlines context.jsonl rows with guard-rail prefix <!-- commit: -->
+- [x] T-28: [type:behavior] session_start executor inlines context.jsonl rows with guard-rail prefix <!-- commit: 90ed8ed -->
   - **refs**: D-3
   - **spec_ref**: specs/platform-gen/spec.md#omp-extension-sub-agent-discrimination
   - **files**: src/integrations/omp/extension-runtime.ts, tests/integration/omp-extension.test.ts
   - **acceptance**: GIVEN ctx with `agentTemplate` containing 'executor' and a fixture context.jsonl whose rows include at least one `tag: guard-rail` row WHEN handleSessionStart runs THEN every row is rendered inline, and guard-rail rows are prefixed with `> GUARD-RAIL: `.
   - **RED**: handler sendMessage body contains each row's `file:` and `reason:`, and guard-rail rows have `> GUARD-RAIL:` prefix.
 
-- [ ] T-29: [type:behavior] session_start reviewer appends reason bullets and tasks.md acceptance criteria <!-- commit: -->
+- [x] T-29: [type:behavior] session_start reviewer appends reason bullets and tasks.md acceptance criteria <!-- commit: 90ed8ed -->
   - **refs**: D-3
   - **spec_ref**: specs/platform-gen/spec.md#omp-extension-sub-agent-discrimination
   - **files**: src/integrations/omp/extension-runtime.ts, tests/integration/omp-extension.test.ts
   - **acceptance**: GIVEN ctx with `agentTemplate` containing 'reviewer' and a fixture context.jsonl + tasks.md WHEN handleSessionStart runs THEN each row's `reason:` renders as a bullet under `## Invariants` AND tasks.md acceptance-criteria text appears verbatim.
   - **RED**: handler sendMessage body contains `- <reason text>` for each row and the literal acceptance string.
 
-- [ ] T-30: [type:behavior] before_agent_start returns workflow-state custom message <!-- commit: -->
+- [x] T-30: [type:behavior] before_agent_start returns workflow-state custom message <!-- commit: 90ed8ed -->
   - **refs**: D-4
   - **spec_ref**: specs/platform-gen/spec.md#omp-extension-runtime-surface
   - **files**: src/integrations/omp/extension-runtime.ts, tests/integration/omp-extension.test.ts
   - **acceptance**: GIVEN ctx with cwd containing bp/config.yaml WHEN handleBeforeAgentStart runs THEN it returns `{ message: { role: 'custom', customType: 'bp-workflow-state', content: [...], timestamp: number } }` derived from `bp continue` output.
   - **RED**: handler return value is `{ message: { customType: 'bp-workflow-state', ... } }`.
 
-- [ ] T-31: [type:behavior] context post-compaction re-injects when missing <!-- commit: -->
+- [x] T-31: [type:behavior] context post-compaction re-injects when missing <!-- commit: 90ed8ed -->
   - **refs**: D-8
   - **spec_ref**: specs/platform-gen/spec.md#omp-extension-post-compaction-recovery
   - **files**: src/integrations/omp/extension-runtime.ts, tests/integration/omp-extension.test.ts
   - **acceptance**: GIVEN ctx with `lastCompactionTs > lastInjectionTs` and `recentMessages` containing no `bp-workflow-state` entry WHEN handleContext runs THEN it returns `{ message: { customType: 'bp-workflow-state', ... } }` re-injecting the workflow state.
   - **RED**: handler return value is `{ message: { customType: 'bp-workflow-state', ... } }`.
 
-- [ ] T-32: [type:behavior] context no-compaction fast path returns no message <!-- commit: -->
+- [x] T-32: [type:behavior] context no-compaction fast path returns no message <!-- commit: 90ed8ed -->
   - **refs**: D-8
   - **spec_ref**: specs/platform-gen/spec.md#omp-extension-post-compaction-recovery
   - **files**: src/integrations/omp/extension-runtime.ts, tests/integration/omp-extension.test.ts
   - **acceptance**: GIVEN ctx with `lastCompactionTs <= lastInjectionTs` (or undefined) WHEN handleContext runs THEN it returns `undefined` (no message).
   - **RED**: handler return value is `undefined`.
 
-- [ ] T-33: [type:behavior] BP_HOOKS=0 short-circuits every handler <!-- commit: -->
+- [x] T-33: [type:behavior] BP_HOOKS=0 short-circuits every handler <!-- commit: 90ed8ed -->
   - **refs**: D-9
   - **spec_ref**: specs/platform-gen/spec.md#omp-extension-env-bypass
   - **files**: src/integrations/omp/extension-runtime.ts, tests/integration/omp-extension.test.ts
   - **acceptance**: GIVEN process.env.BP_HOOKS === '0' (or BP_DISABLE_HOOKS === '1') WHEN any of handleSessionStart / handleBeforeAgentStart / handleContext runs THEN it returns immediately without side effects.
   - **RED**: handlers return undefined and do not call api.sendMessage.
 
-- [ ] T-34: [type:behavior] handlers skip when bp/config.yaml is missing <!-- commit: -->
+- [x] T-34: [type:behavior] handlers skip when bp/config.yaml is missing <!-- commit: 90ed8ed -->
   - **refs**: D-4
   - **spec_ref**: specs/platform-gen/spec.md#omp-extension-config-skip
   - **files**: src/integrations/omp/extension-runtime.ts, tests/integration/omp-extension.test.ts
   - **acceptance**: GIVEN ctx.cwd points to a directory without bp/config.yaml WHEN any handler runs THEN it returns immediately without side effects.
   - **RED**: handlers return undefined and do not call api.sendMessage.
 
-- [ ] T-35: [type:behavior] generator output is byte-deterministic across consecutive runs <!-- commit: -->
+- [x] T-35: [type:behavior] generator output is byte-deterministic across consecutive runs <!-- commit: 90ed8ed -->
   - **refs**: D-6
   - **spec_ref**: specs/platform-gen/spec.md#omp-extension-byte-determinism
   - **files**: src/integrations/omp/extension.ts, tests/integration/omp-extension.test.ts
   - **acceptance**: GIVEN the same ProjectConfig WHEN generateExtension is called twice in succession THEN both file descriptors are byte-identical (path and content equal).
   - **RED**: second-run content === first-run content.
 
-- [ ] T-36: [type:behavior] legacy shim generator emits a 5-line re-export of the Extension default <!-- commit: -->
+- [x] T-36: [type:behavior] legacy shim generator emits a 5-line re-export of the Extension default <!-- commit: 90ed8ed -->
   - **refs**: D-7
   - **spec_ref**: specs/platform-gen/spec.md#omp-extension-legacy-shim
   - **files**: src/integrations/omp/legacy-shim.ts, tests/integration/omp-extension.test.ts
   - **acceptance**: generateLegacyShim returns `{ path: '.omp/hooks/pre/bp.ts', content }` where the content is exactly the 5-line shim that re-exports the default export from `../extensions/bp/index.js`.
   - **RED**: shim content matches the committed 5-line snapshot.
-
-- [ ] T-37: [type:behavior] .tmpl files are the single source of truth for generated sources <!-- commit: -->
   - **refs**: D-6
   - **spec_ref**: specs/platform-gen/spec.md#omp-extension-template-source
   - **files**: src/templates/omp/extension.ts.tmpl, src/templates/omp/legacy-shim.ts.tmpl
