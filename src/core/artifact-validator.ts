@@ -46,6 +46,14 @@ export function validateContextJsonlFile(
   };
 }
 
+function loadContextJsonlValidation(
+  contextPath: string,
+  bpDir: string,
+): ContextArtifactValidation | undefined {
+  if (!existsSync(contextPath)) return undefined;
+  return validateContextJsonlFile(contextPath, bpDir, 'plan');
+}
+
 /** Check if a file has any unreplaced template placeholders */
 export function hasPlaceholders(content: string): boolean {
   return /\{\{[^}]+\}\}/.test(content);
@@ -244,9 +252,8 @@ export function validateChange(bpDir: string, changeName: string): ChangeValidat
   }
 
   const contextPath = join(dir, 'context.jsonl');
-  if (existsSync(contextPath)) {
-    results.contextJsonl = validateContextJsonlFile(contextPath, bpDir, 'plan');
-  }
+  const contextValidation = loadContextJsonlValidation(contextPath, bpDir);
+  if (contextValidation) results.contextJsonl = contextValidation;
   // Validate delta specs
   const specsDir = join(dir, 'specs');
   if (existsSync(specsDir)) {
