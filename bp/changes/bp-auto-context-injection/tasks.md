@@ -133,7 +133,7 @@
   - **acceptance**: prompt says not to call `bp context <step>` and refuses to start when a row file is missing on disk.
   - **RED**: GIVEN the executor prompt WHEN inspected THEN it contains both auto-injection and missing-file refusal instructions.
 
-- [ ] T-20: [type:behavior] Reviewer prompt re-validates every context row reason <!-- commit: -->
+- [x] T-20: [type:behavior] Reviewer prompt re-validates every context row reason <!-- commit: 7d8a000 -->
   - **refs**: DS-5
   - **spec_ref**: specs/platform-gen/spec.md#context-jsonl-reviewer-re-validation-contract
   - **files**: src/templates/agents/index.ts, tests/templates/agents-reviewer.test.ts
