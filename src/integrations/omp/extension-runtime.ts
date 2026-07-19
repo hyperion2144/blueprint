@@ -218,7 +218,7 @@ export async function handleBeforeAgentStart(
   _event: unknown,
   ctx: ExtensionContext,
   _api: ExtensionAPI,
-): Promise<HandlerResult> {
+): Promise<HandlerResult | undefined> {
   if (isDisabled()) return undefined;
   const cwd = ctx.cwd ?? process.cwd();
   if (!hasBpConfig(cwd)) return undefined;
@@ -245,7 +245,7 @@ export async function handleContext(
   _event: unknown,
   ctx: ExtensionContext,
   _api: ExtensionAPI,
-): Promise<HandlerResult> {
+): Promise<HandlerResult | undefined> {
   if (isDisabled()) return undefined;
   const cwd = ctx.cwd ?? process.cwd();
   if (!hasBpConfig(cwd)) return undefined;

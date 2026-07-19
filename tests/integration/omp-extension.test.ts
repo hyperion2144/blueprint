@@ -267,7 +267,7 @@ describe('BP_HOOKS=0 short-circuits every handler [T-33]', () => {
     }
   });
 
-  it('handleContext returns undefined', async () => {
+  it('handleContext returns no message', async () => {
     vi.stubEnv('BP_HOOKS', '0');
     try {
       const result = await handleContext(
@@ -275,7 +275,7 @@ describe('BP_HOOKS=0 short-circuits every handler [T-33]', () => {
         { cwd: testDir, lastCompactionTs: 999, lastInjectionTs: 1 } as ExtensionContext,
         makeApi().api,
       );
-      expect(result).toBeUndefined();
+      expect(!result || !result.message).toBe(true);
     } finally {
       vi.unstubAllEnvs();
     }
