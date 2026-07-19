@@ -70,3 +70,28 @@ describe('context.jsonl path and range validation', () => {
     }
   });
 });
+
+describe('context.jsonl phase filtering', () => {
+  it('silently drops rows for other phases and keeps all-phase rows', () => {
+    const bpDir = join(process.cwd(), 'tests/tmp-context-phase');
+    mkdirSync(bpDir, { recursive: true });
+    writeFileSync(join(bpDir, 'plan.md'), 'plan\n', 'utf-8');
+    writeFileSync(join(bpDir, 'apply.md'), 'apply\n', 'utf-8');
+
+    try {
+      const rows = [
+        ContextRefRowSchema.parse({ file: 'plan.md', reason: 'plan only', phase: 'plan' }),
+        ContextRefRowSchema.parse({ file: 'apply.md', reason: 'apply only', phase: 'apply' }),
+        ContextRefRowSchema.parse({ file: 'plan.md', reason: 'always', phase: 'all' }),
+      ];
+      const result = validateContextJsonl(rows, { bpDir, currentPhase: 'plan' });
+
+      expect(result.valid).toBe(true);
+      expect(result.rows.map((row) => row.reason)).toEqual(['plan only', 'always']);
+      expect(result.filteredOut).toEqual({ total: 3, byPhase: 1 });
+      expect(result.errors).toHaveLength(0);
+    } finally {
+      rmSync(bpDir, { recursive: true, force: true });
+    }
+  });
+});
