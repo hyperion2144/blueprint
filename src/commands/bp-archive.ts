@@ -14,7 +14,7 @@ import { join } from 'node:path';
 import { findBpDir } from './_utils.js';
 import { listActiveChanges, changeDir, archiveChangeDir } from '../core/file-tree.js';
 import { mergeDeltaSpec } from '../core/delta-merge.js';
-
+import { validateContextJsonlFile } from '../core/artifact-validator.js';
 export function register(program: any): void {
   program
     .command('archive [name]')
@@ -41,6 +41,18 @@ function resolveChangeName(bpDir: string, name?: string): string | null {
   return null;
 }
 
+/** Gate: exit non-zero if context.jsonl is invalid for the archive phase. */
+function gateContextJsonl(bpDir: string, changeName: string): boolean {
+  const contextPath = join(bpDir, 'changes', changeName, 'context.jsonl');
+  if (!existsSync(contextPath)) return true;
+  const result = validateContextJsonlFile(contextPath, bpDir, 'archive');
+  if (result.valid) return true;
+  for (const err of result.errors) {
+    console.error(`${contextPath}:${err.line}: [${err.code}] ${err.message}`);
+  }
+  return false;
+}
+
 function archiveHandler(name: string, options: { force?: boolean }): void {
   const bpDir = findBpDir();
   if (!bpDir) {
@@ -56,6 +68,7 @@ function archiveHandler(name: string, options: { force?: boolean }): void {
     console.error(`Change "${changeName}" not found.`);
     process.exit(1);
   }
+  if (!gateContextJsonl(bpDir, changeName)) process.exit(2);
 
   // ---- Step 2: Verify review status (unless --force) ----
   if (!options.force) {

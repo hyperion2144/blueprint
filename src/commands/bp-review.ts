@@ -11,6 +11,7 @@ import { findBpDir } from './_utils.js';
 import { loadSchema } from '../core/schema.js';
 import { listActiveChanges, changeDir } from '../core/file-tree.js';
 import { checkArtifacts } from '../core/continue.js';
+import { validateContextJsonlFile } from '../core/artifact-validator.js';
 import { WORKFLOW_REGISTRY } from '../templates/workflows/registry.js';
 
 export function register(program: any): void {
@@ -36,6 +37,7 @@ function reviewHandler(name: string | undefined, options: { fix?: boolean }): vo
     console.error(`Change "${changeName}" not found.`);
     process.exit(1);
   }
+  if (!gateContextJsonl(bpDir, changeName, 'review')) process.exit(2);
 
   // Check that code is fully implemented (all tasks [x])
   const schema = loadSchema(bpDir);
@@ -78,4 +80,20 @@ function resolveChangeName(bpDir: string, name?: string): string | null {
   }
   console.log('\nSpecify a change: bp review <name>');
   return null;
+}
+
+/** Gate: exit non-zero if context.jsonl is invalid for the requested phase. */
+function gateContextJsonl(
+  bpDir: string,
+  changeName: string,
+  phase: 'plan' | 'apply' | 'review' | 'archive',
+): boolean {
+  const contextPath = join(bpDir, 'changes', changeName, 'context.jsonl');
+  if (!existsSync(contextPath)) return true;
+  const result = validateContextJsonlFile(contextPath, bpDir, phase);
+  if (result.valid) return true;
+  for (const err of result.errors) {
+    console.error(`${contextPath}:${err.line}: [${err.code}] ${err.message}`);
+  }
+  return false;
 }
