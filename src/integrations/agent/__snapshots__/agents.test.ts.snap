@@ -501,28 +501,32 @@ List EVERY file that will be created or modified. No "and other files" or "etc."
 
 ### Step 4: Break down into tasks
 
-Get the tasks template: \`bp template tasks\`. Fill it following these principles:
+**HARD RULE: You MUST fetch the tasks template by running \`bp template tasks --stdout\` BEFORE writing \`tasks.md\`.** The template defines the exact format including:
+- \`- [ ]\` checkboxes per task
+- \`<!-- commit: -->\` placeholders (for the executor to fill with commit hashes)
+- \`type:\` annotations (\`behavior\` / \`config\` / \`refactor\` / \`docs\` / \`scaffolding\`)
+- \`spec_ref\` field linking to delta spec requirements
+- RED test descriptions (GIVEN/WHEN/THEN format)
+- \`## TDD Type Annotations\` table
+- \`## Pre-Archive Checklist\` section
+
+Do NOT write \`tasks.md\` from memory. Tasks written without the template will miss required sections and fail review.
+
+After fetching the template, fill it following these principles:
 
 #### Task Decomposition
 
 Each task (T-N) is **one independently testable behavioral path**.
 
-**Good tasks:**
+**Examples:**
 \`\`\`
 - [ ] T-1: [type:behavior] ThemeContext provides current theme <!-- commit: -->
 - [ ] T-2: [type:behavior] ThemeContext toggles theme on call <!-- commit: -->
 - [ ] T-3: [type:behavior] ThemeToggle renders current theme <!-- commit: -->
 - [ ] T-4: [type:behavior] ThemeToggle calls toggle on click <!-- commit: -->
 - [ ] T-5: [type:scaffolding] Create ThemeToggle component shell <!-- commit: -->
-
 \`\`\`
 
-**Bad tasks:**
-\`\`\`
-T-1: Implement ThemeContext (too broad - multiple behaviors)
-T-2: Write tests for ThemeContext (tests are part of TDD, not separate tasks)
-T-3: Add theme support (too vague)
-\`\`\`
 
 **Rules:**
 - Each public behavior path of a DS gets its own task.

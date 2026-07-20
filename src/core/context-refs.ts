@@ -80,8 +80,9 @@ export function parseContextJsonl(content: string): ParseContextJsonlResult {
 }
 
 function contextFilePath(bpDir: string, file: string): string {
-  const relative = file.startsWith('bp/') ? file.slice('bp/'.length) : file;
-  return join(bpDir, relative);
+  // All file paths in context.jsonl are repo-relative (from project root).
+  // Normalize backslash path separators for Windows compat.
+  return join(bpDir, '..', file.replace(/\\/g, '/'));
 }
 
 function lineCount(content: string): number {

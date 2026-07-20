@@ -49,9 +49,10 @@ describe('context.jsonl parsing', () => {
 
 describe('context.jsonl path and range validation', () => {
   it('rejects unresolved files and ranges outside file bounds', () => {
-    const bpDir = join(process.cwd(), 'tests/tmp-context-refs');
+    const tmpRoot = join(process.cwd(), 'tests/tmp-context-refs');
+    const bpDir = join(tmpRoot, 'bp');
     mkdirSync(bpDir, { recursive: true });
-    writeFileSync(join(bpDir, 'existing.md'), 'one\ntwo\n', 'utf-8');
+    writeFileSync(join(tmpRoot, 'existing.md'), 'one\ntwo\n', 'utf-8');
 
     try {
       const rows = [
@@ -59,24 +60,24 @@ describe('context.jsonl path and range validation', () => {
         ContextRefRowSchema.parse({ file: 'existing.md', reason: 'bad range', read: 'range', range: [1, 99] }),
       ];
       const result = validateContextJsonl(rows, { bpDir, currentPhase: 'plan' });
-
       expect(result.valid).toBe(false);
       expect(result.errors).toEqual([
         expect.objectContaining({ code: 'PATH_UNRESOLVED' }),
         expect.objectContaining({ code: 'RANGE_OOB' }),
       ]);
     } finally {
-      rmSync(bpDir, { recursive: true, force: true });
+      rmSync(tmpRoot, { recursive: true, force: true });
     }
   });
 });
 
 describe('context.jsonl phase filtering', () => {
   it('silently drops rows for other phases and keeps all-phase rows', () => {
-    const bpDir = join(process.cwd(), 'tests/tmp-context-phase');
+    const tmpRoot = join(process.cwd(), 'tests/tmp-context-phase');
+    const bpDir = join(tmpRoot, 'bp');
     mkdirSync(bpDir, { recursive: true });
-    writeFileSync(join(bpDir, 'plan.md'), 'plan\n', 'utf-8');
-    writeFileSync(join(bpDir, 'apply.md'), 'apply\n', 'utf-8');
+    writeFileSync(join(tmpRoot, 'plan.md'), 'plan\n', 'utf-8');
+    writeFileSync(join(tmpRoot, 'apply.md'), 'apply\n', 'utf-8');
 
     try {
       const rows = [
@@ -85,13 +86,12 @@ describe('context.jsonl phase filtering', () => {
         ContextRefRowSchema.parse({ file: 'plan.md', reason: 'always', phase: 'all' }),
       ];
       const result = validateContextJsonl(rows, { bpDir, currentPhase: 'plan' });
-
       expect(result.valid).toBe(true);
       expect(result.rows.map((row) => row.reason)).toEqual(['plan only', 'always']);
       expect(result.filteredOut).toEqual({ total: 3, byPhase: 1 });
       expect(result.errors).toHaveLength(0);
     } finally {
-      rmSync(bpDir, { recursive: true, force: true });
+      rmSync(tmpRoot, { recursive: true, force: true });
     }
   });
 });
