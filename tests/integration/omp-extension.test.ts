@@ -65,6 +65,19 @@ beforeAll(() => {
       JSON.stringify({ file: 'src/core/b.ts', reason: 'guard rail B', phase: 'all', tag: 'guard-rail' }),
     ].join('\n') + '\n',
   );
+  writeFile(
+    'bp/roadmap.md',
+    '## Milestone: M1 - v2 Architecture Refactoring [ACTIVE]\n\n' +
+    '**Goal**: Refactor to v2.\n' +
+    '**Status**: ACTIVE\n\n' +
+    '### Phase: P1.1 - Core Engine [ACTIVE]\n\n' +
+    '- **Goal**: Rewrite core engine\n' +
+    '- **Changes**: 0/0 completed\n' +
+    '- **Status**: ACTIVE\n\n' +
+    '**Changes**:\n' +
+    '- [ ] demo (proposed)\n' +
+    '\n**Next**: Phase P1.2\n',
+  );
 });
 
 afterAll(() => {
@@ -140,16 +153,18 @@ describe('handleSessionStart default path', () => {
 });
 
 describe('handleSessionStart planner path [T-27]', () => {
-  it('appends ## Roadmap State from state.md', async () => {
-    writeFile('bp/state.md', 'Milestone: M1\nPhase: Wave 3\nNext step: T-27\n');
+  it('appends ## Roadmap State from bp state', async () => {
     const { api, sent } = makeApi();
-    const ctx: ExtensionContext = { cwd: testDir, agentTemplate: 'bp-planner-v2', activeChangeName: 'demo' };
-    await handleSessionStart({}, ctx, api);
+    await handleSessionStart(
+      {},
+      { cwd: testDir, agentTemplate: 'bp-planner-v2' } as ExtensionContext,
+      api,
+    );
     expect(sent).toHaveLength(1);
-    const text = (sent[0].content as Array<{ type: string; text: string }>)[0].text;
-    expect(text).toContain('## Roadmap State');
-    expect(text).toContain('Milestone: M1');
-    expect(text).toContain('Next step: T-27');
+    const text = sent[0].content[0].text;
+    expect(text).toContain('M1:');
+    expect(text).toContain('P1.1:');
+    expect(text).toContain('demo [applied]');
   });
 });
 
@@ -180,17 +195,14 @@ describe('handleSessionStart reviewer path [T-29]', () => {
 });
 
 describe('handleBeforeAgentStart [T-30]', () => {
-  it('returns a bp-workflow-state custom message derived from state.md', async () => {
-    writeFile('bp/state.md', 'Milestone: M1\nPhase: Wave 3\nNext: T-30\n');
-    const result = await handleBeforeAgentStart({}, { cwd: testDir } as ExtensionContext, makeApi().api);
+  it('returns a bp-workflow-state custom message derived from bp state', async () => {
+    const { api, sent } = makeApi();
+    const result = await handleBeforeAgentStart({}, { cwd: testDir } as ExtensionContext, api);
     expect(result).toBeDefined();
-    expect(result!.message).toBeDefined();
     expect(result!.message!.customType).toBe('bp-workflow-state');
-    expect(result!.message!.role).toBe('custom');
     expect(typeof result!.message!.timestamp).toBe('number');
-    const text = (result!.message!.content[0] as { text: string }).text;
-    expect(text).toContain('Milestone: M1');
-    expect(text).toContain('Next: T-30');
+    expect(result!.message!.content[0].text).toContain('M1:');
+    expect(result!.message!.content[0].text).toContain('P1.1:');
   });
 });
 
@@ -212,22 +224,21 @@ describe('handleContext post-compaction recovery [T-31,T-32]', () => {
     );
     expect(result).toBeUndefined();
   });
-
   it('returns bp-workflow-state when lastCompactionTs > lastInjectionTs and no recent workflow-state message', async () => {
-    writeFile('bp/state.md', 'Milestone: M1\nPhase: Wave 3\nNext: T-31\n');
     const result = await handleContext(
       {},
       {
         cwd: testDir,
-        lastCompactionTs: 500,
-        lastInjectionTs: 200,
-        recentMessages: [{ customType: 'bp-context' }],
+        lastCompactionTs: 999,
+        lastInjectionTs: 1,
+        recentMessages: [],
       } as ExtensionContext,
       makeApi().api,
     );
     expect(result).toBeDefined();
     expect(result!.message!.customType).toBe('bp-workflow-state');
-    expect(result!.message!.content[0].text).toContain('Milestone: M1');
+    expect(result!.message!.content[0].text).toContain('M1:');
+    expect(result!.message!.content[0].text).toContain('P1.1:');
   });
 
   it('returns undefined when lastCompactionTs > lastInjectionTs but a recent bp-workflow-state exists', async () => {

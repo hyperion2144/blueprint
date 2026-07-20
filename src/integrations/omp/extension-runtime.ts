@@ -15,6 +15,7 @@ import { SHIM_SOURCE } from '../../templates/omp/legacy-shim.tmpl.js';
 import { generateCompactContext, formatContextCompact } from '../../core/spec-injector.js';
 import { parseContextJsonl } from '../../core/context-refs.js';
 import type { ContextRefRow } from '../../types/context-refs.js';
+import { deriveState } from '../../commands/bp-state.js';
 
 export { EXTENSION_SOURCE, SHIM_SOURCE };
 
@@ -102,6 +103,22 @@ export function generateCompactBlock(cwd: string | undefined): string {
   }
 }
 
+/** Derive a human-readable state summary from deriveState() output. */
+function formatStateSummary(bpDir: string): string {
+  try {
+    const st = deriveState(bpDir);
+    const lines = [
+      st.milestone ? `${st.milestone.id}: ${st.milestone.name} [${st.milestone.status}]` : '',
+      st.phase ? `  Phase ${st.phase.id}: ${st.phase.name} [${st.phase.status}]` : '',
+      st.activeChange ? `  Active: ${st.activeChange.name} [${st.activeChange.status}]` : '',
+      st.nextAction ? `  Next: ${st.nextAction}` : '',
+    ].filter((l) => l);
+    return lines.join('\n') || '_no state available_';
+  } catch {
+    return '_no state available_';
+  }
+}
+
 /** Read context.jsonl rows for a change; returns [] on any failure. */
 function readContextRows(bpDir: string, changeName: string | undefined): ContextRefRow[] {
   if (!changeName) return [];
@@ -115,16 +132,6 @@ function readContextRows(bpDir: string, changeName: string | undefined): Context
   }
 }
 
-/** Read state.md content for the cwd; returns '' when missing. */
-function readStateContent(cwd: string): string {
-  const path = join(cwd, 'bp', 'state.md');
-  if (!existsSync(path)) return '';
-  try {
-    return readFileSync(path, 'utf-8');
-  } catch {
-    return '';
-  }
-}
 
 /**
  * Render the augmented body for sub-agent variants (planner / executor / reviewer).
@@ -143,9 +150,8 @@ function renderAugmentedBody(
   const extra: string[] = [];
 
   if (agentType === 'planner') {
-    const state = readStateContent(cwd).trim();
     extra.push('## Roadmap State');
-    extra.push(state || '_no state.md present_');
+    extra.push(formatStateSummary(bpDir));
   } else if (agentType === 'executor') {
     const rows = readContextRows(bpDir, activeChangeName);
     if (rows.length === 0) {
@@ -223,12 +229,12 @@ export async function handleBeforeAgentStart(
   const cwd = ctx.cwd ?? process.cwd();
   if (!hasBpConfig(cwd)) return undefined;
 
-  const state = readStateContent(cwd).trim() || '_no state.md present_';
+  const summary = formatStateSummary(join(cwd, 'bp'));
   return {
     message: {
       role: 'custom',
       customType: 'bp-workflow-state',
-      content: [{ type: 'text', text: state }],
+      content: [{ type: 'text', text: summary }],
       timestamp: Date.now(),
     },
   };
@@ -260,13 +266,14 @@ export async function handleContext(
   );
   if (hasWorkflowState) return undefined;
 
-  const state = readStateContent(cwd).trim() || '_no state.md present_';
+  const summary = formatStateSummary(join(cwd, 'bp'));
   return {
     message: {
       role: 'custom',
       customType: 'bp-workflow-state',
-      content: [{ type: 'text', text: state }],
+      content: [{ type: 'text', text: summary }],
       timestamp: Date.now(),
     },
   };
+
 }

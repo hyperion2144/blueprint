@@ -85,6 +85,7 @@ function makeFakeApi(): FakeApi {
 
 describe('e2e: bp-context-injection (generated Extension runtime)', () => {
   let bpExtension: (api: FakeApi['api']) => void;
+let origPath: string | undefined;
 
   beforeAll(async () => {
     testDir = join(tmpdir(), `bp-e2e-ext-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
@@ -124,8 +125,26 @@ describe('e2e: bp-context-injection (generated Extension runtime)', () => {
       ].join('\n') + '\n',
     );
 
+    // (d2) Write a proper roadmap so bp state --json can derive M1.
+    writeRel(
+      'bp/roadmap.md',
+      '## Milestone: M1 - Test Milestone [ACTIVE]\n\n' +
+      '**Goal**: e2e test suite.\n' +
+      '**Status**: ACTIVE\n\n' +
+      '### Phase: P1.1 - Test Phase [ACTIVE]\n\n' +
+      '- **Goal**: Phase goal\n' +
+      '- **Changes**: 0/0 completed\n' +
+      '- **Status**: ACTIVE\n\n' +
+      '**Changes**:\n' +
+      '- [ ] demo (proposed)\n' +
+      '\n**Next**: Phase P1.2\n',
+    );
+
     // (d) Run `bp update` to regenerate the Extension + shim in the fixture.
     execSync(`node "${cliPath}" update --dir bp`, { encoding: 'utf-8', cwd: testDir });
+    // Ensure `bp` CLI is in PATH for the generated Extension's execSync calls.
+    origPath = process.env.PATH;
+    process.env.PATH = origPath + ':' + join(process.cwd(), 'node_modules', '.bin');
 
     // (e) Read + import the freshly generated Extension.
     const extPath = join(testDir, '.omp', 'extensions', 'bp', 'index.ts');
@@ -136,6 +155,7 @@ describe('e2e: bp-context-injection (generated Extension runtime)', () => {
   }, 60_000);
 
   afterAll(() => {
+    process.env.PATH = origPath;
     if (testDir) rmSync(testDir, { recursive: true, force: true });
   });
 
@@ -152,7 +172,7 @@ describe('e2e: bp-context-injection (generated Extension runtime)', () => {
     expect(src).toContain('detectAgentType');
   });
 
-  it('step 2: session_start default emits a <bp-context> block referencing bp context --format=compact', async () => {
+  it('step 2: session_start default emits a real <bp-context> block with paths', async () => {
     const fake = makeFakeApi();
     bpExtension(fake.api);
     await fake.invoke('session_start', {}, { cwd: testDir });
@@ -165,7 +185,9 @@ describe('e2e: bp-context-injection (generated Extension runtime)', () => {
     const text = msg.content[0].text;
     expect(text).toContain('<bp-context>');
     expect(text).toContain('</bp-context>');
-    expect(text).toContain('bp context --format=compact');
+    // ensure this is a REAL compact output, not the old placeholder
+    expect(text).not.toContain('bp context --format=compact');
+    expect(text).toContain('specs/');
   });
 
   it('step 3: the bp context --format=compact output covers every spec domain and both conventions', () => {
@@ -201,10 +223,6 @@ describe('e2e: bp-context-injection (generated Extension runtime)', () => {
   });
 
   it('step 4: planner session_start appends ## Roadmap State section [sub-agent discrimination]', async () => {
-    writeRel(
-      'bp/state.md',
-      'Milestone: M1\nPhase: Wave 4\nNext step: T-43\ne2e-fixture\n',
-    );
     const fake = makeFakeApi();
     bpExtension(fake.api);
     await fake.invoke(
@@ -219,8 +237,7 @@ describe('e2e: bp-context-injection (generated Extension runtime)', () => {
     expect(fake.sent).toHaveLength(1);
     const text = fake.sent[0].content[0].text;
     expect(text).toContain('## Roadmap State');
-    expect(text).toContain('Milestone: M1');
-    expect(text).toContain('Next step: T-43');
+    expect(text).toContain('Active: demo');
     // planner branch must NOT include executor/reviewer augmentation
     expect(text).not.toContain('> GUARD-RAIL:');
     expect(text).not.toContain('## Invariants');
@@ -278,11 +295,7 @@ describe('e2e: bp-context-injection (generated Extension runtime)', () => {
     expect(text).not.toContain('> GUARD-RAIL:');
   });
 
-  it('step 7: before_agent_start returns a bp-workflow-state custom message derived from bp/state.md', async () => {
-    writeRel(
-      'bp/state.md',
-      'Milestone: M1\nPhase: Wave 4\nNext step: T-43\ne2e-before-agent\n',
-    );
+  it('step 7: before_agent_start returns a bp-workflow-state custom message derived from bp state', async () => {
     const fake = makeFakeApi();
     bpExtension(fake.api);
     const result = (await fake.invoke('before_agent_start', {}, { cwd: testDir })) as
@@ -293,8 +306,8 @@ describe('e2e: bp-context-injection (generated Extension runtime)', () => {
     expect(result!.message!.customType).toBe('bp-workflow-state');
     expect(result!.message!.role).toBe('custom');
     expect(typeof result!.message!.timestamp).toBe('number');
-    expect(result!.message!.content[0].text).toContain('Milestone: M1');
-    expect(result!.message!.content[0].text).toContain('e2e-before-agent');
+    expect(result!.message!.content[0].text).toContain('M1:');
+    expect(result!.message!.content[0].text).toContain('Next');
   });
 
   it('step 8: context handler returns undefined when no compaction occurred', async () => {
@@ -305,10 +318,6 @@ describe('e2e: bp-context-injection (generated Extension runtime)', () => {
   });
 
   it('step 9: context handler re-injects workflow state after compaction when no recent bp-workflow-state exists', async () => {
-    writeRel(
-      'bp/state.md',
-      'Milestone: M1\nPhase: Wave 4\nNext step: T-43\npost-compaction\n',
-    );
     const fake = makeFakeApi();
     bpExtension(fake.api);
     const result = (await fake.invoke(
@@ -323,7 +332,7 @@ describe('e2e: bp-context-injection (generated Extension runtime)', () => {
     )) as { message?: BpMessage } | undefined;
     expect(result).toBeDefined();
     expect(result?.message?.customType).toBe('bp-workflow-state');
-    expect(result?.message?.content[0].text).toContain('post-compaction');
+    expect(result!.message!.content[0].text).toContain('M1:');
   });
 
   it('step 10: BP_HOOKS=0 short-circuits every handler', async () => {

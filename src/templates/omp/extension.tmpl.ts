@@ -23,6 +23,7 @@ export const EXTENSION_SOURCE = `/**
  * Config skip: handlers no-op when bp/config.yaml is missing at ctx.cwd.
  */
 import { existsSync, readFileSync } from "node:fs";
+import { execSync } from "node:child_process";
 import { join } from "node:path";
 
 function isDisabled() {
@@ -42,13 +43,18 @@ function detectAgentType(ctx) {
   return "default";
 }
 
-function readStateContent(cwd) {
-  const path = join(cwd, "bp", "state.md");
-  if (!existsSync(path)) return "";
+function readBpState(cwd) {
   try {
-    return readFileSync(path, "utf-8");
+    var out = execSync("bp state --json", { cwd: cwd, encoding: "utf-8", timeout: 3000 });
+    var st = JSON.parse(out);
+    var lines = [];
+    if (st.milestone) lines.push(st.milestone.id + ": " + st.milestone.name + " [" + st.milestone.status + "]");
+    if (st.phase) lines.push("  Phase " + st.phase.id + ": " + st.phase.name + " [" + st.phase.status + "]");
+    if (st.activeChange) lines.push("  Active: " + st.activeChange.name + " [" + st.activeChange.status + "]");
+    if (st.nextAction) lines.push("  Next: " + st.nextAction);
+    return lines.join("\\n") || "_no state available_";
   } catch {
-    return "";
+    return "_no state available_";
   }
 }
 
@@ -81,11 +87,12 @@ function generateCompactBlock(cwd) {
   if (!cwd || !hasBpConfig(cwd)) {
     return "<bp-context>\\n</bp-context>";
   }
-  // The full compact payload is produced by \`bp context --format=compact\`.
-  // The runtime extension emits a marker so the agent knows to invoke
-  // \`bp context\` if it needs the full body. This keeps the extension
-  // byte-deterministic and avoids re-implementing spec-injector in JS.
-  return "<bp-context>\\n<see bp context --format=compact>\\n</bp-context>";
+  try {
+    var out = execSync("bp context plan --format=compact", { cwd: cwd, encoding: "utf-8", timeout: 5000 });
+    return out.trim() || "<bp-context>\\n</bp-context>";
+  } catch {
+    return "<bp-context>\\n</bp-context>";
+  }
 }
 
 function buildMessage(customType, text) {
@@ -108,8 +115,8 @@ export default function bpExtension(api) {
     var bpDir = join(cwd, "bp");
 
     if (agentType === "planner") {
-      var state = readStateContent(cwd).trim();
-      body = body + "\\n\\n## Roadmap State\\n" + (state || "_no state.md present_");
+      var state = readBpState(cwd);
+      body = body + "\\n\\n## Roadmap State\\n" + state;
     } else if (agentType === "executor") {
       var rows = readContextRows(bpDir, activeChangeName);
       var lines = rows.length === 0
@@ -139,7 +146,7 @@ export default function bpExtension(api) {
     if (isDisabled()) return;
     var cwd = (ctx && ctx.cwd) || process.cwd();
     if (!hasBpConfig(cwd)) return;
-    var state = readStateContent(cwd).trim() || "_no state.md present_";
+    var state = readBpState(cwd);
     return {
       message: buildMessage("bp-workflow-state", state),
     };
@@ -157,7 +164,7 @@ export default function bpExtension(api) {
       return m.customType === "bp-workflow-state";
     });
     if (hasWorkflowState) return;
-    var state = readStateContent(cwd).trim() || "_no state.md present_";
+    var state = readBpState(cwd);
     return {
       message: buildMessage("bp-workflow-state", state),
     };
