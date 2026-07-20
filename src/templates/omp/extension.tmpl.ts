@@ -105,6 +105,7 @@ function buildMessage(customType, text) {
 }
 
 export default function bpExtension(api) {
+  var _bpStateInjected = false;
   api.on("session_start", function (event, ctx) {
     if (isDisabled()) return;
     var cwd = (ctx && ctx.cwd) || process.cwd();
@@ -144,6 +145,8 @@ export default function bpExtension(api) {
 
   api.on("before_agent_start", function (event, ctx) {
     if (isDisabled()) return;
+    if (_bpStateInjected) return; // once per session (context handler re-injects on compaction)
+    _bpStateInjected = true;
     var cwd = (ctx && ctx.cwd) || process.cwd();
     if (!hasBpConfig(cwd)) return;
     var state = readBpState(cwd);
