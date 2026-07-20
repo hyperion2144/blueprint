@@ -200,12 +200,6 @@ Each task (T-N) is **one independently testable behavioral path**.
 
 \`\`\`
 
-**Bad tasks:**
-\`\`\`
-T-1: Implement ThemeContext (too broad - multiple behaviors)
-T-2: Write tests for ThemeContext (tests are part of TDD, not separate tasks)
-T-3: Add theme support (too vague)
-\`\`\`
 
 **Rules:**
 - Each public behavior path of a DS gets its own task.
