@@ -463,6 +463,8 @@ DS-3: Add tests (tests are per-task, not per-component)
 - Every PR must be referenced by at least one DS.
 - Each DS gets \`refs: PR-{id}\` and \`Source: PR-{id} (proposal.md)\`.
 
+**关键:每个 DS-N 的「详细设计」段必须填充到 executor 可以直接实现的程度。** 只写接口签名不够——必须包含状态迁移、错误处理、副作用等实现细节。根据组件类型选择合适的内容(数据组件写数据流,UI 组件写 Props/事件/状态,API 写校验规则和错误码)。
+
 #### Architecture Decisions (D-N)
 
 Record decisions that have alternatives. Don't record trivial choices.
@@ -2179,6 +2181,8 @@ DS-3: Add tests (tests are per-task, not per-component)
 - Multiple PRs may map to the same DS if they share a module.
 - Every PR must be referenced by at least one DS.
 - Each DS gets \`refs: PR-{id}\` and \`Source: PR-{id} (proposal.md)\`.
+
+**关键:每个 DS-N 的「详细设计」段必须填充到 executor 可以直接实现的程度。** 只写接口签名不够——必须包含状态迁移、错误处理、副作用等实现细节。根据组件类型选择合适的内容(数据组件写数据流,UI 组件写 Props/事件/状态,API 写校验规则和错误码)。
 
 #### Architecture Decisions (D-N)
 
@@ -3910,6 +3914,8 @@ DS-3: Add tests (tests are per-task, not per-component)
 - Multiple PRs may map to the same DS if they share a module.
 - Every PR must be referenced by at least one DS.
 - Each DS gets \`refs: PR-{id}\` and \`Source: PR-{id} (proposal.md)\`.
+
+**关键:每个 DS-N 的「详细设计」段必须填充到 executor 可以直接实现的程度。** 只写接口签名不够——必须包含状态迁移、错误处理、副作用等实现细节。根据组件类型选择合适的内容(数据组件写数据流,UI 组件写 Props/事件/状态,API 写校验规则和错误码)。
 
 #### Architecture Decisions (D-N)
 

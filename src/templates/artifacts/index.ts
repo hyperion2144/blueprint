@@ -134,12 +134,46 @@ export const DESIGN_TEMPLATE = `# Design: {{name}}
 - **Responsibility**: {{what this component is responsible for - one sentence}}
 - **Key Interfaces**: {{public functions/classes this component exposes}}
 
+#### 详细设计
+
+<!--
+  必填。填充粒度必须达到 executor 可以直接实现而不需要猜测的程度。
+  根据组件的性质选择合适的内容:
+
+  - 数据/状态组件:内部状态迁移、数据结构、读写路径、错误场景
+  - UI 组件:Props、事件、状态(loading/empty/error/success)、布局约束
+  - API/CLI:参数校验规则、响应格式、错误码、认证要求
+  - 工具/库:算法说明、配置选项、输入输出契约
+
+  不要只重复 Key Interfaces 的内容。
+  这是 executor 实现时的最终参考。
+-->
+
+{{detailed-design}}
+
 ### DS-2: {{component-name}}
 
 - **Refs**: PR-{{id}}, PR-{{id}}
 - **Source**: PR-{{id}} (proposal.md)
 - **Responsibility**: {{responsibility}}
 - **Key Interfaces**: {{interfaces}}
+
+#### 详细设计
+
+<!--
+  必填。填充粒度必须达到 executor 可以直接实现而不需要猜测的程度。
+  根据组件的性质选择合适的内容:
+
+  - 数据/状态组件:内部状态迁移、数据结构、读写路径、错误场景
+  - UI 组件:Props、事件、状态(loading/empty/error/success)、布局约束
+  - API/CLI:参数校验规则、响应格式、错误码、认证要求
+  - 工具/库:算法说明、配置选项、输入输出契约
+
+  不要只重复 Key Interfaces 的内容。
+  这是 executor 实现时的最终参考。
+-->
+
+{{detailed-design}}
 
 ## Architecture Decisions
 
