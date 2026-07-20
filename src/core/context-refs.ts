@@ -80,9 +80,9 @@ export function parseContextJsonl(content: string): ParseContextJsonlResult {
 }
 
 function contextFilePath(bpDir: string, file: string): string {
-  // All file paths in context.jsonl are repo-relative (from project root).
-  // Normalize backslash path separators for Windows compat.
-  return join(bpDir, '..', file.replace(/\\/g, '/'));
+  // All paths in context.jsonl are repo-relative (from project root).
+  // path.join handles / and \ on all platforms — no manual normalization needed.
+  return join(bpDir, '..', file);
 }
 
 function lineCount(content: string): number {
