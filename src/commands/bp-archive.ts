@@ -1,7 +1,7 @@
 /**
- * bp archive [name] [--force] — verify & archive a change
+ * bp archive [name] — verify & archive a change
  *
- * 1. Verifies review.md exists and verdict is PASS (unless --force).
+ * 1. Verifies review.md exists and verdict is PASS.
  * 2. Merges each delta spec (specs/<domain>/spec.md) into the global spec
  *    (bp/specs/<domain>/spec.md) via mergeDeltaSpec().
  * 3. Archives the change directory to bp/changes/archive/<date>-<name>/.
@@ -19,7 +19,6 @@ export function register(program: any): void {
   program
     .command('archive [name]')
     .description('Archive a change (merge delta specs, archive dir, update roadmap)')
-    .option('--force', 'Skip review verification')
     .action(archiveHandler);
 }
 
@@ -53,7 +52,7 @@ function gateContextJsonl(bpDir: string, changeName: string): boolean {
   return false;
 }
 
-function archiveHandler(name: string, options: { force?: boolean }): void {
+function archiveHandler(name: string): void {
   const bpDir = findBpDir();
   if (!bpDir) {
     console.error('Not in a blueprint project. Run "bp init" first.');
@@ -69,36 +68,31 @@ function archiveHandler(name: string, options: { force?: boolean }): void {
     process.exit(1);
   }
   if (!gateContextJsonl(bpDir, changeName)) process.exit(2);
+  // ---- Step 2: Verify review status ----
+  const reviewPath = join(changePath, 'review.md');
+  if (!existsSync(reviewPath)) {
+    console.error(`Cannot archive: review.md not found for "${changeName}".`);
+    console.error('Run "bp review" first.');
+    process.exit(1);
+  }
 
-  // ---- Step 2: Verify review status (unless --force) ----
-  if (!options.force) {
-    const reviewPath = join(changePath, 'review.md');
-    if (!existsSync(reviewPath)) {
-      console.error(`Cannot archive: review.md not found for "${changeName}".`);
-      console.error('Run "bp review" first, or use --force to skip review check.');
-      process.exit(1);
-    }
+  const reviewContent = readFileSync(reviewPath, 'utf-8');
+  const verdictMatch = reviewContent.match(
+    /## Overall Verdict:\s*(PASS|FAIL|NEEDS_REVISION)/i,
+  );
+  const verdict = verdictMatch ? verdictMatch[1].toUpperCase() : 'UNKNOWN';
 
-    const reviewContent = readFileSync(reviewPath, 'utf-8');
-    const verdictMatch = reviewContent.match(
-      /## Overall Verdict:\s*(PASS|FAIL|NEEDS_REVISION)/i,
-    );
-    const verdict = verdictMatch ? verdictMatch[1].toUpperCase() : 'UNKNOWN';
+  if (verdict !== 'PASS') {
+    console.error(`Cannot archive: review verdict is ${verdict} (expected PASS).`);
+    console.error(`  Fix issues first: bp apply --fix ${changeName}`);
+    process.exit(1);
+  }
 
-    if (verdict !== 'PASS') {
-      console.error(`Cannot archive: review verdict is ${verdict} (expected PASS).`);
-      console.error(`  Fix issues first: bp apply --fix ${changeName}`);
-      console.error(`  Or force archive: bp archive ${changeName} --force`);
-      process.exit(1);
-    }
-
-    const unresolved = (reviewContent.match(/^- \[ \] [RQGD]\d+/gm) || []).length;
-    if (unresolved > 0) {
-      console.error(`Cannot archive: ${unresolved} unresolved issue(s) in review.md.`);
-      console.error(`  Fix issues first: bp apply --fix ${changeName}`);
-      console.error(`  Or force archive: bp archive ${changeName} --force`);
-      process.exit(1);
-    }
+  const unresolved = (reviewContent.match(/^- \[ \] [RQGD]\d+/gm) || []).length;
+  if (unresolved > 0) {
+    console.error(`Cannot archive: ${unresolved} unresolved issue(s) in review.md.`);
+    console.error(`  Fix issues first: bp apply --fix ${changeName}`);
+    process.exit(1);
   }
 
   // ---- Step 3: Merge delta specs into global specs ----

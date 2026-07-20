@@ -113,7 +113,12 @@ describe('v2 lifecycle: init -> propose -> plan -> apply -> review -> archive', 
 
   it('step 8: bp continue when no active changes shows hint', () => {
     // Archive the other active change so none remain
-    execSync(`node ${cliPath} archive add-auth --force`, { encoding: 'utf-8', cwd: testDir });
+    execSync(
+      `node ${cliPath} review add-auth 2>/dev/null; ` +
+      `node ${cliPath} archive add-auth 2>/dev/null; ` +
+      `rm -rf bp/changes/add-auth`,
+      { encoding: 'utf-8', cwd: testDir },
+    );
     const output = execSync(`node ${cliPath} continue`, { encoding: 'utf-8', cwd: testDir });
     expect(output).toContain('roadmap');
   });
