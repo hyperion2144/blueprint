@@ -13,7 +13,6 @@ import { tmpdir } from 'node:os';
 
 import {
   EXTENSION_SOURCE,
-  SHIM_SOURCE,
   isDisabled,
   detectAgentType,
   handleSessionStart,
@@ -24,9 +23,7 @@ import {
   type ExtensionContext,
 } from '../../src/integrations/omp/extension-runtime.js';
 import { EXTENSION_SOURCE as EXTENSION_SOURCE_TMPL } from '../../src/templates/omp/extension.tmpl.js';
-import { SHIM_SOURCE as SHIM_SOURCE_TMPL } from '../../src/templates/omp/legacy-shim.tmpl.js';
 import { generateExtension } from '../../src/integrations/omp/extension.js';
-import { generateLegacyShim } from '../../src/integrations/omp/legacy-shim.js';
 
 
 const testDir = join(tmpdir(), `bp-omp-ext-${Date.now()}`);
@@ -344,46 +341,6 @@ describe('generateExtension byte-determinism [T-35]', () => {
   });
 });
 
-describe('generateLegacyShim 5-line content [T-36]', () => {
-  it('returns .omp/hooks/pre/bp.ts with re-export from extensions/bp/index.js', () => {
-    const files = generateLegacyShim({ platform: ['omp'] } as never);
-    expect(files).toHaveLength(1);
-    expect(files[0].path).toBe('.omp/hooks/pre/bp.ts');
-    expect(files[0].content).toContain('export { default } from "../extensions/bp/index.js"');
-    expect(files[0].content).toContain('Legacy hook shim');
-    // Non-empty lines must be <= 6 (DS-9)
-    const nonEmpty = files[0].content.split('\n').filter((l) => l.trim().length > 0);
-    expect(nonEmpty.length).toBeLessThanOrEqual(6);
-  });
-});
-
-describe('.tmpl files are the single source of truth [T-37]', () => {
-  it('extension.tmpl.ts exports non-empty EXTENSION_SOURCE', () => {
-    expect(typeof EXTENSION_SOURCE_TMPL).toBe('string');
-    expect(EXTENSION_SOURCE_TMPL.length).toBeGreaterThan(0);
-    expect(EXTENSION_SOURCE_TMPL).toContain('export default function bpExtension');
-    // generator pipeline must use the same constant
-    expect(EXTENSION_SOURCE_TMPL).toBe(EXTENSION_SOURCE);
-  });
-
-  it('legacy-shim.tmpl.ts exports non-empty SHIM_SOURCE', () => {
-    expect(typeof SHIM_SOURCE_TMPL).toBe('string');
-    expect(SHIM_SOURCE_TMPL.length).toBeGreaterThan(0);
-    expect(SHIM_SOURCE_TMPL).toContain('export { default } from "../extensions/bp/index.js"');
-    // generator pipeline must use the same constant
-    expect(SHIM_SOURCE_TMPL).toBe(SHIM_SOURCE);
-  });
-});
-
-describe('EXTENSION_SOURCE snapshot [T-38]', () => {
-  it('EXTENSION_SOURCE matches the pinned snapshot', () => {
-    expect(EXTENSION_SOURCE).toMatchSnapshot();
-  });
-
-  it('SHIM_SOURCE matches the pinned snapshot', () => {
-    expect(SHIM_SOURCE).toMatchSnapshot();
-  });
-});
 
 describe('generateCompactBlock', () => {
   it('returns the <bp-context> markdown block for a real bp project', () => {

@@ -10,14 +10,11 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { EXTENSION_SOURCE } from '../../templates/omp/extension.tmpl.js';
-import { SHIM_SOURCE } from '../../templates/omp/legacy-shim.tmpl.js';
 import { generateCompactContext, formatContextCompact } from '../../core/spec-injector.js';
 import { parseContextJsonl } from '../../core/context-refs.js';
 import type { ContextRefRow } from '../../types/context-refs.js';
 import { deriveState } from '../../commands/bp-state.js';
-
-export { EXTENSION_SOURCE, SHIM_SOURCE };
+export { EXTENSION_SOURCE } from '../../templates/omp/extension.tmpl.js';
 
 /** Content block the OMP API expects in `sendMessage` and `context.message`. */
 export interface BpTextBlock {

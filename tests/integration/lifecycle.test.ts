@@ -1,12 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { execSync } from 'node:child_process';
-import { existsSync, readFileSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { EXTENSION_SOURCE } from '../../src/templates/omp/extension.tmpl.js';
-import { SHIM_SOURCE } from '../../src/templates/omp/legacy-shim.tmpl.js';
-
-
 const cliPath = join(process.cwd(), 'bin/cli.js');
 let testDir: string;
 
@@ -123,32 +120,18 @@ describe('v2 lifecycle: init -> propose -> plan -> apply -> review -> archive', 
     expect(output).toContain('roadmap');
   });
 
-  it('step 9: bp update regenerates .omp/extensions/bp/index.ts and 5-line legacy shim [T-44]', () => {
+  it('step 9: bp update regenerates .omp/extensions/bp/index.ts [T-44]', () => {
     // Re-run bp update on the test fixture to regenerate platform files
     execSync(`node ${cliPath} update --dir bp`, { encoding: 'utf-8', cwd: testDir });
 
     const extensionPath = join(testDir, '.omp', 'extensions', 'bp', 'index.ts');
-    const shimPath = join(testDir, '.omp', 'hooks', 'pre', 'bp.ts');
 
     // (a) .omp/extensions/bp/index.ts exists
     expect(existsSync(extensionPath)).toBe(true);
 
-    // (b) .omp/hooks/pre/bp.ts exists as 5-line re-export shim
-    expect(existsSync(shimPath)).toBe(true);
-    const shimContent = readFileSync(shimPath, 'utf-8');
-    expect(shimContent).toContain('export { default } from "../extensions/bp/index.js"');
-    // Non-empty lines must be <= 6 (DS-9 — design allows leading docblock + export)
-    const nonEmptyShimLines = shimContent.split('\n').filter((l) => l.trim().length > 0);
-    expect(nonEmptyShimLines.length).toBeLessThanOrEqual(6);
-
-    // (c) Generated Extension source matches the EXTENSION_SOURCE exported
+    // (b) Generated Extension source matches the EXTENSION_SOURCE exported
     //     from src/templates/omp/extension.tmpl.ts (single source of truth).
-    //     Vitest's TS loader resolves the .ts template file at runtime, so
-    //     we can import it directly and assert byte-equality with the
-    //     freshly generated .omp/extensions/bp/index.ts. This is the same
-    //     byte-determinism check as the snapshot test [T-38].
     const extensionContent = readFileSync(extensionPath, 'utf-8');
     expect(extensionContent).toBe(EXTENSION_SOURCE);
-    expect(shimContent).toBe(SHIM_SOURCE);
   });
 });

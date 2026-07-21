@@ -32,7 +32,6 @@ export function registerOmpProvider(): void {
         ...generateAllCommands(config),
         ...generateAllAgents(config),
         ...generateExtension(config),
-        ...generateLegacyShim(config),
       ];
       if (!supportsCommands) {
         files.push(...generateAllSkills(config));
@@ -48,5 +47,3 @@ export { generateAllCommands, STEP_DEFS } from './commands.js';
 export { generateAllAgents, AGENT_DEFS } from './agents.js';
 export { generateAllSkills, SKILL_DEFS } from './skills.js';
 export { generateExtension, EXTENSION_PATH } from './extension.js';
-export { generateLegacyShim, LEGACY_SHIM_PATH } from './legacy-shim.js';
-export { EXTENSION_SOURCE, SHIM_SOURCE } from './extension-runtime.js';
