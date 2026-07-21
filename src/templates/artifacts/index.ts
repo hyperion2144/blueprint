@@ -653,6 +653,7 @@ export const ROADMAP_TEMPLATE = `# Roadmap: {{project-name}}
 ### Phase: P1.1 - {{phase-name}} [{{STATUS}}]
 
 - **Goal**: {{what this phase delivers}}
+- **Description**: {{what work this phase involves — key areas, known constraints, estimated scope}}
 - **Spec domain**: {{domain-name}}
 - **Changes**: {{completed}}/{{total}} completed
 - **Status**: {{NOT_STARTED | IN_PROGRESS | COMPLETED}}
@@ -668,6 +669,7 @@ export const ROADMAP_TEMPLATE = `# Roadmap: {{project-name}}
 ### Phase: P1.2 - {{phase-name}} [NOT_STARTED]
 
 - **Goal**: {{what this phase delivers}}
+- **Description**: {{what work this phase involves — key areas, known constraints, estimated scope}}
 - **Spec domain**: {{domain-name}}
 - **Changes**: 0/{{total}}
 - **Status**: NOT_STARTED
