@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ContextRefRowSchema } from '../../src/types/context-refs.js';
-import { parseContextJsonl, validateContextJsonl } from '../../src/core/context-refs.js';
+import { ContextRefRowSchema } from '../../src/types/context-jsonl-io.js';
+import { parseContextJsonl, validateContextJsonl } from '../../src/core/context-jsonl-io.js';
 
 describe('context.jsonl row schema', () => {
   it('accepts a row with required file and reason fields', () => {

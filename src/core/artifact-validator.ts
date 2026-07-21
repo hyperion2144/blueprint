@@ -5,8 +5,8 @@
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { parseContextJsonl, validateContextJsonl } from './context-refs.js';
-import type { ContextJsonlError, ContextRefRow } from '../types/context-refs.js';
+import { parseContextJsonl, validateContextJsonl } from './context-jsonl-io.js';
+import type { ContextJsonlError, ContextRefRow } from '../types/context-jsonl-io.js';
 
 export interface ValidationResult {
   valid: boolean;

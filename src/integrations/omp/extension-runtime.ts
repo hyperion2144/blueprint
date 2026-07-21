@@ -5,14 +5,17 @@
  * exercises directly. The handlers inlined inside `EXTENSION_SOURCE` and
  * the exported helpers here are kept in lockstep by the T-26..T-37
  * behavior tasks; the snapshot test (T-38) pins the bundled source.
+ *
+ * WARNING: logic mirrors the inline ES5 in src/templates/omp/extension.tmpl.ts.
+ * If you change logic here, you MUST update extension.tmpl.ts too (and vice versa).
  */
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { generateCompactContext, formatContextCompact } from '../../core/spec-injector.js';
-import { parseContextJsonl } from '../../core/context-refs.js';
-import type { ContextRefRow } from '../../types/context-refs.js';
+import { parseContextJsonl } from '../../core/context-jsonl-io.js';
+import type { ContextRefRow } from '../../types/context-jsonl-io.js';
 import { deriveState } from '../../commands/bp-state.js';
 export { EXTENSION_SOURCE } from '../../templates/omp/extension.tmpl.js';
 

@@ -78,7 +78,7 @@ async function initHandler(options: {
   configContent = configContent.replace(/\{\{date\}\}/g, date);
   configContent = configContent.replace(/\{\{tech-stack\}\}/g, wizard.context || 'TypeScript');
   configContent = configContent.replace(/\{\{test-framework\}\}/g, 'vitest');
-  configContent = configContent.replace(/\{\{response-language\}\}/g, 'English');
+  configContent = configContent.replace(/\{\{artifact-language\}\}/g, 'English');
   configContent = configContent.replace(/profile: standard/, `profile: ${profile}`);
   configContent = configContent.replace(/platform:[\s\S]*?(?=\n\n)/, `platform:\n${platform.map((p) => `  - ${p}`).join('\n')}`);
   configContent = configContent.replace(/brownfield: false/, `brownfield: ${isBrownfield}`);

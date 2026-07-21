@@ -14,14 +14,13 @@ describe('generateAgentSkills', () => {
     }
   });
 
-  it('replaces $1 with [BP:CHANGE_NAME] for change-scoped steps (e.g. plan)', () => {
+  it('preserves $ARGUMENTS for runtime replacement (consistent with OMP and Claude Code)', () => {
     const config = {} as ProjectConfig;
     const files = generateAgentSkills(config);
     const planFile = files.find((f) => f.path.includes('bp-plan'));
     expect(planFile).toBeDefined();
-    expect(planFile!.content).toContain('[BP:CHANGE_NAME]');
-    expect(planFile!.content).not.toContain('$1');
-    expect(planFile!.content).not.toContain('$ARGUMENTS');
+    expect(planFile!.content).toContain('$ARGUMENTS');
+    expect(planFile!.content).not.toContain('[BP:CHANGE_NAME]');
   });
 
   it('generates propose skill file with frontmatter', () => {

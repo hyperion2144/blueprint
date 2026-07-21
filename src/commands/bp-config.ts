@@ -1,10 +1,12 @@
+import type { Command } from 'commander';
+
 /**
  * bp config — 查看/修改配置
  */
 
 import { findBlueprintDir } from './_utils.js';
 import { loadConfig, updateConfig, ProjectConfigSchema } from '../core/config.js';
-export function register(program: any): void {
+export function register(program: Command): void {
   const cmd = program
     .command('config')
     .description('View/modify configuration');

@@ -11,6 +11,7 @@ export interface AgentAgentDef {
   role: string;
   description: string;
   tools: string[];
+  model?: string;
 }
 
 export const AGENT_DEFS: AgentAgentDef[] = [
@@ -28,13 +29,17 @@ export function generateAgentAgent(def: AgentAgentDef): string {
     frontmatter.push('tools:');
     for (const t of def.tools) frontmatter.push(`  - ${t}`);
   }
+  if (def.model) frontmatter.push(`model: ${def.model}`);
   frontmatter.push('---', '', body);
   return frontmatter.join('\n');
 }
 
-export function generateAgentAgents(_config: ProjectConfig): { path: string; content: string }[] {
-  return AGENT_DEFS.map((def) => ({
-    path: `.agent/agents/bp-${def.role}.md`,
-    content: generateAgentAgent(def),
-  }));
+export function generateAgentAgents(config: ProjectConfig): { path: string; content: string }[] {
+  return AGENT_DEFS.map((def) => {
+    const model = config.models?.[def.role];
+    return {
+      path: `.agent/agents/bp-${def.role}.md`,
+      content: generateAgentAgent(model ? { ...def, model } : def),
+    };
+  });
 }

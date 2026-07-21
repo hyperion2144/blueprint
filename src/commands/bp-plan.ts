@@ -8,9 +8,8 @@
 
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
-import { findBpDir } from './_utils.js';
+import { findBpDir, gateContextJsonl } from './_utils.js';
 import { buildContextJsonl } from '../core/context-builder.js';
-import { validateContextJsonlFile } from '../core/artifact-validator.js';
 import { getWorkflowInstructions } from '../core/continue.js';
 import type { Command } from 'commander';
 
@@ -64,18 +63,3 @@ function writeContextJsonl(bpDir: string, changeName: string): void {
   console.log(`context.jsonl written for ${changeName} (${content.split('\n').filter(Boolean).length} rows)`);
 }
 
-/** Gate: exit non-zero if context.jsonl is invalid for the requested phase. */
-function gateContextJsonl(
-  bpDir: string,
-  changeName: string,
-  phase: 'plan' | 'apply' | 'review' | 'archive',
-): boolean {
-  const contextPath = join(bpDir, 'changes', changeName, 'context.jsonl');
-  if (!existsSync(contextPath)) return true;
-  const result = validateContextJsonlFile(contextPath, bpDir, phase);
-  if (result.valid) return true;
-  for (const err of result.errors) {
-    console.error(`${contextPath}:${err.line}: [${err.code}] ${err.message}`);
-  }
-  return false;
-}

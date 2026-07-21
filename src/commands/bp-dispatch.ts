@@ -7,6 +7,7 @@
 
 import { join } from 'node:path';
 import { loadConfig } from '../core/config.js';
+import type { Command } from 'commander';
 
 interface IsolationInfo {
   type: 'auto' | 'param' | 'none';
@@ -47,7 +48,7 @@ interface DispatchFormat {
 const ROLE_TEMPLATES: Record<string, string[]> = {
   planner: ['design', 'tasks', 'spec', 'global-spec'],
   executor: [],  // produces code, no artifact templates
-  reviewer: ['spec-review', 'quality-review', 'goal-review'],
+  reviewer: ['review'],
 };
 
 const FORMATS: Record<string, DispatchFormat> = {
@@ -76,7 +77,7 @@ const FORMATS: Record<string, DispatchFormat> = {
   },
 };
 
-export function register(program: any): void {
+export function register(program: Command): void {
   program
     .command('dispatch <role>')
     .description('Output platform-specific sub-agent dispatch instructions')

@@ -10,49 +10,23 @@
  */
 
 import { existsSync, readFileSync, writeFileSync, readdirSync, mkdirSync } from 'node:fs';
+import { execSync } from 'node:child_process';
 import { join } from 'node:path';
-import { findBpDir } from './_utils.js';
-import { listActiveChanges, changeDir, archiveChangeDir } from '../core/file-tree.js';
+import { findBpDir, gateContextJsonl, resolveChangeName } from './_utils.js';
+import { changeDir, archiveChangeDir } from '../core/file-tree.js';
 import { mergeDeltaSpec } from '../core/delta-merge.js';
-import { validateContextJsonlFile } from '../core/artifact-validator.js';
-export function register(program: any): void {
+import type { Command } from 'commander';
+export function register(program: Command): void {
   program
     .command('archive [name]')
     .description('Archive a change (merge delta specs, archive dir, update roadmap)')
+    .option('--dry-run', 'Preview merge without writing — checks for conflicts')
     .action(archiveHandler);
 }
 
-function resolveChangeName(bpDir: string, name?: string): string | null {
-  if (name) return name;
 
-  const active = listActiveChanges(bpDir);
-  if (active.length === 0) {
-    console.error('No active changes found.');
-    return null;
-  }
-  if (active.length === 1) return active[0];
 
-  console.log('Multiple active changes:');
-  for (const c of active) {
-    console.log(`  - ${c}`);
-  }
-  console.log('\nSpecify a change: bp archive <name>');
-  return null;
-}
-
-/** Gate: exit non-zero if context.jsonl is invalid for the archive phase. */
-function gateContextJsonl(bpDir: string, changeName: string): boolean {
-  const contextPath = join(bpDir, 'changes', changeName, 'context.jsonl');
-  if (!existsSync(contextPath)) return true;
-  const result = validateContextJsonlFile(contextPath, bpDir, 'archive');
-  if (result.valid) return true;
-  for (const err of result.errors) {
-    console.error(`${contextPath}:${err.line}: [${err.code}] ${err.message}`);
-  }
-  return false;
-}
-
-function archiveHandler(name: string): void {
+function archiveHandler(name: string, options?: { dryRun?: boolean }): void {
   const bpDir = findBpDir();
   if (!bpDir) {
     console.error('Not in a blueprint project. Run "bp init" first.');
@@ -67,7 +41,62 @@ function archiveHandler(name: string): void {
     console.error(`Change "${changeName}" not found.`);
     process.exit(1);
   }
-  if (!gateContextJsonl(bpDir, changeName)) process.exit(2);
+  if (!gateContextJsonl(bpDir, changeName, 'archive')) process.exit(2);
+
+  // ---- Dry-run: preview merge without writing ----
+  if (options?.dryRun) {
+    const specsDir = join(changePath, 'specs');
+    let checkedCount = 0;
+    let hasConflict = false;
+
+    if (existsSync(specsDir)) {
+      const entries = readdirSync(specsDir, { withFileTypes: true });
+
+      for (const entry of entries) {
+        if (!entry.isDirectory()) continue;
+
+        const domain = entry.name;
+        const deltaSpecPath = join(specsDir, domain, 'spec.md');
+        if (!existsSync(deltaSpecPath)) continue;
+
+        const globalSpecPath = join(bpDir, 'specs', domain, 'spec.md');
+        const baseSpec = existsSync(globalSpecPath)
+          ? readFileSync(globalSpecPath, 'utf-8')
+          : `# ${domain}\n\n## Requirements\n\n`;
+
+        const deltaSpec = readFileSync(deltaSpecPath, 'utf-8');
+        const result = mergeDeltaSpec(baseSpec, deltaSpec);
+
+        if (result.type === 'conflict') {
+          console.error(`\nMerge conflict in specs/${domain}/spec.md:`);
+          for (const conflict of result.conflicts) {
+            console.error(`  - ${conflict.section}: ${conflict.message}`);
+          }
+          hasConflict = true;
+        } else {
+          console.log(`  ✓ No conflict in specs/${domain}/spec.md`);
+        }
+        checkedCount++;
+      }
+    }
+
+    if (hasConflict) {
+      console.error('\nMerge conflicts detected — resolve before archiving.');
+      process.exit(1);
+    }
+
+    console.log(`\nSafe to archive: ${checkedCount} delta spec(s) can merge without conflict`);
+    process.exit(0);
+  }
+
+  // F5a: Warn if working tree has uncommitted changes outside bp/
+  try {
+    const status = execSync('git status --porcelain', { cwd: join(bpDir, '..'), encoding: 'utf-8' });
+    const nonBpChanges = status.split('\n').filter((l: string) => l.trim() && !l.includes('bp/'));
+    if (nonBpChanges.length > 0) {
+      console.warn(`Warning: ${nonBpChanges.length} uncommitted file(s) outside bp/ detected. These may be archived alongside the change.`);
+    }
+  } catch { /* git not available — skip */ }
   // ---- Step 2: Verify review status ----
   const reviewPath = join(changePath, 'review.md');
   if (!existsSync(reviewPath)) {

@@ -7,14 +7,14 @@
 
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { findBpDir } from './_utils.js';
+import { findBpDir, gateContextJsonl, resolveChangeName } from './_utils.js';
 import { loadSchema } from '../core/schema.js';
-import { listActiveChanges, changeDir } from '../core/file-tree.js';
+import { changeDir } from '../core/file-tree.js';
 import { checkArtifacts } from '../core/continue.js';
-import { validateContextJsonlFile } from '../core/artifact-validator.js';
+import type { Command } from 'commander';
 import { WORKFLOW_REGISTRY } from '../templates/workflows/registry.js';
 
-export function register(program: any): void {
+export function register(program: Command): void {
   program
     .command('review [name]')
     .description('Triple review of a change — outputs dispatch instructions')
@@ -64,36 +64,4 @@ function reviewHandler(name: string | undefined, options: { fix?: boolean }): vo
   console.log(reviewTemplate.content);
 }
 
-function resolveChangeName(bpDir: string, name?: string): string | null {
-  if (name) return name;
 
-  const active = listActiveChanges(bpDir);
-  if (active.length === 0) {
-    console.error('No active changes found.');
-    return null;
-  }
-  if (active.length === 1) return active[0];
-
-  console.log('Multiple active changes:');
-  for (const c of active) {
-    console.log(`  - ${c}`);
-  }
-  console.log('\nSpecify a change: bp review <name>');
-  return null;
-}
-
-/** Gate: exit non-zero if context.jsonl is invalid for the requested phase. */
-function gateContextJsonl(
-  bpDir: string,
-  changeName: string,
-  phase: 'plan' | 'apply' | 'review' | 'archive',
-): boolean {
-  const contextPath = join(bpDir, 'changes', changeName, 'context.jsonl');
-  if (!existsSync(contextPath)) return true;
-  const result = validateContextJsonlFile(contextPath, bpDir, phase);
-  if (result.valid) return true;
-  for (const err of result.errors) {
-    console.error(`${contextPath}:${err.line}: [${err.code}] ${err.message}`);
-  }
-  return false;
-}

@@ -36,11 +36,13 @@ export function detectProjectInfo(rootDir: string): ProjectInfo {
     info.language = 'typescript';
     try {
       const pkg = JSON.parse(readFileSync(join(rootDir, 'package.json'), 'utf-8'));
-      if (pkg.dependencies?.next) info.framework = 'next.js';
-      else if (pkg.dependencies?.react) info.framework = 'react';
-      else if (pkg.dependencies?.vue) info.framework = 'vue';
-      else if (pkg.dependencies?.express) info.framework = 'express';
-      else if (pkg.dependencies?.fastify) info.framework = 'fastify';
+      const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
+      if (allDeps?.next) info.framework = 'next.js';
+      else if (allDeps?.react) info.framework = 'react';
+      else if (allDeps?.vue) info.framework = 'vue';
+      else if (allDeps?.svelte) info.framework = 'svelte';
+      else if (allDeps?.express) info.framework = 'express';
+      else if (allDeps?.fastify) info.framework = 'fastify';
     } catch { /* ignore */ }
   }
 
@@ -54,6 +56,38 @@ export function detectProjectInfo(rootDir: string): ProjectInfo {
   if (existsSync(join(rootDir, 'go.mod'))) {
     info.type = 'go';
     info.language = 'go';
+  }
+
+  // 检测 Java (pom.xml / build.gradle)
+  if (existsSync(join(rootDir, 'pom.xml')) || existsSync(join(rootDir, 'build.gradle'))) {
+    info.type = 'java';
+    info.language = 'java';
+    info.structFiles.push(existsSync(join(rootDir, 'pom.xml')) ? 'pom.xml' : 'build.gradle');
+    if (existsSync(join(rootDir, 'pom.xml'))) {
+      try {
+        const pom = readFileSync(join(rootDir, 'pom.xml'), 'utf-8');
+        if (pom.includes('spring-boot')) info.framework = 'spring';
+      } catch { /* ignore */ }
+    }
+    if (existsSync(join(rootDir, 'build.gradle'))) {
+      try {
+        const gradle = readFileSync(join(rootDir, 'build.gradle'), 'utf-8');
+        if (gradle.includes('spring')) info.framework = 'spring';
+      } catch { /* ignore */ }
+    }
+  }
+
+  // 检测 C# .NET (.csproj / .sln)
+  for (const ext of ['.csproj', '.sln']) {
+    try {
+      const files = readdirSync(rootDir).filter((f) => f.endsWith(ext));
+      if (files.length > 0) {
+        info.type = 'dotnet';
+        info.language = 'csharp';
+        info.structFiles.push(...files);
+        break;
+      }
+    } catch { /* ignore */ }
   }
 
   // 检测源码目录

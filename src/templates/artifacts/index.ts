@@ -88,6 +88,17 @@ export const PROPOSAL_TEMPLATE = `# Proposal: {{name}}
 - **Verify**: {{verification-method}}
 - **Files**: {{expected-file-paths}}
 
+
+## Dependencies
+
+<!--
+  Optional. If this change depends on another change being archived first,
+  list it here. \`bp continue\` will block apply until the dependency is archived.
+  Format: - <change-name>
+-->
+
+- {{dependency-change}}
+
 ## Roadmap Reference
 
 <!--
@@ -411,8 +422,8 @@ export const TASKS_TEMPLATE = `# Tasks: {{name}}
   These are the gates before review can run.
 -->
 
-- [ ] \`tsc --noEmit\` passes with no errors
-- [ ] \`vitest run\` (or project test command) - all suites pass
+- [ ] type-check/build passes with no errors
+- [ ] test suite passes (per project test command)
 - [ ] Every task in every wave is marked \`[x]\` with a commit hash
 - [ ] No \`{{\` template placeholders remaining in any artifact
 - [ ] All wave acceptance criteria confirmed
@@ -720,7 +731,7 @@ context: |
   Project: {{project-name}}
   Tech stack: {{tech-stack}}
   Testing: {{test-framework}}
-  Language: {{response-language}}
+  Artifact Language: {{artifact-language}}
 
 # Artifact rules - injected into specific sub-agent prompts
 rules:

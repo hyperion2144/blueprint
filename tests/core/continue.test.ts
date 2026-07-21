@@ -162,6 +162,44 @@ describe('determineNextStepForChange', () => {
     // Schema considers archive complete when review passes
     expect(result.nextStep).toBeNull();
   });
+
+  describe('verdict routing', () => {
+    function setupChangeWithVerdict(verdict: string, issues: string): void {
+      writeArtifact('test-change', 'proposal.md');
+      writeArtifact('test-change', 'design.md');
+      ensureSpecsDir('test-change');
+      writeArtifact('test-change', 'tasks.md', '- [x] T-1\n');
+      writeArtifact('test-change', 'review.md', `## Overall Verdict: ${verdict}\n${issues}`);
+    }
+
+    it('NEEDS_REVISION + design issues routes to plan --fix', () => {
+      setupChangeWithVerdict('NEEDS_REVISION', '\n- [ ] D1 Fix design\n- [ ] R1 Review issue\n');
+      const result = determineNextStepForChange(tmpDir, 'test-change');
+      expect(result.nextStep).not.toBeNull();
+      expect(result.nextStep!.command).toContain('plan --fix');
+    });
+
+    it('NEEDS_REVISION without design issues routes to apply --fix', () => {
+      setupChangeWithVerdict('NEEDS_REVISION', '\n- [ ] R1 Review issue\n');
+      const result = determineNextStepForChange(tmpDir, 'test-change');
+      expect(result.nextStep).not.toBeNull();
+      expect(result.nextStep!.command).toContain('apply --fix');
+    });
+
+    it('FAIL + design issues routes to plan --fix', () => {
+      setupChangeWithVerdict('FAIL', '\n- [ ] D1 Design flaw\n- [ ] R1 Code issue\n');
+      const result = determineNextStepForChange(tmpDir, 'test-change');
+      expect(result.nextStep).not.toBeNull();
+      expect(result.nextStep!.command).toContain('plan --fix');
+    });
+
+    it('FAIL without design issues routes to apply --fix', () => {
+      setupChangeWithVerdict('FAIL', '\n- [ ] R1 Code issue\n');
+      const result = determineNextStepForChange(tmpDir, 'test-change');
+      expect(result.nextStep).not.toBeNull();
+      expect(result.nextStep!.command).toContain('apply --fix');
+    });
+  });
   it('single active change auto-selects', () => {
     writeArtifact('test-change', 'proposal.md');
     const result = determineNextStepForChange(tmpDir);

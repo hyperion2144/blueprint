@@ -3,6 +3,8 @@
  */
 
 import { join, dirname } from 'node:path';
+import { validateContextJsonlFile } from '../core/artifact-validator.js';
+import { listActiveChanges } from '../core/file-tree.js';
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 
 interface GeneratedFile {
@@ -37,4 +39,37 @@ export function writeGeneratedFiles(files: GeneratedFile[]): void {
     if (dir) mkdirSync(dir, { recursive: true });
     writeFileSync(file.path, file.content, 'utf-8');
   }
+}
+
+/** Resolve change name: use provided name or auto-detect from active changes. */
+export function resolveChangeName(bpDir: string, name?: string): string | null {
+  if (name) return name;
+  const active = listActiveChanges(bpDir);
+  if (active.length === 0) {
+    console.error('No active changes found.');
+    return null;
+  }
+  if (active.length === 1) return active[0];
+  console.log('Multiple active changes:');
+  for (const c of active) {
+    console.log(`  - ${c}`);
+  }
+  console.log('\nSpecify a change name.');
+  return null;
+}
+
+/** Gate: exit non-zero if context.jsonl is invalid for the requested phase. */
+export function gateContextJsonl(
+  bpDir: string,
+  changeName: string,
+  phase: 'plan' | 'apply' | 'review' | 'archive',
+): boolean {
+  const contextPath = join(bpDir, 'changes', changeName, 'context.jsonl');
+  if (!existsSync(contextPath)) return true;
+  const result = validateContextJsonlFile(contextPath, bpDir, phase);
+  if (result.valid) return true;
+  for (const err of result.errors) {
+    console.error(`${contextPath}:${err.line}: [${err.code}] ${err.message}`);
+  }
+  return false;
 }

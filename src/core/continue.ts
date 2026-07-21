@@ -9,13 +9,14 @@
  * 2. Change-level: check artifacts and steps against schema -> next step instructions
  */
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { listActiveChanges, changeDir } from './file-tree.js';
 import { loadSchema, resolveInstruction } from './schema.js';
 import { WORKFLOW_REGISTRY, type WorkflowStep } from '../templates/workflows/registry.js';
 import type { ArtifactStatus, ChangeProgress, ChangeStage, ContinueResult, NextStep } from '../types/index.js';
 import type { SchemaDef, SchemaArtifact, SchemaStep } from './schema.js';
+import { hasPlaceholders } from './artifact-validator.js';
 
 /** Get workflow instructions: custom schema file -> built-in TypeScript fallback */
 export function getWorkflowInstructions(step: string, bpDir?: string): string | undefined {
@@ -184,10 +185,50 @@ function determineChangeNextStep(
       };
     }
   }
+
+  // F7a: Check change dependencies
+  const proposalPath = join(dir, 'proposal.md');
+  if (existsSync(proposalPath)) {
+    const proposalContent = readFileSync(proposalPath, 'utf-8');
+    const depMatch = proposalContent.match(/## Dependencies[\s\S]*?(?=##|$)/);
+    if (depMatch) {
+      const deps = (depMatch[0].match(/^\s*-\s+(\S+)/gm) || []).map((l: string) => l.replace(/^\s*-\s+/, '')).filter((d: string) => !d.includes('{{') && !d.includes('}'));
+      const archiveDir = join(bpDir, 'changes', 'archive');
+      let unarchived: string[];
+      if (existsSync(archiveDir) && readdirSync(archiveDir).length > 0) {
+        const archivedNames = readdirSync(archiveDir);
+        unarchived = deps.filter((d: string) => !archivedNames.some((a: string) => a.includes(d)));
+      } else {
+        unarchived = deps;
+      }
+      if (unarchived.length > 0) {
+        return {
+          stage: 'blocked',
+          command: `bp continue ${unarchived[0]}`,
+          description: `[BLOCKED] Change depends on ${unarchived.join(', ')} which is not yet archived. Archive the dependency first.`,
+          instructions: undefined,
+        };
+      }
+    }
+  }
   // Phase 1: Check artifact-producing steps (proposal, design, specs, tasks)
   // Find the first artifact that doesn't exist but whose requirements are met
   for (const artifact of schema.artifacts) {
-    if (existingArtifacts.has(artifact.id)) continue;
+    if (existingArtifacts.has(artifact.id)) {
+      // F6a: Check for unreplaced placeholders in concrete-file artifacts
+      if (!artifact.generates.includes('*')) {
+        const artifactPath = join(dir, artifact.generates);
+        if (existsSync(artifactPath) && hasPlaceholders(readFileSync(artifactPath, 'utf-8'))) {
+          return {
+            stage: 'incomplete',
+            command: `${artifact.command} ${changeName}`,
+            description: `[PLACEHOLDER] ${artifact.id} has unreplaced {{placeholder}} variables. Fill them before proceeding.`,
+            instructions: getWorkflowInstructions(artifact.command, bpDir),
+          };
+        }
+      }
+      continue;
+    }
     const requirementsMet = artifact.requires.every((req) => existingArtifacts.has(req));
     if (requirementsMet && artifact.command) {
       return {
@@ -198,6 +239,25 @@ function determineChangeNextStep(
       };
     }
   }
+  // Check for fix loop BEFORE Phase 2 (review exists but not PASS).
+  // Must run before Phase 2 so that review != PASS routes to fix, not re-review.
+  if (artifacts.review && reviewVerdict && reviewVerdict !== 'PASS') {
+    if (hasDesignIssues) {
+      return {
+        stage: progress.stage,
+        command: `plan --fix ${changeName}`,
+        description: `Fix design issues — ${reviewVerdict}, ${unresolvedIssues} unresolved (D-prefixed design issue detected, replan needed)`,
+        instructions: getWorkflowInstructions('plan', bpDir),
+      };
+    }
+    return {
+      stage: progress.stage,
+      command: `apply --fix ${changeName}`,
+      description: `Fix code issues — ${reviewVerdict}, ${unresolvedIssues} unresolved`,
+      instructions: getWorkflowInstructions('apply', bpDir),
+    };
+  }
+
   // Phase 2: Check action steps (apply, review, archive)
   const stepCompletion = new Map<string, boolean>();
   for (const step of schema.steps) {
@@ -221,7 +281,7 @@ function determineChangeNextStep(
       if (step.id === 'apply') {
         description = `Dispatch executor sub-agents (${artifacts.tasksCompleted}/${artifacts.tasksTotal} tasks done)`;
       } else if (step.id === 'review') {
-        description = 'Dispatch reviewer sub-agent for triple review';
+        description = 'Verify build and tests pass (per project config), then dispatch reviewer for triple review';
       } else if (step.id === 'archive') {
         description = 'Merge delta specs, archive change, update roadmap';
       }
@@ -233,24 +293,6 @@ function determineChangeNextStep(
         instructions: getWorkflowInstructions(command, bpDir),
       };
     }
-  }
-
-  // Check for fix loop (review exists but not PASS)
-  if (artifacts.review && reviewVerdict !== 'PASS') {
-    if (hasDesignIssues) {
-      return {
-        stage: progress.stage,
-        command: `plan --fix ${changeName}`,
-        description: `Fix design issues (D-prefixed, ${unresolvedIssues} unresolved)`,
-        instructions: getWorkflowInstructions('plan', bpDir),
-      };
-    }
-    return {
-      stage: progress.stage,
-      command: `apply --fix ${changeName}`,
-      description: `Fix code issues (${unresolvedIssues} unresolved)`,
-      instructions: getWorkflowInstructions('apply', bpDir),
-    };
   }
 
   return null;

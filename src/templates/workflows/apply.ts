@@ -37,11 +37,18 @@ Read \`tasks.md\` and parse into execution plan:
    - If task in Wave B has \`depends_on\` referencing a task in Wave A -> Wave B depends on Wave A
    - Result: DAG where nodes = waves, edges = cross-wave depends_on
 
-3. **Generate execution plan**:
+3. **File manifest overlap check**:
+   - For each pair of waves in the same round, compare their tasks' \`files\` fields
+   - If two waves modify the SAME file, they CANNOT run concurrently
+   - Force overlapping waves into the same wave (serial within one sub-agent) or sequential rounds
+   - This prevents merge conflicts when isolated worktrees merge back
+
+4. **Generate execution plan**:
+
    - Waves with NO unmet cross-wave dependencies -> can run concurrently
    - Waves WITH cross-wave dependencies -> must wait for predecessor wave(s)
 
-4. **For each wave, prepare executor dispatch prompt**:
+5. **For each wave, prepare executor dispatch prompt**:
    - Change name and directory path
    - Wave number and which task IDs (T-N) are in this wave
    - Summary of completed tasks from prior waves: task ID, title, files, key public interfaces
@@ -76,7 +83,7 @@ For each completed wave:
 1. **Check git log**: \`git log --oneline -5\` - confirm new commits exist with correct hashes
 2. **Check git diff**: \`git diff --stat HEAD~N\` - confirm files actually changed (not no-op)
 3. **Check tasks.md**: confirm tasks marked [x] with \`<!-- commit: HASH -->\` annotation
-4. **Run wave's tests**: \`npx vitest run <test-files>\` - confirm tests pass
+4. **Run wave's tests**: run the project's test command for <test-files> - confirm tests pass
 5. **If any task missing commit annotation**: re-run that task manually or re-dispatch
 
 **If any wave fails verification:**
@@ -84,11 +91,11 @@ For each completed wave:
 - Do NOT proceed to next round until all waves in current round pass
 
 **After all rounds complete:**
-1. Run full test suite: \`tsc --noEmit && vitest run\`
+1. Run the project's build check and full test suite (per bp/config.yaml stack)
 2. If failures: identify which wave caused them, re-dispatch with fix instructions
 3. If all pass: mark the \`## Pre-Archive Checklist\` in \`tasks.md\`:
-   - \`- [ ] tsc --noEmit passes\` → \`- [x]\`
-   - \`- [ ] vitest run (or project test command) - all suites pass\` → \`- [x]\`
+   - \`- [ ] type-check/build passes\` → \`- [x]\`
+   - \`- [ ] test suite passes - all suites green\` → \`- [x]\`
    - \`- [ ] Every task in every wave is marked [x] with a commit hash\` → \`- [x]\` (verify this first)
    - \`- [ ] All wave acceptance criteria confirmed\` → \`- [x]\`
    (Skip \`No template placeholders\` — that's verified by the planner during planning.)
@@ -132,6 +139,7 @@ Implementation complete for $1
 - **NEVER skip review.** Apply's test pass is NOT a replacement for review.
 - In --fix mode: executors read review.md, fix R/Q/G issues, then mark each issue \`[ ]\` → \`[~]\` (\`~\` = fixed, pending verification). Do NOT mark \`[x]\` — that's the re-review's job. Do NOT fix D issues (those need replan).
 - Do NOT run bp review automatically - let the user decide.
+- **Wave retry limit: max 2 re-dispatches per wave.** If a wave fails verification 2 times after re-dispatch with specific feedback, STOP and report as blocker. Do not re-dispatch indefinitely.
 `;
 
 export function getApplySkillTemplate(): SkillTemplate {

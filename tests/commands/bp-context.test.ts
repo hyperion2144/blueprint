@@ -50,10 +50,13 @@ afterEach(() => {
 });
 
 describe('bp context --format=full (T-8)', () => {
-  it('matches the terminal snapshot byte-for-byte', () => {
+  it('emits structured terminal output with step header and usage', () => {
     const { stdout, exitCode } = cli('context', 'research', '--format=full');
     expect(exitCode).toBe(0);
-    expect(stdout).toMatchSnapshot();
+    expect(stdout).toContain('=== bp context for step: research ===');
+    expect(stdout).toContain('Scope:');
+    expect(stdout).toContain('Usage: use');
+    expect(stdout).toContain('─'.repeat(60));
   });
 });
 

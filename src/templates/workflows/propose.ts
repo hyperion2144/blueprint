@@ -7,7 +7,16 @@ const instructions = `## Input
 
 ## Steps
 
-### Step 1: Grill the user on requirements (RELENTLESS - do NOT skip)
+### Step 0: Classify change
+
+Read the user's request. Classify:
+- **Lightweight**: trivial changes (fix-typo, bump-deps, rename, config tweak) — no new behavior, no new deliverables
+- **Full**: any new behavior or capability
+
+**If LIGHTWEIGHT**: skip Step 1 (grill). Go directly to Step 2 with a minimal proposal derived from the user's one-line description. Fill template directly, no interview.
+**If FULL**: continue to Step 1 (relentless interview).
+
+### Step 1: Grill the user on requirements (Skip if Step 0 classified as lightweight) (RELENTLESS - do NOT skip)
 
 Before writing anything, you must reach FULL shared understanding with the user.
 This is NOT a checklist. It is a relentless interview that walks every branch of the decision tree,

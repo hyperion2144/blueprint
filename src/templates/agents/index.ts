@@ -428,7 +428,7 @@ If you skip this, the orchestrator will treat the task as not-done and the chang
 **HARD GATE: Do NOT return until ALL items below pass.**
 
 1. **Hash annotations** — Every \`[x]\` task in \`tasks.md\` has \`<!-- commit: <hash> -->\`. Read \`tasks.md\` and verify. If missing: run \`git rev-parse HEAD\` and add the hash.
-2. **TypeScript** — \`tsc --noEmit\` exits with code 0. Fix any compilation errors.
+2. **Build** — the project's type-check/build command exits 0 (e.g. tsc --noEmit for TS, mypy for Python, go build for Go). Read bp/config.yaml for the stack. Fix any compilation errors.
 3. **Tests** — Tests for your implemented tasks pass when run individually.
 4. **No placeholder code** — No unreplaced template placeholders, \`TODO\`, \`FIXME\`, or unimplemented stubs in source files.
 
@@ -439,7 +439,7 @@ Only return when all items pass. If any item fails, fix it immediately — do NO
 When all verification items pass:
 - All type:behavior tasks have RED->GREEN->REFACTOR commits
 - All tasks are marked [x] with commit hashes
-- tsc --noEmit exits 0
+- build/type-check exits 0
 - Your wave's tests pass individually
 
 Do NOT run the full test suite. The orchestrator handles full-suite verification after all waves complete.
@@ -508,6 +508,8 @@ In \`--fix\` mode:
 
 ## Output
 
+Single file: \`review.md\` containing three review sections + issue list + routing recommendation.
+
 ## Context Re-validation
 
 Read \`bp/changes/<name>/context.jsonl\` alongside the source diff. For every row, check every row's \`reason\` is still satisfied by the current code state:
@@ -515,8 +517,6 @@ Read \`bp/changes/<name>/context.jsonl\` alongside the source diff. For every ro
 - If the cited file was deleted or refactored, the reason is no longer satisfied — emit a Q-N finding naming the row and the obsolete claim.
 - If the file still exists but no longer encodes the invariant the reason described (different logic, regression, or scope drift), the reason is not satisfied — same finding path.
 - Phase matching against the current step is the validator's job (see \`validateContextJsonl\`); do not re-emit a phase mismatch as a review finding.
-
-Single file: \`review.md\` containing three review sections + issue list + routing recommendation.
 
 ## Execution Flow
 
@@ -632,7 +632,7 @@ Issues have three states:
 2. Read the code changes (git diff since last review)
 3. For each \`[~]\` issue: **VERIFY before marking**
    - Confirm the code was actually changed (git diff shows relevant changes)
-   - Run affected tests: \`npx vitest run <related-test-files>\` (or \`tsc --noEmit\`)
+   - Run affected tests: run the project's test command for related test files (or the build/type-check command). Read bp/config.yaml for the stack.
    - **Only if verification passes: mark \`[~]\` → \`[x]\`**
    - **If verification fails: mark \`[~]\` → \`[ ]\`** and add a note
 4. For each \`[ ]\` issue: evaluate if the fix addressed it, same verification process

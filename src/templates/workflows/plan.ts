@@ -35,7 +35,7 @@ Read \`proposal.md\` deliverables:
 1. Prepare planner context:
    - Change name and directory path
    - List files to read: proposal.md, bp/specs/<domain>/spec.md (per affected domain), bp/conventions/coding.md, bp/config.yaml
-   - Instruction: "Read planner agent prompt, produce design.md, tasks.md, and change_specs/<domain>/spec.md (delta specs under the change directory, NOT bp/specs/)"
+   - Instruction: "Read planner agent prompt, produce design.md, tasks.md, and specs/<domain>/spec.md (delta specs under the change directory, NOT bp/specs/)"
    - In --fix mode: also include review.md, focus on D-prefixed issues
 
 2. Dispatch via task tool. Wait for planner to complete.
@@ -77,6 +77,7 @@ If any check fails: re-dispatch planner with specific feedback on what's missing
 # Update roadmap: If the change's proposal.md has \`## Roadmap Reference\`, read \`bp/roadmap.md\`, find the change in that phase's Changes list, and update it to \`- [-] $1 (planned YYYY-MM-DD)\`.
 git add bp/changes/$1/
 bp commit "docs(plan): design + tasks + delta specs for $1" --files bp/changes/$1/
+# In --fix mode, also run: bp plan --write-context $1
 \`\`\`
   Next: bp apply $1
   (or: bp continue $1)

@@ -19,6 +19,7 @@ export function register(program: Command): void {
     .option('--domain <domain>', 'spec domain for phase')
     .option('--mark <milestone>', 'mark milestone (or milestone/phase)')
     .option('--shipped', 'mark phase/milestone as completed')
+    .option('--validate', 'Validate roadmap.md structure')
     .action(roadmapHandler);
 }
 
@@ -30,6 +31,7 @@ function roadmapHandler(options: {
   domain?: string;
   mark?: string;
   shipped?: boolean;
+  validate?: boolean;
 }) {
   const bpDir = findBpDir();
   if (!bpDir) {
@@ -39,8 +41,73 @@ function roadmapHandler(options: {
 
   const roadmapPath = join(bpDir, 'roadmap.md');
 
+  // --validate: check roadmap structure
+  if (options.validate) {
+    if (!existsSync(roadmapPath)) {
+      console.error('FAIL: roadmap.md not found');
+      process.exit(1);
+    }
+    const content = readFileSync(roadmapPath, 'utf-8');
+    let pass = true;
+
+    // Check each ## Milestone: has id, name, [status]
+    const milestoneMatches = content.matchAll(/^## Milestone:\s*(.*?)$/gm);
+    let milestoneCount = 0;
+    for (const m of milestoneMatches) {
+      milestoneCount++;
+      const line = m[1].trim();
+      if (!/\bM\d+\b/.test(line)) {
+        console.error(`FAIL: Milestone "${line}" missing id (M{N})`);
+        pass = false;
+      }
+      if (!line.includes('[')) {
+        console.error(`FAIL: Milestone "${line}" missing [status]`);
+        pass = false;
+      }
+    }
+    if (milestoneCount === 0) {
+      console.error('FAIL: No ## Milestone: headings found');
+      pass = false;
+    }
+
+    // Check each ### Phase: has id, name, [status]
+    const phaseMatches = content.matchAll(/^### Phase:\s*(.*?)$/gm);
+    let phaseCount = 0;
+    for (const p of phaseMatches) {
+      phaseCount++;
+      const line = p[1].trim();
+      if (!/\bP\S+\b/.test(line)) {
+        console.error(`FAIL: Phase "${line}" missing id (P{N})`);
+        pass = false;
+      }
+      if (!line.includes('[')) {
+        console.error(`FAIL: Phase "${line}" missing [status]`);
+        pass = false;
+      }
+    }
+    if (phaseCount === 0) {
+      console.error('FAIL: No ### Phase: headings found');
+      pass = false;
+    }
+
+    // Check change lines have a change name
+    const changeMatches = content.matchAll(/^-\s+\[([ x])\]\s+(.*?)$/gm);
+    let changeCount = 0;
+    for (const c of changeMatches) {
+      changeCount++;
+      if (!c[2].trim()) {
+        console.error(`FAIL: Change line "${c[0].trim()}" has no change name`);
+        pass = false;
+      }
+    }
+
+    console.log(pass ? 'PASS' : 'FAIL');
+    if (!pass) process.exit(1);
+    return;
+  }
+
   // Display current roadmap
-  if (!options.edit && !options.addMilestone && !options.addPhase && !options.mark) {
+  if (!options.edit && !options.addMilestone && !options.addPhase && !options.mark && !options.validate) {
     if (!existsSync(roadmapPath)) {
       console.log('No roadmap.md found. Use `bp roadmap --edit` to create one.');
       return;

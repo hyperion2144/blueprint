@@ -19,6 +19,9 @@ import { register as registerContext } from './commands/bp-context.js';
 import { register as registerState } from './commands/bp-state.js';
 import { register as registerUpdate } from './commands/bp-update.js';
 import { register as registerSchema } from './commands/bp-schema.js';
+import { register as registerSpecRefresh } from './commands/bp-spec-refresh.js';
+import { register as registerSplit } from './commands/bp-split.js';
+import { register as registerUnarchive } from './commands/bp-unarchive.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
@@ -46,5 +49,8 @@ registerUpdate(program);
 registerSchema(program);
 registerContext(program);
 registerState(program);
+registerSpecRefresh(program);
+registerSplit(program);
+registerUnarchive(program);
 
 program.parse(process.argv);

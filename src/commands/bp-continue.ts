@@ -1,3 +1,5 @@
+import type { Command } from 'commander';
+
 /**
  * bp continue [name] - schema-driven next step detection.
  *
@@ -8,7 +10,7 @@
 import { determineNextStepForChange } from '../core/continue.js';
 import { findBpDir } from './_utils.js';
 
-export function register(program: any): void {
+export function register(program: Command): void {
   program
     .command('continue [name]')
     .description('Detect next step and output its workflow instructions')

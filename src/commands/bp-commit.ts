@@ -12,9 +12,10 @@ import { execFileSync, execSync } from 'node:child_process';
 import { existsSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { loadConfig } from '../core/config.js';
+import type { Command } from 'commander';
 import { findBpDir } from './_utils.js';
 
-export function register(program: any): void {
+export function register(program: Command): void {
   program
     .command('commit <message>')
     .description('Git commit that respects commitDocs config (filters bp/ path when disabled)')

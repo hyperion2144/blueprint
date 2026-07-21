@@ -10,7 +10,7 @@ const instructions = ORCHESTRATOR_RULE + `${CONTEXT_JSONL_REMINDER}## Input
 ## Prerequisites
 
 - Code is implemented (tasks.md has [x] entries with commit hashes)
-- \`tsc --noEmit\` and \`vitest run\` pass (run these BEFORE dispatching reviewer)
+- Build check and test suite pass (per bp/config.yaml stack)
 - In --fix mode: \`review.md\` exists with unresolved issues, fixes have been applied
 
 ## Steps
@@ -23,11 +23,17 @@ Same as plan workflow Step 1.
 
 Run before dispatching reviewer:
 \`\`\`bash
-tsc --noEmit
-npx vitest run
+# Run the project's build check and test suite.
+# Read bp/config.yaml for the tech stack and test framework.
+# Examples by stack:
+#   TypeScript: tsc --noEmit && npx vitest run
+#   Python:     mypy . && pytest
+#   Go:         go build ./... && go test ./...
+#   Rust:       cargo build && cargo test
+#   Java:       mvn compile && mvn test
 \`\`\`
 
-If either fails: do NOT dispatch reviewer. Report the failures and suggest \`bp apply --fix\` to fix them first.
+If build or tests fail: do NOT dispatch reviewer. Report the failures and suggest \`bp apply --fix\` to fix them first.
 
 ### Step 3: Classify change (lightweight vs full)
 
@@ -98,6 +104,7 @@ git add .
 bp commit "docs(review): triple review for $1" --files bp/changes/$1/review.md
 - Do NOT run bp archive automatically - let the user review the findings first.
 - **Context is auto-injected by the OMP Extension.** Do NOT call \`bp context review\`; the extension already supplies the same material at every turn.
+- **Fix loop limit: max 3 rounds.** If the change has been through 3 fix rounds (count re-reviews in review.md — each re-review adds new issue numbers) and issues still persist, STOP and report to the user. Do not auto-route to another fix — escalate for human decision.
 `;
 
 export function getReviewSkillTemplate(): SkillTemplate {

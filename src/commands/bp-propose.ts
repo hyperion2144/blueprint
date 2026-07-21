@@ -1,3 +1,5 @@
+import type { Command } from 'commander';
+
 /**
  * bp propose <name> - create change folder and proposal.md
  */
@@ -7,7 +9,7 @@ import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { ARTIFACT_TEMPLATES } from '../templates/artifacts/index.js';
 import { findBpDir } from './_utils.js';
 
-export function register(program: any): void {
+export function register(program: Command): void {
   program
     .command('propose <name>')
     .description('Create a change folder with proposal.md')

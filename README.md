@@ -4,7 +4,7 @@
 
 Write behavioral specs once, let agents implement against them. Lightweight artifact-based progress — no state machine, no formal grammars. Delta specs capture behavioral contracts at the change level and merge into a global spec on archive.
 
-Inspired by OpenSpec-style structured specifications, adapted for AI-agent-driven development with 3 specialized sub-agents (planner, executor, reviewer).
+Inspired by OpenSpec-style structured specifications, adapted for AI-agent-driven development with 4 specialized sub-agents (planner, executor, reviewer, codebase-scanner).
 
 ## Why
 
@@ -32,10 +32,11 @@ Roadmap (living document) → Change (spec-driven unit)
 
 ```
 2-layer: Roadmap (what's planned) + Change (what's being built)
-3 sub-agents: planner (design + tasks + delta specs)
+4 sub-agents: planner (design + tasks + delta specs + context.jsonl)
               executor (TDD waves, isolated)
               reviewer (triple review gate)
-7 artifact templates: proposal, design, tasks, spec, review, roadmap, config
+              codebase-scanner (brownfield spec bootstrap)
+8 artifact templates: proposal, design, tasks, spec, review, roadmap, config, global-spec
 ```
 
 ## Quick Start
@@ -74,15 +75,18 @@ bp roadmap
 | `bp archive <name>` | Archive a completed change — delta-spec merge + code backfill |
 | `bp continue` | Auto-advance — detect current state from artifacts, suggest next step |
 
-### Additional commands
 
 | Command | Description |
 |---------|-------------|
+| `bp commit <name>` | Generate atomic commits for completed tasks |
+| `bp template <type>` | Generate an artifact template (proposal, design, tasks, spec, review, roadmap, config, global-spec) |
 | `bp list` | List active changes, archived changes, spec domains |
-| `bp config [list\|set]` | View or modify project configuration |
-| `bp template <type>` | Generate an artifact template (proposal, design, tasks, spec, review) |
 | `bp dispatch <role>` | Output platform-specific sub-agent dispatch instructions |
+| `bp config [list\|set]` | View or modify project configuration |
+| `bp context <name>` | Check change context completeness |
+| `bp state <name>` | Show artifact-based current state |
 | `bp update` | Regenerate all platform files to match latest templates |
+| `bp schema` | Manage spec schema |
 
 ## Validation System
 
@@ -100,14 +104,14 @@ Validation runs when the CLI advances to the next step. Errors block progression
 
 ## Templates
 
-7 artifact templates:
+8 artifact templates:
 
 | Category | Templates |
 |----------|-----------|
 | **Change** | proposal, design, tasks, spec, review |
-| **Project** | roadmap, config |
+| **Project** | roadmap, config, global-spec |
 
-3 sub-agent system prompts (planner, executor, reviewer).
+4 sub-agent system prompts (planner, executor, reviewer, codebase-scanner).
 
 Platform files (agents, commands, hooks) are generated from TypeScript source:
 

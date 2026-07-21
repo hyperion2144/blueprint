@@ -285,25 +285,25 @@ function indexNodes(nodes: HeadingNode[]): Map<string, HeadingNode> {
   return map;
 }
 
-/** 行级合并：如果 delta 只追加不删除，合并保留两边 */
+/** 行级合并：如果 delta 只追加不删除，合并保留 delta 顺序 */
 function tryLineMerge(baseText: string, deltaText: string): string | null {
   const baseLines = baseText.split('\n');
   const deltaLines = deltaText.split('\n');
-  const baseSet = new Set(baseLines);
+  const deltaSet = new Set(deltaLines);
 
+  // Check for removals: base has non-empty lines delta doesn't.
+  // Uses Set.has (O(1)) instead of Array.includes (O(n)) for performance.
   const removedFromBase = baseLines.filter(
-    (l) => l.trim() && !deltaLines.includes(l),
+    (l) => l.trim() && !deltaSet.has(l),
   );
 
   if (removedFromBase.length === 0) {
-    // 没有删除 → 只是追加 → 合并
-    const result = [...baseLines];
-    for (const line of deltaLines) {
-      if (!baseSet.has(line)) {
-        result.push(line);
-      }
-    }
-    return result.join('\n');
+    // All base content exists in delta (possibly reordered + with additions).
+    // Delta is the newer version — use it directly to preserve reorders.
+    // Previously this appended delta-only lines to base order, silently
+    // dropping reorders. Now returns deltaText which contains all base
+    // lines (verified above) plus any additions, in delta's intended order.
+    return deltaText;
   }
 
   return null;

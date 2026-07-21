@@ -7,6 +7,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse } from 'yaml';
+import { loadConfig } from './config.js';
 
 /** Artifact definition in a schema */
 export interface SchemaArtifact {
@@ -78,14 +79,10 @@ export const DEFAULT_SCHEMA: SchemaDef = {
 export function loadSchema(bpDir: string, schemaName?: string): SchemaDef {
   if (!schemaName) {
     try {
-      const configPath = join(bpDir, 'config.yaml');
-      if (existsSync(configPath)) {
-        const content = readFileSync(configPath, 'utf-8');
-        const config = parse(content);
-        schemaName = config?.schema ?? 'spec-driven';
-      }
+      const config = loadConfig(bpDir);
+      schemaName = config.schema;
     } catch {
-      // ignore
+      // config unreadable — fallback to default
     }
   }
 
@@ -108,14 +105,10 @@ export function loadSchema(bpDir: string, schemaName?: string): SchemaDef {
 export function getSchemaDir(bpDir: string, schemaName?: string): string | null {
   if (!schemaName) {
     try {
-      const configPath = join(bpDir, 'config.yaml');
-      if (existsSync(configPath)) {
-        const content = readFileSync(configPath, 'utf-8');
-        const config = parse(content);
-        schemaName = config?.schema ?? 'spec-driven';
-      }
+      const config = loadConfig(bpDir);
+      schemaName = config.schema;
     } catch {
-      // ignore
+      // config unreadable — fallback to default
     }
   }
   if (!schemaName || schemaName === 'spec-driven') return null;

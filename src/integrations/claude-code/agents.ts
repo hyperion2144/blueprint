@@ -17,9 +17,9 @@ export interface ClaudeAgentDef {
 }
 
 export const AGENT_DEFS: ClaudeAgentDef[] = [
-  { role: 'planner', description: 'Change design — produce proposal/design/tasks/delta-specs', tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'], model: 'opus', effort: 'high' },
-  { role: 'executor', description: 'Code implementation — TDD RED→GREEN→REFACTOR', tools: ['read', 'edit', 'write', 'bash', 'grep', 'glob', 'lsp', 'ast_grep', 'ast_edit'], model: 'sonnet', effort: 'high' },
-  { role: 'reviewer', description: 'Triple review — spec review + quality review + goal review', tools: ['read', 'write', 'grep', 'glob', 'lsp', 'ast_grep', 'bash'], model: 'opus', effort: 'high' },
+  { role: 'planner', description: 'Change design — produce proposal/design/tasks/delta-specs', tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'], effort: 'high' },
+  { role: 'executor', description: 'Code implementation — TDD RED→GREEN→REFACTOR', tools: ['read', 'edit', 'write', 'bash', 'grep', 'glob', 'lsp', 'ast_grep', 'ast_edit'], effort: 'high' },
+  { role: 'reviewer', description: 'Triple review — spec review + quality review + goal review', tools: ['read', 'write', 'grep', 'glob', 'lsp', 'ast_grep', 'bash'], effort: 'high' },
   { role: 'codebase-scanner', description: 'Brownfield codebase scan - extract behavioral contracts into specs', tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'] },
 ];
 
@@ -41,9 +41,12 @@ export function generateClaudeAgent(def: ClaudeAgentDef): string {
   return lines.join('\n');
 }
 
-export function generateClaudeAgents(_config: ProjectConfig): { path: string; content: string }[] {
-  return AGENT_DEFS.map((def) => ({
-    path: `.claude/agents/bp-${def.role}.md`,
-    content: generateClaudeAgent(def),
-  }));
+export function generateClaudeAgents(config: ProjectConfig): { path: string; content: string }[] {
+  return AGENT_DEFS.map((def) => {
+    const model = config.models?.[def.role];
+    return {
+      path: `.claude/agents/bp-${def.role}.md`,
+      content: generateClaudeAgent(model ? { ...def, model } : def),
+    };
+  });
 }

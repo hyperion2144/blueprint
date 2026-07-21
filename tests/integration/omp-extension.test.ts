@@ -14,6 +14,7 @@ import { tmpdir } from 'node:os';
 import {
   EXTENSION_SOURCE,
   isDisabled,
+  hasBpConfig,
   detectAgentType,
   handleSessionStart,
   handleBeforeAgentStart,
@@ -347,5 +348,33 @@ describe('generateCompactBlock', () => {
     const block = generateCompactBlock(testDir);
     expect(block).toContain('<bp-context>');
     expect(block).toContain('</bp-context>');
+  });
+});
+
+describe('dual-maintenance consistency [D2]', () => {
+  it('template inline source and runtime export the same event-handler keys', () => {
+    const tmplSource = EXTENSION_SOURCE;
+
+    // Runtime exports the three handler functions
+    expect(typeof handleSessionStart).toBe('function');
+    expect(typeof handleBeforeAgentStart).toBe('function');
+    expect(typeof handleContext).toBe('function');
+
+    // Runtime exports the shared helper functions
+    expect(typeof isDisabled).toBe('function');
+    expect(typeof hasBpConfig).toBe('function');
+    expect(typeof detectAgentType).toBe('function');
+    expect(typeof generateCompactBlock).toBe('function');
+
+    // The template inline source references the corresponding event names
+    expect(tmplSource).toContain('session_start');
+    expect(tmplSource).toContain('before_agent_start');
+    expect(tmplSource).toContain('context');
+
+    // Helper functions are named identically in the inline source
+    expect(tmplSource).toContain('isDisabled');
+    expect(tmplSource).toContain('hasBpConfig');
+    expect(tmplSource).toContain('detectAgentType');
+    expect(tmplSource).toContain('generateCompactBlock');
   });
 });

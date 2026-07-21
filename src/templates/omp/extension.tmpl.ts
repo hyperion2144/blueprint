@@ -6,6 +6,13 @@
  * `src/integrations/omp/extension.ts` reads this constant and emits it
  * verbatim — no inline string literal duplicates this content.
  *
+ * WARNING: This file contains inline ES5 that mirrors the logic in
+ * src/integrations/omp/extension-runtime.ts. If you change logic here,
+ * you MUST update extension-runtime.ts too (and vice versa).
+ *
+ * The TS version (extension-runtime.ts) is the testable source of truth.
+ * When in doubt, make extension-runtime.ts authoritative and port here.
+ *
  * Filled in by Wave 3 (T-26..T-34). The TS-side helpers in
  * `src/integrations/omp/extension-runtime.ts` are the testable
  * counterparts of these inlined handlers.

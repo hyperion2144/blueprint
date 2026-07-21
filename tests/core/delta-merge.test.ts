@@ -64,6 +64,22 @@ describe('mergeDeltaSpec', () => {
     }
   });
 
+  it('重排序 content 保留 delta 顺序', () => {
+    const base = '# Spec\n\n## A\n\nline 1\nline 2';
+    const delta = '# Spec\n\n## A\n\nline 2\nline 1';
+    const result = mergeDeltaSpec(base, delta);
+    expect(result.type).toBe('ok');
+    if (result.type === 'ok') {
+      // Delta reordered line 2 before line 1 — merged should preserve delta's order
+      const lines = result.merged.split('\n');
+      const line2Idx = lines.indexOf('line 2');
+      const line1Idx = lines.indexOf('line 1');
+      expect(line2Idx).toBeGreaterThan(-1);
+      expect(line1Idx).toBeGreaterThan(-1);
+      expect(line2Idx).toBeLessThan(line1Idx);
+    }
+  });
+
   it('冲突 content 标记 conflict', () => {
     const base = '# Spec\n\n## A\n\nline 1\nline 2';
     const delta = '# Spec\n\n## A\n\nline 1\nreplaced line';

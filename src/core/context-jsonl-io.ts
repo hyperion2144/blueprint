@@ -1,10 +1,10 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ContextRefRowSchema } from '../types/context-refs.js';
+import { ContextRefRowSchema } from '../types/context-jsonl-io.js';
 import type {
   ContextJsonlError,
   ContextRefRow,
-} from '../types/context-refs.js';
+} from '../types/context-jsonl-io.js';
 
 export interface ParseContextJsonlResult {
   rows: ContextRefRow[];

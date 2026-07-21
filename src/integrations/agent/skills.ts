@@ -6,32 +6,10 @@
 import type { ProjectConfig } from '../../types/index.js';
 import { WORKFLOW_REGISTRY, type WorkflowStep } from '../../templates/workflows/registry.js';
 
-/**
- * $1 — meaning depends on step type, consistent with expandTemplateVars() primaryId inference:
- *   context is change -> [BP:CHANGE_NAME]
- *   no context        -> keep $1 as-is
- */
-const STEP_PARAM: Record<string, string> = {
-  propose: '[BP:CHANGE_NAME]',
-  plan: '[BP:CHANGE_NAME]',
-  apply: '[BP:CHANGE_NAME]',
-  review: '[BP:CHANGE_NAME]',
-  archive: '[BP:CHANGE_NAME]',
-  continue: '[BP:CHANGE_NAME]',
-  ff: '[BP:CHANGE_NAME]',
-  loop: '[BP:CHANGE_NAME]',
-};
 
 function resolveBody(step: string): string {
   const entry = WORKFLOW_REGISTRY[step as WorkflowStep];
-  let body = entry ? entry.command().content : `# bp-${step}\n\nWorkflow guide.`;
-
-  // Map $ARGUMENTS/$1 to the appropriate [BP:xxx] placeholder
-  const param = STEP_PARAM[step];
-  body = body.replaceAll('$ARGUMENTS', param ?? '$ARGUMENTS');
-  body = body.replaceAll('$1', param ?? '$1');
-  // [BP:xxx] variables remain as-is (agent replaces at runtime)
-  return body;
+  return entry ? entry.command().content : `# bp-${step}\n\nWorkflow guide.`;
 }
 
 function skillDescription(step: string): string {

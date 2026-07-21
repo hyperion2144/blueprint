@@ -335,3 +335,156 @@ changes/<name>/.meta/
 团队应该保留能够控制真实工程风险的部分，删掉只在补偿上一代模型的步骤。否则，旧模型的缺陷会被固化成团队永久 SOP——模型越来越强，开发却继续为过时的兼容层付费。
 
 Blueprint 的进化方向应该是：**流程更短，但验收更硬；默认更轻，但风险点更严。**
+
+---
+
+## 七、补充优化空间
+
+> 以下内容基于对 v2.1 方案的深化分析，分三类：现有方案增强、新增维度、代码库摘要深化。
+
+### 7.1 现有方案增强（8 点）
+
+#### 7.1.1 预算消耗可视化（增强 P0）
+
+v2.1 提了 budget 配置项，但缺消耗进度感知。建议：
+- **阈值分级**：80% 软告警（继续但提示）、100% 硬停止
+- **per-change 而非 per-project**：不同 change 风险不同，Critical change 应给更多预算
+- **消耗可视化**：每轮 sub-agent 完成后输出当前消耗百分比
+
+#### 7.1.2 熔断后人工恢复流程（增强 P0）
+
+v2.1 说"连续两轮新增 issue < 阈值 → 自动结束，建议人工验收"，但没提验收后怎么恢复。补：
+- 人工验收 PASS → 直接 archive（跳过剩余 review 轮数）
+- 人工验收发现新问题 → \`bp apply --fix\` 重入循环（重置 max_review_rounds 计数）
+- 人工验收结果写入 review.md 的 \`## Human Verdict\` section
+
+#### 7.1.3 四级分级申诉机制（增强 P1）
+
+自动分级可能判错（把 Critical 判成 Light）。补：
+- **reviewer 可升级**：发现实际风险高于 proposal 标注级别时，review.md 加 \`Level Escalation: Light→Critical\` 标记，触发完整流程重走
+- **executor 可降级申诉**：发现任务比预期简单，标记 \`Level Suggestion: Standard→Light\` 供 reviewer 参考
+- **分级申诉记录**：写入 .meta/ 供后续优化自动分级算法
+
+#### 7.1.4 动态降级回退机制（增强 P2）
+
+v2.1 说"第一轮 review 无严重问题 → 第二轮降档"，但降档后发现 BLOCKER 怎么办。补：
+- 降档后发现 BLOCKER → 自动升级回原档位 + 标记 \`degradation_failed\`
+- 连续 2 次 \`degradation_failed\` → 禁止该角色自动降级（需人工解锁）
+- 降级失败记录写入 .meta/，反推哪些角色不宜自动降档
+
+#### 7.1.5 prompt 精简安全网（增强 P3）
+
+v2.1 建议 A/B 测试，但缺回退路径。补：
+- 完整版 prompt 保留为 \`--full-prompt\` 选项，精简版为默认
+- 精简版产出质量连续 3 次 < 完整版 → 自动切回完整版 + 告警
+- config 加 \`prompt_profile: lite|standard|full\` 三档可切，按任务级别自动匹配
+
+#### 7.1.6 上下文大小预算（增强 P4）
+
+v2.1 提了按需加载，但没给子代理上下文大小预算。补：
+
+| 角色 | 上下文预算 | 说明 |
+|---|---|---|
+| planner | 32 KB | 含 L0+L1 摘要 + 相关 domain specs + proposal |
+| executor | 8 KB | 只含当前 wave 的 tasks + 相关 DS-N design 片段 |
+| reviewer | 16 KB | 含全部 artifacts + diff + 相关 specs |
+
+超预算时 spec-injectator 截断或分页，而非整文件注入。
+
+#### 7.1.7 .meta/ 隐私安全处理（增强 P5）
+
+planner-run-N.json 可能含代码片段、路径、API key。补：
+- \`.meta/\` 加入 \`.gitignore\`（或 config 加 \`meta.commit: false\`）
+- 脱敏：代码片段只记 hash + 行号范围，不记原文
+- 敏感字段（model response、error messages）标记 \`redacted\`
+
+#### 7.1.8 跨 change 数据聚合与基准对比（增强 P5）
+
+v2.1 的 bp stats 是 per-change + per-project。扩展：
+- **趋势图**：review 通过率/收敛轮数随时间变化（是否在改善）
+- **基准对比**：同类型任务的平均成本，供异常检测
+- **异常告警**：某 change 成本/轮数 > 项目中位数 2σ → 标记异常，建议人工审查
+
+### 7.2 新增维度（5 点）
+
+#### 7.2.1 变更影响分析（Impact Analysis）
+
+v2.1 未提。plan 阶段自动分析"这个 change 影响哪些模块/调用方/测试"——属工程约束型（不随模型折旧）。可复用 LSP \`references\` 做静态分析，产出 design.md 的 \`## Impact Analysis\` section。
+
+#### 7.2.2 spec 漂移主动检测
+
+v2.1 提了"spec 偏离率"（review 被动发现），但缺**主动检测**——定期跑 \`bp spec refresh\` 对比 spec 与代码，发现漂移告警。这是预防性而非反应性。建议 archive 后自动触发漂移检测。
+
+#### 7.2.3 工作流版本化
+
+v2.1 提了"流程折旧"但无版本化机制。config 加 \`workflow_version: "2.1"\`，不同版本对应不同流程强度。模型升级时切换到更轻版本，旧版本保留兼容。配合 7.1.5 的 prompt_profile 形成完整的"流程强度可调"体系。
+
+#### 7.2.4 CI/CD 集成
+
+v2.1 完全是交互式视角。Blueprint 的门控应支持 \`--ci\` 非交互模式：
+- \`bp review --ci\`：自动跑，无人工确认，FAIL 直接 exit 1
+- \`bp archive --ci\`：PASS 后自动归档
+- 按级别路由：Critical 强制人工，Trivial 自动通过
+
+#### 7.2.5 多人协作维度
+
+v2.1 是单人视角（一个 AI + 一个用户）。实际团队场景：
+- 多编排者并行操作不同 change → 需 change 锁机制（\`bp lock\`/\`bp unlock\`）
+- reviewer 轮换 → 避免同一人连续 review（盲点固化），.meta/ 记录 reviewer identity
+- Critical 级审批权限分级 → 不是所有人都能 approve，config 加 \`approvers: [user-list]\`
+
+### 7.3 代码库摘要预生成深化（6 点）
+
+#### 7.3.1 三层分级摘要
+
+v2.1 说"模块结构、关键接口、依赖关系"混在一起。建议三层：
+- **L0 项目概览**（~200 tokens）：技术栈、入口点、目录结构
+- **L1 模块清单**（~1KB/模块）：每个模块的职责 + 公共 API 签名 + 依赖谁
+- **L2 接口细节**（按需）：完整类型定义、函数签名
+
+planner 先注入 L0+L1，需要实现细节时才深入 L2 或读源文件。
+
+#### 7.3.2 版本标记 + 过时检测
+
+摘要必须带 \`git_hash\` 字段。planner 读摘要时先比对 \`git_hash !== HEAD\` → 标记过时 → 触发增量更新，而非盲目信任旧摘要。
+
+#### 7.3.3 增量更新机制
+
+v2.1 没提更新策略。全量重扫成本高。建议：
+- 首次：全量扫描（复用 codebase-scanner 逻辑）
+- 后续：\`git diff <last_scan_hash>..HEAD\` → 只重扫变更文件 + 受影响模块的依赖链
+- 触发时机：archive 后自动更新；或 planner 发现过时时按需触发
+
+#### 7.3.4 与 specs/ 维度区分
+
+Blueprint 已有 codebase-scanner 产出 \`bp/specs/\`（行为契约）。代码摘要和 specs/ 是**不同维度**，不能混淆：
+- \`specs/\` = 系统做什么（行为约束）→ reviewer 消费
+- \`codebase-map\` = 系统怎么组织（结构地图）→ planner/executor 消费
+
+两者互补。摘要存 \`bp/.codebase-map.json\`（结构化）+ \`bp/.codebase-map.md\`（子代理可读），不污染 specs/。
+
+#### 7.3.5 多消费者
+
+v2.1 只说"planner 先看摘要"。但 executor 和 reviewer 也需要：
+- **executor**：看当前 wave 涉及模块的摘要，知道依赖谁、被谁依赖
+- **reviewer**：看 diff 涉及模块的摘要，判断改动是否波及下游
+
+建议摘要写入 context.jsonl，按 wave 的 DS-N 引用筛选注入对应子代理。
+
+#### 7.3.6 LSP 生成依赖图
+
+v2.1 说"类似 GSD 的 codebase-mapper"（正则/AST 扫描）。Blueprint 可更准：用 LSP \`references\`/\`definition\` 自动生成模块间依赖关系图。对 TS/Python/Go 等 LSP 支持的语言，比正则准确。LSP 不可用时降级为 AST 解析。
+
+配合 7.2.1 变更影响分析：planner 从摘要知道 change 涉及哪些模块，从依赖图找到受影响下游模块，在 design.md File Manifest 标注 \`[IMPACT: downstream-module-X]\`。
+
+---
+
+### 补充优化与 v2.1 原方案的关系
+
+| 类别 | 补充点数 | 关系 |
+|---|---|---|
+| 现有方案增强 | 8 | 补 v2.1 P0-P5 的遗漏行为 |
+| 新增维度 | 5 | v2.1 未覆盖的工程约束场景 |
+| 代码摘要深化 | 6 | 细化 v2.1 3.5.3 的实现方案 |
+
+**实施优先级**：7.1.1-7.1.2（budget + 熔断恢复）与 v2.1 P0 同期；7.2.1（影响分析）和 7.3（代码摘要）属工程约束型，不随模型折旧，应优先于 P3 prompt 精简落地。

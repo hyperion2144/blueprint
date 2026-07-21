@@ -4,8 +4,7 @@
 
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { findBpDir } from './_utils.js';
-import { validateContextJsonlFile } from '../core/artifact-validator.js';
+import { findBpDir, gateContextJsonl } from './_utils.js';
 import { getWorkflowInstructions } from '../core/continue.js';
 import type { Command } from 'commander';
 
@@ -47,18 +46,3 @@ function applyHandler(name: string | undefined, options: { fix?: boolean }) {
   console.log(`Mode: ${options.fix ? 'fix' : 'normal'}`);
 }
 
-/** Gate: exit non-zero if context.jsonl is invalid for the requested phase. */
-function gateContextJsonl(
-  bpDir: string,
-  changeName: string,
-  phase: 'plan' | 'apply' | 'review' | 'archive',
-): boolean {
-  const contextPath = join(bpDir, 'changes', changeName, 'context.jsonl');
-  if (!existsSync(contextPath)) return true;
-  const result = validateContextJsonlFile(contextPath, bpDir, phase);
-  if (result.valid) return true;
-  for (const err of result.errors) {
-    console.error(`${contextPath}:${err.line}: [${err.code}] ${err.message}`);
-  }
-  return false;
-}

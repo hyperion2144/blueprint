@@ -3,7 +3,7 @@ import { execSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
-import { parseContextJsonl } from '../../src/core/context-refs.js';
+import { parseContextJsonl } from '../../src/core/context-jsonl-io.js';
 
 const cliPath = join(process.cwd(), 'bin/cli.js');
 let testDir: string;

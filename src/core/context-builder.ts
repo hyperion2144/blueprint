@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { renderContextJsonl } from './context-refs.js';
-import type { ContextRefRow } from '../types/context-refs.js';
+import { renderContextJsonl } from './context-jsonl-io.js';
+import type { ContextRefRow } from '../types/context-jsonl-io.js';
 
 const SPEC_REFERENCE_PATTERN = /\b(bp\/specs\/[A-Za-z0-9._-]+\/spec\.md(?:#[A-Za-z0-9._-]+)?)/g;
 const CONVENTIONS_REFERENCE_PATTERN = /\b(bp\/conventions\/[A-Za-z0-9._-]+\.md)\b/g;

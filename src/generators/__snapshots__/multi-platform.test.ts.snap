@@ -265,7 +265,7 @@ If you skip this, the orchestrator will treat the task as not-done and the chang
 **HARD GATE: Do NOT return until ALL items below pass.**
 
 1. **Hash annotations** — Every \`[x]\` task in \`tasks.md\` has \`<!-- commit: <hash> -->\`. Read \`tasks.md\` and verify. If missing: run \`git rev-parse HEAD\` and add the hash.
-2. **TypeScript** — \`tsc --noEmit\` exits with code 0. Fix any compilation errors.
+2. **Build** — the project's type-check/build command exits 0 (e.g. tsc --noEmit for TS, mypy for Python, go build for Go). Read bp/config.yaml for the stack. Fix any compilation errors.
 3. **Tests** — Tests for your implemented tasks pass when run individually.
 4. **No placeholder code** — No unreplaced template placeholders, \`TODO\`, \`FIXME\`, or unimplemented stubs in source files.
 
@@ -276,7 +276,7 @@ Only return when all items pass. If any item fails, fix it immediately — do NO
 When all verification items pass:
 - All type:behavior tasks have RED->GREEN->REFACTOR commits
 - All tasks are marked [x] with commit hashes
-- tsc --noEmit exits 0
+- build/type-check exits 0
 - Your wave's tests pass individually
 
 Do NOT run the full test suite. The orchestrator handles full-suite verification after all waves complete.
@@ -675,6 +675,8 @@ In \`--fix\` mode:
 
 ## Output
 
+Single file: \`review.md\` containing three review sections + issue list + routing recommendation.
+
 ## Context Re-validation
 
 Read \`bp/changes/<name>/context.jsonl\` alongside the source diff. For every row, check every row's \`reason\` is still satisfied by the current code state:
@@ -682,8 +684,6 @@ Read \`bp/changes/<name>/context.jsonl\` alongside the source diff. For every ro
 - If the cited file was deleted or refactored, the reason is no longer satisfied — emit a Q-N finding naming the row and the obsolete claim.
 - If the file still exists but no longer encodes the invariant the reason described (different logic, regression, or scope drift), the reason is not satisfied — same finding path.
 - Phase matching against the current step is the validator's job (see \`validateContextJsonl\`); do not re-emit a phase mismatch as a review finding.
-
-Single file: \`review.md\` containing three review sections + issue list + routing recommendation.
 
 ## Execution Flow
 
@@ -799,7 +799,7 @@ Issues have three states:
 2. Read the code changes (git diff since last review)
 3. For each \`[~]\` issue: **VERIFY before marking**
    - Confirm the code was actually changed (git diff shows relevant changes)
-   - Run affected tests: \`npx vitest run <related-test-files>\` (or \`tsc --noEmit\`)
+   - Run affected tests: run the project's test command for related test files (or the build/type-check command). Read bp/config.yaml for the stack.
    - **Only if verification passes: mark \`[~]\` → \`[x]\`**
    - **If verification fails: mark \`[~]\` → \`[ ]\`** and add a note
 4. For each \`[ ]\` issue: evaluate if the fix addressed it, same verification process
@@ -844,7 +844,7 @@ Row fields:
 
 ## Input
 
-- **\`[BP:CHANGE_NAME]\`** (optional): change name. If empty, use the most recently planned change.
+- **\`$ARGUMENTS\`** (optional): change name. If empty, use the most recently planned change.
 - **\`--fix\`** (optional): fix mode — executors read review.md issues and fix them.
 
 ## Prerequisites
@@ -877,11 +877,18 @@ Read \`tasks.md\` and parse into execution plan:
    - If task in Wave B has \`depends_on\` referencing a task in Wave A -> Wave B depends on Wave A
    - Result: DAG where nodes = waves, edges = cross-wave depends_on
 
-3. **Generate execution plan**:
+3. **File manifest overlap check**:
+   - For each pair of waves in the same round, compare their tasks' \`files\` fields
+   - If two waves modify the SAME file, they CANNOT run concurrently
+   - Force overlapping waves into the same wave (serial within one sub-agent) or sequential rounds
+   - This prevents merge conflicts when isolated worktrees merge back
+
+4. **Generate execution plan**:
+
    - Waves with NO unmet cross-wave dependencies -> can run concurrently
    - Waves WITH cross-wave dependencies -> must wait for predecessor wave(s)
 
-4. **For each wave, prepare executor dispatch prompt**:
+5. **For each wave, prepare executor dispatch prompt**:
    - Change name and directory path
    - Wave number and which task IDs (T-N) are in this wave
    - Summary of completed tasks from prior waves: task ID, title, files, key public interfaces
@@ -916,7 +923,7 @@ For each completed wave:
 1. **Check git log**: \`git log --oneline -5\` - confirm new commits exist with correct hashes
 2. **Check git diff**: \`git diff --stat HEAD~N\` - confirm files actually changed (not no-op)
 3. **Check tasks.md**: confirm tasks marked [x] with \`<!-- commit: HASH -->\` annotation
-4. **Run wave's tests**: \`npx vitest run <test-files>\` - confirm tests pass
+4. **Run wave's tests**: run the project's test command for <test-files> - confirm tests pass
 5. **If any task missing commit annotation**: re-run that task manually or re-dispatch
 
 **If any wave fails verification:**
@@ -924,11 +931,11 @@ For each completed wave:
 - Do NOT proceed to next round until all waves in current round pass
 
 **After all rounds complete:**
-1. Run full test suite: \`tsc --noEmit && vitest run\`
+1. Run the project's build check and full test suite (per bp/config.yaml stack)
 2. If failures: identify which wave caused them, re-dispatch with fix instructions
 3. If all pass: mark the \`## Pre-Archive Checklist\` in \`tasks.md\`:
-   - \`- [ ] tsc --noEmit passes\` → \`- [x]\`
-   - \`- [ ] vitest run (or project test command) - all suites pass\` → \`- [x]\`
+   - \`- [ ] type-check/build passes\` → \`- [x]\`
+   - \`- [ ] test suite passes - all suites green\` → \`- [x]\`
    - \`- [ ] Every task in every wave is marked [x] with a commit hash\` → \`- [x]\` (verify this first)
    - \`- [ ] All wave acceptance criteria confirmed\` → \`- [x]\`
    (Skip \`No template placeholders\` — that's verified by the planner during planning.)
@@ -945,22 +952,22 @@ If all tasks are non-behavior:
 ### Step 6: Commit and suggest next step
 
 \`\`\`bash
-# Update roadmap: If the change is linked to a roadmap phase, update it to \`- [-] [BP:CHANGE_NAME] (implemented YYYY-MM-DD)\`.
-git add bp/changes/[BP:CHANGE_NAME]/
-bp commit "feat: implementation complete for [BP:CHANGE_NAME]" --files bp/changes/[BP:CHANGE_NAME]/
+# Update roadmap: If the change is linked to a roadmap phase, update it to \`- [-] $1 (implemented YYYY-MM-DD)\`.
+git add bp/changes/$1/
+bp commit "feat: implementation complete for $1" --files bp/changes/$1/
 \`\`\`
-  Next: bp review [BP:CHANGE_NAME]
-  (or: bp continue [BP:CHANGE_NAME])
+  Next: bp review $1
+  (or: bp continue $1)
 
 Output:
 \`\`\`
-Implementation complete for [BP:CHANGE_NAME]
+Implementation complete for $1
   - N tasks implemented in N wave(s)
   - N commits created
   - All tests pass
 
-  Next: bp review [BP:CHANGE_NAME]
-  (or: bp continue [BP:CHANGE_NAME])
+  Next: bp review $1
+  (or: bp continue $1)
 \`\`\`
 
 ## Guardrails
@@ -972,6 +979,7 @@ Implementation complete for [BP:CHANGE_NAME]
 - **NEVER skip review.** Apply's test pass is NOT a replacement for review.
 - In --fix mode: executors read review.md, fix R/Q/G issues, then mark each issue \`[ ]\` → \`[~]\` (\`~\` = fixed, pending verification). Do NOT mark \`[x]\` — that's the re-review's job. Do NOT fix D issues (those need replan).
 - Do NOT run bp review automatically - let the user decide.
+- **Wave retry limit: max 2 re-dispatches per wave.** If a wave fails verification 2 times after re-dispatch with specific feedback, STOP and report as blocker. Do not re-dispatch indefinitely.
 ",
   ".agent/skills/bp-archive/SKILL.md": "---
 name: bp-archive
@@ -981,7 +989,8 @@ hide: false
 
 ## Input
 
-- **\`[BP:CHANGE_NAME]\`** (optional): change name. If empty, use the most recently reviewed change.
+- **\`$ARGUMENTS\`** (optional): change name. If empty, use the most recently reviewed change.
+
 ## Prerequisites
 
 - \`review.md\` exists and Overall Verdict is PASS
@@ -993,11 +1002,12 @@ hide: false
 
 Same as plan workflow Step 1.
 
-### Step 2: Verify review status
+### Step 2: Pre-archive check (optional but recommended)
 
-Read \`bp/changes/[BP:CHANGE_NAME]/review.md\`:
+Read \`bp/changes/$1/review.md\`:
 - Check Overall Verdict is PASS
 - Check \`## Issues\` section has no \`- [ ]\` entries (all should be [x] or empty)
+- Run \`git status --porcelain\` — if there are uncommitted changes outside bp/, warn the user. Uncommitted half-done code may get archived alongside the change.
 
 If review is not PASS:
 \`\`\`
@@ -1005,60 +1015,68 @@ Cannot archive: review not passed
   Verdict: FAIL/NEEDS_REVISION
   Unresolved issues: N
 
-  Fix issues first: bp apply --fix [BP:CHANGE_NAME]
+  Fix issues first: bp apply --fix $1
 \`\`\`
 
-### Step 3: Merge delta specs
+### Step 3: Run archive command
 
-For each \`specs/<domain>/spec.md\` in the change directory:
-
-1. Read the delta spec
-2. Read the corresponding global spec: \`bp/specs/<domain>/spec.md\`
-   - If global spec doesn't exist: create it from the delta spec's ADDED requirements
-   - **ADDED Requirements**: Insert into the global spec under the correct heading tree (delta-merge handles heading-level merge automatically - no need to check for existing sections)
-   - **MODIFIED Requirements**: Find the matching requirement header in global spec (by heading name), replace the entire block
-   - **REMOVED Requirements**: Find the matching requirement header in global spec, delete the entire block
-4. Write the updated global spec
-
-### Step 4: Move change to archive
+The \`bp archive\` command handles everything: review verification, delta spec merge, change directory move, and roadmap update.
 
 \`\`\`bash
-# Create archive directory with date prefix
-ARCHIVE_DIR="bp/changes/archive/$(date +%Y-%m-%d)-[BP:CHANGE_NAME]"
-mkdir -p "$ARCHIVE_DIR"
-
-# Move all change files to archive
-mv bp/changes/[BP:CHANGE_NAME]/* "$ARCHIVE_DIR/"
-
-# Remove the now-empty change directory
-rmdir bp/changes/[BP:CHANGE_NAME]
+bp archive $1
 \`\`\`
 
-### Step 5: Update roadmap
+The command will:
+1. Verify review.md verdict is PASS and no unresolved issues
+2. Gate context.jsonl validity for archive phase
+3. Merge each delta spec (\`specs/<domain>/spec.md\`) into global spec (\`bp/specs/<domain>/spec.md\`) via mergeDeltaSpec
+4. Move change directory to \`bp/changes/archive/<date>-$1/\`
+5. Update \`bp/roadmap.md\` if proposal has \`## Roadmap Reference\`
 
-Read \`bp/roadmap.md\`. If the change's proposal.md has a \`## Roadmap Reference\` section:
+If the command reports a merge conflict, resolve it in the delta spec and re-run.
 
-1. Find the change line under its phase
-2. Update it to: \`- [x] <name> (archived YYYY-MM-DD)\`
-3. Save \`bp/roadmap.md\`
+### Step 4: Verify archive success
 
-Do NOT manually count phase completions or milestone shipments.
-Those are tracked by \`bp continue\` output, not by editing roadmap.md.
+Check the following after the command completes:
 
-### Step 6: Commit and output
+1. **Archive directory exists**: \`bp/changes/archive/<date>-$1/\` exists and contains all artifacts (proposal.md, design.md, tasks.md, specs/, review.md)
+2. **Source directory removed**: \`bp/changes/$1/\` no longer exists
+3. **Delta specs merged**: For each domain in the change's \`specs/\`:
+   - ADDED requirements appear in \`bp/specs/<domain>/spec.md\`
+   - REMOVED requirements are gone from \`bp/specs/<domain>/spec.md\`
+   - MODIFIED requirements are replaced in \`bp/specs/<domain>/spec.md\`
+4. **Roadmap updated** (if proposal had \`## Roadmap Reference\`): the change is marked \`- [x]\` in \`bp/roadmap.md\`
+5. **No conflict residue**: the command output shows no merge conflict errors
+
+If any check fails, investigate — the archive command may have partially completed.
+
+### Step 5: Commit changes
+
+The archive command does NOT run git commit. Commit the merged specs, roadmap, and archived change:
 
 \`\`\`bash
-# Step 5 already updated the roadmap above — no separate roadmap-update command needed.
-bp commit "archive: [BP:CHANGE_NAME] - specs merged, roadmap updated" --files bp/specs/ bp/roadmap.md
+bp commit "archive: $1 - specs merged, roadmap updated" --files bp/specs/ bp/roadmap.md bp/changes/
+\`\`\`
+
+### Step 6: Suggest next step
+
+Output:
+\`\`\`
+Archived $1
+  - Delta specs merged into bp/specs/
+  - Change moved to bp/changes/archive/<date>-$1/
+  - Roadmap updated
+
+  Next: bp continue (or: bp propose <new-change>)
 \`\`\`
 
 ## Guardrails
 
-- **Review must PASS before archive**.
-- **Delta spec merge is the critical operation.** If a MODIFIED requirement header doesn't match the global spec, flag it.
-- **Archive preserves full context.** All artifacts (proposal, design, tasks, specs, review) move to archive together.
-- **Roadmap update is automatic.** Don't ask the user to manually update it.
-- Check proposal.md for ## Roadmap Reference before updating roadmap.
+- **Review must PASS before archive.** The archive command enforces this, but pre-checking saves a failed command.
+- **The archive command is the source of truth for the merge/move/roadmap operations.** Do NOT manually merge specs, move files, or update roadmap — the command does it all.
+- **If merge conflict occurs**, resolve in the delta spec (change directory) and re-run \`bp archive $1\`. Do NOT edit global specs directly.
+- **Archive preserves full context.** All artifacts move to archive together.
+- **Commit is the orchestrator's job** — the archive command does not commit.
 ",
   ".agent/skills/bp-continue/SKILL.md": "---
 name: bp-continue
@@ -1068,14 +1086,14 @@ hide: false
 
 ## Input
 
-- **\`[BP:CHANGE_NAME]\`** (optional): change name. If empty, the CLI auto-detects.
+- **\`$ARGUMENTS\`** (optional): change name. If empty, the CLI auto-detects.
 
 ## What to do
 
 Run the CLI command:
 
 \`\`\`bash
-bp continue [BP:CHANGE_NAME]
+bp continue $ARGUMENTS
 \`\`\`
 
 The CLI runs schema-driven detection in code and outputs:
@@ -1105,7 +1123,7 @@ hide: false
 
 ## Input
 
-- **\`[BP:CHANGE_NAME]\`** (optional): change name. If empty, starts from current project state.
+- **\`$ARGUMENTS\`** (optional): change name. If empty, starts from current project state.
 
 ## What to do
 
@@ -1116,7 +1134,7 @@ Fast-forward: execute the current step, then auto-call \`bp continue\` to get th
 For each iteration:
 
 1. **Get current step**: \`\`\`bash
-   bp continue [BP:CHANGE_NAME]
+   bp continue $ARGUMENTS
    \`\`\`
    The CLI outputs the next step's full workflow instructions.
 
@@ -1233,7 +1251,7 @@ hide: false
 
 ## Input
 
-- **\`[BP:CHANGE_NAME]\`** (optional): change name. If empty, starts from current project state.
+- **\`$ARGUMENTS\`** (optional): change name. If empty, starts from current project state.
 
 ## What to do
 
@@ -1244,7 +1262,7 @@ Autonomous loop: same as \`/bp:ff\` but **skip ALL user interaction**. Run until
 For each iteration:
 
 1. **Get current step**: \`\`\`bash
-   bp continue [BP:CHANGE_NAME]
+   bp continue $ARGUMENTS
    \`\`\`
    The CLI outputs the next step's full workflow instructions.
 
@@ -1301,7 +1319,7 @@ Row fields:
 
 ## Input
 
-- **\`[BP:CHANGE_NAME]\`** (optional): change name. If empty, use most recently proposed change.
+- **\`$ARGUMENTS\`** (optional): change name. If empty, use most recently proposed change.
 - **\`--fix\`** (optional): fix mode — planner reads review.md D-issues and redesigns.
 
 ## Prerequisites
@@ -1312,12 +1330,12 @@ Row fields:
 
 ### Step 1: Resolve change name and paths
 
-If \`[BP:CHANGE_NAME]\` is empty:
+If \`$ARGUMENTS\` is empty:
 - List \`bp/changes/\` for active changes (not in \`archive/\`)
 - If multiple exist, ask the user which one
 - If none exist, suggest \`bp propose <name>\`
 
-Change directory: \`bp/changes/[BP:CHANGE_NAME]/\`
+Change directory: \`bp/changes/$1/\`
 
 ### Step 2: Classify change (lightweight vs full)
 
@@ -1332,7 +1350,7 @@ Read \`proposal.md\` deliverables:
 1. Prepare planner context:
    - Change name and directory path
    - List files to read: proposal.md, bp/specs/<domain>/spec.md (per affected domain), bp/conventions/coding.md, bp/config.yaml
-   - Instruction: "Read planner agent prompt, produce design.md, tasks.md, and change_specs/<domain>/spec.md (delta specs under the change directory, NOT bp/specs/)"
+   - Instruction: "Read planner agent prompt, produce design.md, tasks.md, and specs/<domain>/spec.md (delta specs under the change directory, NOT bp/specs/)"
    - In --fix mode: also include review.md, focus on D-prefixed issues
 
 2. Dispatch via task tool. Wait for planner to complete.
@@ -1371,22 +1389,23 @@ If any check fails: re-dispatch planner with specific feedback on what's missing
 ### Step 5: Commit and suggest next step
 
 \`\`\`bash
-# Update roadmap: If the change's proposal.md has \`## Roadmap Reference\`, read \`bp/roadmap.md\`, find the change in that phase's Changes list, and update it to \`- [-] [BP:CHANGE_NAME] (planned YYYY-MM-DD)\`.
-git add bp/changes/[BP:CHANGE_NAME]/
-bp commit "docs(plan): design + tasks + delta specs for [BP:CHANGE_NAME]" --files bp/changes/[BP:CHANGE_NAME]/
+# Update roadmap: If the change's proposal.md has \`## Roadmap Reference\`, read \`bp/roadmap.md\`, find the change in that phase's Changes list, and update it to \`- [-] $1 (planned YYYY-MM-DD)\`.
+git add bp/changes/$1/
+bp commit "docs(plan): design + tasks + delta specs for $1" --files bp/changes/$1/
+# In --fix mode, also run: bp plan --write-context $1
 \`\`\`
-  Next: bp apply [BP:CHANGE_NAME]
-  (or: bp continue [BP:CHANGE_NAME])
+  Next: bp apply $1
+  (or: bp continue $1)
 
 Output:
 \`\`\`
-Planner completed for [BP:CHANGE_NAME]
+Planner completed for $1
   - design.md: N design items, N decisions
   - tasks.md: N tasks in N wave(s)
   - specs/: N delta spec(s)
 
-  Next: bp apply [BP:CHANGE_NAME]
-  (or: bp continue [BP:CHANGE_NAME])
+  Next: bp apply $1
+  (or: bp continue $1)
 \`\`\`
 
 ## Guardrails
@@ -1405,12 +1424,21 @@ hide: false
 
 ## Input
 
-- **\`[BP:CHANGE_NAME]\`** (required): change name (kebab-case)
+- **\`$ARGUMENTS\`** (required): change name (kebab-case)
 - **\`--phase <milestone>/<phase>\`** (optional): reference a roadmap phase
 
 ## Steps
 
-### Step 1: Grill the user on requirements (RELENTLESS - do NOT skip)
+### Step 0: Classify change
+
+Read the user's request. Classify:
+- **Lightweight**: trivial changes (fix-typo, bump-deps, rename, config tweak) — no new behavior, no new deliverables
+- **Full**: any new behavior or capability
+
+**If LIGHTWEIGHT**: skip Step 1 (grill). Go directly to Step 2 with a minimal proposal derived from the user's one-line description. Fill template directly, no interview.
+**If FULL**: continue to Step 1 (relentless interview).
+
+### Step 1: Grill the user on requirements (Skip if Step 0 classified as lightweight) (RELENTLESS - do NOT skip)
 
 Before writing anything, you must reach FULL shared understanding with the user.
 This is NOT a checklist. It is a relentless interview that walks every branch of the decision tree,
@@ -1445,7 +1473,7 @@ What to grill on (walk every branch):
 ### Step 2: Create change directory
 
 \`\`\`bash
-mkdir -p bp/changes/[BP:CHANGE_NAME]
+mkdir -p bp/changes/$1
 \`\`\`
 
 If \`--phase\` is provided, note the milestone/phase for the proposal's Roadmap Reference section.
@@ -1461,7 +1489,7 @@ Get the proposal template and fill it based on the discussion:
    - **Approach**: User's preferred approach if given, or a reasonable high-level approach based on the discussion
    - **Deliverables**: Observable, verifiable capabilities (PR-N). Each must have a SHALL statement and a Verify method.
    - **Roadmap Reference**: If --phase provided, fill in milestone/phase
-3. Write to \`bp/changes/[BP:CHANGE_NAME]/proposal.md\`
+3. Write to \`bp/changes/$1/proposal.md\`
 
 ### Step 4: Verify proposal quality
 
@@ -1476,18 +1504,18 @@ Before finishing, check:
 ### Step 5: Commit and suggest next step
 
 \`\`\`bash
-# Update roadmap: If proposal has \`## Roadmap Reference\`, read \`bp/roadmap.md\`, find corresponding phase, add \`- [ ] [BP:CHANGE_NAME]\` to its Changes list if not already present.
-git add bp/changes/[BP:CHANGE_NAME]/
-bp commit "docs(proposal): [BP:CHANGE_NAME]" --files bp/changes/[BP:CHANGE_NAME]/
+# Update roadmap: If proposal has \`## Roadmap Reference\`, read \`bp/roadmap.md\`, find corresponding phase, add \`- [ ] $1\` to its Changes list if not already present.
+git add bp/changes/$1/
+bp commit "docs(proposal): $1" --files bp/changes/$1/
 \`\`\`
 
 Output:
 \`\`\`
-Created bp/changes/[BP:CHANGE_NAME]/proposal.md
+Created bp/changes/$1/proposal.md
   Proposal is ready for planning.
 
-  Next: bp plan [BP:CHANGE_NAME]
-  (or: bp continue [BP:CHANGE_NAME])
+  Next: bp plan $1
+  (or: bp continue $1)
 \`\`\`
 
 ## Guardrails
@@ -1495,7 +1523,7 @@ Created bp/changes/[BP:CHANGE_NAME]/proposal.md
 - **ALWAYS discuss with the user before writing.** Do not guess the requirements.
 - Do NOT create design.md, tasks.md, or specs/ - that's the planner's job
 - Do NOT run bp plan automatically - let the user review the proposal first
-- If the user wants to skip proposal review and go straight to planning, they can run bp plan [BP:CHANGE_NAME] directly
+- If the user wants to skip proposal review and go straight to planning, they can run bp plan $1 directly
 - Architecture decisions and technical design come from the planner, not from propose
 ",
   ".agent/skills/bp-review/SKILL.md": "---
@@ -1526,13 +1554,13 @@ Row fields:
 
 ## Input
 
-- **\`[BP:CHANGE_NAME]\`** (optional): change name. If empty, use the most recently applied change.
+- **\`$ARGUMENTS\`** (optional): change name. If empty, use the most recently applied change.
 - **\`--fix\`** (optional): re-review mode — reviewer marks resolved issues in existing review.md.
 
 ## Prerequisites
 
 - Code is implemented (tasks.md has [x] entries with commit hashes)
-- \`tsc --noEmit\` and \`vitest run\` pass (run these BEFORE dispatching reviewer)
+- Build check and test suite pass (per bp/config.yaml stack)
 - In --fix mode: \`review.md\` exists with unresolved issues, fixes have been applied
 
 ## Steps
@@ -1545,11 +1573,17 @@ Same as plan workflow Step 1.
 
 Run before dispatching reviewer:
 \`\`\`bash
-tsc --noEmit
-npx vitest run
+# Run the project's build check and test suite.
+# Read bp/config.yaml for the tech stack and test framework.
+# Examples by stack:
+#   TypeScript: tsc --noEmit && npx vitest run
+#   Python:     mypy . && pytest
+#   Go:         go build ./... && go test ./...
+#   Rust:       cargo build && cargo test
+#   Java:       mvn compile && mvn test
 \`\`\`
 
-If either fails: do NOT dispatch reviewer. Report the failures and suggest \`bp apply --fix\` to fix them first.
+If build or tests fail: do NOT dispatch reviewer. Report the failures and suggest \`bp apply --fix\` to fix them first.
 
 ### Step 3: Classify change (lightweight vs full)
 
@@ -1579,47 +1613,48 @@ If either fails: do NOT dispatch reviewer. Report the failures and suggest \`bp 
 
 After reviewer completes:
 
-1. Read \`bp/changes/[BP:CHANGE_NAME]/review.md\`
+1. Read \`bp/changes/$1/review.md\`
 2. Extract the Overall Verdict and Issues list
 3. Route based on findings:
 
 **If Overall Verdict is PASS (zero issues):**
 \`\`\`
-Review PASSED for [BP:CHANGE_NAME]
+Review PASSED for $1
   All three dimensions clean.
 
-  Next: bp archive [BP:CHANGE_NAME]
+  Next: bp archive $1
 \`\`\`
 
 **If D-prefixed issues exist (design flaw):**
 \`\`\`
-Review FAILED for [BP:CHANGE_NAME]
+Review FAILED for $1
   D issues found (design/architecture problems):
   - D1: <list actual D-issue descriptions from review.md>
 
   These require redesign, not code fix.
-  Next: bp plan --fix [BP:CHANGE_NAME]
+  Next: bp plan --fix $1
 \`\`\`
 
 **If only R/Q/G issues (code fixable):**
 \`\`\`
-Review NEEDS_REVISION for [BP:CHANGE_NAME]
+Review NEEDS_REVISION for $1
   Issues found (code fixable):
   - R1: <list actual R-issue descriptions from review.md>
   - Q1: <list actual Q-issue descriptions from review.md>
   - G1: <list actual G-issue descriptions from review.md>
 
-  Next: bp apply --fix [BP:CHANGE_NAME]
+  Next: bp apply --fix $1
 \`\`\`
 
 ### Step 6: Commit review.md
 
 \`\`\`bash
-# Update roadmap: If the change is linked to a roadmap phase, update it to \`- [x] [BP:CHANGE_NAME] (reviewed YYYY-MM-DD)\`.
+# Update roadmap: If the change is linked to a roadmap phase, update it to \`- [x] $1 (reviewed YYYY-MM-DD)\`.
 git add .
-bp commit "docs(review): triple review for [BP:CHANGE_NAME]" --files bp/changes/[BP:CHANGE_NAME]/review.md
+bp commit "docs(review): triple review for $1" --files bp/changes/$1/review.md
 - Do NOT run bp archive automatically - let the user review the findings first.
 - **Context is auto-injected by the OMP Extension.** Do NOT call \`bp context review\`; the extension already supplies the same material at every turn.
+- **Fix loop limit: max 3 rounds.** If the change has been through 3 fix rounds (count re-reviews in review.md — each re-review adds new issue numbers) and issues still persist, STOP and report to the user. Do not auto-route to another fix — escalate for human decision.
 ",
   ".agent/skills/bp-roadmap/SKILL.md": "---
 name: bp-roadmap
@@ -1857,7 +1892,6 @@ tools:
   - lsp
   - ast_grep
   - ast_edit
-model: sonnet
 effort: high
 ---
 
@@ -1982,7 +2016,7 @@ If you skip this, the orchestrator will treat the task as not-done and the chang
 **HARD GATE: Do NOT return until ALL items below pass.**
 
 1. **Hash annotations** — Every \`[x]\` task in \`tasks.md\` has \`<!-- commit: <hash> -->\`. Read \`tasks.md\` and verify. If missing: run \`git rev-parse HEAD\` and add the hash.
-2. **TypeScript** — \`tsc --noEmit\` exits with code 0. Fix any compilation errors.
+2. **Build** — the project's type-check/build command exits 0 (e.g. tsc --noEmit for TS, mypy for Python, go build for Go). Read bp/config.yaml for the stack. Fix any compilation errors.
 3. **Tests** — Tests for your implemented tasks pass when run individually.
 4. **No placeholder code** — No unreplaced template placeholders, \`TODO\`, \`FIXME\`, or unimplemented stubs in source files.
 
@@ -1993,7 +2027,7 @@ Only return when all items pass. If any item fails, fix it immediately — do NO
 When all verification items pass:
 - All type:behavior tasks have RED->GREEN->REFACTOR commits
 - All tasks are marked [x] with commit hashes
-- tsc --noEmit exits 0
+- build/type-check exits 0
 - Your wave's tests pass individually
 
 Do NOT run the full test suite. The orchestrator handles full-suite verification after all waves complete.
@@ -2040,7 +2074,6 @@ tools:
   - lsp
   - write
   - bash
-model: opus
 effort: high
 ---
 
@@ -2361,7 +2394,6 @@ tools:
   - lsp
   - ast_grep
   - bash
-model: opus
 effort: high
 ---
 
@@ -2396,6 +2428,8 @@ In \`--fix\` mode:
 
 ## Output
 
+Single file: \`review.md\` containing three review sections + issue list + routing recommendation.
+
 ## Context Re-validation
 
 Read \`bp/changes/<name>/context.jsonl\` alongside the source diff. For every row, check every row's \`reason\` is still satisfied by the current code state:
@@ -2403,8 +2437,6 @@ Read \`bp/changes/<name>/context.jsonl\` alongside the source diff. For every ro
 - If the cited file was deleted or refactored, the reason is no longer satisfied — emit a Q-N finding naming the row and the obsolete claim.
 - If the file still exists but no longer encodes the invariant the reason described (different logic, regression, or scope drift), the reason is not satisfied — same finding path.
 - Phase matching against the current step is the validator's job (see \`validateContextJsonl\`); do not re-emit a phase mismatch as a review finding.
-
-Single file: \`review.md\` containing three review sections + issue list + routing recommendation.
 
 ## Execution Flow
 
@@ -2520,7 +2552,7 @@ Issues have three states:
 2. Read the code changes (git diff since last review)
 3. For each \`[~]\` issue: **VERIFY before marking**
    - Confirm the code was actually changed (git diff shows relevant changes)
-   - Run affected tests: \`npx vitest run <related-test-files>\` (or \`tsc --noEmit\`)
+   - Run affected tests: run the project's test command for related test files (or the build/type-check command). Read bp/config.yaml for the stack.
    - **Only if verification passes: mark \`[~]\` → \`[x]\`**
    - **If verification fails: mark \`[~]\` → \`[ ]\`** and add a note
 4. For each \`[ ]\` issue: evaluate if the fix addressed it, same verification process
@@ -2598,11 +2630,18 @@ Read \`tasks.md\` and parse into execution plan:
    - If task in Wave B has \`depends_on\` referencing a task in Wave A -> Wave B depends on Wave A
    - Result: DAG where nodes = waves, edges = cross-wave depends_on
 
-3. **Generate execution plan**:
+3. **File manifest overlap check**:
+   - For each pair of waves in the same round, compare their tasks' \`files\` fields
+   - If two waves modify the SAME file, they CANNOT run concurrently
+   - Force overlapping waves into the same wave (serial within one sub-agent) or sequential rounds
+   - This prevents merge conflicts when isolated worktrees merge back
+
+4. **Generate execution plan**:
+
    - Waves with NO unmet cross-wave dependencies -> can run concurrently
    - Waves WITH cross-wave dependencies -> must wait for predecessor wave(s)
 
-4. **For each wave, prepare executor dispatch prompt**:
+5. **For each wave, prepare executor dispatch prompt**:
    - Change name and directory path
    - Wave number and which task IDs (T-N) are in this wave
    - Summary of completed tasks from prior waves: task ID, title, files, key public interfaces
@@ -2637,7 +2676,7 @@ For each completed wave:
 1. **Check git log**: \`git log --oneline -5\` - confirm new commits exist with correct hashes
 2. **Check git diff**: \`git diff --stat HEAD~N\` - confirm files actually changed (not no-op)
 3. **Check tasks.md**: confirm tasks marked [x] with \`<!-- commit: HASH -->\` annotation
-4. **Run wave's tests**: \`npx vitest run <test-files>\` - confirm tests pass
+4. **Run wave's tests**: run the project's test command for <test-files> - confirm tests pass
 5. **If any task missing commit annotation**: re-run that task manually or re-dispatch
 
 **If any wave fails verification:**
@@ -2645,11 +2684,11 @@ For each completed wave:
 - Do NOT proceed to next round until all waves in current round pass
 
 **After all rounds complete:**
-1. Run full test suite: \`tsc --noEmit && vitest run\`
+1. Run the project's build check and full test suite (per bp/config.yaml stack)
 2. If failures: identify which wave caused them, re-dispatch with fix instructions
 3. If all pass: mark the \`## Pre-Archive Checklist\` in \`tasks.md\`:
-   - \`- [ ] tsc --noEmit passes\` → \`- [x]\`
-   - \`- [ ] vitest run (or project test command) - all suites pass\` → \`- [x]\`
+   - \`- [ ] type-check/build passes\` → \`- [x]\`
+   - \`- [ ] test suite passes - all suites green\` → \`- [x]\`
    - \`- [ ] Every task in every wave is marked [x] with a commit hash\` → \`- [x]\` (verify this first)
    - \`- [ ] All wave acceptance criteria confirmed\` → \`- [x]\`
    (Skip \`No template placeholders\` — that's verified by the planner during planning.)
@@ -2693,6 +2732,7 @@ Implementation complete for $1
 - **NEVER skip review.** Apply's test pass is NOT a replacement for review.
 - In --fix mode: executors read review.md, fix R/Q/G issues, then mark each issue \`[ ]\` → \`[~]\` (\`~\` = fixed, pending verification). Do NOT mark \`[x]\` — that's the re-review's job. Do NOT fix D issues (those need replan).
 - Do NOT run bp review automatically - let the user decide.
+- **Wave retry limit: max 2 re-dispatches per wave.** If a wave fails verification 2 times after re-dispatch with specific feedback, STOP and report as blocker. Do not re-dispatch indefinitely.
 ",
   ".claude/commands/bp-archive.md": "---
 name: bp:archive
@@ -2703,6 +2743,7 @@ argument-hint: "[change-name]"
 ## Input
 
 - **\`$ARGUMENTS\`** (optional): change name. If empty, use the most recently reviewed change.
+
 ## Prerequisites
 
 - \`review.md\` exists and Overall Verdict is PASS
@@ -2714,11 +2755,12 @@ argument-hint: "[change-name]"
 
 Same as plan workflow Step 1.
 
-### Step 2: Verify review status
+### Step 2: Pre-archive check (optional but recommended)
 
 Read \`bp/changes/$1/review.md\`:
 - Check Overall Verdict is PASS
 - Check \`## Issues\` section has no \`- [ ]\` entries (all should be [x] or empty)
+- Run \`git status --porcelain\` — if there are uncommitted changes outside bp/, warn the user. Uncommitted half-done code may get archived alongside the change.
 
 If review is not PASS:
 \`\`\`
@@ -2729,57 +2771,65 @@ Cannot archive: review not passed
   Fix issues first: bp apply --fix $1
 \`\`\`
 
-### Step 3: Merge delta specs
+### Step 3: Run archive command
 
-For each \`specs/<domain>/spec.md\` in the change directory:
-
-1. Read the delta spec
-2. Read the corresponding global spec: \`bp/specs/<domain>/spec.md\`
-   - If global spec doesn't exist: create it from the delta spec's ADDED requirements
-   - **ADDED Requirements**: Insert into the global spec under the correct heading tree (delta-merge handles heading-level merge automatically - no need to check for existing sections)
-   - **MODIFIED Requirements**: Find the matching requirement header in global spec (by heading name), replace the entire block
-   - **REMOVED Requirements**: Find the matching requirement header in global spec, delete the entire block
-4. Write the updated global spec
-
-### Step 4: Move change to archive
+The \`bp archive\` command handles everything: review verification, delta spec merge, change directory move, and roadmap update.
 
 \`\`\`bash
-# Create archive directory with date prefix
-ARCHIVE_DIR="bp/changes/archive/$(date +%Y-%m-%d)-$1"
-mkdir -p "$ARCHIVE_DIR"
-
-# Move all change files to archive
-mv bp/changes/$1/* "$ARCHIVE_DIR/"
-
-# Remove the now-empty change directory
-rmdir bp/changes/$1
+bp archive $1
 \`\`\`
 
-### Step 5: Update roadmap
+The command will:
+1. Verify review.md verdict is PASS and no unresolved issues
+2. Gate context.jsonl validity for archive phase
+3. Merge each delta spec (\`specs/<domain>/spec.md\`) into global spec (\`bp/specs/<domain>/spec.md\`) via mergeDeltaSpec
+4. Move change directory to \`bp/changes/archive/<date>-$1/\`
+5. Update \`bp/roadmap.md\` if proposal has \`## Roadmap Reference\`
 
-Read \`bp/roadmap.md\`. If the change's proposal.md has a \`## Roadmap Reference\` section:
+If the command reports a merge conflict, resolve it in the delta spec and re-run.
 
-1. Find the change line under its phase
-2. Update it to: \`- [x] <name> (archived YYYY-MM-DD)\`
-3. Save \`bp/roadmap.md\`
+### Step 4: Verify archive success
 
-Do NOT manually count phase completions or milestone shipments.
-Those are tracked by \`bp continue\` output, not by editing roadmap.md.
+Check the following after the command completes:
 
-### Step 6: Commit and output
+1. **Archive directory exists**: \`bp/changes/archive/<date>-$1/\` exists and contains all artifacts (proposal.md, design.md, tasks.md, specs/, review.md)
+2. **Source directory removed**: \`bp/changes/$1/\` no longer exists
+3. **Delta specs merged**: For each domain in the change's \`specs/\`:
+   - ADDED requirements appear in \`bp/specs/<domain>/spec.md\`
+   - REMOVED requirements are gone from \`bp/specs/<domain>/spec.md\`
+   - MODIFIED requirements are replaced in \`bp/specs/<domain>/spec.md\`
+4. **Roadmap updated** (if proposal had \`## Roadmap Reference\`): the change is marked \`- [x]\` in \`bp/roadmap.md\`
+5. **No conflict residue**: the command output shows no merge conflict errors
+
+If any check fails, investigate — the archive command may have partially completed.
+
+### Step 5: Commit changes
+
+The archive command does NOT run git commit. Commit the merged specs, roadmap, and archived change:
 
 \`\`\`bash
-# Step 5 already updated the roadmap above — no separate roadmap-update command needed.
-bp commit "archive: $1 - specs merged, roadmap updated" --files bp/specs/ bp/roadmap.md
+bp commit "archive: $1 - specs merged, roadmap updated" --files bp/specs/ bp/roadmap.md bp/changes/
+\`\`\`
+
+### Step 6: Suggest next step
+
+Output:
+\`\`\`
+Archived $1
+  - Delta specs merged into bp/specs/
+  - Change moved to bp/changes/archive/<date>-$1/
+  - Roadmap updated
+
+  Next: bp continue (or: bp propose <new-change>)
 \`\`\`
 
 ## Guardrails
 
-- **Review must PASS before archive**.
-- **Delta spec merge is the critical operation.** If a MODIFIED requirement header doesn't match the global spec, flag it.
-- **Archive preserves full context.** All artifacts (proposal, design, tasks, specs, review) move to archive together.
-- **Roadmap update is automatic.** Don't ask the user to manually update it.
-- Check proposal.md for ## Roadmap Reference before updating roadmap.
+- **Review must PASS before archive.** The archive command enforces this, but pre-checking saves a failed command.
+- **The archive command is the source of truth for the merge/move/roadmap operations.** Do NOT manually merge specs, move files, or update roadmap — the command does it all.
+- **If merge conflict occurs**, resolve in the delta spec (change directory) and re-run \`bp archive $1\`. Do NOT edit global specs directly.
+- **Archive preserves full context.** All artifacts move to archive together.
+- **Commit is the orchestrator's job** — the archive command does not commit.
 ",
   ".claude/commands/bp-continue.md": "---
 name: bp:continue
@@ -3050,7 +3100,7 @@ Read \`proposal.md\` deliverables:
 1. Prepare planner context:
    - Change name and directory path
    - List files to read: proposal.md, bp/specs/<domain>/spec.md (per affected domain), bp/conventions/coding.md, bp/config.yaml
-   - Instruction: "Read planner agent prompt, produce design.md, tasks.md, and change_specs/<domain>/spec.md (delta specs under the change directory, NOT bp/specs/)"
+   - Instruction: "Read planner agent prompt, produce design.md, tasks.md, and specs/<domain>/spec.md (delta specs under the change directory, NOT bp/specs/)"
    - In --fix mode: also include review.md, focus on D-prefixed issues
 
 2. Dispatch via task tool. Wait for planner to complete.
@@ -3092,6 +3142,7 @@ If any check fails: re-dispatch planner with specific feedback on what's missing
 # Update roadmap: If the change's proposal.md has \`## Roadmap Reference\`, read \`bp/roadmap.md\`, find the change in that phase's Changes list, and update it to \`- [-] $1 (planned YYYY-MM-DD)\`.
 git add bp/changes/$1/
 bp commit "docs(plan): design + tasks + delta specs for $1" --files bp/changes/$1/
+# In --fix mode, also run: bp plan --write-context $1
 \`\`\`
   Next: bp apply $1
   (or: bp continue $1)
@@ -3128,7 +3179,16 @@ argument-hint: "[change-name]"
 
 ## Steps
 
-### Step 1: Grill the user on requirements (RELENTLESS - do NOT skip)
+### Step 0: Classify change
+
+Read the user's request. Classify:
+- **Lightweight**: trivial changes (fix-typo, bump-deps, rename, config tweak) — no new behavior, no new deliverables
+- **Full**: any new behavior or capability
+
+**If LIGHTWEIGHT**: skip Step 1 (grill). Go directly to Step 2 with a minimal proposal derived from the user's one-line description. Fill template directly, no interview.
+**If FULL**: continue to Step 1 (relentless interview).
+
+### Step 1: Grill the user on requirements (Skip if Step 0 classified as lightweight) (RELENTLESS - do NOT skip)
 
 Before writing anything, you must reach FULL shared understanding with the user.
 This is NOT a checklist. It is a relentless interview that walks every branch of the decision tree,
@@ -3250,7 +3310,7 @@ Row fields:
 ## Prerequisites
 
 - Code is implemented (tasks.md has [x] entries with commit hashes)
-- \`tsc --noEmit\` and \`vitest run\` pass (run these BEFORE dispatching reviewer)
+- Build check and test suite pass (per bp/config.yaml stack)
 - In --fix mode: \`review.md\` exists with unresolved issues, fixes have been applied
 
 ## Steps
@@ -3263,11 +3323,17 @@ Same as plan workflow Step 1.
 
 Run before dispatching reviewer:
 \`\`\`bash
-tsc --noEmit
-npx vitest run
+# Run the project's build check and test suite.
+# Read bp/config.yaml for the tech stack and test framework.
+# Examples by stack:
+#   TypeScript: tsc --noEmit && npx vitest run
+#   Python:     mypy . && pytest
+#   Go:         go build ./... && go test ./...
+#   Rust:       cargo build && cargo test
+#   Java:       mvn compile && mvn test
 \`\`\`
 
-If either fails: do NOT dispatch reviewer. Report the failures and suggest \`bp apply --fix\` to fix them first.
+If build or tests fail: do NOT dispatch reviewer. Report the failures and suggest \`bp apply --fix\` to fix them first.
 
 ### Step 3: Classify change (lightweight vs full)
 
@@ -3338,6 +3404,7 @@ git add .
 bp commit "docs(review): triple review for $1" --files bp/changes/$1/review.md
 - Do NOT run bp archive automatically - let the user review the findings first.
 - **Context is auto-injected by the OMP Extension.** Do NOT call \`bp context review\`; the extension already supplies the same material at every turn.
+- **Fix loop limit: max 3 rounds.** If the change has been through 3 fix rounds (count re-reviews in review.md — each re-review adds new issue numbers) and issues still persist, STOP and report to the user. Do not auto-route to another fix — escalate for human decision.
 ",
   ".claude/commands/bp-roadmap.md": "---
 name: bp:roadmap
@@ -3710,7 +3777,7 @@ If you skip this, the orchestrator will treat the task as not-done and the chang
 **HARD GATE: Do NOT return until ALL items below pass.**
 
 1. **Hash annotations** — Every \`[x]\` task in \`tasks.md\` has \`<!-- commit: <hash> -->\`. Read \`tasks.md\` and verify. If missing: run \`git rev-parse HEAD\` and add the hash.
-2. **TypeScript** — \`tsc --noEmit\` exits with code 0. Fix any compilation errors.
+2. **Build** — the project's type-check/build command exits 0 (e.g. tsc --noEmit for TS, mypy for Python, go build for Go). Read bp/config.yaml for the stack. Fix any compilation errors.
 3. **Tests** — Tests for your implemented tasks pass when run individually.
 4. **No placeholder code** — No unreplaced template placeholders, \`TODO\`, \`FIXME\`, or unimplemented stubs in source files.
 
@@ -3721,7 +3788,7 @@ Only return when all items pass. If any item fails, fix it immediately — do NO
 When all verification items pass:
 - All type:behavior tasks have RED->GREEN->REFACTOR commits
 - All tasks are marked [x] with commit hashes
-- tsc --noEmit exits 0
+- build/type-check exits 0
 - Your wave's tests pass individually
 
 Do NOT run the full test suite. The orchestrator handles full-suite verification after all waves complete.
@@ -4134,6 +4201,8 @@ In \`--fix\` mode:
 
 ## Output
 
+Single file: \`review.md\` containing three review sections + issue list + routing recommendation.
+
 ## Context Re-validation
 
 Read \`bp/changes/<name>/context.jsonl\` alongside the source diff. For every row, check every row's \`reason\` is still satisfied by the current code state:
@@ -4141,8 +4210,6 @@ Read \`bp/changes/<name>/context.jsonl\` alongside the source diff. For every ro
 - If the cited file was deleted or refactored, the reason is no longer satisfied — emit a Q-N finding naming the row and the obsolete claim.
 - If the file still exists but no longer encodes the invariant the reason described (different logic, regression, or scope drift), the reason is not satisfied — same finding path.
 - Phase matching against the current step is the validator's job (see \`validateContextJsonl\`); do not re-emit a phase mismatch as a review finding.
-
-Single file: \`review.md\` containing three review sections + issue list + routing recommendation.
 
 ## Execution Flow
 
@@ -4258,7 +4325,7 @@ Issues have three states:
 2. Read the code changes (git diff since last review)
 3. For each \`[~]\` issue: **VERIFY before marking**
    - Confirm the code was actually changed (git diff shows relevant changes)
-   - Run affected tests: \`npx vitest run <related-test-files>\` (or \`tsc --noEmit\`)
+   - Run affected tests: run the project's test command for related test files (or the build/type-check command). Read bp/config.yaml for the stack.
    - **Only if verification passes: mark \`[~]\` → \`[x]\`**
    - **If verification fails: mark \`[~]\` → \`[ ]\`** and add a note
 4. For each \`[ ]\` issue: evaluate if the fix addressed it, same verification process
@@ -4337,11 +4404,18 @@ Read \`tasks.md\` and parse into execution plan:
    - If task in Wave B has \`depends_on\` referencing a task in Wave A -> Wave B depends on Wave A
    - Result: DAG where nodes = waves, edges = cross-wave depends_on
 
-3. **Generate execution plan**:
+3. **File manifest overlap check**:
+   - For each pair of waves in the same round, compare their tasks' \`files\` fields
+   - If two waves modify the SAME file, they CANNOT run concurrently
+   - Force overlapping waves into the same wave (serial within one sub-agent) or sequential rounds
+   - This prevents merge conflicts when isolated worktrees merge back
+
+4. **Generate execution plan**:
+
    - Waves with NO unmet cross-wave dependencies -> can run concurrently
    - Waves WITH cross-wave dependencies -> must wait for predecessor wave(s)
 
-4. **For each wave, prepare executor dispatch prompt**:
+5. **For each wave, prepare executor dispatch prompt**:
    - Change name and directory path
    - Wave number and which task IDs (T-N) are in this wave
    - Summary of completed tasks from prior waves: task ID, title, files, key public interfaces
@@ -4376,7 +4450,7 @@ For each completed wave:
 1. **Check git log**: \`git log --oneline -5\` - confirm new commits exist with correct hashes
 2. **Check git diff**: \`git diff --stat HEAD~N\` - confirm files actually changed (not no-op)
 3. **Check tasks.md**: confirm tasks marked [x] with \`<!-- commit: HASH -->\` annotation
-4. **Run wave's tests**: \`npx vitest run <test-files>\` - confirm tests pass
+4. **Run wave's tests**: run the project's test command for <test-files> - confirm tests pass
 5. **If any task missing commit annotation**: re-run that task manually or re-dispatch
 
 **If any wave fails verification:**
@@ -4384,11 +4458,11 @@ For each completed wave:
 - Do NOT proceed to next round until all waves in current round pass
 
 **After all rounds complete:**
-1. Run full test suite: \`tsc --noEmit && vitest run\`
+1. Run the project's build check and full test suite (per bp/config.yaml stack)
 2. If failures: identify which wave caused them, re-dispatch with fix instructions
 3. If all pass: mark the \`## Pre-Archive Checklist\` in \`tasks.md\`:
-   - \`- [ ] tsc --noEmit passes\` → \`- [x]\`
-   - \`- [ ] vitest run (or project test command) - all suites pass\` → \`- [x]\`
+   - \`- [ ] type-check/build passes\` → \`- [x]\`
+   - \`- [ ] test suite passes - all suites green\` → \`- [x]\`
    - \`- [ ] Every task in every wave is marked [x] with a commit hash\` → \`- [x]\` (verify this first)
    - \`- [ ] All wave acceptance criteria confirmed\` → \`- [x]\`
    (Skip \`No template placeholders\` — that's verified by the planner during planning.)
@@ -4432,6 +4506,7 @@ Implementation complete for $1
 - **NEVER skip review.** Apply's test pass is NOT a replacement for review.
 - In --fix mode: executors read review.md, fix R/Q/G issues, then mark each issue \`[ ]\` → \`[~]\` (\`~\` = fixed, pending verification). Do NOT mark \`[x]\` — that's the re-review's job. Do NOT fix D issues (those need replan).
 - Do NOT run bp review automatically - let the user decide.
+- **Wave retry limit: max 2 re-dispatches per wave.** If a wave fails verification 2 times after re-dispatch with specific feedback, STOP and report as blocker. Do not re-dispatch indefinitely.
 ",
   ".omp/commands/bp-archive.md": "---
 name: bp:archive
@@ -4442,6 +4517,7 @@ argument-hint: "[change-name]"
 ## Input
 
 - **\`$ARGUMENTS\`** (optional): change name. If empty, use the most recently reviewed change.
+
 ## Prerequisites
 
 - \`review.md\` exists and Overall Verdict is PASS
@@ -4453,11 +4529,12 @@ argument-hint: "[change-name]"
 
 Same as plan workflow Step 1.
 
-### Step 2: Verify review status
+### Step 2: Pre-archive check (optional but recommended)
 
 Read \`bp/changes/$1/review.md\`:
 - Check Overall Verdict is PASS
 - Check \`## Issues\` section has no \`- [ ]\` entries (all should be [x] or empty)
+- Run \`git status --porcelain\` — if there are uncommitted changes outside bp/, warn the user. Uncommitted half-done code may get archived alongside the change.
 
 If review is not PASS:
 \`\`\`
@@ -4468,57 +4545,65 @@ Cannot archive: review not passed
   Fix issues first: bp apply --fix $1
 \`\`\`
 
-### Step 3: Merge delta specs
+### Step 3: Run archive command
 
-For each \`specs/<domain>/spec.md\` in the change directory:
-
-1. Read the delta spec
-2. Read the corresponding global spec: \`bp/specs/<domain>/spec.md\`
-   - If global spec doesn't exist: create it from the delta spec's ADDED requirements
-   - **ADDED Requirements**: Insert into the global spec under the correct heading tree (delta-merge handles heading-level merge automatically - no need to check for existing sections)
-   - **MODIFIED Requirements**: Find the matching requirement header in global spec (by heading name), replace the entire block
-   - **REMOVED Requirements**: Find the matching requirement header in global spec, delete the entire block
-4. Write the updated global spec
-
-### Step 4: Move change to archive
+The \`bp archive\` command handles everything: review verification, delta spec merge, change directory move, and roadmap update.
 
 \`\`\`bash
-# Create archive directory with date prefix
-ARCHIVE_DIR="bp/changes/archive/$(date +%Y-%m-%d)-$1"
-mkdir -p "$ARCHIVE_DIR"
-
-# Move all change files to archive
-mv bp/changes/$1/* "$ARCHIVE_DIR/"
-
-# Remove the now-empty change directory
-rmdir bp/changes/$1
+bp archive $1
 \`\`\`
 
-### Step 5: Update roadmap
+The command will:
+1. Verify review.md verdict is PASS and no unresolved issues
+2. Gate context.jsonl validity for archive phase
+3. Merge each delta spec (\`specs/<domain>/spec.md\`) into global spec (\`bp/specs/<domain>/spec.md\`) via mergeDeltaSpec
+4. Move change directory to \`bp/changes/archive/<date>-$1/\`
+5. Update \`bp/roadmap.md\` if proposal has \`## Roadmap Reference\`
 
-Read \`bp/roadmap.md\`. If the change's proposal.md has a \`## Roadmap Reference\` section:
+If the command reports a merge conflict, resolve it in the delta spec and re-run.
 
-1. Find the change line under its phase
-2. Update it to: \`- [x] <name> (archived YYYY-MM-DD)\`
-3. Save \`bp/roadmap.md\`
+### Step 4: Verify archive success
 
-Do NOT manually count phase completions or milestone shipments.
-Those are tracked by \`bp continue\` output, not by editing roadmap.md.
+Check the following after the command completes:
 
-### Step 6: Commit and output
+1. **Archive directory exists**: \`bp/changes/archive/<date>-$1/\` exists and contains all artifacts (proposal.md, design.md, tasks.md, specs/, review.md)
+2. **Source directory removed**: \`bp/changes/$1/\` no longer exists
+3. **Delta specs merged**: For each domain in the change's \`specs/\`:
+   - ADDED requirements appear in \`bp/specs/<domain>/spec.md\`
+   - REMOVED requirements are gone from \`bp/specs/<domain>/spec.md\`
+   - MODIFIED requirements are replaced in \`bp/specs/<domain>/spec.md\`
+4. **Roadmap updated** (if proposal had \`## Roadmap Reference\`): the change is marked \`- [x]\` in \`bp/roadmap.md\`
+5. **No conflict residue**: the command output shows no merge conflict errors
+
+If any check fails, investigate — the archive command may have partially completed.
+
+### Step 5: Commit changes
+
+The archive command does NOT run git commit. Commit the merged specs, roadmap, and archived change:
 
 \`\`\`bash
-# Step 5 already updated the roadmap above — no separate roadmap-update command needed.
-bp commit "archive: $1 - specs merged, roadmap updated" --files bp/specs/ bp/roadmap.md
+bp commit "archive: $1 - specs merged, roadmap updated" --files bp/specs/ bp/roadmap.md bp/changes/
+\`\`\`
+
+### Step 6: Suggest next step
+
+Output:
+\`\`\`
+Archived $1
+  - Delta specs merged into bp/specs/
+  - Change moved to bp/changes/archive/<date>-$1/
+  - Roadmap updated
+
+  Next: bp continue (or: bp propose <new-change>)
 \`\`\`
 
 ## Guardrails
 
-- **Review must PASS before archive**.
-- **Delta spec merge is the critical operation.** If a MODIFIED requirement header doesn't match the global spec, flag it.
-- **Archive preserves full context.** All artifacts (proposal, design, tasks, specs, review) move to archive together.
-- **Roadmap update is automatic.** Don't ask the user to manually update it.
-- Check proposal.md for ## Roadmap Reference before updating roadmap.
+- **Review must PASS before archive.** The archive command enforces this, but pre-checking saves a failed command.
+- **The archive command is the source of truth for the merge/move/roadmap operations.** Do NOT manually merge specs, move files, or update roadmap — the command does it all.
+- **If merge conflict occurs**, resolve in the delta spec (change directory) and re-run \`bp archive $1\`. Do NOT edit global specs directly.
+- **Archive preserves full context.** All artifacts move to archive together.
+- **Commit is the orchestrator's job** — the archive command does not commit.
 ",
   ".omp/commands/bp-continue.md": "---
 name: bp:continue
@@ -4789,7 +4874,7 @@ Read \`proposal.md\` deliverables:
 1. Prepare planner context:
    - Change name and directory path
    - List files to read: proposal.md, bp/specs/<domain>/spec.md (per affected domain), bp/conventions/coding.md, bp/config.yaml
-   - Instruction: "Read planner agent prompt, produce design.md, tasks.md, and change_specs/<domain>/spec.md (delta specs under the change directory, NOT bp/specs/)"
+   - Instruction: "Read planner agent prompt, produce design.md, tasks.md, and specs/<domain>/spec.md (delta specs under the change directory, NOT bp/specs/)"
    - In --fix mode: also include review.md, focus on D-prefixed issues
 
 2. Dispatch via task tool. Wait for planner to complete.
@@ -4831,6 +4916,7 @@ If any check fails: re-dispatch planner with specific feedback on what's missing
 # Update roadmap: If the change's proposal.md has \`## Roadmap Reference\`, read \`bp/roadmap.md\`, find the change in that phase's Changes list, and update it to \`- [-] $1 (planned YYYY-MM-DD)\`.
 git add bp/changes/$1/
 bp commit "docs(plan): design + tasks + delta specs for $1" --files bp/changes/$1/
+# In --fix mode, also run: bp plan --write-context $1
 \`\`\`
   Next: bp apply $1
   (or: bp continue $1)
@@ -4867,7 +4953,16 @@ argument-hint: "[change-name]"
 
 ## Steps
 
-### Step 1: Grill the user on requirements (RELENTLESS - do NOT skip)
+### Step 0: Classify change
+
+Read the user's request. Classify:
+- **Lightweight**: trivial changes (fix-typo, bump-deps, rename, config tweak) — no new behavior, no new deliverables
+- **Full**: any new behavior or capability
+
+**If LIGHTWEIGHT**: skip Step 1 (grill). Go directly to Step 2 with a minimal proposal derived from the user's one-line description. Fill template directly, no interview.
+**If FULL**: continue to Step 1 (relentless interview).
+
+### Step 1: Grill the user on requirements (Skip if Step 0 classified as lightweight) (RELENTLESS - do NOT skip)
 
 Before writing anything, you must reach FULL shared understanding with the user.
 This is NOT a checklist. It is a relentless interview that walks every branch of the decision tree,
@@ -4989,7 +5084,7 @@ Row fields:
 ## Prerequisites
 
 - Code is implemented (tasks.md has [x] entries with commit hashes)
-- \`tsc --noEmit\` and \`vitest run\` pass (run these BEFORE dispatching reviewer)
+- Build check and test suite pass (per bp/config.yaml stack)
 - In --fix mode: \`review.md\` exists with unresolved issues, fixes have been applied
 
 ## Steps
@@ -5002,11 +5097,17 @@ Same as plan workflow Step 1.
 
 Run before dispatching reviewer:
 \`\`\`bash
-tsc --noEmit
-npx vitest run
+# Run the project's build check and test suite.
+# Read bp/config.yaml for the tech stack and test framework.
+# Examples by stack:
+#   TypeScript: tsc --noEmit && npx vitest run
+#   Python:     mypy . && pytest
+#   Go:         go build ./... && go test ./...
+#   Rust:       cargo build && cargo test
+#   Java:       mvn compile && mvn test
 \`\`\`
 
-If either fails: do NOT dispatch reviewer. Report the failures and suggest \`bp apply --fix\` to fix them first.
+If build or tests fail: do NOT dispatch reviewer. Report the failures and suggest \`bp apply --fix\` to fix them first.
 
 ### Step 3: Classify change (lightweight vs full)
 
@@ -5077,6 +5178,7 @@ git add .
 bp commit "docs(review): triple review for $1" --files bp/changes/$1/review.md
 - Do NOT run bp archive automatically - let the user review the findings first.
 - **Context is auto-injected by the OMP Extension.** Do NOT call \`bp context review\`; the extension already supplies the same material at every turn.
+- **Fix loop limit: max 3 rounds.** If the change has been through 3 fix rounds (count re-reviews in review.md — each re-review adds new issue numbers) and issues still persist, STOP and report to the user. Do not auto-route to another fix — escalate for human decision.
 ",
   ".omp/commands/bp-roadmap.md": "---
 name: bp:roadmap

@@ -101,11 +101,11 @@
 | 维度 | 当前 Blueprint v0.5 | Blueprint v2 |
 |------|---------------------|--------------|
 | 状态追踪 | state.md + 20 个状态 + 转移表 | artifact-based（文件存在性） |
-| 命令数 | 25 | 8 |
+| 命令数 | 25 | 17（8 核心 + 9 辅助） |
 | 层级 | 4 层（P->M->Ph->C） | 2 层（Roadmap + Change） |
-| 制品模板 | 27 | 6 |
+| 制品模板 | 27 | 8 |
 | 校验 | PEG 5 维 + 引用链 | YAML schema + 轻量结构检查 |
-| 子代理 | ✅ planner/executor/reviewer | ✅ 保留 |
+| 子代理 | ✅ planner/executor/reviewer | ✅ 4 类（+codebase-scanner） |
 | 质量门控 | ✅ 三重 review（强制） | ✅ 保留（profile 可选） |
 | spec 门控 | ✅ spec-review | ✅ 保留 |
 | delta specs | ✅ ADDED/MODIFIED/REMOVED | ✅ 保留 |
@@ -232,7 +232,7 @@ review 发现 R/Q/G 类问题（代码缺陷）:
 
 ## 6. 命令集
 
-### 6.1 命令总览（8 个，从 25 个缩减）
+### 6.1 命令总览（17 个，从 25 个缩减）
 
 | 命令 | 用途 | 子代理 |
 |------|------|--------|
@@ -245,7 +245,21 @@ review 发现 R/Q/G 类问题（代码缺陷）:
 | `bp archive [name]` | 合并 delta specs + 归档 + 更新 roadmap | — |
 | `bp continue [name]` | 检查 artifact，输出下一步指令 | — |
 
-### 6.2 命令详解
+
+辅助命令（9 个）：
+
+| 命令 | 用途 |
+|------|------|
+| `bp commit <name>` | 为已完成任务生成原子提交 |
+| `bp template <type>` | 生成制品模板（proposal, design, tasks, spec, review, roadmap, config, global-spec） |
+| `bp list` | 列出活跃/已归档 change 及 spec 领域 |
+| `bp dispatch <role>` | 输出平台特定子代理派发指令 |
+| `bp config [list\|set]` | 查看/修改项目配置 |
+| `bp context <name>` | 检查 change 上下文完整性 |
+| `bp state <name>` | 查看 artifact-based 的当前状态 |
+| `bp update` | 重新生成所有平台文件（同步最新模板） |
+| `bp schema` | 管理 spec schema |
+### 6.3 命令详解
 
 #### `bp init`
 
@@ -388,7 +402,7 @@ review 发现 R/Q/G 类问题（代码缺陷）:
 输出: 当前状态 + 推荐下一步
 ```
 
-### 6.3 删除的命令（17 个）
+### 6.4 删除的命令（17 个）
 
 | 删除命令 | 替代方案 |
 |---------|---------|
@@ -1049,9 +1063,9 @@ Phase 2: 命令层重构
   15. 删除: grill, research, discuss, split, milestone, adhoc, fix-plan, fix-apply, commit, audit, loop, ship, add-phase, design, upgrade
 
 Phase 3: 模板层重构
-  16. 缩减 workflows/ 为 8 个
-  17. 缩减 artifacts/ 为 6 个
-  18. 缩减 agents/ 为 3 个
+  16. 实现 workflows/ 10 个（8 核心 + ff/loop 扩展）
+  17. 实现 artifacts/ 8 个模板（+config 模板、+global_spec 模板）
+  18. 实现 agents/ 4 类（+codebase-scanner 用于 brownfield）
 
 Phase 4: 测试 + 文档
   19. 更新集成测试
@@ -1074,11 +1088,11 @@ Phase 4: 测试 + 文档
 | 决策 | 选择 | 理由 |
 |------|------|------|
 | 状态追踪 | artifact-based（文件存在性） | 轻，无需 state.md，enablers not gates |
-| 命令数 | 8（从25缩减） | 砍掉 phase 级流程命令，保留工程管道 |
+| 命令数 | 17（8 核心 + 9 辅助，从 25 缩减） | 砍掉 phase 级流程命令，保留工程管道 |
 | 层级 | 2 层（Roadmap + Change） | 路线图轻量跟踪，change 独立流转 |
 | 校验 | YAML schema + 正则 | 替代 15 个 PEG，维护成本低 |
-| 制品 | 6 个结构化模板 | 保留 design/tasks 结构化，OpenSpec 太轻 |
-| 子代理 | 3 类（planner/executor/reviewer） | fresh context；仅 executor 隔离（并发写源码），planner/reviewer 不隔离（单实例，需读真实代码库） |
+| 制品 | 8 个结构化模板 | 保留 design/tasks 结构化，+config 模板、+global_spec 模板 |
+| 子代理 | 4 类（planner/executor/reviewer/codebase-scanner） | fresh context；仅 executor 隔离（并发写源码），planner/reviewer 不隔离（单实例，需读真实代码库）；codebase-scanner 用于 brownfield init |
 | 门控 | spec + quality（review 阶段） | profile 可选，D 类路由到 replan |
 | Delta specs | ADDED/MODIFIED/REMOVED | brownfield 友好，archive 自动合并 |
 | Roadmap | 活文档，不门控 | 防偏离 + 进度跟踪，不阻塞 change |
@@ -1090,3 +1104,28 @@ Phase 4: 测试 + 文档
 >
 > 比 OpenSpec 多：结构化 design/tasks、子代理并发、spec 门控、质量门控、路线图
 > 比 Blueprint v0.5 少：状态机、25 个命令、4 层嵌套、15 个 PEG、跨文档引用链
+
+## Post-v2 Iterations
+
+设计文档发布后，实际实现过程中引入了以下增量变化：
+
+### context.jsonl 机制
+
+Planner 子代理现在产出 `context.jsonl` 文件，列出 change 依赖的每个 spec / convention / artifact 路径（含 phase、tag、reason 标注）。Executor 和 reviewer 子代理读取该文件获取上下文索引，OMP 扩展自动注入对应的文件内容到子代理 prompt 中。
+
+### ff / loop 自动化工作流
+
+基于 `bp continue` 的自动推进扩展为两种补充工作流：
+- **ff (快进模式)：** 针对简单 change 自动执行 propose → plan → apply → review → archive 的完整链路，适合已知清晰的变更。
+- **loop (全自动模式)：** 持续检查 change 状态，自动执行下一步，遇到阻塞（review FAIL、plan 歧义）时暂停等待人工介入。适合无人值守的夜间批量处理。
+
+### codebase-scanner 子代理
+
+新增第 4 类子代理，专用于 brownfield 项目的 spec bootstrap。`bp init --scan` 派发 codebase-scanner 分析现有代码库，提取行为契约并生成初始 `bp/specs/` 文件。遵循 delta spec 格式（ADDED），使现有功能可被后续 change 追踪。
+
+### artifact-validator
+
+实现阶段新增的制品校验器，在 continue / apply / review 各阶段自动执行：
+- **Placeholder 检查：** 检测模板中的 `{{...}}` 占位符是否已被替换
+- **Section 完整性：** 验证必需章节（## Intent、## Scope 等）是否存在
+- **ID 引用完整性：** 验证 PR-N / DS-N / T-N / SHALL-N 等 ID 的交叉引用一致性

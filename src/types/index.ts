@@ -45,5 +45,5 @@ export type {
   ContextRefRow,
   ContextJsonlError,
   ContextJsonlErrorCode,
-} from './context-refs.js';
-export { ContextRefRowSchema } from './context-refs.js';
+} from './context-jsonl-io.js';
+export { ContextRefRowSchema } from './context-jsonl-io.js';

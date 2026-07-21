@@ -1,3 +1,5 @@
+import type { Command } from 'commander';
+
 /**
  * bp list — list active changes, archived changes, and spec domains
  */
@@ -6,7 +8,7 @@ import { join } from 'node:path';
 import { listActiveChanges, listArchivedChanges, listSpecDomains } from '../core/file-tree.js';
 import { findBpDir } from './_utils.js';
 
-export function register(program: any): void {
+export function register(program: Command): void {
   program
     .command('list')
     .description('List active/archived changes and spec domains')

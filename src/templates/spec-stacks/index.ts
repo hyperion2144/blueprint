@@ -70,8 +70,13 @@ The system SHALL validate all inputs before processing.
 `;
 }
 
-function apiSpec(stack: 'node' | 'python' | 'go'): string {
-  const framework = stack === 'node' ? 'Express/Fastify' : stack === 'python' ? 'FastAPI/Flask' : 'net/http';
+function apiSpec(stack: 'node' | 'python' | 'go' | 'java' | 'dotnet'): string {
+  const framework =
+    stack === 'node' ? 'Express/Fastify' :
+    stack === 'python' ? 'FastAPI/Flask' :
+    stack === 'java' ? 'Spring Boot' :
+    stack === 'dotnet' ? 'ASP.NET Core' :
+    'net/http';
   return `# API Specification
 
 ## Purpose
@@ -252,6 +257,86 @@ function genericConventions(): string {
 
 // ── Stack templates ──
 
+function nodeBackendConventions(): string {
+  return `# Coding Standards
+
+## Node.js Backend Conventions
+
+- Use Express or Fastify for HTTP routing
+- Centralized error handling middleware
+- Request validation via Zod or Joi
+- Environment configuration via dotenv
+- Logging: structured JSON logs (pino or winston)
+- Async error handling: always wrap async route handlers
+- Testing: Vitest or Jest with supertest for integration tests
+- API docs: OpenAPI/Swagger specification
+`;
+}
+
+function vueConventions(): string {
+  return `# Coding Standards
+
+## Vue Conventions
+
+- Composition API with <script setup> syntax
+- TypeScript by default on all components
+- Pinia for state management
+- Vue Router for client-side routing
+- File naming: PascalCase for components, kebab-case for directories
+- Component single-responsibility: one component per file
+- CSS: scoped styles, prefer Tailwind CSS or CSS variables
+- Testing: Vitest + Vue Test Utils, Playwright for E2E
+`;
+}
+
+function svelteConventions(): string {
+  return `# Coding Standards
+
+## Svelte Conventions
+
+- Use Svelte 5 runes ($state, $derived, $effect) for reactivity
+- One component per .svelte file
+- TypeScript by default in <script lang="ts">
+- File naming: PascalCase for components
+- Scoped styles via Svelte's built-in scoping
+- State management: Svelte stores or context module pattern
+- Routing: SvelteKit file-based routing for full apps
+- Testing: Vitest, Playwright for E2E
+`;
+}
+
+function javaConventions(): string {
+  return `# Coding Standards
+
+## Java Conventions
+
+- Follow standard Java naming conventions (camelCase methods, PascalCase classes)
+- Use Spring Boot annotations for DI, REST, and configuration
+- DTO layer for API request/response models
+- Repository pattern for data access (Spring Data JPA)
+- Lombok for reducing boilerplate
+- Validation: Jakarta Bean Validation annotations
+- Testing: JUnit 5, Mockito, Spring Boot Test
+- Build: Maven (pom.xml) or Gradle (build.gradle)
+`;
+}
+
+function dotnetConventions(): string {
+  return `# Coding Standards
+
+## C# .NET Conventions
+
+- Follow Microsoft .NET naming conventions (PascalCase for public, camelCase for private)
+- Use ASP.NET Core for web APIs
+- Entity Framework Core for data access
+- Dependency injection via built-in DI container
+- File-scoped namespaces
+- Async/await for all I/O operations
+- Testing: xUnit or NUnit, Moq for mocking
+- Package management: NuGet
+`;
+}
+
 export const SPEC_STACKS: SpecStackTemplate[] = [
   {
     id: 'typescript-cli',
@@ -307,6 +392,61 @@ export const SPEC_STACKS: SpecStackTemplate[] = [
       { name: 'testing', specContent: testingSpec() },
     ],
     conventions: goConventions(),
+  },
+  {
+    id: 'node-backend',
+    label: 'Node Backend (Express/Fastify)',
+    detect: (info) => info.framework === 'express' || info.framework === 'fastify',
+    domains: [
+      { name: 'api', specContent: apiSpec('node') },
+      { name: 'models', specContent: modelsSpec() },
+      { name: 'testing', specContent: testingSpec() },
+    ],
+    conventions: nodeBackendConventions(),
+  },
+  {
+    id: 'vue-web',
+    label: 'Vue Web App',
+    detect: (info) => info.framework === 'vue',
+    domains: [
+      { name: 'ui', specContent: uiSpec() },
+      { name: 'api', specContent: apiSpec('node') },
+      { name: 'testing', specContent: testingSpec() },
+    ],
+    conventions: vueConventions(),
+  },
+  {
+    id: 'svelte-web',
+    label: 'Svelte Web App',
+    detect: (info) => info.framework === 'svelte',
+    domains: [
+      { name: 'ui', specContent: uiSpec() },
+      { name: 'api', specContent: apiSpec('node') },
+      { name: 'testing', specContent: testingSpec() },
+    ],
+    conventions: svelteConventions(),
+  },
+  {
+    id: 'java-spring',
+    label: 'Java Spring',
+    detect: (info) => info.framework === 'spring',
+    domains: [
+      { name: 'api', specContent: apiSpec('java') },
+      { name: 'models', specContent: modelsSpec() },
+      { name: 'testing', specContent: testingSpec() },
+    ],
+    conventions: javaConventions(),
+  },
+  {
+    id: 'dotnet-api',
+    label: 'C# .NET API',
+    detect: (info) => info.language === 'csharp',
+    domains: [
+      { name: 'api', specContent: apiSpec('dotnet') },
+      { name: 'models', specContent: modelsSpec() },
+      { name: 'testing', specContent: testingSpec() },
+    ],
+    conventions: dotnetConventions(),
   },
   {
     id: 'generic',
