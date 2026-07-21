@@ -16,6 +16,7 @@ import type { Profile, ProjectConfig } from '../types/index.js';
 import { createBlueprintStructure, isInitialized } from '../core/file-tree.js';
 import { runInitWizard } from '../prompts/init-wizard.js';
 import { detectProjectInfo, runBrownfieldInit } from '../core/brownfield.js';
+import { generateCodebaseMap, writeCodebaseMap } from '../core/codebase-map.js';
 import { generateAll } from '../generators/index.js';
 import { ARTIFACT_TEMPLATES } from '../templates/artifacts/index.js';
 import { writeGeneratedFiles } from './_utils.js';
@@ -112,6 +113,14 @@ async function initHandler(options: {
     mkdirSync(specsDir, { recursive: true });
   }
   console.log('✓ specs/ directory created');
+
+  // v2.1 P4: Generate initial codebase map (both greenfield and brownfield)
+  try {
+    const rootDir = join(bpDir, '..');
+    const map = generateCodebaseMap(rootDir);
+    writeCodebaseMap(bpDir, map);
+    console.log('✓ .codebase-map.md created');
+  } catch { /* non-fatal — map generation optional */ }
 
   console.log('Blueprint initialized.');
 

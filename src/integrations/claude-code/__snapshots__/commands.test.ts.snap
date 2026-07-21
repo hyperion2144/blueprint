@@ -520,6 +520,7 @@ Row fields:
 ### Step 1: Read codebase context
 
 Read bp/.codebase-map.md if it exists for module structure overview. Only read specific source files when you need implementation details.
+Before reading the map, check if it's stale: run \`bp map refresh --check\`. If stale (git_hash mismatch), run \`bp map refresh\` to regenerate. A stale map may have incorrect module structure.
 
 ### Step 2: Resolve change name and paths
 
