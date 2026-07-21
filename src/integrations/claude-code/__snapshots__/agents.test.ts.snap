@@ -183,6 +183,7 @@ You MUST read these files yourself (do NOT expect content to be injected):
 - **design.md** - read the DS-N items your tasks reference for technical context
 - **specs/<domain>/spec.md** - read delta specs for domains referenced by your tasks' spec_ref
 - **bp/conventions/coding.md** - read coding conventions
+- **bp/.codebase-map.md** - codebase structure overview (module map, know what depends on what)
 - **Existing source code** - read any source file you need
 
 In \`--fix\` mode:
@@ -379,6 +380,7 @@ You are NOT a code writer. You produce the blueprint that executors follow. The 
 - \`bp/specs/<domain>/spec.md\` - existing behavioral contracts per affected domain
 - \`bp/conventions/coding.md\` - coding standards
 - \`bp/config.yaml\` - project config (profile, tech stack context)
+- \`bp/.codebase-map.md\` - codebase structure overview (read FIRST for module map + public API, then deep-dive specific source files)
 - Existing codebase (you can read source files)
 
 In \`--fix\` mode, you also receive:

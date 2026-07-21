@@ -121,6 +121,11 @@ export function buildContextJsonl(bpDir: string, changeDirPath: string): string 
 
   const rows = Array.from(references.values());
   addConventionsIfMissing(bpDir, rows);
+  // v2.1 P4: Add codebase-map reference for sub-agent context injection
+  const mapMdPath = join(bpDir, '.codebase-map.md');
+  if (existsSync(mapMdPath)) {
+    rows.push(makeRow('bp/.codebase-map.md', 'codebase structure overview', 'artifact'));
+  }
   return renderContextJsonl(rows);
 }
 
