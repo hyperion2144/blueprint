@@ -146,7 +146,7 @@ DS-3: Add tests (tests are per-task, not per-component)
 - Every PR must be referenced by at least one DS.
 - Each DS gets \`refs: PR-{id}\` and \`Source: PR-{id} (proposal.md)\`.
 
-**关键:每个 DS-N 的「详细设计」段必须填充到 executor 可以直接实现的程度。** 只写接口签名不够——必须包含状态迁移、错误处理、副作用等实现细节。根据组件类型选择合适的内容(数据组件写数据流,UI 组件写 Props/事件/状态,API 写校验规则和错误码)。
+**Key: Every DS-N's Detailed Design section must be filled to a level where the executor can implement without guessing.** Interface signatures alone are insufficient — include state transitions, error handling, side effects, and other implementation details. Choose content appropriate to the component type (data components → data flow, UI components → Props/events/states, API → validation rules and error codes).
 
 #### Architecture Decisions (D-N)
 
