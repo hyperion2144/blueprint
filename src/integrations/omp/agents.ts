@@ -9,6 +9,8 @@
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { resolveModels } from '../../core/config.js';
+import { prunePrompt } from '../../core/prompt-pruner.js';
+import type { PromptProfile } from '../../core/prompt-pruner.js';
 import type { ProjectConfig } from '../../types/index.js';
 import { AGENT_PROMPTS } from '../../templates/agents/index.js';
 
@@ -78,11 +80,11 @@ export function resolveThinkingLevel(role: string): string {
   const xhighThinkingRoles = ['planner', 'reviewer'];
   return xhighThinkingRoles.includes(role) ? 'xhigh' : 'high';
 }
-
 /** Generate a single agent file */
-export function generateAgent(def: AgentDef, model: string): string {
+export function generateAgent(def: AgentDef, model: string, profile?: PromptProfile): string {
   const thinkingLevel = resolveThinkingLevel(def.role);
-  const body = AGENT_PROMPTS[def.role] ?? `# ${def.description}\n\nAgent system prompt for bp-${def.role}.`;
+  let body = AGENT_PROMPTS[def.role] ?? `# ${def.description}\n\nAgent system prompt for bp-${def.role}.`;
+  if (profile) body = prunePrompt(body, profile);
 
   return `---
 name: bp-${def.role}
@@ -105,6 +107,6 @@ ${body}
 export function generateAllAgents(config: ProjectConfig): { path: string; content: string }[] {
   return AGENT_DEFS.map((def) => ({
     path: `.omp/agents/bp-${def.role}.md`,
-    content: generateAgent(def, resolveAgentModel(def.role, config)),
+    content: generateAgent(def, resolveAgentModel(def.role, config), config.prompt_profile),
   }));
 }

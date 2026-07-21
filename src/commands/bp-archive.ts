@@ -16,6 +16,7 @@ import { findBpDir, gateContextJsonl, resolveChangeName } from './_utils.js';
 import { changeDir, archiveChangeDir } from '../core/file-tree.js';
 import { generateCodebaseMap, writeCodebaseMap } from '../core/codebase-map.js';
 import { mergeDeltaSpec } from '../core/delta-merge.js';
+import { loadConfig } from '../core/config.js';
 import type { Command } from 'commander';
 export function register(program: Command): void {
   program
@@ -33,6 +34,8 @@ function archiveHandler(name: string, options?: { dryRun?: boolean; ci?: boolean
     console.error('Not in a blueprint project. Run "bp init" first.');
     process.exit(1);
   }
+
+  const config = loadConfig(bpDir);
 
   const changeName = resolveChangeName(bpDir, name);
   if (!changeName) process.exit(1);
@@ -126,6 +129,29 @@ function archiveHandler(name: string, options?: { dryRun?: boolean; ci?: boolean
     process.exit(1);
   }
 
+  // v2.1 7.2.5: Critical change requires approver verification
+  const proposalPath = join(changePath, 'proposal.md');
+  const proposalContent = existsSync(proposalPath) ? readFileSync(proposalPath, 'utf-8') : '';
+  const levelMatch = proposalContent.match(/\*\*Level\*\*:\s*(\w+)/);
+  const changeLevel = levelMatch ? levelMatch[1].toLowerCase() : 'standard';
+  if (changeLevel === 'critical') {
+    const approvers = config.approvers ?? [];
+    if (approvers.length > 0) {
+      // Check if review.md has an approval signature
+      const approvalMatch = reviewContent.match(/## Approval[\s\S]*?Approved by:\s*(\S+)/i);
+      if (!approvalMatch) {
+        console.error('Cannot archive: Critical change requires explicit approval in review.md ## Approval section.');
+        console.error(`Configured approvers: ${approvers.join(', ')}`);
+        process.exit(1);
+      }
+      const approver = approvalMatch[1];
+      if (!approvers.includes(approver)) {
+        console.error(`Cannot archive: approver '${approver}' not in configured approvers list.`);
+        process.exit(1);
+      }
+    }
+  }
+
   // ---- Step 3: Merge delta specs into global specs ----
   const specsDir = join(changePath, 'specs');
   let mergedCount = 0;
@@ -171,7 +197,7 @@ function archiveHandler(name: string, options?: { dryRun?: boolean; ci?: boolean
   }
 
   // ---- Step 4 / 5: Update roadmap (only if proposal has a phase reference) ----
-  const proposalPath = join(changePath, 'proposal.md');
+  // proposalPath already declared above in critical approvers check
   let hasPhaseReference = false;
 
   if (existsSync(proposalPath)) {

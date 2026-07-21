@@ -593,6 +593,15 @@ export const REVIEW_TEMPLATE = `# Review: {{name}}
 - **Reviewer Assessment**: {{same-or-escalated}}
 - **Escalation**: {{none-or-Light-to-Critical-with-reason}}
 
+## Approval
+
+<!--
+  v2.1 7.2.5: Required for Critical-level changes when config.approvers is set.
+-->
+
+- Approved by: {{approver-name}}
+- Date: {{approval-date}}
+
 ## Overall Verdict: {{PASS | FAIL | NEEDS_REVISION}}
 
 ---

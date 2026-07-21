@@ -62,15 +62,33 @@ export function checkArtifacts(bpDir: string, changeName: string, schema: Schema
   // Count completed tasks from tasks.md (if tasks artifact exists)
   let tasksCompleted = 0;
   let tasksTotal = 0;
+  let checklistCompleted = 0;
+  let checklistTotal = 0;
   let allTasksDone = false;
 
   if (existing.has('tasks')) {
     const content = readFileSync(join(dir, 'tasks.md'), 'utf-8');
-    const checked = content.match(/^- \[x\]/gm);
-    const unchecked = content.match(/^- \[ \]/gm);
+
+    // Split at Pre-Archive Checklist section — T-N tasks vs checklist are different concerns
+    const splitIdx = content.indexOf('## Pre-Archive Checklist');
+    const taskSection = splitIdx >= 0 ? content.slice(0, splitIdx) : content;
+    const checklistSection = splitIdx >= 0 ? content.slice(splitIdx) : '';
+
+    // T-N tasks (before checklist section)
+    const checked = taskSection.match(/^- \[x\]/gm);
+    const unchecked = taskSection.match(/^- \[ \]/gm);
     tasksCompleted = checked?.length ?? 0;
     tasksTotal = (checked?.length ?? 0) + (unchecked?.length ?? 0);
-    allTasksDone = tasksTotal > 0 && tasksCompleted === tasksTotal;
+
+    // Pre-Archive Checklist (separate counting)
+    const clChecked = checklistSection.match(/^- \[x\]/gm);
+    const clUnchecked = checklistSection.match(/^- \[ \]/gm);
+    checklistCompleted = clChecked?.length ?? 0;
+    checklistTotal = (clChecked?.length ?? 0) + (clUnchecked?.length ?? 0);
+
+    const tasksDone = tasksTotal > 0 && tasksCompleted === tasksTotal;
+    const checklistDone = checklistTotal === 0 || checklistCompleted === checklistTotal;
+    allTasksDone = tasksDone && checklistDone;
   }
 
   return {
@@ -81,6 +99,8 @@ export function checkArtifacts(bpDir: string, changeName: string, schema: Schema
     review: existsSync(join(dir, 'review.md')),
     tasksCompleted,
     tasksTotal,
+    checklistCompleted,
+    checklistTotal,
     allTasksDone,
   };
 }
@@ -306,7 +326,11 @@ function determineChangeNextStep(
       let description = '';
 
       if (step.id === 'apply') {
-        description = `Dispatch executor sub-agents (${artifacts.tasksCompleted}/${artifacts.tasksTotal} tasks done)`;
+        if (artifacts.tasksCompleted === artifacts.tasksTotal && !artifacts.allTasksDone) {
+          description = `[CHECKLIST INCOMPLETE] Pre-Archive Checklist: ${artifacts.checklistCompleted}/${artifacts.checklistTotal} checked. Run build/tests then mark items [x] in tasks.md. Do NOT re-dispatch executor.`;
+        } else {
+          description = `Dispatch executor sub-agents (${artifacts.tasksCompleted}/${artifacts.tasksTotal} tasks done)`;
+        }
       } else if (step.id === 'review') {
         description = 'Verify build and tests pass (per project config), then dispatch reviewer for triple review';
       } else if (step.id === 'archive') {

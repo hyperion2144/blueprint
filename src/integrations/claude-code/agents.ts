@@ -6,6 +6,8 @@
  */
 
 import type { ProjectConfig } from '../../types/index.js';
+import { prunePrompt } from '../../core/prompt-pruner.js';
+import type { PromptProfile } from '../../core/prompt-pruner.js';
 import { AGENT_PROMPTS } from '../../templates/agents/index.js';
 
 export interface ClaudeAgentDef {
@@ -22,10 +24,10 @@ export const AGENT_DEFS: ClaudeAgentDef[] = [
   { role: 'reviewer', description: 'Triple review — spec review + quality review + goal review', tools: ['read', 'write', 'grep', 'glob', 'lsp', 'ast_grep', 'bash'], effort: 'high' },
   { role: 'codebase-scanner', description: 'Brownfield codebase scan - extract behavioral contracts into specs', tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'] },
 ];
-
-export function generateClaudeAgent(def: ClaudeAgentDef): string {
+export function generateClaudeAgent(def: ClaudeAgentDef, profile?: PromptProfile): string {
   const prompt = AGENT_PROMPTS[def.role as keyof typeof AGENT_PROMPTS];
-  const body = prompt || `# ${def.role}\n\nAgent definition for ${def.description}.`;
+  let body = prompt || `# ${def.role}\n\nAgent definition for ${def.description}.`;
+  if (profile) body = prunePrompt(body, profile);
 
   const lines = ['---', `name: bp-${def.role}`, `description: ${def.description}`];
   if (def.tools.length > 0) {
@@ -46,7 +48,7 @@ export function generateClaudeAgents(config: ProjectConfig): { path: string; con
     const model = config.models?.[def.role];
     return {
       path: `.claude/agents/bp-${def.role}.md`,
-      content: generateClaudeAgent(model ? { ...def, model } : def),
+      content: generateClaudeAgent(model ? { ...def, model } : def, config.prompt_profile),
     };
   });
 }

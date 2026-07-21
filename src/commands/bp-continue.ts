@@ -9,6 +9,7 @@ import type { Command } from 'commander';
 
 import { determineNextStepForChange } from '../core/continue.js';
 import { findBpDir } from './_utils.js';
+import { loadConfig } from '../core/config.js';
 
 export function register(program: Command): void {
   program
@@ -56,5 +57,9 @@ function continueHandler(name?: string) {
     console.log(`Change: ${result.changeName}`);
     console.log(`Artifacts: proposal=${p.artifacts.proposal} design=${p.artifacts.design} tasks=${p.artifacts.tasks}(${p.artifacts.tasksCompleted}/${p.artifacts.tasksTotal}) specs=${p.artifacts.specs} review=${p.artifacts.review}`);
     console.log(`Status: ${p.stage}`);
+    try {
+      const config = loadConfig(bpDir);
+      console.log(`Workflow: v${config.workflow_version} | Profile: ${config.profile} | Prompt: ${config.prompt_profile}`);
+    } catch { /* config unreadable */ }
   }
 }

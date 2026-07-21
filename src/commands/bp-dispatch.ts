@@ -6,7 +6,10 @@
  */
 
 import { join } from 'node:path';
-import { loadConfig } from '../core/config.js';
+import { readFileSync, existsSync } from 'node:fs';
+import { loadConfig, resolveModelsForLevel } from '../core/config.js';
+import { shouldDisableDegradation } from '../core/degradation.js';
+import { findBpDir } from './_utils.js';
 import type { Command } from 'commander';
 
 interface IsolationInfo {
@@ -86,8 +89,19 @@ export function register(program: Command): void {
     .action(dispatchHandler);
 }
 
+/** Detect current review round from review.md Review History (v2.1 P2) */
+function detectReviewRound(bpDir: string, changeName: string | null): number {
+  if (!changeName) return 1;
+  const reviewPath = join(bpDir, 'changes', changeName, 'review.md');
+  if (!existsSync(reviewPath)) return 1;
+  try {
+    const content = readFileSync(reviewPath, 'utf-8');
+    const rounds = (content.match(/\|\s*(\d+)\s*\|/g) || []).map((m) => parseInt(m.match(/\d+/)![0], 10));
+    return rounds.length > 0 ? Math.max(...rounds) : 1;
+  } catch { return 1; }
+}
 function dispatchHandler(role: string, options: { change?: string; dir: string }) {
-  const bpDir = join(process.cwd(), options.dir);
+  const bpDir = findBpDir() ?? join(process.cwd(), options.dir);
   const config = loadConfig(bpDir);
   const platforms: string[] = config.platform || ['omp'];
 
@@ -134,6 +148,29 @@ function dispatchHandler(role: string, options: { change?: string; dir: string }
     lines.push('');
     lines.push('The sub-agent reads its own system prompt (see platform agent file).');
 
+    // v2.1 P2: Model selection based on level and review round
+    const round = detectReviewRound(bpDir, changeName);
+    const models = resolveModelsForLevel(config, config.profile, round);
+    const modelForRole = models[role];
+    lines.push('');
+    lines.push('### Model Selection (v2.1 P2)');
+    lines.push(`- Role: ${role}`);
+    lines.push(`- Level: ${config.profile}`);
+    lines.push(`- Review round: ${round}`);
+    if (modelForRole) {
+      lines.push(`- Model: ${modelForRole}`);
+    }
+    // Check if degradation disabled for this role
+    if (changeName && shouldDisableDegradation(bpDir, changeName, role)) {
+      lines.push(`- ⚠ Degradation disabled for ${role} (2+ failures after downgrade). Use full-strength model.`);
+    }
+    if (config.profile === 'trivial' || config.profile === 'light') {
+      lines.push(`- All roles downgraded to fast (trivial/light level).`);
+    }
+    if (round >= 2 && role === 'reviewer') {
+      lines.push(`- Reviewer round ${round}: downgraded to fast (if no BLOCKER in prior round).`);
+      lines.push(`- If BLOCKER found this round: upgrade back + record degradation_failed.`);
+    }
     // Template instructions
     const templates = ROLE_TEMPLATES[role];
     if (templates && templates.length > 0) {
