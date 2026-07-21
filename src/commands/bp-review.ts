@@ -17,16 +17,24 @@ import { WORKFLOW_REGISTRY } from '../templates/workflows/registry.js';
 export function register(program: Command): void {
   program
     .command('review [name]')
-    .description('Triple review of a change — outputs dispatch instructions')
+    .description('Triple review of a change -- outputs dispatch instructions')
     .option('--fix', 'Re-review mode for in-place issue resolution')
+    .option('--ci', 'CI mode: non-interactive, FAIL exits 1 immediately')
     .action(reviewHandler);
 }
 
-function reviewHandler(name: string | undefined, options: { fix?: boolean }): void {
+function reviewHandler(name: string | undefined, options: { fix?: boolean; ci?: boolean }): void {
   const bpDir = findBpDir();
   if (!bpDir) {
     console.error('Not in a blueprint project. Run "bp init" first.');
     process.exit(1);
+  }
+  if (options.ci && !name) {
+    // In CI mode, resolveChangeName must have a definitive result.
+    // If name is undefined and multiple changes exist, resolveChangeName
+    // already printed an error — exit 1 for CI determinism.
+    const resolved = resolveChangeName(bpDir, name);
+    if (!resolved) process.exit(1);
   }
 
   const changeName = resolveChangeName(bpDir, name);
@@ -59,6 +67,9 @@ function reviewHandler(name: string | undefined, options: { fix?: boolean }): vo
     console.log('Reviewer will mark resolved issues in existing review.md and add new findings.\n');
   }
 
+  if (options.ci) {
+    console.log('\nCI MODE: no human confirmation. If review verdict is not PASS, exit 1 immediately.');
+  }
   console.log('--- Review Workflow Instructions ---');
   console.log('');
   console.log(reviewTemplate.content);

@@ -4,7 +4,8 @@
  */
 
 /** Workflow profile */
-export type Profile = 'lite' | 'standard';
+/** Workflow profile — v2.1 four-level risk-based routing */
+export type Profile = 'trivial' | 'light' | 'standard' | 'critical';
 
 /** Model role -> model identifier mapping */
 export type ModelMap = Record<string, string>;
@@ -16,6 +17,10 @@ export type Rules = Record<string, string[]>;
 export interface ProjectConfig {
   version: number;
   platform: string[];
+  /** Prompt detail level -- v2.1 P3: controls capability-compensation inclusion */
+  prompt_profile: 'lite' | 'standard' | 'full';
+  /** Workflow version -- controls process intensity (v2.1 7.2.3) */
+  workflow_version: string;
   profile: Profile;
   context: string;
   /** Whether this is a brownfield project (existing codebase) */
@@ -27,11 +32,27 @@ export interface ProjectConfig {
   models: ModelMap;
   conventions: { inject: boolean };
   git: { create_tag: boolean };
+  /** Critical change approvers (v2.1 7.2.5) */
+  approvers: string[];
+  /** Per-change cost and convergence limits (v2.1 P0) */
+  budget: {
+    max_subagent_runs: number;
+    max_review_rounds: number;
+    max_wall_time_min: number;
+    estimated_token_cap: number;
+    no_progress_fuse_rounds: number;
+  };
 }
 
 /** Profile -> default model mapping */
 export const PROFILE_MODEL_MAP: Record<Profile, ModelMap> = {
-  lite: {
+  trivial: {
+    planner: 'pi/task',
+    executor: 'pi/task',
+    reviewer: 'pi/task',
+    'codebase-scanner': 'pi/task',
+  },
+  light: {
     planner: 'pi/task',
     executor: 'pi/task',
     reviewer: 'pi/task',
@@ -41,6 +62,12 @@ export const PROFILE_MODEL_MAP: Record<Profile, ModelMap> = {
     planner: 'pi/plan',
     executor: 'pi/slow',
     reviewer: 'pi/task',
+    'codebase-scanner': 'pi/task',
+  },
+  critical: {
+    planner: 'pi/plan',
+    executor: 'pi/slow',
+    reviewer: 'pi/plan',
     'codebase-scanner': 'pi/task',
   },
 };

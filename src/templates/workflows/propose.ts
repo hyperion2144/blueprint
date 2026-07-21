@@ -7,16 +7,23 @@ const instructions = `## Input
 
 ## Steps
 
-### Step 0: Classify change
+### Step 0: Risk assessment and level assignment (v2.1 P1)
 
-Read the user's request. Classify:
-- **Lightweight**: trivial changes (fix-typo, bump-deps, rename, config tweak) — no new behavior, no new deliverables
-- **Full**: any new behavior or capability
+Assess the change's risk level based on scope and failure cost:
 
-**If LIGHTWEIGHT**: skip Step 1 (grill). Go directly to Step 2 with a minimal proposal derived from the user's one-line description. Fill template directly, no interview.
-**If FULL**: continue to Step 1 (relentless interview).
+- **Trivial**: single file, docs/config/scaffolding only, no behavior change -> inline execution, no sub-agents
+- **Light**: 2-5 files, low-risk behavior change, good test coverage -> single agent, TDD optional
+- **Standard**: cross-module, new behavior, medium risk (DEFAULT) -> planner + wave executor + triple review
+- **Critical**: involves auth/payment/data-consistency/core-path -> full flow + security audit + human approval gate
 
-### Step 1: Grill the user on requirements (Skip if Step 0 classified as lightweight) (RELENTLESS - do NOT skip)
+Auto-assess based on the user's described scope. If --level <X> provided, use that instead.
+Write the level to proposal.md's ## Level section.
+
+**If trivial or light**: may skip Step 1 (grill) per existing lightweight logic. Go directly to Step 2 with a minimal proposal derived from the user's one-line description. Fill template directly, no interview.
+**If standard or critical**: continue to Step 1 (relentless interview).
+**If critical**: flag for security audit in design.md.
+
+### Step 1: Grill the user on requirements (Skip if Step 0 classified as trivial or light) (RELENTLESS - do NOT skip)
 
 Before writing anything, you must reach FULL shared understanding with the user.
 This is NOT a checklist. It is a relentless interview that walks every branch of the decision tree,

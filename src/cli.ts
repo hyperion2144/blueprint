@@ -21,6 +21,10 @@ import { register as registerUpdate } from './commands/bp-update.js';
 import { register as registerSchema } from './commands/bp-schema.js';
 import { register as registerSpecRefresh } from './commands/bp-spec-refresh.js';
 import { register as registerSplit } from './commands/bp-split.js';
+import { register as registerMap } from './commands/bp-map.js';
+import { register as registerStats } from './commands/bp-stats.js';
+import { register as registerLock } from './commands/bp-lock.js';
+
 import { register as registerUnarchive } from './commands/bp-unarchive.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -52,5 +56,8 @@ registerState(program);
 registerSpecRefresh(program);
 registerSplit(program);
 registerUnarchive(program);
+registerMap(program);
+registerLock(program);
 
+registerStats(program);
 program.parse(process.argv);

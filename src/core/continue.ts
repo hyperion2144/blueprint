@@ -16,6 +16,7 @@ import { loadSchema, resolveInstruction } from './schema.js';
 import { WORKFLOW_REGISTRY, type WorkflowStep } from '../templates/workflows/registry.js';
 import type { ArtifactStatus, ChangeProgress, ChangeStage, ContinueResult, NextStep } from '../types/index.js';
 import type { SchemaDef, SchemaArtifact, SchemaStep } from './schema.js';
+import { loadConfig } from './config.js';
 import { hasPlaceholders } from './artifact-validator.js';
 
 /** Get workflow instructions: custom schema file -> built-in TypeScript fallback */
@@ -223,7 +224,7 @@ function determineChangeNextStep(
             stage: 'incomplete',
             command: `${artifact.command} ${changeName}`,
             description: `[PLACEHOLDER] ${artifact.id} has unreplaced {{placeholder}} variables. Fill them before proceeding.`,
-            instructions: getWorkflowInstructions(artifact.command, bpDir),
+            instructions: getWorkflowInstructions(artifact.command ?? '', bpDir),
           };
         }
       }
@@ -242,6 +243,32 @@ function determineChangeNextStep(
   // Check for fix loop BEFORE Phase 2 (review exists but not PASS).
   // Must run before Phase 2 so that review != PASS routes to fix, not re-review.
   if (artifacts.review && reviewVerdict && reviewVerdict !== 'PASS') {
+    // v2.1 P0: Diminishing-returns fuse
+    // Read Review History from review.md, check if last N rounds had low new-issue count
+    try {
+      const reviewContent = readFileSync(join(dir, 'review.md'), 'utf-8');
+      // Parse Review History table rows
+      const historyRows = reviewContent.match(/\|\s*\d+\s*\|[^\n]+\|/g) || [];
+      if (historyRows.length > 0) {
+        const config = loadConfig(bpDir);
+        const fuseRounds = config.budget.no_progress_fuse_rounds;
+        const recentRows = historyRows.slice(-fuseRounds);
+        const recentNewIssues = recentRows.map((r) => {
+          const cols = r.split('|').map((c) => c.trim());
+          return parseInt(cols[3] || '0', 10) || 0;
+        });
+        const allLowProgress = recentNewIssues.every((n) => n <= 2);
+        if (allLowProgress && recentNewIssues.length >= fuseRounds) {
+          return {
+            stage: progress.stage,
+            command: `bp review ${changeName}`,
+            description: `[FUSE] Diminishing returns detected: last ${fuseRounds} review rounds added <= 2 issues each. Recommend human verification before another fix cycle.`,
+            instructions: getWorkflowInstructions('review', bpDir),
+          };
+        }
+      }
+    } catch { /* review.md unreadable — skip fuse */ }
+
     if (hasDesignIssues) {
       return {
         stage: progress.stage,

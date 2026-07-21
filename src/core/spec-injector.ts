@@ -40,16 +40,21 @@ export function generateContext(bpDir: string, step: string, changeName?: string
   };
 
   result.conventions = getAllConventions(bpDir).map(withContent(bpDir));
-  result.globalSpecs = getAllSpecs(bpDir).map(withContent(bpDir));
-
   if (changeName) {
-    result.specs = getChangeArtifacts(bpDir, changeName)
+    // v2.1 P4: Only inject specs for domains referenced by this change
+    const changeArtifacts = getChangeArtifacts(bpDir, changeName);
+    const referencedDomains = extractReferencedDomains(changeArtifacts);
+    result.globalSpecs = getAllSpecs(bpDir)
+      .filter((s) => referencedDomains.size === 0 || referencedDomains.has(s.path.split('/')[1]))
+      .map(withContent(bpDir));
+    result.specs = changeArtifacts
       .filter((a) => a.path.startsWith('specs/'))
       .map(withContent(bpDir));
-    result.changeArtifacts = getChangeArtifacts(bpDir, changeName)
+    result.changeArtifacts = changeArtifacts
       .filter((a) => !a.path.startsWith('specs/'))
       .map(withContent(bpDir));
   } else {
+    result.globalSpecs = getAllSpecs(bpDir).map(withContent(bpDir));
     result.specs = result.globalSpecs;
   }
 
@@ -117,6 +122,22 @@ function getChangeArtifacts(bpDir: string, changeName: string): FileRef[] {
   }
 
   return artifacts;
+}
+
+/** Extract domains referenced by change artifacts from their paths and content */
+function extractReferencedDomains(artifacts: FileRef[]): Set<string> {
+  const domains = new Set<string>();
+  for (const a of artifacts) {
+    // Extract domain from specs/<domain>/spec.md paths
+    const match = a.path.match(/specs\/([A-Za-z0-9_-]+)\//);
+    if (match) domains.add(match[1]);
+    // Also scan content for domain references
+    if (a.content) {
+      const contentMatches = a.content.matchAll(/specs\/([A-Za-z0-9_-]+)\/spec\.md/g);
+      for (const m of contentMatches) domains.add(m[1]);
+    }
+  }
+  return domains;
 }
 
 function listSpecFiles(dir: string, prefix: string): FileRef[] {

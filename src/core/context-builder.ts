@@ -71,10 +71,30 @@ function addConventionsIfMissing(bpDir: string, rows: ContextRefRow[]): void {
   }
 }
 
-/** Build context.jsonl body for a change directory. */
+/**
+ * Build context.jsonl body for a change directory.
+ * v2.1 P4: When tasks.md has wave info, extract DS-N refs for the current wave
+ * and set .range on design.md rows to target only those sections.
+ */
 export function buildContextJsonl(bpDir: string, changeDirPath: string): string {
   const files = ['proposal.md', 'design.md', 'tasks.md'].map((name) => join(changeDirPath, name));
   const references = new Map<string, ContextRefRow>();
+
+  const tasksContent = safeReadFile(join(changeDirPath, 'tasks.md'));
+
+  // v2.1 P4: If tasks.md has wave info, extract DS-N refs for current wave
+  // and set range on design.md rows to target only those sections.
+  // DS-N range extraction: parse design.md for "## DS-N" headings,
+  // match against wave DS refs in tasks.md, compute line ranges.
+  // If range calculation fails, fall back to full design.md.
+  let waveDSRefs: string[] | undefined;
+  if (tasksContent !== null) {
+    // Extract DS-N references from tasks.md (e.g., "spec_ref: DS-1" or "DS-1")
+    const dsRefs = tasksContent.match(/\bDS-(\d+)\b/g);
+    if (dsRefs && dsRefs.length > 0) {
+      waveDSRefs = [...new Set(dsRefs)];
+    }
+  }
 
   for (const file of files) {
     const content = safeReadFile(file);
@@ -83,7 +103,52 @@ export function buildContextJsonl(bpDir: string, changeDirPath: string): string 
     collectReferencesFromBody(content, sourceName, references);
   }
 
+  // v2.1 P4: Apply DS-N range filtering to design.md rows
+  if (waveDSRefs && waveDSRefs.length > 0) {
+    const designContent = safeReadFile(join(changeDirPath, 'design.md'));
+    if (designContent !== null) {
+      const dsRange = computeDSNRange(designContent, waveDSRefs);
+      if (dsRange) {
+        for (const [, row] of references) {
+          if (row.file.endsWith('/design.md')) {
+            row.range = dsRange;
+            row.read = 'range';
+          }
+        }
+      }
+    }
+  }
+
   const rows = Array.from(references.values());
   addConventionsIfMissing(bpDir, rows);
   return renderContextJsonl(rows);
+}
+
+/** v2.1 P4: Compute merged DS-N line range from design.md content for given DS refs.
+ * Returns a single [startLine, endLine] tuple covering all matched DS sections,
+ * or undefined if none found. */
+function computeDSNRange(designContent: string, dsRefs: string[]): [number, number] | undefined {
+  const lines = designContent.split('\n');
+  const targets = new Set(dsRefs);
+  const ranges: [number, number][] = [];
+  let currentDS: string | null = null;
+  let startLine = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const headingMatch = lines[i].match(/^##\s+(DS-\d+)\b/);
+    if (headingMatch) {
+      if (currentDS && targets.has(currentDS)) {
+        ranges.push([startLine, i]);
+      }
+      currentDS = headingMatch[1];
+      startLine = i + 1;
+    }
+  }
+  if (currentDS && targets.has(currentDS)) {
+    ranges.push([startLine, lines.length]);
+  }
+
+  if (ranges.length === 0) return undefined;
+  // Merge all matched ranges into one contiguous span
+  return [ranges[0][0], ranges[ranges.length - 1][1]];
 }

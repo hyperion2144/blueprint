@@ -100,6 +100,9 @@ For each completed wave:
    - \`- [ ] All wave acceptance criteria confirmed\` → \`- [x]\`
    (Skip \`No template placeholders\` — that's verified by the planner during planning.)
 
+# Record execution metadata (v2.1 P5)
+# Orchestrator should write .meta/executor-wave-N.json after executor completes
+
 ### Step 5: Lightweight mode (if classified as lightweight)
 
 If all tasks are non-behavior:
@@ -139,7 +142,8 @@ Implementation complete for $1
 - **NEVER skip review.** Apply's test pass is NOT a replacement for review.
 - In --fix mode: executors read review.md, fix R/Q/G issues, then mark each issue \`[ ]\` → \`[~]\` (\`~\` = fixed, pending verification). Do NOT mark \`[x]\` — that's the re-review's job. Do NOT fix D issues (those need replan).
 - Do NOT run bp review automatically - let the user decide.
-- **Wave retry limit: max 2 re-dispatches per wave.** If a wave fails verification 2 times after re-dispatch with specific feedback, STOP and report as blocker. Do not re-dispatch indefinitely.
+- **Wave retry limit: max 2 re-dispatches per wave (global cap: config.budget.max_subagent_runs, default 5).** If a wave fails verification 2 times after re-dispatch with specific feedback, STOP and report as blocker. Do not re-dispatch indefinitely.
+- **Level-aware execution**: Trivial = inline (no sub-agent). Light = single agent, TDD optional. Standard = wave + TDD. Critical = wave + TDD + security audit checkpoint.
 `;
 
 export function getApplySkillTemplate(): SkillTemplate {

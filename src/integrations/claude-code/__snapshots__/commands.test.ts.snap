@@ -126,6 +126,9 @@ For each completed wave:
    - \`- [ ] All wave acceptance criteria confirmed\` → \`- [x]\`
    (Skip \`No template placeholders\` — that's verified by the planner during planning.)
 
+# Record execution metadata (v2.1 P5)
+# Orchestrator should write .meta/executor-wave-N.json after executor completes
+
 ### Step 5: Lightweight mode (if classified as lightweight)
 
 If all tasks are non-behavior:
@@ -165,7 +168,8 @@ Implementation complete for $1
 - **NEVER skip review.** Apply's test pass is NOT a replacement for review.
 - In --fix mode: executors read review.md, fix R/Q/G issues, then mark each issue \`[ ]\` → \`[~]\` (\`~\` = fixed, pending verification). Do NOT mark \`[x]\` — that's the re-review's job. Do NOT fix D issues (those need replan).
 - Do NOT run bp review automatically - let the user decide.
-- **Wave retry limit: max 2 re-dispatches per wave.** If a wave fails verification 2 times after re-dispatch with specific feedback, STOP and report as blocker. Do not re-dispatch indefinitely.
+- **Wave retry limit: max 2 re-dispatches per wave (global cap: config.budget.max_subagent_runs, default 5).** If a wave fails verification 2 times after re-dispatch with specific feedback, STOP and report as blocker. Do not re-dispatch indefinitely.
+- **Level-aware execution**: Trivial = inline (no sub-agent). Light = single agent, TDD optional. Standard = wave + TDD. Critical = wave + TDD + security audit checkpoint.
 ",
   "archive": "---
 name: bp:archive
@@ -262,6 +266,8 @@ Archived $1
 - **The archive command is the source of truth for the merge/move/roadmap operations.** Do NOT manually merge specs, move files, or update roadmap — the command does it all.
 - **If merge conflict occurs**, resolve in the delta spec (change directory) and re-run \`bp archive $1\`. Do NOT edit global specs directly.
 - **Archive preserves full context.** All artifacts move to archive together.
+- **Post-archive drift check**: After archive, consider running bp spec refresh --check to detect if the merged specs still match code reality.
+- **CI mode (--ci)**: Skip working-tree warnings and post-archive suggestions. Exit 0 on success, 1 on any failure.
 - **Commit is the orchestrator's job** — the archive command does not commit.
 ",
   "continue": "---
@@ -511,7 +517,11 @@ Row fields:
 
 ## Steps
 
-### Step 1: Resolve change name and paths
+### Step 1: Read codebase context
+
+Read bp/.codebase-map.md if it exists for module structure overview. Only read specific source files when you need implementation details.
+
+### Step 2: Resolve change name and paths
 
 If \`$ARGUMENTS\` is empty:
 - List \`bp/changes/\` for active changes (not in \`archive/\`)
@@ -520,13 +530,26 @@ If \`$ARGUMENTS\` is empty:
 
 Change directory: \`bp/changes/$1/\`
 
-### Step 2: Classify change (lightweight vs full)
+
+### Step 3: Impact analysis (v2.1 7.2.1)
+
+Before designing, analyze what this change impacts:
+1. Read proposal.md deliverables — identify files/modules to be modified
+2. For each modified file, find its callers/dependents:
+   - Use grep to find imports/references to the modified modules
+   - Or use LSP references if available
+3. Write an ## Impact Analysis section in design.md listing:
+   - Direct impacts: files being modified
+   - Indirect impacts: callers/dependents that may need updates
+   - Test impacts: existing tests that may break
+
+### Step 4: Classify change (lightweight vs full)
 
 Read \`proposal.md\` deliverables:
 - **Lightweight**: All deliverables are config/docs/refactor/scaffolding (no new behavior)
 - **Full**: Any deliverable introduces new behavior
 
-### Step 3: Dispatch planner (Full mode)
+### Step 5: Dispatch planner (Full mode)
 
 **If FULL: dispatch planner sub-agent. Do NOT write design/tasks/specs yourself.**
 
@@ -538,14 +561,14 @@ Read \`proposal.md\` deliverables:
 
 2. Dispatch via task tool. Wait for planner to complete.
 
-3. Verify planner output (see Step 4).
+3. Verify planner output (see Step 6).
 
 **If LIGHTWEIGHT:**
 1. Fill design.md template directly
 2. Fill tasks.md with 1 wave
 3. No delta specs needed (no behavioral changes)
 
-### Step 4: Verify output
+### Step 6: Verify output
 
 **Traceability:**
 - Every PR-N in proposal.md referenced by at least one DS-N in design.md
@@ -553,7 +576,7 @@ Read \`proposal.md\` deliverables:
 - Every type:behavior task has \`spec_ref\` pointing to delta spec
 
 **Completeness:**
-- design.md has: Design Items, Architecture Decisions, Technical Approach, File Manifest
+- design.md has: Design Items, Impact Analysis, Architecture Decisions, Technical Approach, File Manifest
 - tasks.md has: TDD Type Annotations, at least 1 Wave, Pre-Archive Checklist
 - Delta specs exist for affected domain (specs/<domain>/spec.md)
 - Delta specs use correct sections (ADDED/MODIFIED/REMOVED)
@@ -569,7 +592,19 @@ Read \`proposal.md\` deliverables:
 
 If any check fails: re-dispatch planner with specific feedback on what's missing.
 
-### Step 5: Commit and suggest next step
+### Step 7: Task granularity check (v2.1 P0)
+
+After planner produces tasks.md, check granularity and warn if too large:
+
+- tasks total > 20 → warn: 'Change may be too large. Consider splitting into multiple changes.'
+- files in File Manifest > 15 → warn: 'File manifest exceeds 15 files. Consider splitting.'
+- wave count > 5 → warn: 'Excessive wave decomposition. Consolidate independent tasks.'
+- single wave task count > 8 → warn: 'Wave too large. Split into multiple waves.'
+
+This is advisory, not blocking — the user decides whether to proceed or split.
+If any threshold exceeded, output the warnings before suggesting next step.
+
+### Step 8: Commit and suggest next step
 
 \`\`\`bash
 # Update roadmap: If the change's proposal.md has \`## Roadmap Reference\`, read \`bp/roadmap.md\`, find the change in that phase's Changes list, and update it to \`- [-] $1 (planned YYYY-MM-DD)\`.
@@ -577,6 +612,9 @@ git add bp/changes/$1/
 bp commit "docs(plan): design + tasks + delta specs for $1" --files bp/changes/$1/
 # In --fix mode, also run: bp plan --write-context $1
 \`\`\`
+
+# Record execution metadata (v2.1 P5)
+# Orchestrator should write .meta/planner-run-N.json after planner completes
   Next: bp apply $1
   (or: bp continue $1)
 
@@ -598,6 +636,8 @@ Planner completed for $1
 - Lightweight mode: write templates directly (no sub-agent needed)
 - tasks.md boxes must remain UNCHECKED
 - In --fix mode: planner only redesigns — does NOT modify tasks.md or specs
+- **Task granularity is advisory, not blocking.** Warn on tasks>20/files>15/waves>5/per-wave>8, but let the user decide whether to proceed or split.
+- **Level-aware dispatch**: Trivial/Light changes may skip planner sub-agent (orchestrator fills templates directly). Standard/Critical MUST dispatch planner. Critical adds security dimension to design.
 ",
   "propose": "---
 name: bp:propose
@@ -612,16 +652,23 @@ argument-hint: "[change-name]"
 
 ## Steps
 
-### Step 0: Classify change
+### Step 0: Risk assessment and level assignment (v2.1 P1)
 
-Read the user's request. Classify:
-- **Lightweight**: trivial changes (fix-typo, bump-deps, rename, config tweak) — no new behavior, no new deliverables
-- **Full**: any new behavior or capability
+Assess the change's risk level based on scope and failure cost:
 
-**If LIGHTWEIGHT**: skip Step 1 (grill). Go directly to Step 2 with a minimal proposal derived from the user's one-line description. Fill template directly, no interview.
-**If FULL**: continue to Step 1 (relentless interview).
+- **Trivial**: single file, docs/config/scaffolding only, no behavior change -> inline execution, no sub-agents
+- **Light**: 2-5 files, low-risk behavior change, good test coverage -> single agent, TDD optional
+- **Standard**: cross-module, new behavior, medium risk (DEFAULT) -> planner + wave executor + triple review
+- **Critical**: involves auth/payment/data-consistency/core-path -> full flow + security audit + human approval gate
 
-### Step 1: Grill the user on requirements (Skip if Step 0 classified as lightweight) (RELENTLESS - do NOT skip)
+Auto-assess based on the user's described scope. If --level <X> provided, use that instead.
+Write the level to proposal.md's ## Level section.
+
+**If trivial or light**: may skip Step 1 (grill) per existing lightweight logic. Go directly to Step 2 with a minimal proposal derived from the user's one-line description. Fill template directly, no interview.
+**If standard or critical**: continue to Step 1 (relentless interview).
+**If critical**: flag for security audit in design.md.
+
+### Step 1: Grill the user on requirements (Skip if Step 0 classified as trivial or light) (RELENTLESS - do NOT skip)
 
 Before writing anything, you must reach FULL shared understanding with the user.
 This is NOT a checklist. It is a relentless interview that walks every branch of the decision tree,
@@ -829,15 +876,31 @@ Review NEEDS_REVISION for $1
   Next: bp apply --fix $1
 \`\`\`
 
+
+**If [FUSE] diminishing returns detected:**
+Do NOT auto-route to another fix. Instead:
+1. Read review.md Issues section to understand remaining open findings
+2. Present remaining issues to user for human verification
+3. If user confirms all resolved: write \`## Human Verdict: PASS\` below the Issues section in review.md, then run \`bp archive $1\`
+4. If user finds new problems or disagrees with resolution: run \`bp apply --fix $1\` (this resets the review round counter for fuse detection)
+
 ### Step 6: Commit review.md
 
 \`\`\`bash
 # Update roadmap: If the change is linked to a roadmap phase, update it to \`- [x] $1 (reviewed YYYY-MM-DD)\`.
 git add .
 bp commit "docs(review): triple review for $1" --files bp/changes/$1/review.md
+
+# Record execution metadata (v2.1 P5)
+# Orchestrator should write .meta/reviewer-run-N.json after reviewer completes
 - Do NOT run bp archive automatically - let the user review the findings first.
 - **Context is auto-injected by the OMP Extension.** Do NOT call \`bp context review\`; the extension already supplies the same material at every turn.
-- **Fix loop limit: max 3 rounds.** If the change has been through 3 fix rounds (count re-reviews in review.md — each re-review adds new issue numbers) and issues still persist, STOP and report to the user. Do not auto-route to another fix — escalate for human decision.
+- **Fix loop limit: max config.budget.max_review_rounds rounds (default 3).** If the change has been through that many fix rounds (count re-reviews in review.md Review History) and issues still persist, the diminishing-returns fuse may trigger — see [FUSE] recovery path below. Do not auto-route to another fix beyond the limit — escalate for human decision.
+- **Level-aware review**: Trivial = orchestrator quick check (no sub-agent). Light = optional review. Standard = triple review. Critical = triple review + security audit + human approval before archive.
+- **Critical approval gate (v2.1 7.2.5)**: Critical-level changes require explicit approval. If config.approvers is non-empty, only listed approvers can PASS a Critical review. In CI mode, Critical changes always exit 1 (require interactive approval).
+- **CI mode (--ci)**: When run with --ci, skip all human-confirmation steps. If review verdict is not PASS, the command exits 1 immediately. No fix loop in CI -- failures must be fixed in a separate interactive session.
+- **Level-aware CI**: Critical changes require human approval even in CI mode (exit 1 with 'Critical change requires human review'). Trivial/Light changes auto-pass in CI if tests pass.
+- **v2.1 P2 dynamic downgrade**: If first review round found no BLOCKER, second round reviewer may use a faster model (config.resolveModelsForLevel with round=2). If BLOCKER found after downgrade, upgrade back and mark degradation_failed.
 ",
   "roadmap": "---
 name: bp:roadmap

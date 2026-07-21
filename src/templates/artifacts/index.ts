@@ -18,6 +18,19 @@ export const PROPOSAL_TEMPLATE = `# Proposal: {{name}}
   - Each deliverable traces to a spec domain
 -->
 
+
+## Level
+
+<!--
+  v2.1 risk-based level. Auto-assessed by propose, overridable by --level.
+  trivial:  single file, docs/config/scaffolding, no behavior change
+  light:    2-5 files, low-risk behavior change, good test coverage
+  standard: cross-module, new behavior, medium risk (default)
+  critical: auth/payment/data-consistency/core-path
+-->
+
+**Level**: {{level}}
+**Auto-assessed**: {{auto-assessed-or-override}}
 ## Intent
 
 <!--
@@ -290,6 +303,25 @@ export const DESIGN_TEMPLATE = `# Design: {{name}}
 |---------|----------|------|----------|--------|
 | {{name}} | \`{{url}}\` | {{auth-method}} | {{purpose}} | DS-{{id}} |
 
+
+## Impact Analysis
+
+<!--
+  v2.1 7.2.1: Who depends on the changed code?
+-->
+
+### Direct Impacts
+
+- {{modified-file}}: {{what-changes}}
+
+### Indirect Impacts (callers/dependents)
+
+- {{caller-file}}: imports {{modified-module}}, may need update
+
+### Test Impacts
+
+- {{test-file}}: tests {{modified-behavior}}, may break
+
 ## File Manifest
 
 <!--
@@ -550,6 +582,17 @@ export const REVIEW_TEMPLATE = `# Review: {{name}}
   - Only R/Q/G (no D, no BLOCKER) -> NEEDS_REVISION
 -->
 
+
+## Level Assessment
+
+<!--
+  v2.1 P1: Reviewer can escalate if actual risk exceeds proposal's level.
+-->
+
+- **Proposal Level**: {{level}}
+- **Reviewer Assessment**: {{same-or-escalated}}
+- **Escalation**: {{none-or-Light-to-Critical-with-reason}}
+
 ## Overall Verdict: {{PASS | FAIL | NEEDS_REVISION}}
 
 ---
@@ -606,6 +649,18 @@ export const REVIEW_TEMPLATE = `# Review: {{name}}
 ### Goal Verdict: {{PASS | FAIL | NEEDS_REVISION}}
 
 ---
+
+
+## Review History
+
+<!--
+  Auto-maintained by reviewer. Each re-review appends a row.
+  Used by continue engine for diminishing-returns fuse detection (v2.1 P0).
+-->
+
+| Round | Date | New Issues | Blockers | Verdict |
+|-------|------|------------|----------|---------|
+| 1 | {{date}} | {{count}} | {{blockers}} | {{verdict}} |
 
 ## Issues
 
@@ -720,6 +775,12 @@ platform:
 # lite:     no review gate, TDD optional, single agent for lightweight changes
 # standard: review gate (must PASS before archive), TDD for behavior, sub-agent waves
 profile: standard
+
+# Workflow version — controls process intensity (v2.1 7.2.3)
+# 2.1: current (four-level grading, budget, fuse)
+# 2.0: legacy (lite/standard binary)
+workflow_version: '2.1'
+
 # Brownfield project (existing codebase with code scanning)
 brownfield: false
 
@@ -766,6 +827,19 @@ conventions:
 # Git configuration
 git:
   create_tag: true
+
+# Critical change approvers — who can approve Critical-level changes (v2.1 7.2.5)
+# Empty = anyone can approve. Set to restrict Critical review to specific users.
+approvers: []
+
+# Budget controls — per-change cost and convergence limits (v2.1 P0)
+# Prevents runaway sub-agent dispatch and infinite review-fix loops
+budget:
+  max_subagent_runs: 5        # Sub-agent dispatch count limit per change
+  max_review_rounds: 3        # Max review-fix loop rounds
+  max_wall_time_min: 60       # Wall clock limit (minutes)
+  estimated_token_cap: 500000 # Soft token cap (warning)
+  no_progress_fuse_rounds: 2   # Consecutive no-progress rounds before auto-stop
 `;
 
 export const GLOBAL_SPEC_TEMPLATE = `# Global Spec: {{domain}}

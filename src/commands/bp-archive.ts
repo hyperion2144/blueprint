@@ -14,19 +14,20 @@ import { execSync } from 'node:child_process';
 import { join } from 'node:path';
 import { findBpDir, gateContextJsonl, resolveChangeName } from './_utils.js';
 import { changeDir, archiveChangeDir } from '../core/file-tree.js';
+import { generateCodebaseMap, writeCodebaseMap } from '../core/codebase-map.js';
 import { mergeDeltaSpec } from '../core/delta-merge.js';
 import type { Command } from 'commander';
 export function register(program: Command): void {
   program
     .command('archive [name]')
     .description('Archive a change (merge delta specs, archive dir, update roadmap)')
-    .option('--dry-run', 'Preview merge without writing — checks for conflicts')
+    .option('--dry-run', 'Preview merge without writing -- checks for conflicts')
+    .option('--ci', 'CI mode: non-interactive, skip warnings, exit 0 on success')
     .action(archiveHandler);
 }
 
 
-
-function archiveHandler(name: string, options?: { dryRun?: boolean }): void {
+function archiveHandler(name: string, options?: { dryRun?: boolean; ci?: boolean }): void {
   const bpDir = findBpDir();
   if (!bpDir) {
     console.error('Not in a blueprint project. Run "bp init" first.');
@@ -88,15 +89,16 @@ function archiveHandler(name: string, options?: { dryRun?: boolean }): void {
     console.log(`\nSafe to archive: ${checkedCount} delta spec(s) can merge without conflict`);
     process.exit(0);
   }
-
   // F5a: Warn if working tree has uncommitted changes outside bp/
-  try {
-    const status = execSync('git status --porcelain', { cwd: join(bpDir, '..'), encoding: 'utf-8' });
-    const nonBpChanges = status.split('\n').filter((l: string) => l.trim() && !l.includes('bp/'));
-    if (nonBpChanges.length > 0) {
-      console.warn(`Warning: ${nonBpChanges.length} uncommitted file(s) outside bp/ detected. These may be archived alongside the change.`);
-    }
-  } catch { /* git not available — skip */ }
+  if (!options?.ci) {
+    try {
+      const status = execSync('git status --porcelain', { cwd: join(bpDir, '..'), encoding: 'utf-8' });
+      const nonBpChanges = status.split('\n').filter((l: string) => l.trim() && !l.includes('bp/'));
+      if (nonBpChanges.length > 0) {
+        console.warn(`Warning: ${nonBpChanges.length} uncommitted file(s) outside bp/ detected. These may be archived alongside the change.`);
+      }
+    } catch { /* git not available -- skip */ }
+  }
   // ---- Step 2: Verify review status ----
   const reviewPath = join(changePath, 'review.md');
   if (!existsSync(reviewPath)) {
@@ -217,7 +219,17 @@ function archiveHandler(name: string, options?: { dryRun?: boolean }): void {
   if (milestoneCompleted) {
     console.log('  - Milestone SHIPPED');
   }
+  if (options?.ci) {
+    process.exit(0);
+  }
   console.log('\n  Next: bp propose <new-change> (or: bp continue)');
+  // v2.1 P4: Refresh codebase map after archive (code changed)
+  try {
+    const rootDir = join(bpDir, '..');
+    const map = generateCodebaseMap(rootDir);
+    writeCodebaseMap(bpDir, map);
+    console.log('  ✓ Codebase map refreshed');
+  } catch { /* non-fatal */ }
 }
 
 // ---- Roadmap helpers ----

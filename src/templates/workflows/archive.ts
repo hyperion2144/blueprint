@@ -89,6 +89,8 @@ Archived $1
 - **The archive command is the source of truth for the merge/move/roadmap operations.** Do NOT manually merge specs, move files, or update roadmap — the command does it all.
 - **If merge conflict occurs**, resolve in the delta spec (change directory) and re-run \`bp archive $1\`. Do NOT edit global specs directly.
 - **Archive preserves full context.** All artifacts move to archive together.
+- **Post-archive drift check**: After archive, consider running bp spec refresh --check to detect if the merged specs still match code reality.
+- **CI mode (--ci)**: Skip working-tree warnings and post-archive suggestions. Exit 0 on success, 1 on any failure.
 - **Commit is the orchestrator's job** — the archive command does not commit.
 `;
 

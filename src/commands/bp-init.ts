@@ -121,6 +121,7 @@ async function initHandler(options: {
       version: 2,
       platform,
       profile: profile as Profile,
+      workflow_version: '2.1',
       brownfield: isBrownfield,
       commitDocs: wizard.commitDocs,
       context: wizard.context,
@@ -129,6 +130,9 @@ async function initHandler(options: {
       models: {},
       conventions: { inject: true },
       git: { create_tag: true },
+      prompt_profile: 'standard',
+      approvers: [],
+      budget: { max_subagent_runs: 5, max_review_rounds: 3, max_wall_time_min: 60, estimated_token_cap: 500000, no_progress_fuse_rounds: 2 },
     };
     const files = generateAll(config);
     writeGeneratedFiles(files);
