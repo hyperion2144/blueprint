@@ -6,3 +6,5 @@ bin/
 .agent/
 .claude/
 .meta/
+.codebase-map.json
+.codebase-map.md
