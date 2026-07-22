@@ -76,49 +76,73 @@
 
 ### Phase: P3.1 - Telemetry Foundation [NOT_STARTED]
 
-- **Goal**: .meta/ extension (failure mode + step usage) + anonymization + bp telemetry export/upload
+- **Goal**: Telemetry data collection + anonymization + export/upload
+- **Description**: Extend .meta/ with failure mode marks and step usage stats; add anonymization (hash code snippets, strip paths); implement bp telemetry export/upload/status commands; add config.telemetry field
 - **Spec domain**: telemetry
+- **Changes**: 0/2
 - **Status**: NOT_STARTED
 
 **Changes**:
 - [ ] telemetry-collection (proposed 2026-07-22)
 - [ ] telemetry-export-upload (proposed 2026-07-22)
 
+**Next**: Phase P3.2
+
 ### Phase: P3.2 - Spec Governance [NOT_STARTED]
 
-- **Goal**: Spec confidence auto-inference + bp spec audit + version management
+- **Goal**: Prevent specs/ from rotting — confidence, audit, version management
+- **Description**: Auto-infer spec confidence from codebase-map exports + test files (high=has test+code, medium=code no test, low=spec only); implement bp spec audit (redundancy/staleness/coverage); add since version tags to requirements; bp spec diff
+- **Spec domain**: specs
+- **Changes**: 0/2
 - **Status**: NOT_STARTED
 
 **Changes**:
 - [ ] spec-confidence (proposed 2026-07-22)
 - [ ] spec-audit (proposed 2026-07-22)
 
+**Next**: Phase P3.3
+
 ### Phase: P3.3 - Cross-Change Scheduling [NOT_STARTED]
 
-- **Goal**: bp deps graph + cascade detection + parallel conflict detection
+- **Goal**: Support multi-change parallel development with dependency DAG
+- **Description**: bp deps graph (DAG output + cycle detection); cascade change detection after archive (queryImpact + spec diff); enhanced parallel conflict detection (file + spec + module upstream/downstream via codebase-map)
+- **Spec domain**: scheduling
+- **Changes**: 0/2
 - **Status**: NOT_STARTED
 
 **Changes**:
 - [ ] deps-graph (proposed 2026-07-22)
 - [ ] cascade-detection (proposed 2026-07-22)
 
+**Next**: Phase P3.4
+
 ### Phase: P3.4 - Uncertainty Quantification [NOT_STARTED]
 
-- **Goal**: Output confidence annotation + tiered verification
+- **Goal**: Match verification intensity to output confidence
+- **Description**: Add Confidence field to DESIGN_TEMPLATE DS-N; update PLANNER_PROMPT to annotate confidence (high/medium/low); update review workflow to tier verification (high=auto test, medium=sub-agent review, low=triple review + human gate)
+- **Spec domain**: verification
+- **Changes**: 0/2
 - **Status**: NOT_STARTED
 
 **Changes**:
 - [ ] confidence-annotation (proposed 2026-07-22)
 - [ ] tiered-verification (proposed 2026-07-22)
 
+**Next**: Phase P3.5
+
 ### Phase: P3.5 - Maintainer Analysis Tools [NOT_STARTED]
 
-- **Goal**: Telemetry aggregation + failure mode stats + workflow audit + complexity budget
+- **Goal**: Telemetry-driven framework evolution tooling
+- **Description**: Telemetry aggregation tool; failure mode frequency stats; step usage rate report; bp audit workflow (prompt redundancy + step necessity + model version adaptation); complexity budget check (prompt tokens/step count/config count)
+- **Spec domain**: telemetry
+- **Changes**: 0/2
 - **Status**: NOT_STARTED
 
 **Changes**:
 - [ ] telemetry-analysis (proposed 2026-07-22)
 - [ ] workflow-audit (proposed 2026-07-22)
+
+**Next**: All changes completed
 
 ---
 
