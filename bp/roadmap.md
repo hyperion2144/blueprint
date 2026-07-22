@@ -76,8 +76,8 @@
 
 ### Phase: P3.1 - Telemetry Foundation [NOT_STARTED]
 
-- **Goal**: Telemetry data collection + anonymization + export/upload
-- **Description**: Extend .meta/ with failure mode marks and step usage stats; add anonymization (hash code snippets, strip paths); implement bp telemetry export/upload/status commands; add config.telemetry field
+- **Goal**: Auto-collect telemetry in command handlers + anonymization + auto-report (opt-in)
+- **Description**: Auto-collect .meta/ data in command handlers (plan/apply/review/archive auto-write run data); add failure mode marks + step usage stats; anonymization (hash code snippets, strip paths); auto-report if telemetry.enabled (async, non-blocking); bp telemetry status/export; config.telemetry field
 - **Spec domain**: telemetry
 - **Changes**: 0/2
 - **Status**: NOT_STARTED
