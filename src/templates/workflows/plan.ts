@@ -13,10 +13,15 @@ const instructions = ORCHESTRATOR_RULE + `${CONTEXT_JSONL_REMINDER}## Input
 
 ## Steps
 
-### Step 1: Read codebase context
+### Step 1: Query codebase map
 
-Read bp/.codebase-map.md if it exists for module structure overview. Only read specific source files when you need implementation details.
-Before reading the map, check if it's stale: run \`bp map refresh --check\`. If stale (git_hash mismatch), run \`bp map refresh\` to regenerate. A stale map may have incorrect module structure.
+Query the codebase map on demand instead of reading the whole file. Run these commands as needed:
+- \`bp map list\` — list all modules with one-line responsibility (overview)
+- \`bp map module <name>\` — get full info for a specific module (exports, deps, responsibility)
+- \`bp map impact <module>\` — see who depends on a module (for change impact analysis)
+- \`bp map search <keyword>\` — find modules/exports by keyword
+
+Before using the map, check if it's stale: run \`bp map refresh --check\`. If stale, run \`bp map refresh\` first.
 
 ### Step 2: Resolve change name and paths
 

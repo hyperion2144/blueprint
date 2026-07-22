@@ -41,7 +41,11 @@ ${AGENT_CONSTRAINTS}## Input
 - \`bp/specs/<domain>/spec.md\` - existing behavioral contracts per affected domain
 - \`bp/conventions/coding.md\` - coding standards
 - \`bp/config.yaml\` - project config (profile, tech stack context)
-- \`bp/.codebase-map.md\` - codebase structure overview (read FIRST for module map + public API, then deep-dive specific source files)
+- **Codebase map queries** (run on demand, do NOT read \`.codebase-map.md\` directly):
+  - \`bp map list\` — overview of all modules
+  - \`bp map module <name>\` — detail for a specific module (exports, deps, responsibility)
+  - \`bp map impact <module>\` — who depends on this module
+  - \`bp map search <keyword>\` — find modules/exports by keyword
 - Existing codebase (you can read source files)
 
 In \`--fix\` mode, you also receive:
@@ -374,7 +378,7 @@ You MUST read these files yourself (do NOT expect content to be injected):
 - **design.md** - read the DS-N items your tasks reference for technical context
 - **specs/<domain>/spec.md** - read delta specs for domains referenced by your tasks' spec_ref
 - **bp/conventions/coding.md** - read coding conventions
-- **bp/.codebase-map.md** - codebase structure overview (module map, know what depends on what)
+- **Codebase map queries** (run on demand): \`bp map module <name>\` for module deps, \`bp map impact <module>\` to know what your changes affect
 - **Existing source code** - read any source file you need
 
 In \`--fix\` mode:

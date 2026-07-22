@@ -243,3 +243,98 @@ export function isMapStale(bpDir: string, rootDir: string): boolean {
     return true;
   }
 }
+
+// ── Query API (v2.1: agent queries on-demand instead of reading whole JSON) ──
+
+/** Load map from .codebase-map.json */
+export function loadMap(bpDir: string): CodebaseMap | null {
+  const mapPath = join(bpDir, '.codebase-map.json');
+  if (!existsSync(mapPath)) return null;
+  try { return JSON.parse(readFileSync(mapPath, 'utf-8')) as CodebaseMap; }
+  catch { return null; }
+}
+
+/** Find module by name (fuzzy: 'core/config' matches 'src/core/config') */
+function findModule(map: CodebaseMap, name: string): ModuleSummary | undefined {
+  let mod = map.modules.find(m => m.name === name);
+  if (mod) return mod;
+  mod = map.modules.find(m => m.name.endsWith('/' + name) || m.name.includes(name));
+  return mod;
+}
+
+/** L0: list all modules with one-line responsibility */
+export function queryList(map: CodebaseMap): string {
+  const lines: string[] = [`Modules (${map.modules.length}):`];
+  for (const mod of map.modules) {
+    lines.push(`  ${mod.name} — ${mod.responsibility} (${mod.public_api.length} exports, ${mod.depends_on.length} deps)`);
+  }
+  return lines.join('\n');
+}
+
+/** L1: full module info */
+export function queryModule(map: CodebaseMap, name: string): string {
+  const mod = findModule(map, name);
+  if (!mod) return `Module "${name}" not found. Run 'bp map list' for available modules.`;
+  const lines: string[] = [
+    `Module: ${mod.name}`,
+    `Responsibility: ${mod.responsibility}`,
+    `Files: ${mod.file_count}`,
+    `Public API (${mod.public_api.length}): ${mod.public_api.join(', ')}`,
+  ];
+  if (mod.depends_on.length > 0) {
+    lines.push(`Depends on (${mod.depends_on.length}): ${mod.depends_on.join(', ')}`);
+  }
+  return lines.join('\n');
+}
+
+/** Recursive dependency chain */
+export function queryDeps(map: CodebaseMap, name: string): string {
+  const mod = findModule(map, name);
+  if (!mod) return `Module "${name}" not found.`;
+  const visited = new Set<string>();
+  const queue = [mod.name];
+  const chain: string[] = [];
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    if (visited.has(current)) continue;
+    visited.add(current);
+    const currentMod = findModule(map, current);
+    if (!currentMod) continue;
+    for (const dep of currentMod.depends_on) {
+      if (!visited.has(dep)) { chain.push(`${current} → ${dep}`); queue.push(dep); }
+    }
+  }
+  if (chain.length === 0) return `${mod.name} has no dependencies.`;
+  return `Dependency chain for ${mod.name}:\n  ${chain.join('\n  ')}`;
+}
+
+/** Reverse dependency: who depends on this module (impact radius) */
+export function queryImpact(map: CodebaseMap, name: string): string {
+  const mod = findModule(map, name);
+  if (!mod) return `Module "${name}" not found.`;
+  const dependents = new Set<string>();
+  const queue = [mod.name];
+  while (queue.length > 0) {
+    const target = queue.shift()!;
+    for (const m of map.modules) {
+      if (m.depends_on.some(d => d === target || d.endsWith('/' + target)) && !dependents.has(m.name)) {
+        dependents.add(m.name);
+        queue.push(m.name);
+      }
+    }
+  }
+  if (dependents.size === 0) return `No modules depend on ${mod.name}.`;
+  return `Impact radius for ${mod.name} (${dependents.size} module(s) depend on it):\n  ${[...dependents].sort().join('\n  ')}`;
+}
+
+/** Search modules/exports by keyword */
+export function querySearch(map: CodebaseMap, keyword: string): string {
+  const lower = keyword.toLowerCase();
+  const modMatches = map.modules.filter(m => m.name.toLowerCase().includes(lower) || m.responsibility.toLowerCase().includes(lower));
+  const exportMatches = map.modules.flatMap(m => m.public_api.filter(a => a.toLowerCase().includes(lower)).map(a => `${m.name}: ${a}`));
+  const lines: string[] = [];
+  if (modMatches.length > 0) { lines.push(`Modules matching "${keyword}":`); for (const m of modMatches) lines.push(`  ${m.name} — ${m.responsibility}`); }
+  if (exportMatches.length > 0) { lines.push(`Exports matching "${keyword}":`); for (const e of exportMatches) lines.push(`  ${e}`); }
+  if (lines.length === 0) return `No matches for "${keyword}".`;
+  return lines.join('\n');
+}

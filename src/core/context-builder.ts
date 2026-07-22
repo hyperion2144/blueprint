@@ -121,11 +121,8 @@ export function buildContextJsonl(bpDir: string, changeDirPath: string): string 
 
   const rows = Array.from(references.values());
   addConventionsIfMissing(bpDir, rows);
-  // v2.1 P4: Add codebase-map reference for sub-agent context injection
-  const mapMdPath = join(bpDir, '.codebase-map.md');
-  if (existsSync(mapMdPath)) {
-    rows.push(makeRow('bp/.codebase-map.md', 'codebase structure overview', 'artifact'));
-  }
+  // v2.1: Agent queries map on-demand via bp map commands, not by reading the whole .md
+  // (the .codebase-map.md is NOT injected — agent uses bp map list/module/impact/search)
   return renderContextJsonl(rows);
 }
 
