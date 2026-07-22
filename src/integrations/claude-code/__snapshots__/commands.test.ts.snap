@@ -599,7 +599,7 @@ Before committing, review the planner's design for soundness:
 3. Read \`specs/<domain>/spec.md\` — are requirements well-written? Do scenarios cover edge cases?
 4. Check \`## Impact Analysis\` section in design.md — did the planner identify all affected modules?
 
-**If problems found: re-dispatch planner with specific feedback on what to fix.** Do NOT proceed with a flawed design — it will cascade into implementation failures.
+**If problems found: re-dispatch planner with specific feedback on what to fix. After re-dispatch, return to Step 4 to review the updated output. Repeat this review loop until the design is sound.** Do NOT proceed with a flawed design — it will cascade into implementation failures.
 
 ### Step 5: Verify output
 
