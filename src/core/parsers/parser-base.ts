@@ -1,11 +1,13 @@
 /**
  * parser-base — common interfaces and utilities for codebase map generation.
  * No git dependency — uses file fingerprint (path+size SHA-256).
+ * Respects .gitignore via the 'ignore' package.
  */
 
 import { createHash } from 'node:crypto';
 import { statSync, readdirSync, existsSync, readFileSync } from 'node:fs';
 import { join, extname } from 'node:path';
+import ignore, { type Ignore } from 'ignore';
 
 export interface ModuleSummary {
   name: string;
@@ -30,15 +32,16 @@ export interface LanguageParser {
   parseFile(content: string, filePath: string): { exports: string[]; imports: string[]; responsibility: string };
 }
 
-/** Collect all source files matching extensions, excluding node_modules/.git/dist/bin */
-export function collectSourceFiles(dir: string, extensions: string[], prefix = '', files: string[] = []): string[] {
+/** Collect all source files matching extensions, excluding node_modules/.git/dist/bin and .gitignore matches */
+export function collectSourceFiles(dir: string, extensions: string[], prefix = '', files: string[] = [], ig?: Ignore): string[] {
   if (!existsSync(dir)) return files;
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     if (entry.name.startsWith('.') || entry.name === 'node_modules' || entry.name === 'dist' || entry.name === 'bin') continue;
     const fullPath = join(dir, entry.name);
     const relPath = prefix ? `${prefix}/${entry.name}` : entry.name;
+    if (ig && ig.ignores(relPath)) continue;
     if (entry.isDirectory()) {
-      collectSourceFiles(fullPath, extensions, relPath, files);
+      collectSourceFiles(fullPath, extensions, relPath, files, ig);
     } else if (extensions.includes(extname(entry.name))) {
       files.push(relPath);
     }
@@ -56,6 +59,16 @@ export function computeFingerprint(rootDir: string, sourceFiles: string[]): stri
     })
     .join('\n');
   return createHash('sha256').update(entries).digest('hex').slice(0, 16);
+}
+
+/** Load .gitignore and return an Ignore instance */
+export function loadGitignore(rootDir: string): Ignore {
+  const ig = ignore();
+  const gitignorePath = join(rootDir, '.gitignore');
+  if (existsSync(gitignorePath)) {
+    ig.add(readFileSync(gitignorePath, 'utf-8'));
+  }
+  return ig;
 }
 
 /** Detect project stack from config files */

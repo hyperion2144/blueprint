@@ -12,7 +12,7 @@
 import { existsSync, readFileSync, writeFileSync, readdirSync, mkdirSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import type { LanguageParser, ModuleSummary, CodebaseMap } from './parsers/parser-base.js';
-import { collectSourceFiles, computeFingerprint, detectStack } from './parsers/parser-base.js';
+import { collectSourceFiles, computeFingerprint, detectStack, loadGitignore } from './parsers/parser-base.js';
 import { tsParser } from './parsers/ts-parser.js';
 
 /** Fallback regex parser for unsupported languages */
@@ -101,17 +101,17 @@ function detectEntry(rootDir: string, stack: string): string {
 export function generateCodebaseMap(rootDir: string): CodebaseMap {
   const stack = detectStack(rootDir);
   const extensions = getExtensions(stack);
+  const ig = loadGitignore(rootDir);
 
   // Collect source files from src/ (and root for Go/Rust)
   const sourceFiles: string[] = [];
   const srcDir = join(rootDir, 'src');
   if (existsSync(srcDir)) {
-    collectSourceFiles(srcDir, extensions, 'src', sourceFiles);
+    collectSourceFiles(srcDir, extensions, 'src', sourceFiles, ig);
   }
   // Go/Rust may have files in root
   if (stack === 'go' || stack === 'rust') {
-    collectSourceFiles(rootDir, extensions, '', sourceFiles.filter(f => !f.startsWith('src/')).length > 0 ? [] : sourceFiles);
-    const rootFiles = collectSourceFiles(rootDir, extensions, '', []);
+    const rootFiles = collectSourceFiles(rootDir, extensions, '', [], ig);
     for (const f of rootFiles) {
       if (!sourceFiles.includes(f)) sourceFiles.push(f);
     }
@@ -233,10 +233,10 @@ export function isMapStale(bpDir: string, rootDir: string): boolean {
   try {
     const map = JSON.parse(readFileSync(mapPath, 'utf-8')) as CodebaseMap;
     const stack = detectStack(rootDir);
-    const extensions = getExtensions(stack);
+    const ig = loadGitignore(rootDir);
     const sourceFiles: string[] = [];
     const srcDir = join(rootDir, 'src');
-    if (existsSync(srcDir)) collectSourceFiles(srcDir, extensions, 'src', sourceFiles);
+    if (existsSync(srcDir)) collectSourceFiles(srcDir, extensions, 'src', sourceFiles, ig);
     const currentFingerprint = computeFingerprint(rootDir, sourceFiles.map(f => join(rootDir, f)));
     return map.fingerprint !== currentFingerprint;
   } catch {
