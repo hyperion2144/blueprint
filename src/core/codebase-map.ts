@@ -12,7 +12,7 @@
 import { existsSync, readFileSync, writeFileSync, readdirSync, mkdirSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import type { LanguageParser, ModuleSummary, CodebaseMap } from './parsers/parser-base.js';
-import { collectSourceFiles, computeFingerprint, detectStack, loadGitignore } from './parsers/parser-base.js';
+import { collectSourceFiles, computeFingerprint, loadGitignore } from './parsers/parser-base.js';
 import { tsParser } from './parsers/ts-parser.js';
 
 /** Fallback regex parser for unsupported languages */
@@ -39,14 +39,12 @@ function getParserForFile(filePath: string): LanguageParser {
   return regexParser;
 }
 
-function getExtensions(stack: string): string[] {
-  if (['node', 'vue', 'svelte', 'react'].includes(stack)) return tsParser.extensions;
-  if (stack === 'python') return ['.py'];
-  if (stack === 'go') return ['.go'];
-  if (stack === 'rust') return ['.rs'];
-  if (stack === 'java') return ['.java'];
-  return [...tsParser.extensions, ...regexParser.extensions];
-}
+/** All supported source file extensions — no stack-based restriction */
+const ALL_SOURCE_EXTENSIONS = [
+  ...tsParser.extensions,
+  '.py', '.go', '.rs', '.java', '.rb', '.php', '.c', '.cpp', '.h', '.cs',
+  '.swift', '.kt', '.scala', '.lua', '.r', '.dart',
+];
 
 /** Map a relative import path to a module name for depends_on */
 function mapImportToModule(importPath: string, currentModule: string, allModules: Set<string>): string | null {
@@ -81,41 +79,30 @@ function inferResponsibility(name: string, exports: string[]): string {
   return `${baseName} (${exports.length} exports: ${exports.slice(0, 3).join(', ')}${exports.length > 3 ? '...' : ''})`;
 }
 
-function detectEntry(rootDir: string, stack: string): string {
-  const candidates: Record<string, string[]> = {
-    node: ['src/cli.ts', 'src/index.ts', 'src/main.ts', 'src/app.ts'],
-    vue: ['src/main.ts', 'src/main.js', 'src/index.ts'],
-    svelte: ['src/main.ts', 'src/main.js'],
-    react: ['src/index.tsx', 'src/index.ts', 'src/main.tsx', 'src/main.ts'],
-    go: ['main.go', 'cmd/main.go', 'cmd/cli/main.go'],
-    python: ['main.py', '__main__.py', 'app.py', 'src/main.py'],
-    rust: ['src/main.rs', 'src/lib.rs'],
-    java: ['src/main/java/Main.java'],
-  };
-  for (const candidate of candidates[stack] || []) {
-    if (existsSync(join(rootDir, candidate))) return candidate;
+function detectEntry(rootDir: string): string {
+  // Read from package.json if present — no hardcoded path guessing
+  if (existsSync(join(rootDir, 'package.json'))) {
+    try {
+      const pkg = JSON.parse(readFileSync(join(rootDir, 'package.json'), 'utf-8'));
+      if (pkg.bin) {
+        if (typeof pkg.bin === 'string') return pkg.bin;
+        const first = Object.values(pkg.bin)[0];
+        if (first) return first as string;
+      }
+      if (pkg.main) return pkg.main;
+      if (pkg.module) return pkg.module;
+    } catch {}
   }
   return 'unknown';
 }
 
 export function generateCodebaseMap(rootDir: string): CodebaseMap {
-  const stack = detectStack(rootDir);
-  const extensions = getExtensions(stack);
   const ig = loadGitignore(rootDir);
 
-  // Collect source files from src/ (and root for Go/Rust)
+  // Scan entire project root — no directory or stack restriction.
+  // .gitignore + hardcoded skips (.git, node_modules, dist, bin) handle exclusions.
   const sourceFiles: string[] = [];
-  const srcDir = join(rootDir, 'src');
-  if (existsSync(srcDir)) {
-    collectSourceFiles(srcDir, extensions, 'src', sourceFiles, ig);
-  }
-  // Go/Rust may have files in root
-  if (stack === 'go' || stack === 'rust') {
-    const rootFiles = collectSourceFiles(rootDir, extensions, '', [], ig);
-    for (const f of rootFiles) {
-      if (!sourceFiles.includes(f)) sourceFiles.push(f);
-    }
-  }
+  collectSourceFiles(rootDir, ALL_SOURCE_EXTENSIONS, '', sourceFiles, ig);
 
   const fingerprint = computeFingerprint(rootDir, sourceFiles.map(f => join(rootDir, f)));
 
@@ -129,7 +116,7 @@ export function generateCodebaseMap(rootDir: string): CodebaseMap {
 
     // Module = parent directory path (e.g., src/core/continue → src/core/continue)
     const parts = file.split('/');
-    const moduleName = parts.length > 2 ? parts.slice(0, -1).join('/') : (parts.length > 1 ? parts[0] : file);
+    const moduleName = parts.length > 1 ? parts.slice(0, -1).join('/') : 'root';
 
     if (!moduleMap.has(moduleName)) {
       moduleMap.set(moduleName, { files: [], exports: [], imports: [], responsibility: '' });
@@ -165,8 +152,8 @@ export function generateCodebaseMap(rootDir: string): CodebaseMap {
 
   return {
     fingerprint,
-    stack,
-    entry: detectEntry(rootDir, stack),
+    stack: '',
+    entry: detectEntry(rootDir),
     generated_at: new Date().toISOString(),
     modules: modules.sort((a, b) => a.name.localeCompare(b.name)),
   };
@@ -232,11 +219,9 @@ export function isMapStale(bpDir: string, rootDir: string): boolean {
   if (!existsSync(mapPath)) return true;
   try {
     const map = JSON.parse(readFileSync(mapPath, 'utf-8')) as CodebaseMap;
-    const stack = detectStack(rootDir);
     const ig = loadGitignore(rootDir);
     const sourceFiles: string[] = [];
-    const srcDir = join(rootDir, 'src');
-    if (existsSync(srcDir)) collectSourceFiles(srcDir, extensions, 'src', sourceFiles, ig);
+    collectSourceFiles(rootDir, ALL_SOURCE_EXTENSIONS, '', sourceFiles, ig);
     const currentFingerprint = computeFingerprint(rootDir, sourceFiles.map(f => join(rootDir, f)));
     return map.fingerprint !== currentFingerprint;
   } catch {
