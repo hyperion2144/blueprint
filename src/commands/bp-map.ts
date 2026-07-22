@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import { findBpDir } from './_utils.js';
-import { generateCodebaseMap, writeCodebaseMap, isMapStale, loadMap, queryList, queryModule, queryDeps, queryImpact, querySearch } from '../core/codebase-map.js';
+import { generateCodebaseMap, writeCodebaseMap, isMapStale, loadMap, queryList, queryModule, queryFiles, queryFile, querySymbol, queryDeps, queryImpact, querySearch } from '../core/codebase-map.js';
 import { join } from 'node:path';
 
 export function register(program: Command): void {
@@ -31,6 +31,21 @@ export function register(program: Command): void {
     .command('impact <module>')
     .description('Show impact radius: which modules depend on this one (for change impact analysis)')
     .action(impactHandler);
+
+  map
+    .command('files <module>')
+    .description('List files in a module with export/import counts')
+    .action(filesHandler);
+
+  map
+    .command('file <path>')
+    .description('Show full info for a specific file (exports, imports, module)')
+    .action(fileHandler);
+
+  map
+    .command('symbol <name>')
+    .description('Find which file defines a function/class/symbol')
+    .action(symbolHandler);
 
   map
     .command('search <keyword>')
@@ -84,6 +99,24 @@ function impactHandler(module: string): void {
   const bpDir = findBpDir();
   if (!bpDir) { console.error('Not in a blueprint project.'); process.exit(1); }
   console.log(queryImpact(getMap(bpDir), module));
+}
+
+function filesHandler(module: string): void {
+  const bpDir = findBpDir();
+  if (!bpDir) { console.error('Not in a blueprint project.'); process.exit(1); }
+  console.log(queryFiles(getMap(bpDir), module));
+}
+
+function fileHandler(filePath: string): void {
+  const bpDir = findBpDir();
+  if (!bpDir) { console.error('Not in a blueprint project.'); process.exit(1); }
+  console.log(queryFile(getMap(bpDir), filePath));
+}
+
+function symbolHandler(name: string): void {
+  const bpDir = findBpDir();
+  if (!bpDir) { console.error('Not in a blueprint project.'); process.exit(1); }
+  console.log(querySymbol(getMap(bpDir), name));
 }
 
 function searchHandler(keyword: string): void {

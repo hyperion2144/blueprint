@@ -11,7 +11,7 @@
 
 import { existsSync, readFileSync, writeFileSync, readdirSync, mkdirSync } from 'node:fs';
 import { join, extname } from 'node:path';
-import type { LanguageParser, ModuleSummary, CodebaseMap } from './parsers/parser-base.js';
+import type { LanguageParser, ModuleSummary, FileSummary, CodebaseMap } from './parsers/parser-base.js';
 import { collectSourceFiles, computeFingerprint, loadGitignore } from './parsers/parser-base.js';
 import { tsParser } from './parsers/ts-parser.js';
 
@@ -92,7 +92,7 @@ export function generateCodebaseMap(rootDir: string): CodebaseMap {
   const fingerprint = computeFingerprint(rootDir, sourceFiles.map(f => join(rootDir, f)));
 
   // Group files by module (directory path under src/)
-  const moduleMap = new Map<string, { files: string[]; exports: string[]; imports: string[]; responsibility: string }>();
+  const moduleMap = new Map<string, { files: FileSummary[]; exports: string[]; imports: string[]; responsibility: string }>();
 
   for (const file of sourceFiles) {
     const fullPath = join(rootDir, file);
@@ -107,10 +107,9 @@ export function generateCodebaseMap(rootDir: string): CodebaseMap {
       moduleMap.set(moduleName, { files: [], exports: [], imports: [], responsibility: '' });
     }
     const mod = moduleMap.get(moduleName)!;
-    mod.files.push(file);
-
     const parser = getParserForFile(file);
     const result = parser.parseFile(content, file);
+    mod.files.push({ path: file, exports: result.exports, imports: result.imports });
     mod.exports.push(...result.exports);
     mod.imports.push(...result.imports);
     if (!mod.responsibility && result.responsibility) mod.responsibility = result.responsibility;
@@ -132,6 +131,7 @@ export function generateCodebaseMap(rootDir: string): CodebaseMap {
       public_api: [...new Set(data.exports)],
       depends_on: [...depends_on].sort(),
       file_count: data.files.length,
+      files: data.files,
     });
   }
 
@@ -295,6 +295,51 @@ export function queryImpact(map: CodebaseMap, name: string): string {
   }
   if (dependents.size === 0) return `No modules depend on ${mod.name}.`;
   return `Impact radius for ${mod.name} (${dependents.size} module(s) depend on it):\n  ${[...dependents].sort().join('\n  ')}`;
+}
+
+/** List files in a module with export/import counts */
+export function queryFiles(map: CodebaseMap, moduleName: string): string {
+  const mod = findModule(map, moduleName);
+  if (!mod) return `Module "${moduleName}" not found. Run 'bp map list' for available modules.`;
+  const lines: string[] = [`Files in ${mod.name} (${mod.files.length}):`];
+  for (const f of mod.files) {
+    lines.push(`  ${f.path} — ${f.exports.length} exports, ${f.imports.length} imports`);
+  }
+  return lines.join('\n');
+}
+
+/** Show full info for a specific file (exports, imports, which module it belongs to) */
+export function queryFile(map: CodebaseMap, filePath: string): string {
+  for (const mod of map.modules) {
+    for (const f of mod.files) {
+      if (f.path === filePath || f.path.endsWith('/' + filePath) || f.path.includes(filePath)) {
+        return [
+          `File: ${f.path}`,
+          `Module: ${mod.name}`,
+          `Exports (${f.exports.length}): ${f.exports.join(', ') || 'none'}`,
+          `Imports (${f.imports.length}): ${f.imports.join(', ') || 'none'}`,
+        ].join('\n');
+      }
+    }
+  }
+  return `File "${filePath}" not found. Run 'bp map list' for available modules.`;
+}
+
+/** Find which file defines a function/class/symbol */
+export function querySymbol(map: CodebaseMap, symbolName: string): string {
+  const lower = symbolName.toLowerCase();
+  const results: { module: string; file: string; symbol: string }[] = [];
+  for (const mod of map.modules) {
+    for (const f of mod.files) {
+      for (const exp of f.exports) {
+        if (exp.toLowerCase().includes(lower)) results.push({ module: mod.name, file: f.path, symbol: exp });
+      }
+    }
+  }
+  if (results.length === 0) return `Symbol "${symbolName}" not found in any module.`;
+  const lines: string[] = [`Symbol "${symbolName}" found in ${results.length} location(s):`];
+  for (const r of results) lines.push(`  ${r.symbol} — in ${r.file} (module: ${r.module})`);
+  return lines.join('\n');
 }
 
 /** Search modules/exports by keyword */

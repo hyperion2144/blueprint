@@ -9,12 +9,19 @@ import { statSync, readdirSync, existsSync, readFileSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import ignore, { type Ignore } from 'ignore';
 
+export interface FileSummary {
+  path: string;
+  exports: string[];
+  imports: string[];
+}
+
 export interface ModuleSummary {
   name: string;
   responsibility: string;
   public_api: string[];
   depends_on: string[];
   file_count: number;
+  files: FileSummary[];
 }
 
 export interface CodebaseMap {
