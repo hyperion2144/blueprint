@@ -79,22 +79,7 @@ function inferResponsibility(name: string, exports: string[]): string {
   return `${baseName} (${exports.length} exports: ${exports.slice(0, 3).join(', ')}${exports.length > 3 ? '...' : ''})`;
 }
 
-function detectEntry(rootDir: string): string {
-  // Read from package.json if present — no hardcoded path guessing
-  if (existsSync(join(rootDir, 'package.json'))) {
-    try {
-      const pkg = JSON.parse(readFileSync(join(rootDir, 'package.json'), 'utf-8'));
-      if (pkg.bin) {
-        if (typeof pkg.bin === 'string') return pkg.bin;
-        const first = Object.values(pkg.bin)[0];
-        if (first) return first as string;
-      }
-      if (pkg.main) return pkg.main;
-      if (pkg.module) return pkg.module;
-    } catch {}
-  }
-  return 'unknown';
-}
+
 
 export function generateCodebaseMap(rootDir: string): CodebaseMap {
   const ig = loadGitignore(rootDir);
@@ -153,7 +138,7 @@ export function generateCodebaseMap(rootDir: string): CodebaseMap {
   return {
     fingerprint,
     stack: '',
-    entry: detectEntry(rootDir),
+    entry: '',
     generated_at: new Date().toISOString(),
     modules: modules.sort((a, b) => a.name.localeCompare(b.name)),
   };
