@@ -69,6 +69,57 @@
 **Goal**: Polish v2 with custom schemas, brownfield support improvements, and community feedback integration.
 **Status**: PLANNED
 
+## Milestone: M3 - Telemetry-Driven Evolution [PLANNED]
+
+**Goal**: From static workflow to telemetry-driven evolution. User-side collects telemetry; maintainers analyze and release evolved versions. See DESIGN-v3.md.
+**Status**: PLANNED
+
+### Phase: P3.1 - Telemetry Foundation [NOT_STARTED]
+
+- **Goal**: .meta/ extension (failure mode + step usage) + anonymization + bp telemetry export/upload
+- **Spec domain**: telemetry
+- **Status**: NOT_STARTED
+
+**Changes**:
+- [ ] telemetry-collection (proposed 2026-07-22)
+- [ ] telemetry-export-upload (proposed 2026-07-22)
+
+### Phase: P3.2 - Spec Governance [NOT_STARTED]
+
+- **Goal**: Spec confidence auto-inference + bp spec audit + version management
+- **Status**: NOT_STARTED
+
+**Changes**:
+- [ ] spec-confidence (proposed 2026-07-22)
+- [ ] spec-audit (proposed 2026-07-22)
+
+### Phase: P3.3 - Cross-Change Scheduling [NOT_STARTED]
+
+- **Goal**: bp deps graph + cascade detection + parallel conflict detection
+- **Status**: NOT_STARTED
+
+**Changes**:
+- [ ] deps-graph (proposed 2026-07-22)
+- [ ] cascade-detection (proposed 2026-07-22)
+
+### Phase: P3.4 - Uncertainty Quantification [NOT_STARTED]
+
+- **Goal**: Output confidence annotation + tiered verification
+- **Status**: NOT_STARTED
+
+**Changes**:
+- [ ] confidence-annotation (proposed 2026-07-22)
+- [ ] tiered-verification (proposed 2026-07-22)
+
+### Phase: P3.5 - Maintainer Analysis Tools [NOT_STARTED]
+
+- **Goal**: Telemetry aggregation + failure mode stats + workflow audit + complexity budget
+- **Status**: NOT_STARTED
+
+**Changes**:
+- [ ] telemetry-analysis (proposed 2026-07-22)
+- [ ] workflow-audit (proposed 2026-07-22)
+
 ---
 
 ## Progress Summary
@@ -77,3 +128,4 @@
 |-----------|--------|---------|--------|
 | M1 - v2 Architecture Refactoring | 2/3 | 3/3 | ACTIVE |
 | M2 - Polish & Extensions | 0/0 | 0/0 | PLANNED |
+| M3 - Telemetry-Driven Evolution | 0/5 | 0/10 | PLANNED |
