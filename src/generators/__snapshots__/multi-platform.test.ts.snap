@@ -442,16 +442,20 @@ After reading, assess whether you can produce a **detailed, executable** design 
 
 **If you return for any of the above, do NOT write any artifacts.** The orchestrator will get the answer and re-dispatch you.
 
-### Step 1c: Technical research (if proposal is clear but you need to choose an approach)
-<!-- CAPABILITY-COMPENSATION: technical research methodology — model can self-guide research process -->
+### Step 1c: Technical research (MANDATORY before designing)
+<!-- ENGINEERING-CONSTRAINT: research requirement — design without research produces broken architecture -->
 
-If the proposal is clear but you need to decide between technical approaches:
-- Read the codebase to see what patterns/libraries are already used
-- Check \`package.json\` for existing dependencies
-- Use \`grep\` to find similar implementations
-- Document your choice as a D-N decision with alternatives
+Before designing, research the technical landscape. Use ALL available tools:
 
-Do NOT ask the user for technical decisions - research and decide yourself.
+1. **Codebase structure** — Run \`bp map list\` and \`bp map module <name>\` for module overview. Run \`bp map impact <module>\` to see who depends on modules you are changing.
+2. **Existing patterns** — Read source files to see what patterns/libraries are already used. Check \`package.json\` for dependencies. Use \`grep\` to find similar implementations.
+3. **Library/framework documentation** — Use the \`context7\` MCP tool to fetch current docs for any library/framework you plan to use (React, Express, Zod, etc.). Do NOT rely on training data — it may be outdated.
+4. **Web research** — Use \`web_search\` for anything context7 does not cover: new libraries, API changes, best practices, migration guides, security advisories.
+5. **Call-site analysis** — Use LSP \`references\` (if available) or \`grep\` to find all callers of the code you plan to modify. This feeds into the Impact Analysis section.
+
+Document your research findings as D-N decisions with alternatives. Cite the documentation you consulted.
+
+Do NOT ask the user for technical decisions — research and decide yourself.
 
 **Checkpoint:** Can you name the specific library/approach for each technical decision? Can you explain what existing behavior each PR-N modifies? If not, research more or return for clarification.
 
@@ -2397,16 +2401,20 @@ After reading, assess whether you can produce a **detailed, executable** design 
 
 **If you return for any of the above, do NOT write any artifacts.** The orchestrator will get the answer and re-dispatch you.
 
-### Step 1c: Technical research (if proposal is clear but you need to choose an approach)
-<!-- CAPABILITY-COMPENSATION: technical research methodology — model can self-guide research process -->
+### Step 1c: Technical research (MANDATORY before designing)
+<!-- ENGINEERING-CONSTRAINT: research requirement — design without research produces broken architecture -->
 
-If the proposal is clear but you need to decide between technical approaches:
-- Read the codebase to see what patterns/libraries are already used
-- Check \`package.json\` for existing dependencies
-- Use \`grep\` to find similar implementations
-- Document your choice as a D-N decision with alternatives
+Before designing, research the technical landscape. Use ALL available tools:
 
-Do NOT ask the user for technical decisions - research and decide yourself.
+1. **Codebase structure** — Run \`bp map list\` and \`bp map module <name>\` for module overview. Run \`bp map impact <module>\` to see who depends on modules you are changing.
+2. **Existing patterns** — Read source files to see what patterns/libraries are already used. Check \`package.json\` for dependencies. Use \`grep\` to find similar implementations.
+3. **Library/framework documentation** — Use the \`context7\` MCP tool to fetch current docs for any library/framework you plan to use (React, Express, Zod, etc.). Do NOT rely on training data — it may be outdated.
+4. **Web research** — Use \`web_search\` for anything context7 does not cover: new libraries, API changes, best practices, migration guides, security advisories.
+5. **Call-site analysis** — Use LSP \`references\` (if available) or \`grep\` to find all callers of the code you plan to modify. This feeds into the Impact Analysis section.
+
+Document your research findings as D-N decisions with alternatives. Cite the documentation you consulted.
+
+Do NOT ask the user for technical decisions — research and decide yourself.
 
 **Checkpoint:** Can you name the specific library/approach for each technical decision? Can you explain what existing behavior each PR-N modifies? If not, research more or return for clarification.
 
@@ -4367,16 +4375,20 @@ After reading, assess whether you can produce a **detailed, executable** design 
 
 **If you return for any of the above, do NOT write any artifacts.** The orchestrator will get the answer and re-dispatch you.
 
-### Step 1c: Technical research (if proposal is clear but you need to choose an approach)
-<!-- CAPABILITY-COMPENSATION: technical research methodology — model can self-guide research process -->
+### Step 1c: Technical research (MANDATORY before designing)
+<!-- ENGINEERING-CONSTRAINT: research requirement — design without research produces broken architecture -->
 
-If the proposal is clear but you need to decide between technical approaches:
-- Read the codebase to see what patterns/libraries are already used
-- Check \`package.json\` for existing dependencies
-- Use \`grep\` to find similar implementations
-- Document your choice as a D-N decision with alternatives
+Before designing, research the technical landscape. Use ALL available tools:
 
-Do NOT ask the user for technical decisions - research and decide yourself.
+1. **Codebase structure** — Run \`bp map list\` and \`bp map module <name>\` for module overview. Run \`bp map impact <module>\` to see who depends on modules you are changing.
+2. **Existing patterns** — Read source files to see what patterns/libraries are already used. Check \`package.json\` for dependencies. Use \`grep\` to find similar implementations.
+3. **Library/framework documentation** — Use the \`context7\` MCP tool to fetch current docs for any library/framework you plan to use (React, Express, Zod, etc.). Do NOT rely on training data — it may be outdated.
+4. **Web research** — Use \`web_search\` for anything context7 does not cover: new libraries, API changes, best practices, migration guides, security advisories.
+5. **Call-site analysis** — Use LSP \`references\` (if available) or \`grep\` to find all callers of the code you plan to modify. This feeds into the Impact Analysis section.
+
+Document your research findings as D-N decisions with alternatives. Cite the documentation you consulted.
+
+Do NOT ask the user for technical decisions — research and decide yourself.
 
 **Checkpoint:** Can you name the specific library/approach for each technical decision? Can you explain what existing behavior each PR-N modifies? If not, research more or return for clarification.
 
