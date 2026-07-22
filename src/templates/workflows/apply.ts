@@ -16,6 +16,10 @@ const instructions = ORCHESTRATOR_RULE + `${CONTEXT_JSONL_REMINDER}## Input
 
 ## Steps
 
+## Orchestrator Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp apply\` only outputs these steps — it does not auto-execute. Implementation is done by executor sub-agents.
+
 ### Step 1: Resolve change name and paths
 
 Same as plan workflow Step 1.

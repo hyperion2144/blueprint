@@ -42,6 +42,10 @@ Row fields:
 
 ## Steps
 
+## Orchestrator Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp apply\` only outputs these steps — it does not auto-execute. Implementation is done by executor sub-agents.
+
 ### Step 1: Resolve change name and paths
 
 Same as plan workflow Step 1.
@@ -190,6 +194,10 @@ hide: false
 
 ## Steps
 
+## Orchestrator Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp archive\` only outputs these steps — it does not auto-execute. Actual archive is done by \`bp finalize\`.
+
 ### Step 1: Resolve change name and paths
 
 Same as plan workflow Step 1.
@@ -210,12 +218,12 @@ Cannot archive: review not passed
   Fix issues first: bp apply --fix $1
 \`\`\`
 
-### Step 3: Run archive command
+### Step 3: Run finalize command
 
-The \`bp archive\` command handles everything: review verification, delta spec merge, change directory move, and roadmap update.
+The \`bp finalize\` command handles everything: review verification, delta spec merge, change directory move, and roadmap update.
 
 \`\`\`bash
-bp archive $1
+bp finalize $1
 \`\`\`
 
 The command will:
@@ -265,8 +273,7 @@ Archived $1
 ## Guardrails
 
 - **Review must PASS before archive.** The archive command enforces this, but pre-checking saves a failed command.
-- **The archive command is the source of truth for the merge/move/roadmap operations.** Do NOT manually merge specs, move files, or update roadmap — the command does it all.
-- **If merge conflict occurs**, resolve in the delta spec (change directory) and re-run \`bp archive $1\`. Do NOT edit global specs directly.
+- **If merge conflict occurs**, resolve in the delta spec (change directory) and re-run \`bp finalize $1\`. Do NOT edit global specs directly.
 - **Archive preserves full context.** All artifacts move to archive together.
 - **Post-archive drift check**: After archive, consider running bp spec refresh --check to detect if the merged specs still match code reality.
 - **CI mode (--ci)**: Skip working-tree warnings and post-archive suggestions. Exit 0 on success, 1 on any failure.
@@ -281,6 +288,10 @@ hide: false
 ## Input
 
 - **\`$ARGUMENTS\`** (optional): change name. If empty, the CLI auto-detects.
+
+## Note
+
+> \`bp continue\` auto-detects progress and outputs the next step's workflow instructions. Follow the instructions it outputs.
 
 ## What to do
 
@@ -318,6 +329,10 @@ hide: false
 ## Input
 
 - **\`$ARGUMENTS\`** (optional): change name. If empty, starts from current project state.
+
+## Note
+
+> \`bp ff\` / \`bp loop\` auto-advance through steps by calling \`bp continue\` after each. Follow the instructions each \`bp continue\` outputs.
 
 ## What to do
 
@@ -366,6 +381,10 @@ hide: false
 - \`bp/config.yaml\` exists and is fully configured.
 
 ## Steps
+
+## Orchestrator Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp init\` only outputs these steps — it does not auto-execute.
 
 ### Step 1: Check project type
 
@@ -451,6 +470,10 @@ hide: false
 
 - **\`$ARGUMENTS\`** (optional): change name. If empty, starts from current project state.
 
+## Note
+
+> \`bp ff\` / \`bp loop\` auto-advance through steps by calling \`bp continue\` after each. Follow the instructions each \`bp continue\` outputs.
+
 ## What to do
 
 Autonomous loop: same as \`/bp:ff\` but **skip ALL user interaction**. Run until the roadmap has no remaining \`[ ]\` items.
@@ -524,19 +547,11 @@ Row fields:
 
 - \`proposal.md\` exists in change directory and is not a template
 
-## Steps
+## Orchestrator Steps
 
-### Step 1: Query codebase map
+> These are the steps you (orchestrator) execute in order. \`bp plan\` only outputs these steps — it does not auto-execute. Codebase queries and impact analysis are done by the planner sub-agent.
 
-Query the codebase map on demand instead of reading the whole file. Run these commands as needed:
-- \`bp map list\` — list all modules with one-line responsibility (overview)
-- \`bp map module <name>\` — get full info for a specific module (exports, deps, responsibility)
-- \`bp map impact <module>\` — see who depends on a module (for change impact analysis)
-- \`bp map search <keyword>\` — find modules/exports by keyword
-
-Before using the map, check if it's stale: run \`bp map refresh --check\`. If stale, run \`bp map refresh\` first.
-
-### Step 2: Resolve change name and paths
+### Step 1: Resolve change name and paths
 
 If \`$ARGUMENTS\` is empty:
 - List \`bp/changes/\` for active changes (not in \`archive/\`)
@@ -545,26 +560,13 @@ If \`$ARGUMENTS\` is empty:
 
 Change directory: \`bp/changes/$1/\`
 
-
-### Step 3: Impact analysis (v2.1 7.2.1)
-
-Before designing, analyze what this change impacts:
-1. Read proposal.md deliverables — identify files/modules to be modified
-2. For each modified file, find its callers/dependents:
-   - Use grep to find imports/references to the modified modules
-   - Or use LSP references if available
-3. Write an ## Impact Analysis section in design.md listing:
-   - Direct impacts: files being modified
-   - Indirect impacts: callers/dependents that may need updates
-   - Test impacts: existing tests that may break
-
-### Step 4: Classify change (lightweight vs full)
+### Step 2: Classify change (lightweight vs full)
 
 Read \`proposal.md\` deliverables:
 - **Lightweight**: All deliverables are config/docs/refactor/scaffolding (no new behavior)
 - **Full**: Any deliverable introduces new behavior
 
-### Step 5: Dispatch planner (Full mode)
+### Step 3: Dispatch planner (Full mode)
 
 **If FULL: dispatch planner sub-agent. Do NOT write design/tasks/specs yourself.**
 
@@ -574,17 +576,35 @@ Read \`proposal.md\` deliverables:
    - Instruction: "Read planner agent prompt, produce design.md, tasks.md, and specs/<domain>/spec.md (delta specs under the change directory, NOT bp/specs/)"
    - In --fix mode: also include review.md, focus on D-prefixed issues
 
-2. Dispatch via task tool. Wait for planner to complete.
+2. Dispatch via task tool:
    - Agent type: bp-planner
+   - Fresh context: yes
+   - Isolated: no (planner is read-only on source code, writes only to change directory)
 
-3. Verify planner output (see Step 6).
+   The planner sub-agent will:
+   - Query the codebase map (\`bp map list\`, \`bp map module <name>\`, \`bp map impact <module>\`) for module structure and dependencies
+   - Perform impact analysis and write \`## Impact Analysis\` section in design.md
+   - Produce design.md, tasks.md, and delta specs
+
+3. Wait for planner to complete.
 
 **If LIGHTWEIGHT:**
 1. Fill design.md template directly
 2. Fill tasks.md with 1 wave
 3. No delta specs needed (no behavioral changes)
 
-### Step 6: Verify output
+### Step 4: Review planner output
+
+Before committing, review the planner's design for soundness:
+
+1. Read \`design.md\` — are DS-N components well-decomposed? Is the architecture sound?
+2. Read \`tasks.md\` — are tasks properly split? Are TDD types correct? Are waves well-organized?
+3. Read \`specs/<domain>/spec.md\` — are requirements well-written? Do scenarios cover edge cases?
+4. Check \`## Impact Analysis\` section in design.md — did the planner identify all affected modules?
+
+**If problems found: re-dispatch planner with specific feedback on what to fix.** Do NOT proceed with a flawed design — it will cascade into implementation failures.
+
+### Step 5: Verify output
 
 **Traceability:**
 - Every PR-N in proposal.md referenced by at least one DS-N in design.md
@@ -592,7 +612,7 @@ Read \`proposal.md\` deliverables:
 - Every type:behavior task has \`spec_ref\` pointing to delta spec
 
 **Completeness:**
-- design.md has: Design Items, Impact Analysis, Architecture Decisions, Technical Approach, File Manifest
+- design.md has: Design Items, Architecture Decisions, Technical Approach, File Manifest, Impact Analysis
 - tasks.md has: TDD Type Annotations, at least 1 Wave, Pre-Archive Checklist
 - Delta specs exist for affected domain (specs/<domain>/spec.md)
 - Delta specs use correct sections (ADDED/MODIFIED/REMOVED)
@@ -608,7 +628,7 @@ Read \`proposal.md\` deliverables:
 
 If any check fails: re-dispatch planner with specific feedback on what's missing.
 
-### Step 7: Task granularity check (v2.1 P0)
+### Step 6: Task granularity check (v2.1 P0)
 
 After planner produces tasks.md, check granularity and warn if too large:
 
@@ -617,20 +637,13 @@ After planner produces tasks.md, check granularity and warn if too large:
 - wave count > 5 → warn: 'Excessive wave decomposition. Consolidate independent tasks.'
 - single wave task count > 8 → warn: 'Wave too large. Split into multiple waves.'
 
-This is advisory, not blocking — the user decides whether to proceed or split.
-If any threshold exceeded, output the warnings before suggesting next step.
-
-### Step 8: Commit and suggest next step
+### Step 7: Commit and suggest next step
 
 \`\`\`bash
 # Update roadmap: If the change's proposal.md has \`## Roadmap Reference\`, read \`bp/roadmap.md\`, find the change in that phase's Changes list, and update it to \`- [-] $1 (planned YYYY-MM-DD)\`.
 git add bp/changes/$1/
 bp commit "docs(plan): design + tasks + delta specs for $1" --files bp/changes/$1/
-# In --fix mode, also run: bp plan --write-context $1
 \`\`\`
-
-# Record execution metadata (v2.1 P5)
-# Orchestrator should write .meta/planner-run-N.json after planner completes
   Next: bp apply $1
   (or: bp continue $1)
 
@@ -652,6 +665,7 @@ Planner completed for $1
 - Lightweight mode: write templates directly (no sub-agent needed)
 - tasks.md boxes must remain UNCHECKED
 - In --fix mode: planner only redesigns — does NOT modify tasks.md or specs
+- **Review planner output before committing.** If design is flawed, re-dispatch planner — do not proceed with broken design.
 - **Task granularity is advisory, not blocking.** Warn on tasks>20/files>15/waves>5/per-wave>8, but let the user decide whether to proceed or split.
 - **Level-aware dispatch**: Trivial/Light changes may skip planner sub-agent (orchestrator fills templates directly). Standard/Critical MUST dispatch planner. Critical adds security dimension to design.
 ",
@@ -667,6 +681,10 @@ hide: false
 - **\`--phase <milestone>/<phase>\`** (optional): reference a roadmap phase
 
 ## Steps
+
+## Orchestrator Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp propose\` only outputs these steps — it does not auto-execute.
 
 ### Step 0: Risk assessment and level assignment (v2.1 P1)
 
@@ -808,6 +826,11 @@ Row fields:
 - Code is implemented (tasks.md has [x] entries with commit hashes)
 - Build check and test suite pass (per bp/config.yaml stack)
 - In --fix mode: \`review.md\` exists with unresolved issues, fixes have been applied
+
+
+## Orchestrator Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp review\` only outputs these steps — it does not auto-execute. Review is done by reviewer sub-agent.
 
 ## Steps
 

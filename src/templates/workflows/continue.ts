@@ -4,6 +4,10 @@ const instructions = `## Input
 
 - **\`$ARGUMENTS\`** (optional): change name. If empty, the CLI auto-detects.
 
+## Note
+
+> \`bp continue\` auto-detects progress and outputs the next step's workflow instructions. Follow the instructions it outputs.
+
 ## What to do
 
 Run the CLI command:

@@ -4,6 +4,10 @@ const instructions = `## Input
 
 - **\`$ARGUMENTS\`** (optional): change name. If empty, starts from current project state.
 
+## Note
+
+> \`bp ff\` / \`bp loop\` auto-advance through steps by calling \`bp continue\` after each. Follow the instructions each \`bp continue\` outputs.
+
 ## What to do
 
 Autonomous loop: same as \`/bp:ff\` but **skip ALL user interaction**. Run until the roadmap has no remaining \`[ ]\` items.

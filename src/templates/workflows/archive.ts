@@ -11,6 +11,10 @@ const instructions = `## Input
 
 ## Steps
 
+## Orchestrator Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp archive\` only outputs these steps — it does not auto-execute. Actual archive is done by \`bp finalize\`.
+
 ### Step 1: Resolve change name and paths
 
 Same as plan workflow Step 1.
@@ -31,12 +35,12 @@ Cannot archive: review not passed
   Fix issues first: bp apply --fix $1
 \`\`\`
 
-### Step 3: Run archive command
+### Step 3: Run finalize command
 
-The \`bp archive\` command handles everything: review verification, delta spec merge, change directory move, and roadmap update.
+The \`bp finalize\` command handles everything: review verification, delta spec merge, change directory move, and roadmap update.
 
 \`\`\`bash
-bp archive $1
+bp finalize $1
 \`\`\`
 
 The command will:
@@ -86,8 +90,7 @@ Archived $1
 ## Guardrails
 
 - **Review must PASS before archive.** The archive command enforces this, but pre-checking saves a failed command.
-- **The archive command is the source of truth for the merge/move/roadmap operations.** Do NOT manually merge specs, move files, or update roadmap — the command does it all.
-- **If merge conflict occurs**, resolve in the delta spec (change directory) and re-run \`bp archive $1\`. Do NOT edit global specs directly.
+- **If merge conflict occurs**, resolve in the delta spec (change directory) and re-run \`bp finalize $1\`. Do NOT edit global specs directly.
 - **Archive preserves full context.** All artifacts move to archive together.
 - **Post-archive drift check**: After archive, consider running bp spec refresh --check to detect if the merged specs still match code reality.
 - **CI mode (--ci)**: Skip working-tree warnings and post-archive suggestions. Exit 0 on success, 1 on any failure.

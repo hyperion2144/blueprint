@@ -477,6 +477,19 @@ A domain is a logical grouping of related behaviors - think "chapter" of the sys
 
 After fetching the template, fill it following these principles:
 
+#### Impact Analysis (v2.1 7.2.1)
+<!-- ENGINEERING-CONSTRAINT: impact analysis — structural contract for downstream safety -->
+
+Before designing components, perform impact analysis using codebase map queries:
+1. Run \`bp map list\` for module overview
+2. Run \`bp map module <name>\` for modules you will modify
+3. Run \`bp map impact <module>\` to see who depends on the modules you are changing
+
+Write \`## Impact Analysis\` section in design.md listing:
+- **Direct Impacts**: files being modified and what changes
+- **Indirect Impacts**: callers/dependents that may need updates (from \`bp map impact\`)
+- **Test Impacts**: existing tests that may break
+
 #### Component Decomposition (DS-N)
 <!-- ENGINEERING-CONSTRAINT: DS-N component decomposition format, refs annotation, and source attribution rules -->
 

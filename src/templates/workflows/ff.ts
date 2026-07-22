@@ -4,6 +4,10 @@ const instructions = `## Input
 
 - **\`$ARGUMENTS\`** (optional): change name. If empty, starts from current project state.
 
+## Note
+
+> \`bp ff\` / \`bp loop\` auto-advance through steps by calling \`bp continue\` after each. Follow the instructions each \`bp continue\` outputs.
+
 ## What to do
 
 Fast-forward: execute the current step, then auto-call \`bp continue\` to get the next step, then execute that. Repeat until complete.

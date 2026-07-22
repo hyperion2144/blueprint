@@ -36,13 +36,13 @@ afterEach(() => {
   rmSync(testDir, { recursive: true, force: true });
 });
 
-describe('bp archive', () => {
+describe('bp finalize', () => {
   it('archive non-existent change shows error', () => {
-    expect(() => cli('archive', 'nonexistent')).toThrow();
+    expect(() => cli('finalize', 'nonexistent')).toThrow();
   });
 
   it('archive from invalid path rejected', () => {
-    expect(() => cli('archive', '/tmp/evil')).toThrow();
+    expect(() => cli('finalize', '/tmp/evil')).toThrow();
   });
 
   it('archives a valid change', () => {
@@ -56,7 +56,7 @@ describe('bp archive', () => {
 
     execSync('git add -f -A && git commit -m "add test change"', { cwd: testDir });
 
-    const output = cli('archive', 'test-change');
+    const output = cli('finalize', 'test-change');
     expect(output).toContain('Archived');
 
     // Verify original change directory is gone

@@ -13,6 +13,11 @@ const instructions = ORCHESTRATOR_RULE + `${CONTEXT_JSONL_REMINDER}## Input
 - Build check and test suite pass (per bp/config.yaml stack)
 - In --fix mode: \`review.md\` exists with unresolved issues, fixes have been applied
 
+
+## Orchestrator Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp review\` only outputs these steps — it does not auto-execute. Review is done by reviewer sub-agent.
+
 ## Steps
 
 ### Step 1: Resolve change name and paths

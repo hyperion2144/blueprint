@@ -7,6 +7,10 @@ const instructions = `## Input
 
 ## Steps
 
+## Orchestrator Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp init\` only outputs these steps — it does not auto-execute.
+
 ### Step 1: Check project type
 
 Read \`bp/config.yaml\` - check the \`brownfield\` field.
