@@ -77,8 +77,8 @@ async function initHandler(options: {
   let configContent = ARTIFACT_TEMPLATES.config;
   configContent = configContent.replace(/\{\{project-name\}\}/g, projectName);
   configContent = configContent.replace(/\{\{date\}\}/g, date);
-  configContent = configContent.replace(/\{\{tech-stack\}\}/g, wizard.context || 'TypeScript');
-  configContent = configContent.replace(/\{\{test-framework\}\}/g, 'vitest');
+  configContent = configContent.replace(/\{\{tech-stack\}\}/g, wizard.context || '');
+  configContent = configContent.replace(/\{\{test-framework\}\}/g, '');
   configContent = configContent.replace(/\{\{artifact-language\}\}/g, 'English');
   configContent = configContent.replace(/profile: standard/, `profile: ${profile}`);
   configContent = configContent.replace(/platform:[\s\S]*?(?=\n\n)/, `platform:\n${platform.map((p) => `  - ${p}`).join('\n')}`);
