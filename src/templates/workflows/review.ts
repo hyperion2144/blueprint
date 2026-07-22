@@ -53,7 +53,7 @@ If build or tests fail: do NOT dispatch reviewer. Report the failures and sugges
    - In --fix mode: "Read the reviewer agent prompt (Fix Mode section), verify each [~] issue before marking [x], follow the three-state process ([ ]→[~]→[x])"
 
 2. Dispatch via task tool:
-   - Agent type: reviewer (or default task agent with reviewer prompt injected)
+   - Agent type: bp-reviewer (or default task agent with reviewer prompt injected)
    - Fresh context: yes
    - Isolated: no (reviewer is read-only on source code, writes only review.md)
 

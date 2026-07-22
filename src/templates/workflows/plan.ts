@@ -62,6 +62,7 @@ Read \`proposal.md\` deliverables:
    - In --fix mode: also include review.md, focus on D-prefixed issues
 
 2. Dispatch via task tool. Wait for planner to complete.
+   - Agent type: bp-planner
 
 3. Verify planner output (see Step 6).
 

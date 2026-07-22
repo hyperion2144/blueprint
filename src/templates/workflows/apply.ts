@@ -73,6 +73,7 @@ Each round:
 1. Identify waves with no unmet dependencies -> ready to run
 2. Dispatch ALL ready waves CONCURRENTLY (one task tool call per wave, all in one batch)
    - Each wave gets its own executor sub-agent
+   - Agent type: bp-executor
    - Fresh context: yes
    - Isolated: yes (executors modify source files and make git commits concurrently)
 3. Wait for ALL waves in this round to complete

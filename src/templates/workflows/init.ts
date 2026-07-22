@@ -43,7 +43,7 @@ Dispatch a **codebase-scanner** sub-agent to analyze the existing codebase and e
    - Instruction: "Read the codebase-scanner agent prompt, then scan the source code and write spec files to bp/specs/<domain>/spec.md"
 
 2. Dispatch via task tool:
-   - Agent type: codebase-scanner (or default task agent with codebase-scanner prompt injected)
+   - Agent type: bp-codebase-scanner (or default task agent with codebase-scanner prompt injected)
    - Fresh context: yes
    - Isolated: no (scanner is read-only on source code, writes only to bp/specs/)
 
