@@ -8,7 +8,7 @@
 
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
-import { findBpDir, gateContextJsonl } from './_utils.js';
+import { findBpDir, gateContextJsonl, gatePlaceholders } from './_utils.js';
 import { buildContextJsonl } from '../core/context-builder.js';
 import { getWorkflowInstructions } from '../core/continue.js';
 import type { Command } from 'commander';
@@ -41,6 +41,7 @@ function planHandler(name: string | undefined, options: { fix?: boolean; writeCo
   if (name && !gateContextJsonl(bpDir, name, 'plan')) {
     process.exit(2);
   }
+  if (name && !gatePlaceholders(bpDir, name, ['proposal.md'])) process.exit(1);
 
   const instructions = getWorkflowInstructions('plan');
   if (instructions) {

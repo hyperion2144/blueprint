@@ -3,9 +3,9 @@
  */
 
 import { join, dirname } from 'node:path';
-import { validateContextJsonlFile } from '../core/artifact-validator.js';
+import { validateContextJsonlFile, hasPlaceholders } from '../core/artifact-validator.js';
 import { listActiveChanges } from '../core/file-tree.js';
-import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
 
 interface GeneratedFile {
   path: string;
@@ -72,4 +72,20 @@ export function gateContextJsonl(
     console.error(`${contextPath}:${err.line}: [${err.code}] ${err.message}`);
   }
   return false;
+}
+
+/** Gate: exit non-zero if any prerequisite artifact has unreplaced placeholders */
+export function gatePlaceholders(bpDir: string, changeName: string, artifacts: string[]): boolean {
+  const changePath = join(bpDir, 'changes', changeName);
+  for (const artifact of artifacts) {
+    const artifactPath = join(changePath, artifact);
+    if (existsSync(artifactPath)) {
+      const content = readFileSync(artifactPath, 'utf-8');
+      if (hasPlaceholders(content)) {
+        console.error(`Cannot proceed: ${artifact} has unreplaced {{placeholder}} variables. Fill them first.`);
+        return false;
+      }
+    }
+  }
+  return true;
 }

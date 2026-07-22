@@ -4,7 +4,7 @@
 
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { findBpDir, gateContextJsonl } from './_utils.js';
+import { findBpDir, gateContextJsonl, gatePlaceholders } from './_utils.js';
 import { getWorkflowInstructions } from '../core/continue.js';
 import type { Command } from 'commander';
 
@@ -26,6 +26,7 @@ function applyHandler(name: string | undefined, options: { fix?: boolean }) {
   if (name && !gateContextJsonl(bpDir, name, 'apply')) {
     process.exit(2);
   }
+  if (name && !gatePlaceholders(bpDir, name, ['design.md', 'tasks.md'])) process.exit(1);
 
   // Output the full workflow instructions from the TypeScript template
   const instructions = getWorkflowInstructions('apply');

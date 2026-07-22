@@ -7,7 +7,7 @@
 
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { findBpDir, gateContextJsonl, resolveChangeName } from './_utils.js';
+import { findBpDir, gateContextJsonl, resolveChangeName, gatePlaceholders } from './_utils.js';
 import { loadSchema } from '../core/schema.js';
 import { changeDir } from '../core/file-tree.js';
 import { checkArtifacts } from '../core/continue.js';
@@ -46,6 +46,7 @@ function reviewHandler(name: string | undefined, options: { fix?: boolean; ci?: 
     process.exit(1);
   }
   if (!gateContextJsonl(bpDir, changeName, 'review')) process.exit(2);
+  if (!gatePlaceholders(bpDir, changeName, ['tasks.md'])) process.exit(1);
 
   // Check that code is fully implemented (all tasks [x])
   const schema = loadSchema(bpDir);
