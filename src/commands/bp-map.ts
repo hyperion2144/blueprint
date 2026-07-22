@@ -23,6 +23,6 @@ function refreshHandler(options: { check?: boolean }): void {
   }
   const map = generateCodebaseMap(rootDir);
   writeCodebaseMap(bpDir, map);
-  console.log(`Codebase map generated: ${map.modules.length} modules, git ${map.git_hash}`);
+  console.log(`Codebase map generated: ${map.modules.length} modules, fingerprint ${map.fingerprint}`);
   console.log(`Written to bp/.codebase-map.json + bp/.codebase-map.md`);
 }

@@ -23,6 +23,7 @@
     "README.md"
   ],
   "dependencies": {
+    "@babel/parser": "^8.0.4",
     "@clack/prompts": "^1.6.0",
     "commander": "^15.0.0",
     "gray-matter": "^4.0.3",

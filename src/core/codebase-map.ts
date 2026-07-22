@@ -1,97 +1,245 @@
+/**
+ * codebase-map — generates a structural map of the codebase.
+ *
+ * v2.1 rewrite:
+ * - No git dependency (uses file fingerprint: path+size SHA-256)
+ * - @babel/parser for TS/JS AST parsing (exports + imports + responsibility)
+ * - Regex fallback for other languages
+ * - depends_on extracted from import paths
+ * - Three-layer output (L0 overview / L1 module list / L2 detail on demand)
+ */
+
 import { existsSync, readFileSync, writeFileSync, readdirSync, mkdirSync } from 'node:fs';
-import { join, extname, basename, relative } from 'node:path';
-import { execSync } from 'node:child_process';
+import { join, extname } from 'node:path';
+import type { LanguageParser, ModuleSummary, CodebaseMap } from './parsers/parser-base.js';
+import { collectSourceFiles, computeFingerprint, detectStack } from './parsers/parser-base.js';
+import { tsParser } from './parsers/ts-parser.js';
 
-export interface ModuleSummary {
-  name: string;           // 模块路径（如 core/continue）
-  responsibility: string; // 一句话职责
-  public_api: string[];   // 导出的函数/类名
-  depends_on: string[];    // 依赖的其他模块
+/** Fallback regex parser for unsupported languages */
+const regexParser: LanguageParser = {
+  language: 'regex',
+  extensions: ['.py', '.go', '.rs', '.java', '.rb', '.php', '.c', '.cpp', '.h', '.cs'],
+  parseFile(content: string, _filePath: string) {
+    // Python: def/class at column 0; Go: func/type; Rust: pub fn/struct; Java: public class
+    const exports = (content.match(/(?:^|\n)\s*(?:pub\s+)?(?:func|def|class|object|fn|struct|enum|trait|impl)\s+(\w+)/g) || [])
+      .map(m => { const mm = m.match(/(\w+)\s*$/); return mm ? mm[1] : ''; })
+      .filter(Boolean);
+    const imports = (content.match(/(?:^|\n)\s*(?:import|from|use)\s+['"]?([^\s'"();]+)/g) || [])
+      .map(m => { const mm = m.match(/\s+([^\s'"();]+)$/); return mm ? mm[1] : ''; })
+      .filter(Boolean);
+    const firstLine = content.split('\n')[0] || '';
+    const responsibility = (firstLine.startsWith('#') || firstLine.startsWith('//') || firstLine.startsWith('//'))
+      ? firstLine.replace(/^[#/]+\s*/, '').trim() : '';
+    return { exports, imports, responsibility };
+  },
+};
+
+function getParserForFile(filePath: string): LanguageParser {
+  if (tsParser.extensions.includes(extname(filePath))) return tsParser;
+  return regexParser;
 }
 
-export interface CodebaseMap {
-  git_hash: string;       // 版本标记
-  stack: string;           // 技术栈
-  entry: string;           // 入口文件
-  modules: ModuleSummary[];
+function getExtensions(stack: string): string[] {
+  if (['node', 'vue', 'svelte', 'react'].includes(stack)) return tsParser.extensions;
+  if (stack === 'python') return ['.py'];
+  if (stack === 'go') return ['.go'];
+  if (stack === 'rust') return ['.rs'];
+  if (stack === 'java') return ['.java'];
+  return [...tsParser.extensions, ...regexParser.extensions];
 }
 
-/** Generate L0+L1 codebase map */
-export function generateCodebaseMap(rootDir: string): CodebaseMap {
-  const gitHash = execSync('git rev-parse --short HEAD', { cwd: rootDir, encoding: 'utf-8' }).trim();
-  // Scan src/ for modules
-  const srcDir = join(rootDir, 'src');
-  const modules: ModuleSummary[] = [];
-  if (existsSync(srcDir)) {
-    scanModules(srcDir, 'src', modules);
+/** Map a relative import path to a module name for depends_on */
+function mapImportToModule(importPath: string, currentModule: string, allModules: Set<string>): string | null {
+  if (!importPath.startsWith('.')) return null; // package import — no internal dependency
+
+  // Resolve relative path against current module directory
+  const modDir = currentModule.includes('/') ? currentModule.split('/').slice(0, -1).join('/') : '';
+  const parts = modDir ? modDir.split('/') : [];
+  const relParts = importPath.replace(/\.(ts|tsx|js|jsx|mjs|cjs)$/, '').replace(/\/index$/, '').split('/');
+
+  for (const p of relParts) {
+    if (p === '.') continue;
+    if (p === '..') { parts.pop(); continue; }
+    parts.push(p);
   }
-  return { git_hash: gitHash, stack: detectStack(rootDir), entry: 'src/cli.ts', modules };
-}
 
-function scanModules(dir: string, prefix: string, modules: ModuleSummary[]): void {
-  const entries = readdirSync(dir, { withFileTypes: true });
-  for (const entry of entries) {
-    if (entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== 'node_modules') {
-      const subDir = join(dir, entry.name);
-      const modName = `${prefix}/${entry.name}`;
-      // Check if dir has .ts files → it's a module
-      const hasTs = readdirSync(subDir).some((f) => f.endsWith('.ts'));
-      if (hasTs) {
-        modules.push({ name: modName, responsibility: '', public_api: extractExports(subDir), depends_on: [] });
-      }
-      scanModules(subDir, modName, modules);
-    }
+  const resolved = parts.join('/');
+
+  // Match against known modules
+  for (const mod of allModules) {
+    if (mod === resolved) return mod;
+    // Handle src/core/config vs core/config
+    if (mod.replace(/^src\//, '') === resolved.replace(/^src\//, '')) return mod;
   }
+
+  return resolved || null;
 }
 
-function extractExports(dir: string): string[] {
-  const exports: string[] = [];
-  for (const file of readdirSync(dir)) {
-    if (!file.endsWith('.ts') || file.endsWith('.test.ts')) continue;
-    const content = readFileSync(join(dir, file), 'utf-8');
-    const matches = content.matchAll(/export\s+(?:function|class|const|interface|type)\s+(\w+)/g);
-    for (const m of matches) exports.push(m[1]);
+function inferResponsibility(name: string, exports: string[]): string {
+  const baseName = name.split('/').pop() || name;
+  if (exports.length === 0) return `${baseName} (no public exports)`;
+  return `${baseName} (${exports.length} exports: ${exports.slice(0, 3).join(', ')}${exports.length > 3 ? '...' : ''})`;
+}
+
+function detectEntry(rootDir: string, stack: string): string {
+  const candidates: Record<string, string[]> = {
+    node: ['src/cli.ts', 'src/index.ts', 'src/main.ts', 'src/app.ts'],
+    vue: ['src/main.ts', 'src/main.js', 'src/index.ts'],
+    svelte: ['src/main.ts', 'src/main.js'],
+    react: ['src/index.tsx', 'src/index.ts', 'src/main.tsx', 'src/main.ts'],
+    go: ['main.go', 'cmd/main.go', 'cmd/cli/main.go'],
+    python: ['main.py', '__main__.py', 'app.py', 'src/main.py'],
+    rust: ['src/main.rs', 'src/lib.rs'],
+    java: ['src/main/java/Main.java'],
+  };
+  for (const candidate of candidates[stack] || []) {
+    if (existsSync(join(rootDir, candidate))) return candidate;
   }
-  return exports;
-}
-
-function detectStack(rootDir: string): string {
-  if (existsSync(join(rootDir, 'package.json'))) return 'node';
-  if (existsSync(join(rootDir, 'go.mod'))) return 'go';
-  if (existsSync(join(rootDir, 'Cargo.toml'))) return 'rust';
-  if (existsSync(join(rootDir, 'pom.xml')) || existsSync(join(rootDir, 'build.gradle'))) return 'java';
   return 'unknown';
 }
 
-/** Write codebase map to bp/.codebase-map.json + .md */
-export function writeCodebaseMap(bpDir: string, map: CodebaseMap): void {
-  const jsonPath = join(bpDir, '.codebase-map.json');
-  writeFileSync(jsonPath, JSON.stringify(map, null, 2), 'utf-8');
-  // Also write human-readable .md for sub-agent consumption
-  const mdPath = join(bpDir, '.codebase-map.md');
-  const md = renderMapMarkdown(map);
-  writeFileSync(mdPath, md, 'utf-8');
+export function generateCodebaseMap(rootDir: string): CodebaseMap {
+  const stack = detectStack(rootDir);
+  const extensions = getExtensions(stack);
+
+  // Collect source files from src/ (and root for Go/Rust)
+  const sourceFiles: string[] = [];
+  const srcDir = join(rootDir, 'src');
+  if (existsSync(srcDir)) {
+    collectSourceFiles(srcDir, extensions, 'src', sourceFiles);
+  }
+  // Go/Rust may have files in root
+  if (stack === 'go' || stack === 'rust') {
+    collectSourceFiles(rootDir, extensions, '', sourceFiles.filter(f => !f.startsWith('src/')).length > 0 ? [] : sourceFiles);
+    const rootFiles = collectSourceFiles(rootDir, extensions, '', []);
+    for (const f of rootFiles) {
+      if (!sourceFiles.includes(f)) sourceFiles.push(f);
+    }
+  }
+
+  const fingerprint = computeFingerprint(rootDir, sourceFiles.map(f => join(rootDir, f)));
+
+  // Group files by module (directory path under src/)
+  const moduleMap = new Map<string, { files: string[]; exports: string[]; imports: string[]; responsibility: string }>();
+
+  for (const file of sourceFiles) {
+    const fullPath = join(rootDir, file);
+    if (!existsSync(fullPath)) continue;
+    const content = readFileSync(fullPath, 'utf-8');
+
+    // Module = parent directory path (e.g., src/core/continue → src/core/continue)
+    const parts = file.split('/');
+    const moduleName = parts.length > 2 ? parts.slice(0, -1).join('/') : (parts.length > 1 ? parts[0] : file);
+
+    if (!moduleMap.has(moduleName)) {
+      moduleMap.set(moduleName, { files: [], exports: [], imports: [], responsibility: '' });
+    }
+    const mod = moduleMap.get(moduleName)!;
+    mod.files.push(file);
+
+    const parser = getParserForFile(file);
+    const result = parser.parseFile(content, file);
+    mod.exports.push(...result.exports);
+    mod.imports.push(...result.imports);
+    if (!mod.responsibility && result.responsibility) mod.responsibility = result.responsibility;
+  }
+
+  const allModuleNames = new Set(moduleMap.keys());
+
+  const modules: ModuleSummary[] = [];
+  for (const [name, data] of moduleMap) {
+    const depends_on = new Set<string>();
+    for (const imp of data.imports) {
+      const dep = mapImportToModule(imp, name, allModuleNames);
+      if (dep && dep !== name) depends_on.add(dep);
+    }
+
+    modules.push({
+      name,
+      responsibility: data.responsibility || inferResponsibility(name, [...new Set(data.exports)]),
+      public_api: [...new Set(data.exports)],
+      depends_on: [...depends_on].sort(),
+      file_count: data.files.length,
+    });
+  }
+
+  return {
+    fingerprint,
+    stack,
+    entry: detectEntry(rootDir, stack),
+    generated_at: new Date().toISOString(),
+    modules: modules.sort((a, b) => a.name.localeCompare(b.name)),
+  };
 }
 
+export function writeCodebaseMap(bpDir: string, map: CodebaseMap): void {
+  const jsonPath = join(bpDir, '.codebase-map.json');
+  const mdPath = join(bpDir, '.codebase-map.md');
+  writeFileSync(jsonPath, JSON.stringify(map, null, 2), 'utf-8');
+  writeFileSync(mdPath, renderMapMarkdown(map), 'utf-8');
+}
+
+/** Render three-layer markdown: L0 overview / L1 module list / L2 detail */
 function renderMapMarkdown(map: CodebaseMap): string {
-  const lines: string[] = ['# Codebase Map', '', `**Git**: ${map.git_hash}  **Stack**: ${map.stack}  **Entry**: ${map.entry}`, '', '## Modules', ''];
+  // L0: Project overview
+  const lines: string[] = [
+    '# Codebase Map',
+    '',
+    `**Fingerprint**: \`${map.fingerprint}\`  **Stack**: ${map.stack}  **Entry**: ${map.entry}`,
+    `**Generated**: ${map.generated_at}  **Modules**: ${map.modules.length}`,
+    '',
+    '## L0: Project Overview',
+    '',
+    `This is a **${map.stack}** project with ${map.modules.length} module(s).`,
+    `Entry point: \`${map.entry}\`.`,
+    '',
+    '## L1: Module List',
+    '',
+  ];
+
+  // L1: Module summaries
   for (const mod of map.modules) {
     lines.push(`### ${mod.name}`);
-    if (mod.responsibility) lines.push(`- Responsibility: ${mod.responsibility}`);
-    if (mod.public_api.length) lines.push(`- Public API: ${mod.public_api.join(', ')}`);
-    if (mod.depends_on.length) lines.push(`- Depends on: ${mod.depends_on.join(', ')}`);
+    lines.push(`- **Responsibility**: ${mod.responsibility}`);
+    lines.push(`- **Files**: ${mod.file_count}`);
+    if (mod.public_api.length > 0) {
+      lines.push(`- **Public API**: ${mod.public_api.join(', ')}`);
+    }
+    if (mod.depends_on.length > 0) {
+      lines.push(`- **Depends on**: ${mod.depends_on.join(', ')}`);
+    }
     lines.push('');
   }
+
+  // L2: Interface detail (full export list per module)
+  lines.push('## L2: Interface Detail');
+  lines.push('');
+  for (const mod of map.modules) {
+    if (mod.public_api.length === 0) continue;
+    lines.push(`### ${mod.name}`);
+    for (const api of mod.public_api) {
+      lines.push(`- \`${api}\``);
+    }
+    lines.push('');
+  }
+
   return lines.join('\n');
 }
 
-/** Check if map is stale (git_hash mismatch) */
+/** Check if map is stale by comparing fingerprints (no git needed) */
 export function isMapStale(bpDir: string, rootDir: string): boolean {
   const mapPath = join(bpDir, '.codebase-map.json');
   if (!existsSync(mapPath)) return true;
   try {
     const map = JSON.parse(readFileSync(mapPath, 'utf-8')) as CodebaseMap;
-    const currentHash = execSync('git rev-parse --short HEAD', { cwd: rootDir, encoding: 'utf-8' }).trim();
-    return map.git_hash !== currentHash;
-  } catch { return true; }
+    const stack = detectStack(rootDir);
+    const extensions = getExtensions(stack);
+    const sourceFiles: string[] = [];
+    const srcDir = join(rootDir, 'src');
+    if (existsSync(srcDir)) collectSourceFiles(srcDir, extensions, 'src', sourceFiles);
+    const currentFingerprint = computeFingerprint(rootDir, sourceFiles.map(f => join(rootDir, f)));
+    return map.fingerprint !== currentFingerprint;
+  } catch {
+    return true;
+  }
 }
