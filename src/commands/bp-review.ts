@@ -52,10 +52,13 @@ function reviewHandler(name: string | undefined, options: { fix?: boolean; ci?: 
   const schema = loadSchema(bpDir);
   const artifacts = checkArtifacts(bpDir, changeName, schema);
   if (!artifacts.allTasksDone) {
-    console.log(
-      `\nCode is not fully implemented. Tasks: ${artifacts.tasksCompleted}/${artifacts.tasksTotal} complete.`,
-    );
-    console.log('Run "bp apply" to execute remaining tasks before review.');
+    if (artifacts.tasksCompleted < artifacts.tasksTotal) {
+      console.log(`\nTasks not fully implemented: ${artifacts.tasksCompleted}/${artifacts.tasksTotal} tasks complete.`);
+      console.log('Run "bp apply" to execute remaining tasks before review.');
+    } else {
+      console.log(`\nPre-Archive Checklist incomplete: ${artifacts.checklistCompleted}/${artifacts.checklistTotal} items checked.`);
+      console.log('Run build/tests, then mark checklist items [x] in tasks.md. Do NOT re-dispatch executor.');
+    }
     process.exit(1);
   }
 
