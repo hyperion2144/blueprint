@@ -630,16 +630,17 @@ export const REVIEW_TEMPLATE = `# Review: {{name}}
 
 ## Quality Review
 
-### Findings Summary
+### Issues
 
-<!-- Do NOT list individual issues here. Use the global ## Issues section below for all R/Q/G/D findings. -->
+<!--
+  Detail view: Quality issues found during review. Every issue listed here MUST also have
+  a checkbox line in the global ## Issues section below (for fix tracking).
+  The global ## Issues is the checkbox-based tracking source of truth.
+-->
 
-| Dimension | Count | Key Issues |
-|-----------|-------|------------|
-| Spec (R) | {{count}} | {{summary}} |
-| Quality (Q) | {{count}} | {{summary}} |
-| Goal (G) | {{count}} | {{summary}} |
-| Design (D) | {{count}} | {{summary}} |
+| # | Severity | Category | Location | Description | Fix |
+|---|----------|----------|----------|-------------|-----|
+| Q1 | {{BLOCKER/MAJOR/MINOR}} | {{Bug/Security/Convention/AI-Smell}} | {{file:line}} | {{specific-description}} | {{actionable-fix}} |
 
 ### Convention Compliance
 ---
