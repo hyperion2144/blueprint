@@ -116,13 +116,13 @@ function semanticMerge(baseSpec: string, deltaSpec: string): MergeResult {
   let baseReqsSection = findHeadingRecursive(baseTree, 2, 'Requirements');
   if (!baseReqsSection) {
     // Auto-create if missing — don't block archive with a conflict
-    baseReqsSection = { level: 2, text: 'Requirements', children: [], content: '' };
+    baseReqsSection = { level: 2, text: 'Requirements', children: [], content: '', line: 0 };
     baseTree.push(baseReqsSection);
   }
 
   // Index base requirements by header text
   const baseReqs = new Map<string, HeadingNode>();
-  for (const child of baseReqsSection.children) {
+  for (const child of (baseReqsSection as HeadingNode).children) {
     if (child.level === 3 && child.text.startsWith('Requirement:')) {
       baseReqs.set(child.text, child);
     }
@@ -203,7 +203,7 @@ function semanticMerge(baseSpec: string, deltaSpec: string): MergeResult {
   }
 
   // Rebuild the base tree with modified requirements
-  baseReqsSection.children = Array.from(baseReqs.values());
+  (baseReqsSection as HeadingNode).children = Array.from(baseReqs.values());
 
   return { type: 'ok', merged: renderSimpleTree(baseTree) };
 }

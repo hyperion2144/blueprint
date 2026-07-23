@@ -34,7 +34,7 @@ export const tsParser: LanguageParser = {
             }
           } else if (node.specifiers) {
             for (const s of node.specifiers) {
-              if ('exported' in s && s.exported) exports.push(s.exported.name);
+              if ('exported' in s && s.exported && s.exported.type === 'Identifier') exports.push(s.exported.name);
             }
           }
         } else if (node.type === 'ExportDefaultDeclaration') {

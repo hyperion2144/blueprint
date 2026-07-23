@@ -14,7 +14,6 @@ import { generateAllCommands } from './commands.js';
 import { generateAllAgents } from './agents.js';
 import { generateAllSkills } from './skills.js';
 import { generateExtension } from './extension.js';
-import { generateLegacyShim } from './legacy-shim.js';
 
 /** OMP supports slash commands — skills are redundant (same content source). */
 export const supportsCommands = true;
