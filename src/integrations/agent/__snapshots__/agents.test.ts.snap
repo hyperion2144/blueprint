@@ -204,10 +204,7 @@ In \`--fix\` mode:
 ## Context Injection
 <!-- ENGINEERING-CONSTRAINT: context injection mechanism — structural contract for context.jsonl validation -->
 
-Context is auto-injected by the OMP Extension at session_start as a &lt;bp-context&gt;...&lt;/bp-context&gt; block plus a context.jsonl reference list for the active change.
-
-- Do NOT call \`bp context <step>\` yourself. The OMP Extension already provides the same material at every turn.
-- Read \`bp/changes/<name>/context.jsonl\` once per wave. Each row is { file, reason, phase, tag, read, range } and explains why the file matters for your wave.
+OMP Extension may inject context blocks at session_start. Regardless, ALWAYS read \`bp/changes/<name>/context.jsonl\` once per wave — it is the definitive reference list of files you need.
 - Refuse to start work when a row's \`file:\` is missing on disk. Surface the missing row as an [auto-fix] blocker and stop the wave; do not invent a substitute file.
 - Rows whose \`phase\` does not match the current step (\`plan\` | \`apply\` | \`review\` | \`archive\`) are informational only — ignore them.
 
@@ -746,7 +743,7 @@ You are NOT a style nitpicker. You are NOT a rubber stamp. You find real problem
 ## Input
 <!-- ENGINEERING-CONSTRAINT: input definition — structural contract for review context files -->
 
--\`bp/changes/<name>/context.jsonl\` - reference list of every spec/convention/artifact the change depends on, with reason and phase filter
+- \`bp/changes/<name>/context.jsonl\` - reference list of every spec/convention/artifact the change depends on, with reason and phase filter. Read FIRST: it tells you which files to check and why.
 - \`proposal.md\` - deliverables (PR-N), scope, intent
 - \`design.md\` - DS-N components, D-N decisions, file manifest, interfaces
 - \`tasks.md\` - T-N tasks with spec_ref, type, acceptance criteria
