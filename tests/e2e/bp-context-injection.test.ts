@@ -7,7 +7,7 @@
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { execSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -143,6 +143,12 @@ let origPath: string | undefined;
     // (d) Run `bp update` to regenerate the Extension + shim in the fixture.
     execSync(`node "${cliPath}" update --dir bp`, { encoding: 'utf-8', cwd: testDir });
     // Ensure `bp` CLI is in PATH for the generated Extension's execSync calls.
+    // Create a bp symlink in node_modules/.bin so `bp` is found regardless of global install
+    try {
+      const binDir = join(process.cwd(), 'node_modules', '.bin');
+      const bpLink = join(binDir, 'bp');
+      if (!existsSync(bpLink)) symlinkSync(cliPath, bpLink);
+    } catch { /* non-fatal — may already exist */ }
     origPath = process.env.PATH;
     process.env.PATH = origPath + ':' + join(process.cwd(), 'node_modules', '.bin');
 
