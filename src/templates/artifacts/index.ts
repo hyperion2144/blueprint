@@ -732,11 +732,17 @@ export const ROADMAP_TEMPLATE = `# Roadmap: {{project-name}}
 - **Changes**: {{completed}}/{{total}} completed
 - **Status**: {{NOT_STARTED | IN_PROGRESS | COMPLETED}}
 
-**Changes**:
+### Key Decisions
 
-- [x] {{change-name}} (archived {{date}})
-- [x] {{change-name}} (archived {{date}})
-- [ ] {{change-name}}
+<!-- Route-map discussion outcomes: technical conventions, design decisions, constraints. Reference format: [P1.1-KD] decision summary -->
+
+- {{field-design / api-format / tech-stack / convention}} — {{decision content, reason, alternatives considered}}
+- {{field-design / api-format / tech-stack / convention}} — {{decision content, reason, alternatives considered}}
+
+**Changes** — Proposed changes with checkbox + status. These have been formally proposed (proposal.md exists).
+- [x] {{change-name}} (archived {{date}}) — {{one-line description}}
+- [x] {{change-name}} (archived {{date}}) — {{one-line description}}
+- [ ] {{change-name}} (proposed {{date}}) — {{one-line description}}
 
 **Next**: {{next-change-or "All changes completed"}}
 
@@ -748,10 +754,15 @@ export const ROADMAP_TEMPLATE = `# Roadmap: {{project-name}}
 - **Changes**: 0/{{total}}
 - **Status**: NOT_STARTED
 
-**Planned changes**:
-- {{change-name}} (not yet proposed)
-- {{change-name}} (not yet proposed)
+### Key Decisions
 
+<!-- Route-map discussion outcomes: technical conventions, design decisions, constraints. -->
+
+- {{field-design / api-format / tech-stack / convention}} — {{decision content, reason}}
+
+**Planned changes** — Listed during route-map planning, not yet proposed. No checkbox. Move to **Changes** above once formally proposed.
+- {{change-name}} — {{one-line description of what this change does}}
+- {{change-name}} — {{one-line description of what this change does}}
 ---
 
 ## Milestone: M1 - {{milestone-name}} [COMPLETED]

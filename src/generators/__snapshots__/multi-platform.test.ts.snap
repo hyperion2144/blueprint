@@ -1956,6 +1956,14 @@ Fill the template with milestones and phases based on project requirements.
 
 **Default: 1 milestone = the entire project.** Milestones are product releases, NOT development phases.
 
+When defining each phase, fill these areas:
+
+**Key Decisions** — As the user discusses technical details (field design, API format, conventions, tech stack choices), write the decisions into each phase's \`### Key Decisions\` section. This prevents "we agreed on this in the kickoff" issues later. Each decision includes: subject area, decision content, reason, and alternatives considered.
+
+**Planned changes** — For NOT_STARTED phases, list planned changes in \`**Planned changes**\` with a one-line description of what each change does (\`- change-name — description\`). This helps planners understand the scope without re-reading the full discussion.
+
+**Changes** — Already existing or proposed changes get \`**Changes**\` with checkbox + status + description.
+
 ### Step 6: Validate
 
 Check before finishing:
@@ -3930,6 +3938,14 @@ Use \`ask\` to determine the planning mode:
 Fill the template with milestones and phases based on project requirements.
 
 **Default: 1 milestone = the entire project.** Milestones are product releases, NOT development phases.
+
+When defining each phase, fill these areas:
+
+**Key Decisions** — As the user discusses technical details (field design, API format, conventions, tech stack choices), write the decisions into each phase's \`### Key Decisions\` section. This prevents "we agreed on this in the kickoff" issues later. Each decision includes: subject area, decision content, reason, and alternatives considered.
+
+**Planned changes** — For NOT_STARTED phases, list planned changes in \`**Planned changes**\` with a one-line description of what each change does (\`- change-name — description\`). This helps planners understand the scope without re-reading the full discussion.
+
+**Changes** — Already existing or proposed changes get \`**Changes**\` with checkbox + status + description.
 
 ### Step 6: Validate
 
@@ -5930,6 +5946,14 @@ Use \`ask\` to determine the planning mode:
 Fill the template with milestones and phases based on project requirements.
 
 **Default: 1 milestone = the entire project.** Milestones are product releases, NOT development phases.
+
+When defining each phase, fill these areas:
+
+**Key Decisions** — As the user discusses technical details (field design, API format, conventions, tech stack choices), write the decisions into each phase's \`### Key Decisions\` section. This prevents "we agreed on this in the kickoff" issues later. Each decision includes: subject area, decision content, reason, and alternatives considered.
+
+**Planned changes** — For NOT_STARTED phases, list planned changes in \`**Planned changes**\` with a one-line description of what each change does (\`- change-name — description\`). This helps planners understand the scope without re-reading the full discussion.
+
+**Changes** — Already existing or proposed changes get \`**Changes**\` with checkbox + status + description.
 
 ### Step 6: Validate
 
