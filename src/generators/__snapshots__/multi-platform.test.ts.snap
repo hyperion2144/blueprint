@@ -178,6 +178,7 @@ The orchestrator provides you with:
 - **Summary of completed tasks from prior waves** - task ID, title, key files created/modified, key public interfaces that downstream tasks depend on
 
 You MUST read these files yourself (do NOT expect content to be injected):
+- **bp/changes/<name>/context.jsonl** - read FIRST: lists every file you need, why it matters, and which rows apply to your wave. Do NOT skip files listed here.
 - **tasks.md** - read your wave's tasks (type, description, refs, spec_ref, files, acceptance, RED)
 - **design.md** - read the DS-N items your tasks reference for technical context
 - **specs/<domain>/spec.md** - read delta specs for domains referenced by your tasks' spec_ref
@@ -745,6 +746,7 @@ You are NOT a style nitpicker. You are NOT a rubber stamp. You find real problem
 ## Input
 <!-- ENGINEERING-CONSTRAINT: input definition — structural contract for review context files -->
 
+-\`bp/changes/<name>/context.jsonl\` - reference list of every spec/convention/artifact the change depends on, with reason and phase filter
 - \`proposal.md\` - deliverables (PR-N), scope, intent
 - \`design.md\` - DS-N components, D-N decisions, file manifest, interfaces
 - \`tasks.md\` - T-N tasks with spec_ref, type, acceptance criteria
@@ -2163,6 +2165,7 @@ The orchestrator provides you with:
 - **Summary of completed tasks from prior waves** - task ID, title, key files created/modified, key public interfaces that downstream tasks depend on
 
 You MUST read these files yourself (do NOT expect content to be injected):
+- **bp/changes/<name>/context.jsonl** - read FIRST: lists every file you need, why it matters, and which rows apply to your wave. Do NOT skip files listed here.
 - **tasks.md** - read your wave's tasks (type, description, refs, spec_ref, files, acceptance, RED)
 - **design.md** - read the DS-N items your tasks reference for technical context
 - **specs/<domain>/spec.md** - read delta specs for domains referenced by your tasks' spec_ref
@@ -2732,6 +2735,7 @@ You are NOT a style nitpicker. You are NOT a rubber stamp. You find real problem
 ## Input
 <!-- ENGINEERING-CONSTRAINT: input definition — structural contract for review context files -->
 
+-\`bp/changes/<name>/context.jsonl\` - reference list of every spec/convention/artifact the change depends on, with reason and phase filter
 - \`proposal.md\` - deliverables (PR-N), scope, intent
 - \`design.md\` - DS-N components, D-N decisions, file manifest, interfaces
 - \`tasks.md\` - T-N tasks with spec_ref, type, acceptance criteria
@@ -4158,6 +4162,7 @@ The orchestrator provides you with:
 - **Summary of completed tasks from prior waves** - task ID, title, key files created/modified, key public interfaces that downstream tasks depend on
 
 You MUST read these files yourself (do NOT expect content to be injected):
+- **bp/changes/<name>/context.jsonl** - read FIRST: lists every file you need, why it matters, and which rows apply to your wave. Do NOT skip files listed here.
 - **tasks.md** - read your wave's tasks (type, description, refs, spec_ref, files, acceptance, RED)
 - **design.md** - read the DS-N items your tasks reference for technical context
 - **specs/<domain>/spec.md** - read delta specs for domains referenced by your tasks' spec_ref
@@ -4739,6 +4744,7 @@ You are NOT a style nitpicker. You are NOT a rubber stamp. You find real problem
 ## Input
 <!-- ENGINEERING-CONSTRAINT: input definition — structural contract for review context files -->
 
+-\`bp/changes/<name>/context.jsonl\` - reference list of every spec/convention/artifact the change depends on, with reason and phase filter
 - \`proposal.md\` - deliverables (PR-N), scope, intent
 - \`design.md\` - DS-N components, D-N decisions, file manifest, interfaces
 - \`tasks.md\` - T-N tasks with spec_ref, type, acceptance criteria
