@@ -92,7 +92,7 @@ Before committing, review the planner's design for soundness:
 
 If any check fails: re-dispatch planner with specific feedback on what's missing.
 
-### Step 6: Task granularity check (v2.1 P0)
+### Step 6: Task granularity check
 
 After planner produces tasks.md, check granularity and warn if too large:
 

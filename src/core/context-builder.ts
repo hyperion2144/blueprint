@@ -73,7 +73,7 @@ function addConventionsIfMissing(bpDir: string, rows: ContextRefRow[]): void {
 
 /**
  * Build context.jsonl body for a change directory.
- * v2.1 P4: When tasks.md has wave info, extract DS-N refs for the current wave
+ *: When tasks.md has wave info, extract DS-N refs for the current wave
  * and set .range on design.md rows to target only those sections.
  */
 export function buildContextJsonl(bpDir: string, changeDirPath: string): string {
@@ -82,7 +82,7 @@ export function buildContextJsonl(bpDir: string, changeDirPath: string): string 
 
   const tasksContent = safeReadFile(join(changeDirPath, 'tasks.md'));
 
-  // v2.1 P4: If tasks.md has wave info, extract DS-N refs for current wave
+  //: If tasks.md has wave info, extract DS-N refs for current wave
   // and set range on design.md rows to target only those sections.
   // DS-N range extraction: parse design.md for "## DS-N" headings,
   // match against wave DS refs in tasks.md, compute line ranges.
@@ -103,7 +103,7 @@ export function buildContextJsonl(bpDir: string, changeDirPath: string): string 
     collectReferencesFromBody(content, sourceName, references);
   }
 
-  // v2.1 P4: Apply DS-N range filtering to design.md rows
+  //: Apply DS-N range filtering to design.md rows
   if (waveDSRefs && waveDSRefs.length > 0) {
     const designContent = safeReadFile(join(changeDirPath, 'design.md'));
     if (designContent !== null) {
@@ -121,12 +121,12 @@ export function buildContextJsonl(bpDir: string, changeDirPath: string): string 
 
   const rows = Array.from(references.values());
   addConventionsIfMissing(bpDir, rows);
-  // v2.1: Agent queries map on-demand via bp map commands, not by reading the whole .md
+  // : Agent queries map on-demand via bp map commands, not by reading the whole .md
   // (the .codebase-map.md is NOT injected — agent uses bp map list/module/impact/search)
   return renderContextJsonl(rows);
 }
 
-/** v2.1 P4: Compute merged DS-N line range from design.md content for given DS refs.
+/**: Compute merged DS-N line range from design.md content for given DS refs.
  * Returns a single [startLine, endLine] tuple covering all matched DS sections,
  * or undefined if none found. */
 function computeDSNRange(designContent: string, dsRefs: string[]): [number, number] | undefined {

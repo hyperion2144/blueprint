@@ -41,7 +41,7 @@ export function generateContext(bpDir: string, step: string, changeName?: string
 
   result.conventions = getAllConventions(bpDir).map(withContent(bpDir));
   if (changeName) {
-    // v2.1 P4: Only inject specs for domains referenced by this change
+    //: Only inject specs for domains referenced by this change
     const changeArtifacts = getChangeArtifacts(bpDir, changeName);
     const referencedDomains = extractReferencedDomains(changeArtifacts);
     result.globalSpecs = getAllSpecs(bpDir)

@@ -22,7 +22,7 @@ export const PROPOSAL_TEMPLATE = `# Proposal: {{name}}
 ## Level
 
 <!--
-  v2.1 risk-based level. Auto-assessed by propose, overridable by --level.
+   risk-based level. Auto-assessed by propose, overridable by --level.
   trivial:  single file, docs/config/scaffolding, no behavior change
   light:    2-5 files, low-risk behavior change, good test coverage
   standard: cross-module, new behavior, medium risk (default)
@@ -307,7 +307,7 @@ export const DESIGN_TEMPLATE = `# Design: {{name}}
 ## Impact Analysis
 
 <!--
-  v2.1 7.2.1: Who depends on the changed code?
+   7.2.1: Who depends on the changed code?
 -->
 
 ### Direct Impacts
@@ -586,7 +586,7 @@ export const REVIEW_TEMPLATE = `# Review: {{name}}
 ## Level Assessment
 
 <!--
-  v2.1 P1: Reviewer can escalate if actual risk exceeds proposal's level.
+ : Reviewer can escalate if actual risk exceeds proposal's level.
 -->
 
 - **Proposal Level**: {{level}}
@@ -596,7 +596,7 @@ export const REVIEW_TEMPLATE = `# Review: {{name}}
 ## Approval
 
 <!--
-  v2.1 7.2.5: Required for Critical-level changes when config.approvers is set.
+   7.2.5: Required for Critical-level changes when config.approvers is set.
 -->
 
 - Approved by: {{approver-name}}
@@ -663,7 +663,7 @@ export const REVIEW_TEMPLATE = `# Review: {{name}}
 
 <!--
   Auto-maintained by reviewer. Each re-review appends a row.
-  Used by continue engine for diminishing-returns fuse detection (v2.1 P0).
+  Used by continue engine for diminishing-returns fuse detection.
 -->
 
 | Round | Date | New Issues | Blockers | Verdict |
@@ -795,10 +795,10 @@ platform:
 # standard: review gate (must PASS before archive), TDD for behavior, sub-agent waves
 profile: standard
 
-# Workflow version — controls process intensity (v2.1 7.2.3)
+# Workflow version — controls process intensity
 # 2.1: current (four-level grading, budget, fuse)
 # 2.0: legacy (lite/standard binary)
-workflow_version: '2.1'
+workflow_version: '0.6.1'
 
 # Brownfield project (existing codebase with code scanning)
 brownfield: false
@@ -847,11 +847,11 @@ conventions:
 git:
   create_tag: true
 
-# Critical change approvers — who can approve Critical-level changes (v2.1 7.2.5)
+# Critical change approvers — who can approve Critical-level changes
 # Empty = anyone can approve. Set to restrict Critical review to specific users.
 approvers: []
 
-# Budget controls — per-change cost and convergence limits (v2.1 P0)
+# Budget controls — per-change cost and convergence limits
 # Prevents runaway sub-agent dispatch and infinite review-fix loops
 budget:
   max_subagent_runs: 5        # Sub-agent dispatch count limit per change

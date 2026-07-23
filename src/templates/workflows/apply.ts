@@ -105,7 +105,7 @@ For each completed wave:
    - \`- [ ] All wave acceptance criteria confirmed\` → \`- [x]\`
    (Skip \`No template placeholders\` — that's verified by the planner during planning.)
 
-# Record execution metadata (v2.1 P5)
+# Record execution metadata ( P5)
 # Orchestrator should write .meta/executor-wave-N.json after executor completes
 
 ### Step 5: Lightweight mode (if classified as lightweight)
@@ -148,7 +148,7 @@ Implementation complete for $1
 - In --fix mode: executors read review.md, fix R/Q/G issues, then mark each issue \`[ ]\` → \`[~]\` (\`~\` = fixed, pending verification). Do NOT mark \`[x]\` — that's the re-review's job. Do NOT fix D issues (those need replan).
 - Do NOT run bp review automatically - let the user decide.
 - **Wave retry limit: max 2 re-dispatches per wave (global cap: config.budget.max_subagent_runs, default 5).** If a wave fails verification 2 times after re-dispatch with specific feedback, STOP and report as blocker. Do not re-dispatch indefinitely.
-- **Budget awareness (v2.1 P0)**: Track sub-agent dispatch count against config.budget.max_subagent_runs (default 5). Track wall time against config.budget.max_wall_time_min (default 60). If estimated token usage approaches config.budget.estimated_token_cap (default 500000), warn. These are advisory — stop and report if exceeded.
+- **Budget awareness**: Track sub-agent dispatch count against config.budget.max_subagent_runs (default 5). Track wall time against config.budget.max_wall_time_min (default 60). If estimated token usage approaches config.budget.estimated_token_cap (default 500000), warn. These are advisory — stop and report if exceeded.
 - **Level-aware execution**: Trivial = inline (no sub-agent). Light = single agent, TDD optional. Standard = wave + TDD. Critical = wave + TDD + security audit checkpoint.
 `;
 

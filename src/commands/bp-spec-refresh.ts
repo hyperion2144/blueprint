@@ -17,7 +17,7 @@ function refreshHandler(domain: string | undefined, options: { apply?: boolean; 
     process.exit(1);
   }
   if (options.check) {
-    // v2.1 7.2.2: Spec drift detection
+    //  7.2.2: Spec drift detection
     console.log('## Spec Drift Check');
     console.log('');
     console.log('Compare bp/specs/ behavioral contracts with actual codebase behavior.');

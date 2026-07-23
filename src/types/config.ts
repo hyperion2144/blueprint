@@ -4,7 +4,7 @@
  */
 
 /** Workflow profile */
-/** Workflow profile — v2.1 four-level risk-based routing */
+/** Workflow profile —  four-level risk-based routing */
 export type Profile = 'trivial' | 'light' | 'standard' | 'critical';
 
 /** Model role -> model identifier mapping */
@@ -17,9 +17,9 @@ export type Rules = Record<string, string[]>;
 export interface ProjectConfig {
   version: number;
   platform: string[];
-  /** Prompt detail level -- v2.1 P3: controls capability-compensation inclusion */
+  /** Prompt detail level --: controls capability-compensation inclusion */
   prompt_profile: 'lite' | 'standard' | 'full';
-  /** Workflow version -- controls process intensity (v2.1 7.2.3) */
+  /** Workflow version -- controls process intensity */
   workflow_version: string;
   profile: Profile;
   context: string;
@@ -32,9 +32,9 @@ export interface ProjectConfig {
   models: ModelMap;
   conventions: { inject: boolean };
   git: { create_tag: boolean };
-  /** Critical change approvers (v2.1 7.2.5) */
+  /** Critical change approvers */
   approvers: string[];
-  /** Per-change cost and convergence limits (v2.1 P0) */
+  /** Per-change cost and convergence limits */
   budget: {
     max_subagent_runs: number;
     max_review_rounds: number;

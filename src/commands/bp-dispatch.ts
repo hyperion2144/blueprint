@@ -89,7 +89,7 @@ export function register(program: Command): void {
     .action(dispatchHandler);
 }
 
-/** Detect current review round from review.md Review History (v2.1 P2) */
+/** Detect current review round from review.md Review History */
 function detectReviewRound(bpDir: string, changeName: string | null): number {
   if (!changeName) return 1;
   const reviewPath = join(bpDir, 'changes', changeName, 'review.md');
@@ -148,12 +148,12 @@ function dispatchHandler(role: string, options: { change?: string; dir: string }
     lines.push('');
     lines.push('The sub-agent reads its own system prompt (see platform agent file).');
 
-    // v2.1 P2: Model selection based on level and review round
+    //: Model selection based on level and review round
     const round = detectReviewRound(bpDir, changeName);
     const models = resolveModelsForLevel(config, config.profile, round);
     const modelForRole = models[role];
     lines.push('');
-    lines.push('### Model Selection (v2.1 P2)');
+    lines.push('### Model Selection');
     lines.push(`- Role: ${role}`);
     lines.push(`- Level: ${config.profile}`);
     lines.push(`- Review round: ${round}`);

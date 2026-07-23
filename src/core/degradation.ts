@@ -1,5 +1,5 @@
 /**
- * v2.1 P2: degradation tracking for model dynamic downgrade.
+ *: degradation tracking for model dynamic downgrade.
  * Records downgrade events and prevents repeated downgrades that fail.
  */
 import { join } from 'node:path';

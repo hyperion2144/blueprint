@@ -17,9 +17,9 @@ export interface ArtifactStatus {
   tasksTotal: number;
   /** Whether all tasks are complete */
   allTasksDone: boolean;
-  /** Pre-Archive Checklist completed count (v2.1) */
+  /** Pre-Archive Checklist completed count () */
   checklistCompleted: number;
-  /** Pre-Archive Checklist total count (v2.1) */
+  /** Pre-Archive Checklist total count () */
   checklistTotal: number;
 }
 

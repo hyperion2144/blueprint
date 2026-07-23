@@ -11,7 +11,7 @@ const instructions = `## Input
 
 > These are the steps you (orchestrator) execute in order. \`bp propose\` only outputs these steps — it does not auto-execute.
 
-### Step 0: Risk assessment and level assignment (v2.1 P1)
+### Step 0: Risk assessment and level assignment
 
 Assess the change's risk level based on scope and failure cost:
 

@@ -263,7 +263,7 @@ function determineChangeNextStep(
   // Check for fix loop BEFORE Phase 2 (review exists but not PASS).
   // Must run before Phase 2 so that review != PASS routes to fix, not re-review.
   if (artifacts.review && reviewVerdict && reviewVerdict !== 'PASS') {
-    // v2.1 P0: Diminishing-returns fuse
+    //: Diminishing-returns fuse
     // Read Review History from review.md, check if last N rounds had low new-issue count
     try {
       const reviewContent = readFileSync(join(dir, 'review.md'), 'utf-8');

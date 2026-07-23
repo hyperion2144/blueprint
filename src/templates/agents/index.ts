@@ -1,7 +1,7 @@
 /**
  * Agent prompt templates — English (v2).
  *
- * v2.1 P3: Sections marked ENGINEERING-CONSTRAINT are structural contracts (keep).
+ *: Sections marked ENGINEERING-CONSTRAINT are structural contracts (keep).
  * Sections marked CAPABILITY-COMPENSATION are model-coaching (may prune in lite profile).
  * Use config.prompt_profile to control inclusion.
  */
@@ -146,7 +146,7 @@ A domain is a logical grouping of related behaviors - think "chapter" of the sys
 
 After fetching the template, fill it following these principles:
 
-#### Impact Analysis (v2.1 7.2.1)
+#### Impact Analysis
 <!-- ENGINEERING-CONSTRAINT: impact analysis — structural contract for downstream safety -->
 
 Before designing components, perform impact analysis using codebase map queries:
@@ -613,7 +613,7 @@ Read \`bp/changes/<name>/context.jsonl\` alongside the source diff. For every ro
 **Normal mode** (first review): Create review.md from scratch.
 **Fix mode** (re-review after fixes): Read existing review.md, mark resolved issues, add new findings.
 
-**Reviewer rotation (v2.1 7.2.5):** If .meta/reviewer-history.json exists, check if you reviewed this change previously. If same reviewer as last round, note potential blind-spot fixation in the review.
+**Reviewer rotation:** If .meta/reviewer-history.json exists, check if you reviewed this change previously. If same reviewer as last round, note potential blind-spot fixation in the review.
 
 ### Step 1: Map the review surface
 <!-- ENGINEERING-CONSTRAINT: review surface mapping — structural reading checklist + task completion gate -->
@@ -663,8 +663,8 @@ For each deliverable (PR-N) in proposal.md, verify the implementation delivers t
 
 Status per deliverable: ACHIEVED, PARTIAL (some aspects missing), NOT_ACHIEVED.
 
-### Step 4b: Level verification (v2.1 P1)
-<!-- ENGINEERING-CONSTRAINT: level assessment — escalation and calibration protocol (v2.1 P1) -->
+### Step 4b: Level verification
+<!-- ENGINEERING-CONSTRAINT: level assessment — escalation and calibration protocol -->
 
 Assess whether the proposal's declared level matches actual risk:
 - If actual risk > declared level -> escalate (e.g. Light->Critical), write in ## Level Assessment

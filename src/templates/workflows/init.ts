@@ -65,7 +65,7 @@ Check \`bp/conventions/coding.md\`:
 - Covers naming, code style, imports, error handling, testing
 - It is written to bp/conventions/coding.md
 
-### Step 3b: Verify codebase map (v2.1 P4)
+### Step 3b: Verify codebase map
 
 Check that \`bp/.codebase-map.json\` exists (run \`bp map refresh\` if missing). The planner queries the map on-demand via \`bp map list\` and \`bp map module <name>\` during plan.
 

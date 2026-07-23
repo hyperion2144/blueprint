@@ -18,7 +18,7 @@ export const ProjectConfigSchema = z.object({
   version: z.number().default(2),
   platform: z.array(z.string()).default(['omp']),
   profile: z.enum(['trivial', 'light', 'standard', 'critical']).default('standard'),
-  workflow_version: z.string().default('2.1'),
+  workflow_version: z.string().default('0.6.1'),
   prompt_profile: z.enum(['lite', 'standard', 'full']).default('standard'),
   context: z.string().default(''),
   brownfield: z.boolean().default(false),
@@ -61,7 +61,7 @@ export function loadConfig(bpDir: string): ProjectConfig {
   }
   const doc = readYamlDoc(path);
   const raw = doc.toJS();
-  // v2.1 backward compat: lite → light
+  //  backward compat: lite → light
   if (raw?.profile === 'lite') raw.profile = 'light';
   return ProjectConfigSchema.parse(raw) as ProjectConfig;
 }
@@ -97,7 +97,7 @@ export function resolveModels(config: ProjectConfig): ModelMap {
   const profile = config.profile as Profile;
   return { ...PROFILE_MODEL_MAP[profile], ...config.models };
 }
-/** v2.1 P2: Resolve models with level-based dynamic downgrade */
+/**: Resolve models with level-based dynamic downgrade */
 export function resolveModelsForLevel(config: ProjectConfig, level: Profile, round: number = 1): ModelMap {
   const base = resolveModels(config);
   // Trivial/Light -> downgrade all to fast
@@ -121,7 +121,7 @@ function migrateConfig(bpDir: string): ProjectConfig {
     platform: old.platform ?? ['omp'],
     profile: old.profile === 'strict' ? 'standard' : (old.profile ?? 'standard'),
     context: old.context ?? '',
-    workflow_version: '2.1',
+    workflow_version: '0.6.1',
     brownfield: false,
     commitDocs: old.workflow?.commitDocs ?? false,
     rules: {},

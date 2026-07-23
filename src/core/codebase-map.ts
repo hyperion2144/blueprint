@@ -1,7 +1,7 @@
 /**
  * codebase-map — generates a structural map of the codebase.
  *
- * v2.1 rewrite:
+ *  rewrite:
  * - No git dependency (uses file fingerprint: path+size SHA-256)
  * - @babel/parser for TS/JS AST parsing (exports + imports + responsibility)
  * - Regex fallback for other languages
@@ -214,7 +214,7 @@ export function isMapStale(bpDir: string, rootDir: string): boolean {
   }
 }
 
-// ── Query API (v2.1: agent queries on-demand instead of reading whole JSON) ──
+// ── Query API (: agent queries on-demand instead of reading whole JSON) ──
 
 /** Load map from .codebase-map.json */
 export function loadMap(bpDir: string): CodebaseMap | null {

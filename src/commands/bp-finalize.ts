@@ -131,7 +131,7 @@ function finalizeHandler(name: string, options?: { dryRun?: boolean; ci?: boolea
     process.exit(1);
   }
 
-  // v2.1 7.2.5: Critical change requires approver verification
+  //  7.2.5: Critical change requires approver verification
   const proposalPath = join(changePath, 'proposal.md');
   const proposalContent = existsSync(proposalPath) ? readFileSync(proposalPath, 'utf-8') : '';
   const levelMatch = proposalContent.match(/\*\*Level\*\*:\s*(\w+)/);
@@ -251,7 +251,7 @@ function finalizeHandler(name: string, options?: { dryRun?: boolean; ci?: boolea
     process.exit(0);
   }
   console.log('\n  Next: bp propose <new-change> (or: bp continue)');
-  // v2.1 P4: Refresh codebase map after archive (code changed)
+  //: Refresh codebase map after archive (code changed)
   try {
     const rootDir = join(bpDir, '..');
     const map = generateCodebaseMap(rootDir);

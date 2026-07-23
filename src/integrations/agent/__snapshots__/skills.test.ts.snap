@@ -131,7 +131,7 @@ For each completed wave:
    - \`- [ ] All wave acceptance criteria confirmed\` → \`- [x]\`
    (Skip \`No template placeholders\` — that's verified by the planner during planning.)
 
-# Record execution metadata (v2.1 P5)
+# Record execution metadata ( P5)
 # Orchestrator should write .meta/executor-wave-N.json after executor completes
 
 ### Step 5: Lightweight mode (if classified as lightweight)
@@ -174,7 +174,7 @@ Implementation complete for $1
 - In --fix mode: executors read review.md, fix R/Q/G issues, then mark each issue \`[ ]\` → \`[~]\` (\`~\` = fixed, pending verification). Do NOT mark \`[x]\` — that's the re-review's job. Do NOT fix D issues (those need replan).
 - Do NOT run bp review automatically - let the user decide.
 - **Wave retry limit: max 2 re-dispatches per wave (global cap: config.budget.max_subagent_runs, default 5).** If a wave fails verification 2 times after re-dispatch with specific feedback, STOP and report as blocker. Do not re-dispatch indefinitely.
-- **Budget awareness (v2.1 P0)**: Track sub-agent dispatch count against config.budget.max_subagent_runs (default 5). Track wall time against config.budget.max_wall_time_min (default 60). If estimated token usage approaches config.budget.estimated_token_cap (default 500000), warn. These are advisory — stop and report if exceeded.
+- **Budget awareness**: Track sub-agent dispatch count against config.budget.max_subagent_runs (default 5). Track wall time against config.budget.max_wall_time_min (default 60). If estimated token usage approaches config.budget.estimated_token_cap (default 500000), warn. These are advisory — stop and report if exceeded.
 - **Level-aware execution**: Trivial = inline (no sub-agent). Light = single agent, TDD optional. Standard = wave + TDD. Critical = wave + TDD + security audit checkpoint.
 ",
   "archive": "---
@@ -440,7 +440,7 @@ Check \`bp/conventions/coding.md\`:
 - Covers naming, code style, imports, error handling, testing
 - It is written to bp/conventions/coding.md
 
-### Step 3b: Verify codebase map (v2.1 P4)
+### Step 3b: Verify codebase map
 
 Check that \`bp/.codebase-map.json\` exists (run \`bp map refresh\` if missing). The planner queries the map on-demand via \`bp map list\` and \`bp map module <name>\` during plan.
 
@@ -628,7 +628,7 @@ Before committing, review the planner's design for soundness:
 
 If any check fails: re-dispatch planner with specific feedback on what's missing.
 
-### Step 6: Task granularity check (v2.1 P0)
+### Step 6: Task granularity check
 
 After planner produces tasks.md, check granularity and warn if too large:
 
@@ -686,7 +686,7 @@ hide: false
 
 > These are the steps you (orchestrator) execute in order. \`bp propose\` only outputs these steps — it does not auto-execute.
 
-### Step 0: Risk assessment and level assignment (v2.1 P1)
+### Step 0: Risk assessment and level assignment
 
 Assess the change's risk level based on scope and failure cost:
 
@@ -930,16 +930,16 @@ Do NOT auto-route to another fix. Instead:
 git add .
 bp commit "docs(review): triple review for $1" --files bp/changes/$1/review.md
 
-# Record execution metadata (v2.1 P5)
+# Record execution metadata ( P5)
 # Orchestrator should write .meta/reviewer-run-N.json after reviewer completes
 - Do NOT run bp archive automatically - let the user review the findings first.
 - **Context is auto-injected by the OMP Extension.** Do NOT call \`bp context review\`; the extension already supplies the same material at every turn.
 - **Fix loop limit: max config.budget.max_review_rounds rounds (default 3).** If the change has been through that many fix rounds (count re-reviews in review.md Review History) and issues still persist, the diminishing-returns fuse may trigger — see [FUSE] recovery path below. Do not auto-route to another fix beyond the limit — escalate for human decision.
 - **Level-aware review**: Trivial = orchestrator quick check (no sub-agent). Light = optional review. Standard = triple review. Critical = triple review + security audit + human approval before archive.
-- **Critical approval gate (v2.1 7.2.5)**: Critical-level changes require explicit approval. If config.approvers is non-empty, only listed approvers can PASS a Critical review. In CI mode, Critical changes always exit 1 (require interactive approval).
+- **Critical approval gate**: Critical-level changes require explicit approval. If config.approvers is non-empty, only listed approvers can PASS a Critical review. In CI mode, Critical changes always exit 1 (require interactive approval).
 - **CI mode (--ci)**: When run with --ci, skip all human-confirmation steps. If review verdict is not PASS, the command exits 1 immediately. No fix loop in CI -- failures must be fixed in a separate interactive session.
 - **Level-aware CI**: Critical changes require human approval even in CI mode (exit 1 with 'Critical change requires human review'). Trivial/Light changes auto-pass in CI if tests pass.
-- **v2.1 P2 dynamic downgrade**: If first review round found no BLOCKER, second round reviewer may use a faster model (config.resolveModelsForLevel with round=2). If BLOCKER found after downgrade, upgrade back and mark degradation_failed.
+- ** P2 dynamic downgrade**: If first review round found no BLOCKER, second round reviewer may use a faster model (config.resolveModelsForLevel with round=2). If BLOCKER found after downgrade, upgrade back and mark degradation_failed.
 ",
   "roadmap": "---
 name: bp-roadmap

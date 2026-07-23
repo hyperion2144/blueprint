@@ -116,16 +116,16 @@ Do NOT auto-route to another fix. Instead:
 git add .
 bp commit "docs(review): triple review for $1" --files bp/changes/$1/review.md
 
-# Record execution metadata (v2.1 P5)
+# Record execution metadata ( P5)
 # Orchestrator should write .meta/reviewer-run-N.json after reviewer completes
 - Do NOT run bp archive automatically - let the user review the findings first.
 - **Context is auto-injected by the OMP Extension.** Do NOT call \`bp context review\`; the extension already supplies the same material at every turn.
 - **Fix loop limit: max config.budget.max_review_rounds rounds (default 3).** If the change has been through that many fix rounds (count re-reviews in review.md Review History) and issues still persist, the diminishing-returns fuse may trigger — see [FUSE] recovery path below. Do not auto-route to another fix beyond the limit — escalate for human decision.
 - **Level-aware review**: Trivial = orchestrator quick check (no sub-agent). Light = optional review. Standard = triple review. Critical = triple review + security audit + human approval before archive.
-- **Critical approval gate (v2.1 7.2.5)**: Critical-level changes require explicit approval. If config.approvers is non-empty, only listed approvers can PASS a Critical review. In CI mode, Critical changes always exit 1 (require interactive approval).
+- **Critical approval gate**: Critical-level changes require explicit approval. If config.approvers is non-empty, only listed approvers can PASS a Critical review. In CI mode, Critical changes always exit 1 (require interactive approval).
 - **CI mode (--ci)**: When run with --ci, skip all human-confirmation steps. If review verdict is not PASS, the command exits 1 immediately. No fix loop in CI -- failures must be fixed in a separate interactive session.
 - **Level-aware CI**: Critical changes require human approval even in CI mode (exit 1 with 'Critical change requires human review'). Trivial/Light changes auto-pass in CI if tests pass.
-- **v2.1 P2 dynamic downgrade**: If first review round found no BLOCKER, second round reviewer may use a faster model (config.resolveModelsForLevel with round=2). If BLOCKER found after downgrade, upgrade back and mark degradation_failed.
+- ** P2 dynamic downgrade**: If first review round found no BLOCKER, second round reviewer may use a faster model (config.resolveModelsForLevel with round=2). If BLOCKER found after downgrade, upgrade back and mark degradation_failed.
 `;
 
 export function getReviewSkillTemplate(): SkillTemplate {

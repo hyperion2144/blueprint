@@ -1,5 +1,5 @@
 /**
- * prompt-pruner — v2.1 P3: prune CAPABILITY-COMPENSATION sections based on prompt_profile.
+ * prompt-pruner —: prune CAPABILITY-COMPENSATION sections based on prompt_profile.
  *
  * lite: remove CAPABILITY-COMPENSATION sections (model already knows how)
  * standard: keep all (default)

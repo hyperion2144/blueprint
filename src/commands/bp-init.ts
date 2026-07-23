@@ -114,7 +114,7 @@ async function initHandler(options: {
   }
   console.log('✓ specs/ directory created');
 
-  // v2.1 P4: Generate initial codebase map (both greenfield and brownfield)
+  //: Generate initial codebase map (both greenfield and brownfield)
   try {
     const rootDir = join(bpDir, '..');
     const map = generateCodebaseMap(rootDir);
@@ -130,7 +130,7 @@ async function initHandler(options: {
       version: 2,
       platform,
       profile: profile as Profile,
-      workflow_version: '2.1',
+      workflow_version: '0.6.1',
       brownfield: isBrownfield,
       commitDocs: wizard.commitDocs,
       context: wizard.context,
