@@ -1,3 +1,11 @@
+# v0.6.1 — 全面审查修复、V2.1 模型增强工作流、V3 遥测驱动进化方案
+
+> 2026-07-22
+
+综合 audit 修复 P0-P3（33 项）+ v2.1 模型增强工作流（23 项）+ v3 遥测驱动进化方案。codemap 重写：AST 解析 + 无 git 依赖 + 文件函数级查询 + 不限扫描目录。架构修正：命令统一输出步骤（plan/apply/review/archive）+ bp finalize 直接执行归档。所有工作流加 Orchestrator Steps 说明。
+
+---
+
 # v0.4.1 — 文本格式输出、bp commit 集成、/bp-auto、依赖展示
 
 > 2026-07-02
