@@ -856,6 +856,14 @@ Every finding gets a prefix + number:
 
 After fetching the template, fill it following these rules:
 
+**Gather ALL findings from ALL review dimensions:**
+- Step 2 (Spec Review) → **R** issues (spec non-compliance)
+- Step 3 (Quality Review) → **Q** issues (code quality, bugs, security)
+- Step 4 (Goal Review) → **G** issues (goal not achieved)
+- Step 5 (Classify) → **D** issues (design/architecture flaws)
+
+Write EVERY finding from ALL dimensions into the single \`## Issues\` section below. Do NOT skip any dimension — if a dimension has zero findings, write \`None\` in the \`## Quality Review > ### Findings Summary\` table. The global \`## Issues\` section is the ONE source of truth for all issue types.
+
 **Review History row — append on EVERY review (including re-review):**
 Add a row to the \`## Review History\` table:
 - Round: increment from previous max (if no rows exist, start at 1)
@@ -2826,6 +2834,14 @@ Every finding gets a prefix + number:
 **HARD RULE: You MUST fetch the review template by running \`bp template review --stdout\` BEFORE writing \`review.md\`.** The template defines the Issues format (\`- [ ] R/Q/G/D\`), Overall Verdict placement, and all three review gates. Writing from memory will produce an unparseable review that blocks archive.
 
 After fetching the template, fill it following these rules:
+
+**Gather ALL findings from ALL review dimensions:**
+- Step 2 (Spec Review) → **R** issues (spec non-compliance)
+- Step 3 (Quality Review) → **Q** issues (code quality, bugs, security)
+- Step 4 (Goal Review) → **G** issues (goal not achieved)
+- Step 5 (Classify) → **D** issues (design/architecture flaws)
+
+Write EVERY finding from ALL dimensions into the single \`## Issues\` section below. Do NOT skip any dimension — if a dimension has zero findings, write \`None\` in the \`## Quality Review > ### Findings Summary\` table. The global \`## Issues\` section is the ONE source of truth for all issue types.
 
 **Review History row — append on EVERY review (including re-review):**
 Add a row to the \`## Review History\` table:
@@ -4817,6 +4833,14 @@ Every finding gets a prefix + number:
 **HARD RULE: You MUST fetch the review template by running \`bp template review --stdout\` BEFORE writing \`review.md\`.** The template defines the Issues format (\`- [ ] R/Q/G/D\`), Overall Verdict placement, and all three review gates. Writing from memory will produce an unparseable review that blocks archive.
 
 After fetching the template, fill it following these rules:
+
+**Gather ALL findings from ALL review dimensions:**
+- Step 2 (Spec Review) → **R** issues (spec non-compliance)
+- Step 3 (Quality Review) → **Q** issues (code quality, bugs, security)
+- Step 4 (Goal Review) → **G** issues (goal not achieved)
+- Step 5 (Classify) → **D** issues (design/architecture flaws)
+
+Write EVERY finding from ALL dimensions into the single \`## Issues\` section below. Do NOT skip any dimension — if a dimension has zero findings, write \`None\` in the \`## Quality Review > ### Findings Summary\` table. The global \`## Issues\` section is the ONE source of truth for all issue types.
 
 **Review History row — append on EVERY review (including re-review):**
 Add a row to the \`## Review History\` table:

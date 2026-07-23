@@ -630,20 +630,18 @@ export const REVIEW_TEMPLATE = `# Review: {{name}}
 
 ## Quality Review
 
-### Issues
+### Findings Summary
 
-| # | Severity | Category | Location | Description | Fix |
-|---|----------|----------|----------|-------------|-----|
-| Q1 | {{BLOCKER/MAJOR/MINOR}} | {{Bug/Security/Convention/AI-Smell}} | {{file:line}} | {{specific-description}} | {{actionable-fix}} |
+<!-- Do NOT list individual issues here. Use the global ## Issues section below for all R/Q/G/D findings. -->
+
+| Dimension | Count | Key Issues |
+|-----------|-------|------------|
+| Spec (R) | {{count}} | {{summary}} |
+| Quality (Q) | {{count}} | {{summary}} |
+| Goal (G) | {{count}} | {{summary}} |
+| Design (D) | {{count}} | {{summary}} |
 
 ### Convention Compliance
-
-| Rule | Status | Note |
-|------|--------|------|
-| {{convention-rule}} | {{PASS/FAIL}} | {{note}} |
-
-### Quality Verdict: {{PASS | FAIL | NEEDS_REVISION}}
-
 ---
 
 ## Goal Review
