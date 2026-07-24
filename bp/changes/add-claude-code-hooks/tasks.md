@@ -32,7 +32,7 @@
     THEN SessionStart returns context, prompt/tool events return workflow state, and SessionStop returns no-op
     AND disabled or missing-config projects return bypass without invoking runtime work.
 
-- [x] T-3: [type:behavior] Add independent Claude handler template and provider outputs <!-- commit: see GREEN below -->
+- [x] T-3: [type:behavior] Add independent Claude handler template and provider outputs <!-- commit: 28cd81a -->
   - **refs**: DS-1, DS-2
   - **spec_ref**: specs/platform-gen/spec.md#claude-code-hook-runtime
   - **files**: `src/templates/claude-code/handler.tmpl.ts`, `src/integrations/claude-code/index.ts`, `src/integrations/claude-code/handler.test.ts`, `src/integrations/claude-code/__snapshots__/handler.test.ts.snap`
