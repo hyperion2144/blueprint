@@ -84,14 +84,11 @@
     WHEN lifecycle generation runs
     THEN validation succeeds and the eleven Codex-owned outputs are present.
 
-## Wave 3: documentation and contract
-
-- [ ] T-9: [type:docs] Document Codex platform parity <!-- commit: -->
+- [x] T-9: [type:docs] Document Codex platform parity <!-- commit: 0b62e13 -->
   - **refs**: DS-4
   - **files**: `docs/platform-integration.md`, `README.md`, `AGENTS.md`
   - **acceptance**: each document contains a Codex platform entry; integration docs describe Skills, five hooks, cleanup boundaries, and worktree dispatch.
-
-- [ ] T-10: [type:docs] Add and archive-ready platform delta spec <!-- commit: -->
+- [x] T-10: [type:docs] Add and archive-ready platform delta spec <!-- commit: c9d58cf -->
   - **refs**: DS-4
   - **files**: `bp/specs/platform-gen/spec.md`, `bp/changes/add-codex-support/specs/platform-gen/spec.md`
   - **acceptance**: global spec contains the codex capability contract and delta spec has complete ADDED/MODIFIED requirements with Given/When/Then scenarios.
