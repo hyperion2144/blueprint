@@ -112,9 +112,9 @@
 
 ## Issues
 
-- [ ] Q1 - Outdated console.log message in bp-init.ts omits `.codex/` and `.agents/` from success text (quality)
-- [ ] Q2 - generateContextBlock test mislabels "populated" assertion — tests only tag pair, not content (quality)
-- [ ] Q3 - SessionStart handler returns empty `<bp-context>` block with no actual context data (quality)
+- [~] Q1 - Outdated console.log message in bp-init.ts omits `.codex/` and `.agents/` from success text (quality) — fixed in 60b17a6
+- [~] Q2 - generateContextBlock test mislabels "populated" assertion — tests only tag pair, not content (quality) — fixed in 60b17a6
+- [ ] Q3 - SessionStart handler returns empty `<bp-context>` block with no actual context data (quality) — **deferred as follow-up**; populating the block with compact path listing is a real behavior change requiring its own design + delta spec; out of scope for the fix loop. See handler.ts:60-66 for the byte-determinism rationale.
 
 ## Routing
 
