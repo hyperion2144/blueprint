@@ -94,24 +94,53 @@ describe('Codex handler runtime helpers', () => {
   });
 
   describe('generateContextBlock', () => {
-    it('emits an empty <bp-context> block when bp/config.yaml is absent', () => {
+    it('emits an empty <bp-context> block when bp/config.yaml is absent (no exec call)', () => {
       const cwd = mkdtempSync(join(tmpdir(), 'bp-codex-ctx-'));
       try {
-        const block = generateContextBlock(cwd);
-        expect(block).toContain('<bp-context>');
-        expect(block).toContain('</bp-context>');
+        let called = false;
+        const block = generateContextBlock(cwd, () => {
+          called = true;
+          return '<bp-context>x</bp-context>';
+        });
+        expect(called).toBe(false);
+        expect(block).toBe('<bp-context>\n</bp-context>');
       } finally {
         rmSync(cwd, { recursive: true, force: true });
       }
     });
 
-    it('emits an empty <bp-context> block when bp/config.yaml is present (byte-determinism: same as absent path)', () => {
+    it('returns the populated <bp-context> block from execBpContext when config present', () => {
       const cwd = mkdtempSync(join(tmpdir(), 'bp-codex-ctx-'));
       try {
         writeConfig(cwd, 'bp/config.yaml', 'version: 2\n');
-        const block = generateContextBlock(cwd);
-        expect(block).toContain('<bp-context>');
-        expect(block).toContain('</bp-context>');
+        const fakeBlock =
+          '<bp-context>\n## Specs\n- specs/core/spec.md\n## Conventions\n- conventions/coding.md\n</bp-context>';
+        const block = generateContextBlock(cwd, () => fakeBlock);
+        expect(block).toBe(fakeBlock);
+      } finally {
+        rmSync(cwd, { recursive: true, force: true });
+      }
+    });
+
+    it('falls back to the empty block when execBpContext throws', () => {
+      const cwd = mkdtempSync(join(tmpdir(), 'bp-codex-ctx-'));
+      try {
+        writeConfig(cwd, 'bp/config.yaml', 'version: 2\n');
+        const block = generateContextBlock(cwd, () => {
+          throw new Error('bp binary not found');
+        });
+        expect(block).toBe('<bp-context>\n</bp-context>');
+      } finally {
+        rmSync(cwd, { recursive: true, force: true });
+      }
+    });
+
+    it('falls back to the empty block when execBpContext returns malformed output', () => {
+      const cwd = mkdtempSync(join(tmpdir(), 'bp-codex-ctx-'));
+      try {
+        writeConfig(cwd, 'bp/config.yaml', 'version: 2\n');
+        const block = generateContextBlock(cwd, () => 'not a bp-context block');
+        expect(block).toBe('<bp-context>\n</bp-context>');
       } finally {
         rmSync(cwd, { recursive: true, force: true });
       }
@@ -150,6 +179,15 @@ describe('Codex handler runtime helpers', () => {
       expect(result.kind).toBe('context');
       if (result.kind === 'context') {
         expect(result.payload).toContain('<bp-context>');
+      }
+    });
+
+    it('SessionStart threads execBpContext through to the context payload', () => {
+      const fakeBlock = '<bp-context>\n## Specs\n- specs/core/spec.md\n</bp-context>';
+      const result = dispatchHandler('SessionStart', cwd, () => fakeBlock);
+      expect(result.kind).toBe('context');
+      if (result.kind === 'context') {
+        expect(result.payload).toBe(fakeBlock);
       }
     });
 

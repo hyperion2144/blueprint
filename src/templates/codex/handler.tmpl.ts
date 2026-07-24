@@ -38,6 +38,7 @@ export const HANDLER_SOURCE = `#!/usr/bin/env node
 //   missing bp/config.yaml           -> exit 0 silently
 
 import { existsSync, readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { join } from "node:path";
 
 function isDisabled() {
@@ -62,7 +63,19 @@ function generateContextBlock(cwd) {
   if (!cwd || !hasBpConfig(cwd)) {
     return "<bp-context>\\n</bp-context>";
   }
-  return "<bp-context>\\n</bp-context>";
+  try {
+    var out = execFileSync("bp", ["context", "apply", "--format=compact"], {
+      cwd: cwd,
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+    if (out.indexOf("<bp-context>") !== 0 || out.lastIndexOf("</bp-context>") !== out.length - "</bp-context>".length) {
+      return "<bp-context>\\n</bp-context>";
+    }
+    return out;
+  } catch {
+    return "<bp-context>\\n</bp-context>";
+  }
 }
 
 function generateWorkflowState(cwd) {

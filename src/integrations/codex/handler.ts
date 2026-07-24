@@ -12,6 +12,7 @@
  */
 
 import { existsSync, readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 
 import type { ProjectConfig } from '../../types/index.js';
@@ -58,17 +59,37 @@ function readBpState(cwd: string): string {
 
 /**
  * Generate the `<bp-context>...</bp-context>` markdown block for the
- * given cwd. Returns the empty tag pair when bp/config.yaml is missing.
+ * given cwd. Returns the empty tag pair when bp/config.yaml is missing
+ * OR when the `bp context` subprocess fails for any reason (binary
+ * absent, non-zero exit, malformed output).
  *
- * Note: Codex receives the body via `hookSpecificOutput.additionalContext`.
- * The compact payload is rendered by the runtime; this generator only
- * returns the minimal pair to keep byte-determinism tight.
+ * The `execBpContext` parameter is a DI seam: tests inject a mock that
+ * returns a deterministic block; the generated runtime handler uses
+ * the default which spawns the real `bp` binary. The default is inlined
+ * because it has exactly one call site and the call shape (binary +
+ * args + stdio) is documented here rather than at a one-line wrapper.
  */
-export function generateContextBlock(cwd: string | undefined): string {
+export function generateContextBlock(
+  cwd: string | undefined,
+  execBpContext: (cwd: string) => string = (c) =>
+    execFileSync('bp', ['context', 'apply', '--format=compact'], {
+      cwd: c,
+      encoding: 'utf-8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
+): string {
   if (!cwd || !hasBpConfig(cwd)) {
     return '<bp-context>\n</bp-context>';
   }
-  return '<bp-context>\n</bp-context>';
+  try {
+    const out = execBpContext(cwd).trim();
+    if (!out.startsWith('<bp-context>') || !out.endsWith('</bp-context>')) {
+      return '<bp-context>\n</bp-context>';
+    }
+    return out;
+  } catch {
+    return '<bp-context>\n</bp-context>';
+  }
 }
 
 /**
@@ -101,11 +122,15 @@ export type HandlerResult =
  * Bypass cases (env disabled OR missing bp/config.yaml) return
  * `{ kind: 'bypass' }` so the handler can exit 0 without a payload.
  */
-export function dispatchHandler(event: string, cwd: string | undefined): HandlerResult {
+export function dispatchHandler(
+  event: string,
+  cwd: string | undefined,
+  execBpContext?: (cwd: string) => string
+): HandlerResult {
   if (isDisabled() || !hasBpConfig(cwd)) return { kind: 'bypass' };
 
   if (event === 'SessionStart') {
-    return { kind: 'context', payload: generateContextBlock(cwd) };
+    return { kind: 'context', payload: generateContextBlock(cwd, execBpContext) };
   }
   if (WORKFLOW_STATE_EVENT_TABLE[event] === true) {
     return { kind: 'state', payload: generateWorkflowState(cwd) };
