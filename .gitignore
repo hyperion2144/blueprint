@@ -6,5 +6,7 @@ bin/
 .agent/
 .claude/
 .meta/
+.codex/
+.agents/
 .codebase-map.json
 .codebase-map.md
