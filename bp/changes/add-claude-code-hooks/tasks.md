@@ -22,7 +22,7 @@
     THEN the output contains the five ordered event keys, required command arguments, and Bash matchers only for PreToolUse/PostToolUse
     AND the same config renders identical bytes twice.
 
-- [x] T-2: [type:behavior] Implement Claude handler dispatch and bypass semantics <!-- commit: see GREEN below -->
+- [x] T-2: [type:behavior] Implement Claude handler dispatch and bypass semantics <!-- commit: 95c8605 -->
   - **refs**: DS-2
   - **spec_ref**: specs/platform-gen/spec.md#claude-code-hook-runtime
   - **files**: `src/integrations/claude-code/handler.ts`, `src/integrations/claude-code/handler.test.ts`
@@ -32,7 +32,7 @@
     THEN SessionStart returns context, prompt/tool events return workflow state, and SessionStop returns no-op
     AND disabled or missing-config projects return bypass without invoking runtime work.
 
-- [ ] T-3: [type:behavior] Add independent Claude handler template and provider outputs <!-- commit: -->
+- [x] T-3: [type:behavior] Add independent Claude handler template and provider outputs <!-- commit: see GREEN below -->
   - **refs**: DS-1, DS-2
   - **spec_ref**: specs/platform-gen/spec.md#claude-code-hook-runtime
   - **files**: `src/templates/claude-code/handler.tmpl.ts`, `src/integrations/claude-code/index.ts`, `src/integrations/claude-code/handler.test.ts`, `src/integrations/claude-code/__snapshots__/handler.test.ts.snap`
