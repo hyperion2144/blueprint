@@ -1,0 +1,23 @@
+{ "file": "bp/changes/add-codex-support/proposal.md", "reason": "Scope, deliverables, exclusions, and verification contract", "phase": "plan", "tag": "artifact", "read": "full" }
+{ "file": "bp/specs/platform-gen/spec.md", "reason": "Existing platform generation and OMP runtime invariants", "phase": "all", "tag": "spec", "read": "full" }
+{ "file": "bp/specs/init/spec.md", "reason": "Init wizard defaults, picker, and post-init generation", "phase": "all", "tag": "spec", "read": "full" }
+{ "file": "bp/specs/file-tree/spec.md", "reason": "Generated project directory and artifact boundaries", "phase": "apply", "tag": "spec", "read": "full" }
+{ "file": "bp/conventions/coding.md", "reason": "TypeScript ESM, naming, errors, tests, and TDD conventions", "phase": "all", "tag": "convention", "read": "full" }
+{ "file": "bp/config.yaml", "reason": "Project profile, platform list, and artifact rules", "phase": "all", "tag": "guard-rail", "read": "full" }
+{ "file": "src/core/platform-registry.ts", "reason": "PlatformProvider and registry contract", "phase": "apply", "tag": "code", "read": "full" }
+{ "file": "src/generators/index.ts", "reason": "Provider registration and multi-platform generation caller", "phase": "apply", "tag": "code", "read": "full" }
+{ "file": "src/integrations/index.ts", "reason": "Integration barrel export pattern", "phase": "apply", "tag": "code", "read": "full" }
+{ "file": "src/integrations/omp/index.ts", "reason": "Complete provider and runtime reference", "phase": "apply", "tag": "code", "read": "full" }
+{ "file": "src/integrations/omp/skills.ts", "reason": "Shared workflow skill generation pattern", "phase": "apply", "tag": "code", "read": "full" }
+{ "file": "src/integrations/agent/skills.ts", "reason": "Directory-based Skill generation reference", "phase": "apply", "tag": "code", "read": "full" }
+{ "file": "src/commands/bp-dispatch.ts", "reason": "Isolation and dispatch format tables", "phase": "apply", "tag": "code", "read": "full" }
+{ "file": "src/commands/bp-update.ts", "reason": "Existing stale generated-file cleanup behavior", "phase": "apply", "tag": "code", "read": "full" }
+{ "file": "src/prompts/init-wizard.ts", "reason": "Interactive platform picker and defaults", "phase": "apply", "tag": "code", "read": "full" }
+{ "file": "src/commands/bp-init.ts", "reason": "Gitignore generation and post-init platform generation", "phase": "apply", "tag": "code", "read": "full" }
+{ "file": "src/templates/artifacts/index.ts", "reason": "Config platform enum/template", "phase": "apply", "tag": "code", "read": "full" }
+{ "file": "src/templates/workflows/registry.ts", "reason": "Canonical ten workflow step bodies", "phase": "apply", "tag": "code", "read": "full" }
+{ "file": "docs/platform-integration.md", "reason": "Existing platform integration documentation to extend", "phase": "apply", "tag": "docs", "read": "full" }
+{ "file": "README.md", "reason": "Platform support table", "phase": "apply", "tag": "docs", "read": "full" }
+{ "file": "AGENTS.md", "reason": "Platform support table", "phase": "apply", "tag": "docs", "read": "full" }
+{ "file": "bp/changes/add-codex-support/design.md", "reason": "Executor design and complete file manifest", "phase": "all", "tag": "artifact", "read": "full" }
+{ "file": "bp/changes/add-codex-support/tasks.md", "reason": "Wave task checklist and TDD contracts", "phase": "all", "tag": "artifact", "read": "full" }
