@@ -40,6 +40,10 @@ const EXECUTOR_ISOLATION: Record<string, IsolationInfo> = {
     type: 'none',
     description: 'No built-in isolation. Orchestrator must manually create a git worktree (git worktree add) and include "cd <worktree>" in the sub-agent prompt. Merge back and clean up after completion.',
   },
+  codex: {
+    type: 'none',
+    description: 'No built-in isolation. Orchestrator must run `git worktree add <path> <branch>` to create an isolated worktree and pass `cd <worktree>` to the sub-agent. Codex MCP adapters may override the dispatch tool name.',
+  },
 };
 
 interface DispatchFormat {
@@ -71,6 +75,14 @@ const FORMATS: Record<string, DispatchFormat> = {
     },
   },
   agent: {
+    tool: 'task',
+    params: {
+      agent: 'bp-<role>',
+      role: '<role>',
+      assignment: '<prompt>',
+    },
+  },
+  codex: {
     tool: 'task',
     params: {
       agent: 'bp-<role>',
@@ -142,7 +154,13 @@ function dispatchHandler(role: string, options: { change?: string; dir: string }
     } else {
       lines.push(`- Support: no`);
       lines.push(`- Type: none`);
-      lines.push(`- Read-only role — no isolation needed.`);
+      // For executor role with a configured description, show it (e.g. codex/agent worktree instructions).
+      // For read-only roles, fall back to the default message.
+      if (role === 'executor' && isolation.description) {
+        lines.push(`- ${isolation.description}`);
+      } else {
+        lines.push(`- Read-only role — no isolation needed.`);
+      }
     }
 
     lines.push('');
