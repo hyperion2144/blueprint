@@ -1,6 +1,6 @@
 # Platform-Gen — Initial Spec
 ## SHALL
-### SHALL support three platforms: omp, claude-code, agent
+### SHALL support four platforms: omp, claude-code, agent, codex
 - SHALL `bp update`: iterate over `project.yml.platform` array and generate files for each listed platform.
   - GIVEN `platform: [omp, agent]`
   - WHEN `bp update` runs

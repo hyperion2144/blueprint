@@ -1,0 +1,34 @@
+{"file":"bp/changes/add-claude-code-hooks/proposal.md","reason":"Change intent, scope, PR deliverables, and platform constraints","phase":"all","tag":"artifact","read":"full"}
+{"file":"bp/changes/archive/2026-07-24-add-codex-support/design.md","reason":"Near-twin design structure and component decomposition","phase":"plan","tag":"reference","read":"full"}
+{"file":"bp/changes/archive/2026-07-24-add-codex-support/tasks.md","reason":"Wave and TDD task pattern for hook generation","phase":"plan","tag":"reference","read":"full"}
+{"file":"bp/changes/archive/2026-07-24-add-codex-support/specs/platform-gen/spec.md","reason":"Codex-parity event, payload, and bypass contract","phase":"plan","tag":"reference","read":"full"}
+{"file":"bp/changes/archive/2026-07-24-add-codex-support/review.md","reason":"Resolved quality findings and accepted handler limitations","phase":"plan","tag":"guard-rail","read":"full"}
+{"file":"bp/specs/platform-gen/spec.md","reason":"Existing platform-generation contract and requirement to modify","phase":"all","tag":"spec","read":"full"}
+{"file":"bp/specs/init/spec.md","reason":"Existing init/platform-selection contract referenced by proposal touchpoints","phase":"plan","tag":"spec","read":"full"}
+{"file":"bp/conventions/coding.md","reason":"TypeScript ESM naming, testing, and error-handling conventions","phase":"all","tag":"convention","read":"full"}
+{"file":"bp/conventions/codebase-conventions.md","reason":"Repository architecture and source organization conventions","phase":"all","tag":"convention","read":"full"}
+{"file":"src/integrations/claude-code/index.ts","reason":"Existing Claude provider to extend","phase":"apply","tag":"code","read":"full"}
+{"file":"src/integrations/claude-code/commands.ts","reason":"Existing Claude command generator preserved by provider change","phase":"apply","tag":"code","read":"full"}
+{"file":"src/integrations/claude-code/agents.ts","reason":"Existing Claude agent generator preserved by provider change","phase":"apply","tag":"code","read":"full"}
+{"file":"src/integrations/claude-code/hooks.ts","reason":"New settings hook generator target","phase":"apply","tag":"code","read":"full"}
+{"file":"src/integrations/claude-code/hooks.test.ts","reason":"Hook shape and determinism tests","phase":"apply","tag":"test","read":"full"}
+{"file":"src/integrations/claude-code/handler.ts","reason":"New Claude handler helper and descriptor target","phase":"apply","tag":"code","read":"full"}
+{"file":"src/integrations/claude-code/handler.test.ts","reason":"Handler event, bypass, DI, and deterministic tests","phase":"apply","tag":"test","read":"full"}
+{"file":"src/integrations/claude-code/__snapshots__/hooks.test.ts.snap","reason":"Expected settings JSON snapshot","phase":"apply","tag":"test","read":"full"}
+{"file":"src/integrations/claude-code/__snapshots__/handler.test.ts.snap","reason":"Expected generated handler snapshot","phase":"apply","tag":"test","read":"full"}
+{"file":"src/templates/claude-code/handler.tmpl.ts","reason":"Independent Claude generated handler source target","phase":"apply","tag":"code","read":"full"}
+{"file":"src/templates/codex/handler.tmpl.ts","reason":"Near-duplicate runtime pattern to mirror without sharing","phase":"plan","tag":"reference","read":"full"}
+{"file":"src/integrations/codex/hooks.ts","reason":"Five-event hook configuration pattern","phase":"plan","tag":"reference","read":"full"}
+{"file":"src/integrations/codex/handler.ts","reason":"DI seam, dispatch, fallback, and bypass pattern","phase":"plan","tag":"reference","read":"full"}
+{"file":"src/integrations/codex/index.ts","reason":"Provider registration and descriptor composition pattern","phase":"plan","tag":"reference","read":"full"}
+{"file":"src/core/platform-registry.ts","reason":"PlatformProvider interface and unknown-platform behavior","phase":"apply","tag":"code","read":"full"}
+{"file":"src/generators/index.ts","reason":"Provider registration and generateAll caller","phase":"apply","tag":"code","read":"full"}
+{"file":"src/commands/bp-update.ts","reason":"Existing stale-file cleanup implementation","phase":"apply","tag":"code","read":"full"}
+{"file":"tests/commands/bp-update.test.ts","reason":"Update cleanup regression test target","phase":"apply","tag":"test","read":"full"}
+{"file":"tests/integration/lifecycle.test.ts","reason":"Four-platform lifecycle regression test target","phase":"apply","tag":"test","read":"full"}
+{"file":"docs/platform-integration.md","reason":"Existing platform integration guide to extend","phase":"apply","tag":"docs","read":"full"}
+{"file":"README.md","reason":"Platform support documentation target","phase":"apply","tag":"docs","read":"full"}
+{"file":"AGENTS.md","reason":"Agent-facing platform integration documentation target","phase":"apply","tag":"docs","read":"full"}
+{"file":"bp/changes/add-claude-code-hooks/specs/platform-gen/spec.md","reason":"Archive-ready Claude hook behavioral delta","phase":"all","tag":"spec","read":"full"}
+{"file":"bp/changes/add-claude-code-hooks/design.md","reason":"Executor technical design and complete file manifest","phase":"apply","tag":"artifact","read":"full"}
+{"file":"bp/changes/add-claude-code-hooks/tasks.md","reason":"Executor wave checklist and TDD contracts","phase":"apply","tag":"artifact","read":"full"}
