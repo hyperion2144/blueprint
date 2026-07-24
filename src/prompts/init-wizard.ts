@@ -47,7 +47,7 @@ export async function runInitWizard(defaults: { profile: string; yes: boolean })
     // 3. Platform
     const pfVal = await clack.multiselect({
       message: 'Target platform — which AI agent platform(s) to generate integration files for:',
-      options: PLATFORM_OPTIONS,
+      options: [...PLATFORM_OPTIONS],
       initialValues: ['omp'],
     });
     const platform = Array.isArray(pfVal) ? pfVal as string[] : ['omp'];
