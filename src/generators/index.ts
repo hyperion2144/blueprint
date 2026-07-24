@@ -1,8 +1,8 @@
 /**
  * 生成器入口 — dispatches to PlatformProviders via PlatformRegistry.
  *
- * OMP is registered on first import. Additional providers (claude-code, agent)
- * register themselves when their integration module is loaded.
+ * OMP is registered on first import. Additional providers (claude-code, agent,
+ * codex) register themselves when their integration module is loaded.
  */
 
 import { PlatformRegistry } from '../core/platform-registry.js';
@@ -10,6 +10,7 @@ import type { GeneratedFile } from '../core/platform-registry.js';
 import { registerOmpProvider } from '../integrations/omp/index.js';
 import { registerClaudeCodeProvider } from '../integrations/claude-code/index.js';
 import { registerAgentProvider } from '../integrations/agent/index.js';
+import { registerCodexProvider } from '../integrations/codex/index.js';
 import type { ProjectConfig } from '../types/index.js';
 export type { GeneratedFile };
 
@@ -19,6 +20,8 @@ registerOmpProvider();
 registerClaudeCodeProvider();
 // Register agent provider
 registerAgentProvider();
+// Register codex provider (OpenAI Codex CLI; Skills + hooks)
+registerCodexProvider();
 export function generateAll(config: ProjectConfig): GeneratedFile[] {
   const platforms = config.platform?.length ? config.platform : ['omp'];
   const files: GeneratedFile[] = [];

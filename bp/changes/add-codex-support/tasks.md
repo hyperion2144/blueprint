@@ -12,7 +12,7 @@
 
 ## Wave 1: Codex provider and generation
 
-- [ ] T-1: [type:behavior] Generate ten Codex Skills with colon frontmatter <!-- commit: -->
+- [x] T-1: [type:behavior] Generate ten Codex Skills with colon frontmatter <!-- commit: e49c104 -->
   - **refs**: DS-1
   - **spec_ref**: specs/platform-gen/spec.md#codex-platform-support
   - **files**: `src/integrations/codex/skills.ts`, `src/integrations/codex/skills.test.ts`
@@ -20,8 +20,7 @@
   - **RED**: GIVEN a valid ProjectConfig and shared workflow registry
     WHEN `generateCodexSkills(config)` runs
     THEN ten deterministic Skill descriptors are returned with Codex frontmatter and workflow bodies.
-
-- [ ] T-2: [type:behavior] Register Codex provider and dispatch generation <!-- commit: -->
+- [x] T-2: [type:behavior] Register Codex provider and dispatch generation <!-- commit: e49c104 -->
   - **refs**: DS-1
   - **spec_ref**: specs/platform-gen/spec.md#codex-platform-support
   - **files**: `src/integrations/codex/index.ts`, `src/integrations/index.ts`, `src/generators/index.ts`, `src/generators/codex.test.ts`
@@ -30,8 +29,7 @@
     WHEN the generator runs
     THEN the Codex provider is resolved and emits Skill and hook descriptors without an unknown-platform error.
   - **depends_on**: T-1
-
-- [ ] T-3: [type:behavior] Generate five-event hooks configuration <!-- commit: -->
+- [x] T-3: [type:behavior] Generate five-event hooks configuration <!-- commit: e49c104 -->
   - **refs**: DS-2
   - **spec_ref**: specs/platform-gen/spec.md#codex-platform-support
   - **files**: `src/integrations/codex/hooks.ts`, `src/integrations/codex/hooks.test.ts`
@@ -39,8 +37,7 @@
   - **RED**: GIVEN a valid ProjectConfig
     WHEN `generateCodexHooks(config)` runs
     THEN the returned JSON wires SessionStart, SessionStop, UserPromptSubmit, PreToolUse, and PostToolUse to the generated handler.
-
-- [ ] T-4: [type:behavior] Implement deterministic Codex handler runtime <!-- commit: -->
+- [x] T-4: [type:behavior] Implement deterministic Codex handler runtime <!-- commit: e49c104 -->
   - **refs**: DS-2
   - **spec_ref**: specs/platform-gen/spec.md#codex-hook-runtime
   - **files**: `src/templates/codex/handler.tmpl.ts`, `src/integrations/codex/handler.ts`, `src/integrations/codex/handler.test.ts`
