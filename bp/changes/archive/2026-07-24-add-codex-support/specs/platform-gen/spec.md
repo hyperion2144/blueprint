@@ -90,7 +90,7 @@ The system SHALL emit Codex executor dispatch instructions that use orchestrator
 
 ## MODIFIED Requirements
 
-### Requirement: SHALL support three platforms: omp, claude-code, agent
+### SHALL support three platforms: omp, claude-code, agent
 The system SHALL support four platforms: `omp`, `claude-code`, `agent`, and `codex`, while preserving existing generation behavior for the original three platforms.
 (was: The system SHALL support three platforms: omp, claude-code, agent.)
 
