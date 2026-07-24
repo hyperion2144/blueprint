@@ -58,10 +58,4 @@
 - [x] No `{{` template placeholders remaining in any artifact
 - [x] All wave acceptance criteria confirmed
 
-## Pre-Archive Checklist
 
-- [ ] type-check/build passes with no errors
-- [ ] test suite passes (per project test command)
-- [ ] Every task in every wave is marked `[x]` with a commit hash
-- [ ] No `{{` template placeholders remaining in any artifact
-- [ ] All wave acceptance criteria confirmed
