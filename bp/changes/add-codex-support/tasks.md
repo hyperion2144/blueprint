@@ -49,7 +49,7 @@
 
 ## Wave 2: CLI lifecycle and dispatch
 
-- [x] T-5: [type:behavior] Add Codex init picker and gitignore entries <!-- commit: 53e21d3 -->
+- [x] T-5: [type:behavior] Add Codex init picker and gitignore entries <!-- commit: 3298da9 -->
 
   - **refs**: DS-3
   - **spec_ref**: specs/platform-gen/spec.md#codex-platform-selection
