@@ -45,39 +45,18 @@
 
 ## Wave 2: Update cleanup and lifecycle regression
 
-- [ ] T-4: [type:behavior] Conservatively clean stale Claude hook files <!-- commit: -->
-  - **refs**: DS-3
-  - **spec_ref**: specs/platform-gen/spec.md#claude-code-hook-runtime
-  - **files**: `src/commands/bp-update.ts`, `tests/commands/bp-update.test.ts`
-  - **acceptance**: stale `.claude/settings.json` and `.claude/hooks/bp-claude-handler.mjs` are removed when not generated; `.claude/notes.txt`, unrelated hook files, current commands, and current agents remain unchanged.
-  - **RED**: GIVEN stale generated Claude hook paths and unrelated files under `.claude`
-    WHEN `bp update` runs
-    THEN only the two exact stale generated paths are removed
-    AND unrelated files still exist byte-for-byte.
-  - **depends_on**: T-3
+- [x] T-4: [type:behavior] Conservatively clean stale Claude hook files <!-- commit: bf9f41b -->
+- [x] T-5: [type:behavior] Preserve four-platform lifecycle generation <!-- commit: bf9f41b -->
+- [x] T-6: [type:docs] Add Claude Code hooks integration documentation <!-- commit: bf9f41b -->
+- [x] T-7: [type:docs] Write archive-ready Claude platform delta spec <!-- commit: a267906 -->
 
-- [ ] T-5: [type:behavior] Preserve four-platform lifecycle generation <!-- commit: -->
-  - **refs**: DS-3
-  - **spec_ref**: specs/platform-gen/spec.md#claude-code-hook-runtime
-  - **files**: `tests/integration/lifecycle.test.ts`
-  - **acceptance**: a lifecycle using `omp`, `claude-code`, `agent`, and `codex` validates and generates all four platform families; Claude commands and agents remain present alongside its two hook outputs; single-platform existing cases remain unchanged.
-  - **RED**: GIVEN a valid four-platform ProjectConfig
-    WHEN lifecycle generation runs
-    THEN no unknown-platform or partial-generation error occurs
-    AND the expected Claude settings and handler paths are present with existing platform outputs.
-  - **depends_on**: T-3
+## Pre-Archive Checklist
 
-## Wave 3: Documentation and contract delta
-
-- [ ] T-6: [type:docs] Add Claude Code hooks integration documentation <!-- commit: -->
-  - **refs**: DS-4
-  - **files**: `docs/platform-integration.md`, `README.md`, `AGENTS.md`
-  - **acceptance**: documentation names `.claude/settings.json`, `.claude/hooks/bp-claude-handler.mjs`, all five events, Bash matchers, bypass rules, deterministic generation, and conservative cleanup; README and AGENTS note hook parity.
-
-- [ ] T-7: [type:docs] Write archive-ready Claude platform delta spec <!-- commit: -->
-  - **refs**: DS-4
-  - **files**: `bp/changes/add-claude-code-hooks/specs/platform-gen/spec.md`
-  - **acceptance**: delta spec has ADDED `claude-code-hook-runtime` and MODIFIED four-platform requirement, every requirement has Given/When/Then scenarios, and no template placeholder remains.
+- [x] type-check/build passes with no errors
+- [x] test suite passes (per project test command)
+- [x] Every task in every wave is marked `[x]` with a commit hash
+- [x] No `{{` template placeholders remaining in any artifact
+- [x] All wave acceptance criteria confirmed
 
 ## Pre-Archive Checklist
 
