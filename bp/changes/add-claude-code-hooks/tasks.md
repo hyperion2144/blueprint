@@ -12,7 +12,7 @@
 
 ## Wave 1: Claude Code provider and hook runtime
 
-- [ ] T-1: [type:behavior] Generate deterministic five-event Claude settings <!-- commit: -->
+- [x] T-1: [type:behavior] Generate deterministic five-event Claude settings <!-- commit: see GREEN below -->
   - **refs**: DS-1
   - **spec_ref**: specs/platform-gen/spec.md#claude-code-hook-runtime
   - **files**: `src/integrations/claude-code/hooks.ts`, `src/integrations/claude-code/hooks.test.ts`, `src/integrations/claude-code/__snapshots__/hooks.test.ts.snap`
