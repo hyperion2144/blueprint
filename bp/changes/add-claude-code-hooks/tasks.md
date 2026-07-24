@@ -12,7 +12,7 @@
 
 ## Wave 1: Claude Code provider and hook runtime
 
-- [x] T-1: [type:behavior] Generate deterministic five-event Claude settings <!-- commit: see GREEN below -->
+- [x] T-1: [type:behavior] Generate deterministic five-event Claude settings <!-- commit: f4caced -->
   - **refs**: DS-1
   - **spec_ref**: specs/platform-gen/spec.md#claude-code-hook-runtime
   - **files**: `src/integrations/claude-code/hooks.ts`, `src/integrations/claude-code/hooks.test.ts`, `src/integrations/claude-code/__snapshots__/hooks.test.ts.snap`
@@ -22,7 +22,7 @@
     THEN the output contains the five ordered event keys, required command arguments, and Bash matchers only for PreToolUse/PostToolUse
     AND the same config renders identical bytes twice.
 
-- [ ] T-2: [type:behavior] Implement Claude handler dispatch and bypass semantics <!-- commit: -->
+- [x] T-2: [type:behavior] Implement Claude handler dispatch and bypass semantics <!-- commit: see GREEN below -->
   - **refs**: DS-2
   - **spec_ref**: specs/platform-gen/spec.md#claude-code-hook-runtime
   - **files**: `src/integrations/claude-code/handler.ts`, `src/integrations/claude-code/handler.test.ts`
