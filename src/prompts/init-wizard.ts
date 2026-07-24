@@ -11,6 +11,14 @@ interface WizardOptions {
   commitDocs: boolean;
 }
 
+/** Platform options exposed by the interactive init wizard. */
+export const PLATFORM_OPTIONS: ReadonlyArray<{ value: string; label: string; hint: string }> = [
+  { value: 'omp', label: 'Oh My Pi', hint: 'generates .omp/commands/, .omp/agents/, and hooks' },
+  { value: 'claude-code', label: 'Claude Code', hint: 'generates .claude/commands/ + .claude/agents/' },
+  { value: 'agent', label: 'Agent (generic)', hint: 'generates .agent/skills/ + .agent/agents/ with [BP:xxx] params' },
+  { value: 'codex', label: 'Codex CLI', hint: 'generates .agents/skills/bp-*/ and .codex/hooks.json' },
+];
+
 export async function runInitWizard(defaults: { profile: string; yes: boolean }): Promise<WizardOptions> {
   if (defaults.yes) {
     return { profile: defaults.profile as Profile, context: '', platform: ['omp'], brownfield: false, specStack: 'generic', releaseTemplate: 'standard', commitDocs: false };
@@ -39,11 +47,7 @@ export async function runInitWizard(defaults: { profile: string; yes: boolean })
     // 3. Platform
     const pfVal = await clack.multiselect({
       message: 'Target platform — which AI agent platform(s) to generate integration files for:',
-      options: [
-        { value: 'omp', label: 'Oh My Pi', hint: 'generates .omp/commands/, .omp/agents/, and hooks' },
-        { value: 'claude-code', label: 'Claude Code', hint: 'generates .claude/commands/ + .claude/agents/' },
-        { value: 'agent', label: 'Agent (generic)', hint: 'generates .agent/skills/ + .agent/agents/ with [BP:xxx] params' },
-      ],
+      options: PLATFORM_OPTIONS,
       initialValues: ['omp'],
     });
     const platform = Array.isArray(pfVal) ? pfVal as string[] : ['omp'];

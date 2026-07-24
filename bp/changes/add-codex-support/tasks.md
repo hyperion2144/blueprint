@@ -49,7 +49,8 @@
 
 ## Wave 2: CLI lifecycle and dispatch
 
-- [ ] T-5: [type:behavior] Add Codex init picker and gitignore entries <!-- commit: -->
+- [x] T-5: [type:behavior] Add Codex init picker and gitignore entries <!-- commit: 53e21d3 -->
+
   - **refs**: DS-3
   - **spec_ref**: specs/platform-gen/spec.md#codex-platform-selection
   - **files**: `src/prompts/init-wizard.ts`, `src/commands/bp-init.ts`, `tests/commands/bp-init.test.ts`
