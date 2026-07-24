@@ -64,7 +64,7 @@ describe('resolveModels', () => {
     const config = loadConfig(tmpDir);
     const models = resolveModels(config);
     expect(models.planner).toBe('pi/plan');
-    expect(models.executor).toBe('pi/slow');
+    expect(models.executor).toBe('pi/task');
     expect(models.reviewer).toBe('pi/task');
     expect(models['codebase-scanner']).toBe('pi/task');
   });

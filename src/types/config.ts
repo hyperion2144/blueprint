@@ -60,7 +60,7 @@ export const PROFILE_MODEL_MAP: Record<Profile, ModelMap> = {
   },
   standard: {
     planner: 'pi/plan',
-    executor: 'pi/slow',
+    executor: 'pi/task',
     reviewer: 'pi/task',
     'codebase-scanner': 'pi/task',
   },
