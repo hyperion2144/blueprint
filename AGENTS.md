@@ -75,7 +75,7 @@ Feedback loop: `review` with `--fix` flag re-runs the affected step (plan or app
 | `src/templates/agents/` | Sub-agent system prompts (planner, executor, reviewer) |
 | `src/templates/spec-stacks/` | Tech-stack-specific spec templates (typescript-cli, react-web, python-api, etc.) |
 | `src/integrations/omp/` | OMP platform generator (commands, skills, agents, hooks) |
-| `src/integrations/claude-code/` | Claude Code platform generator (commands, agents) |
+| `src/integrations/claude-code/` | Claude Code platform generator (commands, agents, hooks) |
 | `src/integrations/agent/` | Generic .agent platform generator (skills, agents) |
 | `src/integrations/codex/` | OpenAI Codex CLI platform generator (Skills, hooks.json, handler runtime) |
 | `src/prompts/` | Interactive init wizard (`@clack/prompts`) |

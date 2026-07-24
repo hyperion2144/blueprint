@@ -158,6 +158,8 @@ exported from `src/integrations/omp/extension-runtime.ts` as
 | `.agents/skills/bp-*/SKILL.md`   | `src/integrations/codex/skills.ts`               |
 | `.codex/hooks.json`              | `src/integrations/codex/hooks.ts`                |
 | `.codex/hooks/bp-handler.mjs`    | `src/templates/codex/handler.tmpl.ts`            |
+| `.claude/settings.json`          | `src/integrations/claude-code/hooks.ts`          |
+| `.claude/hooks/bp-claude-handler.mjs` | `src/templates/claude-code/handler.tmpl.ts` |
 
 ## Codex CLI — Skills and Hooks
 
@@ -189,3 +191,34 @@ worktree primitive) and uses `tool: task` as the dispatch format.
 `bp update` cleanup is conservative: only `.codex/hooks.json` and stale
 `.agents/skills/bp-*` directories are removed; unrelated `.codex` files
 and third-party Skills are preserved.
+
+## Claude Code — Settings and Hooks
+
+Anthropic Claude Code reads project-scoped configuration from
+`.claude/settings.json`, which carries a top-level `hooks` object
+mapping event names to arrays of `{ matcher?, hooks: [{ type: 'command', command }] }` entries. Five events are wired by `bp update`:
+`SessionStart`, `SessionStop`, `UserPromptSubmit`, `PreToolUse` (matcher
+`Bash`), and `PostToolUse` (matcher `Bash`). The runtime handler lives
+at `.claude/hooks/bp-claude-handler.mjs` and is byte-deterministic.
+
+When `platform: [claude-code]` is set in `bp/config.yaml`, `bp update`
+generates:
+
+- **`.claude/settings.json`** with the five-event hook table; each entry
+  invokes `node .claude/hooks/bp-claude-handler.mjs <EventName>`.
+- **`.claude/hooks/bp-claude-handler.mjs`** compiled from
+  `src/templates/claude-code/handler.tmpl.ts` (an independent
+  near-duplicate of the Codex template). The handler uses the same
+  `bp context apply --format=compact` injection as Codex, the same
+  `BP_HOOKS=0` / `BP_DISABLE_HOOKS=1` / missing-config bypass rules,
+  and the same JSON response shape (`{ continue: true, hookSpecificOutput: { hookEventName, additionalContext } }`).
+
+Claude Code owns its own dispatch primitive (the `agent` tool with
+`subagent_type: 'bp-<role>'`) so `bp dispatch executor` for claude-code
+emits the worktree orchestration as a recommendation, not a hard
+requirement.
+
+`bp update` cleanup is conservative for Claude Code: only
+`.claude/settings.json` and `.claude/hooks/bp-claude-handler.mjs` are
+removed; user-added files under `.claude/` (e.g. `notes.txt`, third-party
+hooks) are preserved.

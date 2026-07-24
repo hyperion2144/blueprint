@@ -185,3 +185,51 @@ describe('v2 lifecycle: codex platform generation (T-8)', () => {
     expect(existsSync(join(codexTestDir, '.codex', 'hooks', 'bp-handler.mjs'))).toBe(true);
   });
 });
+
+
+describe('v2 lifecycle: claude-code platform generation (T-5)', () => {
+  let claudeTestDir: string;
+
+  beforeAll(() => {
+    claudeTestDir = join(tmpdir(), `bp-v2-life-claude-${Date.now()}`);
+    mkdirSync(claudeTestDir, { recursive: true });
+    execSync(`node ${cliPath} init --dir ${claudeTestDir} --yes`, {
+      encoding: 'utf-8',
+      cwd: claudeTestDir,
+    });
+    // Replace platform: [omp] with platform: [claude-code] in config
+    const cfg = readFileSync(join(claudeTestDir, 'bp', 'config.yaml'), 'utf-8');
+    const updated = cfg.replace(/platform:\n  - omp\n/, 'platform:\n  - claude-code\n');
+    writeFileSync(join(claudeTestDir, 'bp', 'config.yaml'), updated, 'utf-8');
+    execSync(`node ${cliPath} update --dir bp`, {
+      encoding: 'utf-8',
+      cwd: claudeTestDir,
+    });
+  });
+
+  afterAll(() => {
+    rmSync(claudeTestDir, { recursive: true, force: true });
+  });
+
+  it('config validation accepts claude-code platform id', () => {
+    const cfg = readFileSync(join(claudeTestDir, 'bp', 'config.yaml'), 'utf-8');
+    expect(cfg).toMatch(/^\s*-\s*claude-code\s*$/m);
+  });
+
+  it('greenfield lifecycle generates .claude/settings.json and handler', () => {
+    expect(existsSync(join(claudeTestDir, '.claude', 'settings.json'))).toBe(true);
+    expect(existsSync(join(claudeTestDir, '.claude', 'hooks', 'bp-claude-handler.mjs'))).toBe(true);
+  });
+
+  it('settings.json declares the five claude hook events with Bash matchers', () => {
+    const settings = JSON.parse(
+      readFileSync(join(claudeTestDir, '.claude', 'settings.json'), 'utf-8')
+    );
+    const events = Object.keys(settings.hooks);
+    expect(events.sort()).toEqual(
+      ['PostToolUse', 'PreToolUse', 'SessionStart', 'SessionStop', 'UserPromptSubmit'].sort()
+    );
+    expect(settings.hooks.PreToolUse[0].matcher).toBe('Bash');
+    expect(settings.hooks.PostToolUse[0].matcher).toBe('Bash');
+  });
+});

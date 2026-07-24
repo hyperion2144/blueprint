@@ -157,7 +157,7 @@ Fix loops use `--fix` flag: `bp plan --fix` or `bp apply --fix` re-runs the step
 | Key | Description | Default |
 |-----|-------------|---------|
 | `profile` | Workflow strictness: `lite`, `standard` | `standard` |
-| `platform` | Target agent platform(s): `omp`, `claude-code`, `agent`, `codex` | `['omp']` |
+| `platform` | Target agent platform(s): `omp`, `claude-code` (with hook parity), `agent`, `codex` | `['omp']` |
 | `schema` | Schema name (custom in `bp/schemas/` or `spec-driven`) | `spec-driven` |
 | `rules` | Per-role rule overrides | `{}` |
 | `models` | Per-role model overrides | `{}` |

@@ -112,6 +112,22 @@ function cleanupStaleFiles(baseDir: string, generatedPaths: string[]): void {
       }
     }
   }
+
+  // .claude/settings.json — only remove the exact generated settings config;
+  // arbitrary files under .claude/ are user-owned and must be preserved.
+  const claudeSettingsPath = join(baseDir, '.claude', 'settings.json');
+  if (existsSync(claudeSettingsPath) && !generatedSet.has('.claude/settings.json')) {
+    rmSync(claudeSettingsPath);
+    console.log('  ✓ Removed stale: .claude/settings.json');
+  }
+
+  // .claude/hooks/bp-claude-handler.mjs — only remove the bp-generated
+  // handler; arbitrary files under .claude/hooks/ are user-owned.
+  const claudeHandlerPath = join(baseDir, '.claude', 'hooks', 'bp-claude-handler.mjs');
+  if (existsSync(claudeHandlerPath) && !generatedSet.has('.claude/hooks/bp-claude-handler.mjs')) {
+    rmSync(claudeHandlerPath);
+    console.log('  ✓ Removed stale: .claude/hooks/bp-claude-handler.mjs');
+  }
 }
 
 export function register(program: Command): void {
