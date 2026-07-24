@@ -155,3 +155,37 @@ exported from `src/integrations/omp/extension-runtime.ts` as
 | `.omp/hooks/pre/bp.ts`           | `src/templates/omp/legacy-shim.tmpl.ts`          |
 | `.omp/commands/bp-*.md`          | `src/integrations/omp/commands.ts`               |
 | `.omp/agents/bp-*.md`            | `src/integrations/omp/agents.ts`                 |
+| `.agents/skills/bp-*/SKILL.md`   | `src/integrations/codex/skills.ts`               |
+| `.codex/hooks.json`              | `src/integrations/codex/hooks.ts`                |
+| `.codex/hooks/bp-handler.mjs`    | `src/templates/codex/handler.tmpl.ts`            |
+
+## Codex CLI — Skills and Hooks
+
+OpenAI Codex CLI v0.140+ ships a project-scoped Skills mechanism at
+`.agents/skills/<name>/SKILL.md` (frontmatter `name:` becomes the slash
+command) and a hooks system at `.codex/hooks.json` wiring five lifecycle
+events (`SessionStart`, `SessionStop`, `UserPromptSubmit`, `PreToolUse`,
+`PostToolUse`) to external commands.
+
+When `platform: [codex]` is set in `bp/config.yaml`, `bp update` generates:
+
+- **10 Skills** at `.agents/skills/bp-<step>/SKILL.md` (`name: bp:<step>`)
+  for `init`, `roadmap`, `propose`, `plan`, `apply`, `review`, `archive`,
+  `continue`, `ff`, `loop`. Bodies are sourced from the shared
+  `WORKFLOW_REGISTRY` so all platforms stay semantically identical.
+- **`.codex/hooks.json`** wiring all 5 lifecycle events to a single
+  `node .codex/hooks/bp-handler.mjs <event>` invocation.
+- **`.codex/hooks/bp-handler.mjs`** compiled from
+  `src/templates/codex/handler.tmpl.ts` (byte-deterministic). Maps
+  `SessionStart` to compact bp context, `UserPromptSubmit` /
+  `PreToolUse` / `PostToolUse` to workflow-state reinjection, and
+  `SessionStop` to a no-op. Bypasses cleanly when `BP_HOOKS=0`,
+  `BP_DISABLE_HOOKS=1`, or `bp/config.yaml` is absent.
+
+`bp dispatch executor` for Codex prints instructions to create a temporary
+worktree with `git worktree add` (Codex has `--cd` but no native isolated
+worktree primitive) and uses `tool: task` as the dispatch format.
+
+`bp update` cleanup is conservative: only `.codex/hooks.json` and stale
+`.agents/skills/bp-*` directories are removed; unrelated `.codex` files
+and third-party Skills are preserved.

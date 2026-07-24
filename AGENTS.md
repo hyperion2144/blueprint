@@ -77,6 +77,7 @@ Feedback loop: `review` with `--fix` flag re-runs the affected step (plan or app
 | `src/integrations/omp/` | OMP platform generator (commands, skills, agents, hooks) |
 | `src/integrations/claude-code/` | Claude Code platform generator (commands, agents) |
 | `src/integrations/agent/` | Generic .agent platform generator (skills, agents) |
+| `src/integrations/codex/` | OpenAI Codex CLI platform generator (Skills, hooks.json, handler runtime) |
 | `src/prompts/` | Interactive init wizard (`@clack/prompts`) |
 | `tests/core/` | Unit tests for core modules |
 | `tests/integration/` | Integration tests (lifecycle.test.ts, e2e.test.ts, bp.test.ts) |
@@ -208,7 +209,7 @@ tests/parser/         — Parser unit tests (frontmatter, heading-tree, spec-par
 - Integration tests create temp dirs, `git init`, run `execSync('node bin/cli.js ...')`
 - Helper functions: `cli()`, `expectBlocked()`, `expectAdvanced()`, `expectState()`
 - `VALID_*` constants define valid input files
-- Snapshot tests for generated platform files (`.omp/`, `.claude/`, `.agent/`)
+- Snapshot tests for generated platform files (`.omp/`, `.claude/`, `.agent/`, `.codex/`, `.agents/`)
 - Run `npx vitest run --update` to update snapshots after intentional generator changes
 
 ### Running tests
