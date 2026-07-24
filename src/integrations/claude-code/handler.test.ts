@@ -11,6 +11,14 @@
  *               when the bp context command fails or returns malformed
  *               output. The generated descriptor content is byte-identical
  *               across invocations and against the HANDLER_SOURCE constant.
+ *
+ * T-3 RED: GIVEN claude-code is the sole configured platform
+ *          WHEN the provider is resolved and generated
+ *          THEN all existing Claude files plus .claude/settings.json and
+ *               .claude/hooks/bp-claude-handler.mjs are returned
+ *          AND the generated handler's event output matches the Claude
+ *               hook JSON contract AND HANDLER_SOURCE is sourced from the
+ *               independent src/templates/claude-code/handler.tmpl.ts.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -26,7 +34,15 @@ import {
   dispatchHandler,
   generateClaudeHandler,
   CLAUDE_HANDLER_PATH,
+  HANDLER_SOURCE,
 } from './handler.js';
+import { HANDLER_SOURCE as TEMPLATE_HANDLER_SOURCE } from '../../templates/claude-code/handler.tmpl.js';
+import {
+  PlatformRegistry,
+  setPlatformRegistry,
+  createDefaultRegistry,
+} from '../../core/platform-registry.js';
+import { registerClaudeCodeProvider } from './index.js';
 import type { ProjectConfig } from '../../types/index.js';
 
 /** Write a file after ensuring its parent directory exists. */
@@ -261,12 +277,9 @@ describe('generateClaudeHandler', () => {
     expect(files[0].content.length).toBeGreaterThan(0);
   });
 
-  it('emits content byte-identical to HANDLER_SOURCE (when re-exported)', () => {
+  it('emits source byte-identical to HANDLER_SOURCE', () => {
     const files = generateClaudeHandler({} as ProjectConfig);
-    // The descriptor content comes from HANDLER_SOURCE (or local constant in T-2).
-    expect(typeof files[0].content).toBe('string');
-    expect(files[0].content).toMatch(/SessionStart/);
-    expect(files[0].content).toMatch(/hasBpConfig/);
+    expect(files[0].content).toBe(HANDLER_SOURCE);
   });
 
   it('is deterministic — two consecutive calls produce byte-identical output', () => {
@@ -274,5 +287,53 @@ describe('generateClaudeHandler', () => {
     const b = generateClaudeHandler({} as ProjectConfig);
     expect(a[0].path).toBe(b[0].path);
     expect(a[0].content).toBe(b[0].content);
+  });
+});
+
+describe('Claude Code handler template independence (T-3)', () => {
+  it('imports HANDLER_SOURCE from src/templates/claude-code/handler.tmpl.js', () => {
+    expect(typeof TEMPLATE_HANDLER_SOURCE).toBe('string');
+    expect(TEMPLATE_HANDLER_SOURCE.length).toBeGreaterThan(100);
+  });
+
+  it('re-exported HANDLER_SOURCE in handler.ts is byte-identical to the template', () => {
+    expect(HANDLER_SOURCE).toBe(TEMPLATE_HANDLER_SOURCE);
+  });
+
+  it('template HANDLER_SOURCE contains no Date.now() / Math.random() calls', () => {
+    expect(TEMPLATE_HANDLER_SOURCE).not.toMatch(/Date\.now\(/);
+    expect(TEMPLATE_HANDLER_SOURCE).not.toMatch(/Math\.random\(/);
+  });
+});
+
+describe('registerClaudeCodeProvider output (T-3)', () => {
+  beforeEach(() => {
+    setPlatformRegistry(createDefaultRegistry());
+  });
+
+  it('provider generate() returns commands, agents, settings, and handler descriptors', () => {
+    registerClaudeCodeProvider();
+    const resolved = PlatformRegistry.resolve('claude-code');
+    const files = resolved.generate({} as ProjectConfig);
+    const paths = files.map((f) => f.path);
+    expect(paths).toContain('.claude/settings.json');
+    expect(paths).toContain('.claude/hooks/bp-claude-handler.mjs');
+    const claudeCommands = paths.filter((p) => p.startsWith('.claude/commands/'));
+    const claudeAgents = paths.filter((p) => p.startsWith('.claude/agents/'));
+    expect(claudeCommands.length).toBeGreaterThan(0);
+    expect(claudeAgents.length).toBeGreaterThan(0);
+  });
+});
+
+describe('HANDLER_SOURCE snapshot (T-3)', () => {
+  it('matches the documented snapshot', () => {
+    expect(HANDLER_SOURCE).toMatchSnapshot();
+  });
+});
+
+describe('HANDLER_SOURCE byte-determinism (T-3)', () => {
+  it('two reads of HANDLER_SOURCE are byte-identical', () => {
+    expect(HANDLER_SOURCE).toBe(HANDLER_SOURCE);
+    expect(HANDLER_SOURCE.length).toBeGreaterThan(100);
   });
 });
