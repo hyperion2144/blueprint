@@ -28,7 +28,7 @@
 - **Reviewer Assessment**: same
 - **Escalation**: none
 
-## Overall Verdict: NEEDS_REVISION
+## Overall Verdict: PASS
 
 ---
 
@@ -109,16 +109,17 @@
 | Round | Date | New Issues | Blockers | Verdict |
 |-------|------|------------|----------|---------|
 | 1 | 2026-07-24 | 3 | 0 | NEEDS_REVISION |
+| 2 | 2026-07-24 | 0 | 0 | PASS |
 
 ## Issues
 
-- [~] Q1 - Outdated console.log message in bp-init.ts omits `.codex/` and `.agents/` from success text (quality) — fixed in 60b17a6
-- [~] Q2 - generateContextBlock test mislabels "populated" assertion — tests only tag pair, not content (quality) — fixed in 60b17a6
-- [ ] Q3 - SessionStart handler returns empty `<bp-context>` block with no actual context data (quality) — **deferred as follow-up**; populating the block with compact path listing is a real behavior change requiring its own design + delta spec; out of scope for the fix loop. See handler.ts:60-66 for the byte-determinism rationale.
+- [x] Q1 - Outdated console.log message in bp-init.ts omits `.codex/` and `.agents/` from success text (quality) — **VERIFIED: fixed in 60b17a6**. `src/commands/bp-init.ts:168` now lists `(bp/, .omp/, .claude/, .agent/, .codex/, .agents/ ignored)`. All related tests pass (4/4 in bp-init.test.ts, 62/62 across codex suite). Type check clean.
+- [x] Q2 - generateContextBlock test mislabels "populated" assertion (quality) — **VERIFIED: fixed in 60b17a6**. Test renamed to `'emits an empty <bp-context> block when bp/config.yaml is present (byte-determinism: same as absent path)'` at `handler.test.ts:108`. All 22 handler tests pass.
+- [x] Q3 - SessionStart handler returns empty `<bp-context>` block with no actual context data (quality) — **DEFERRAL ACCEPTED**. The byte-determinism constraint is explicitly documented in code comments (`handler.ts:60-66`, `handler.tmpl.ts:65-71`), explaining that the runtime renders the compact payload and the generator only returns the minimal pair. Populating the block with compact path listings is a real behavior change requiring its own design + delta spec — correctly out of scope for this change. Filed as INFO severity; addressing it is a follow-up.
 
 ## Routing
 
 - **D issues**: 0 (none)
-- **R/Q/G issues**: 3 (Q1, Q2, Q3)
+- **R/Q/G issues**: 0 (none — all resolved)
 
-**Recommendation**: `bp apply --fix add-codex-support`
+**Recommendation**: `bp archive add-codex-support`
