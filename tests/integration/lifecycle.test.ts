@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { EXTENSION_SOURCE } from '../../src/templates/omp/extension.tmpl.js';
+import { CONFIG_TEMPLATE } from '../../src/templates/artifacts/index.js';
 const cliPath = join(process.cwd(), 'bin/cli.js');
 let testDir: string;
 
@@ -133,5 +134,54 @@ describe('v2 lifecycle: init -> propose -> plan -> apply -> review -> archive', 
     //     from src/templates/omp/extension.tmpl.ts (single source of truth).
     const extensionContent = readFileSync(extensionPath, 'utf-8');
     expect(extensionContent).toBe(EXTENSION_SOURCE);
+  });
+
+});
+describe('v2 lifecycle: codex platform generation (T-8)', () => {
+  let codexTestDir: string;
+
+  beforeAll(() => {
+    codexTestDir = join(tmpdir(), `bp-v2-life-codex-${Date.now()}`);
+    mkdirSync(codexTestDir, { recursive: true });
+    execSync(`node ${cliPath} init --dir ${codexTestDir} --yes`, {
+      encoding: 'utf-8',
+      cwd: codexTestDir,
+    });
+    // Replace platform: [omp] with platform: [codex] in config
+    const cfg = readFileSync(join(codexTestDir, 'bp', 'config.yaml'), 'utf-8');
+    const updated = cfg.replace(/platform:\n  - omp\n/, 'platform:\n  - codex\n');
+    writeFileSync(join(codexTestDir, 'bp', 'config.yaml'), updated, 'utf-8');
+    execSync(`node ${cliPath} update --dir bp`, {
+      encoding: 'utf-8',
+      cwd: codexTestDir,
+    });
+  });
+
+  afterAll(() => {
+    rmSync(codexTestDir, { recursive: true, force: true });
+  });
+  it('config validation accepts codex platform id', () => {
+    const cfg = readFileSync(join(codexTestDir, 'bp', 'config.yaml'), 'utf-8');
+    expect(cfg).toMatch(/^\s*-\s*codex\s*$/m);
+  });
+
+  it('CONFIG_TEMPLATE lists codex as a supported platform', () => {
+    expect(CONFIG_TEMPLATE).toMatch(/^\s*-\s*codex\s*$/m);
+  });
+
+  it('greenfield lifecycle generates the ten Codex Skills', () => {
+    const skills = [
+      'bp-init', 'bp-roadmap', 'bp-propose', 'bp-plan', 'bp-apply',
+      'bp-review', 'bp-archive', 'bp-continue', 'bp-ff', 'bp-loop',
+    ];
+    for (const step of skills) {
+      const path = join(codexTestDir, '.agents', 'skills', step, 'SKILL.md');
+      expect(existsSync(path)).toBe(true);
+    }
+  });
+
+  it('greenfield lifecycle generates .codex/hooks.json and handler', () => {
+    expect(existsSync(join(codexTestDir, '.codex', 'hooks.json'))).toBe(true);
+    expect(existsSync(join(codexTestDir, '.codex', 'hooks', 'bp-handler.mjs'))).toBe(true);
   });
 });
