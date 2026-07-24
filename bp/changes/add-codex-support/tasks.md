@@ -75,7 +75,6 @@
   - **RED**: GIVEN Codex is configured and executor dispatch is requested
     WHEN `bp dispatch executor` runs
     THEN output contains worktree-add instructions and Codex task format fields.
-- [ ] T-8: [type:behavior] Accept Codex in lifecycle/config generation <!-- commit: -->
 - [x] T-8: [type:behavior] Accept Codex in lifecycle/config generation <!-- commit: 3b33726 -->
   - **refs**: DS-1, DS-3
   - **spec_ref**: specs/platform-gen/spec.md#codex-platform-support
