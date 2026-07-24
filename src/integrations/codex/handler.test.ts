@@ -105,7 +105,7 @@ describe('Codex handler runtime helpers', () => {
       }
     });
 
-    it('emits a populated <bp-context> block when bp/config.yaml is present', () => {
+    it('emits an empty <bp-context> block when bp/config.yaml is present (byte-determinism: same as absent path)', () => {
       const cwd = mkdtempSync(join(tmpdir(), 'bp-codex-ctx-'));
       try {
         writeConfig(cwd, 'bp/config.yaml', 'version: 2\n');

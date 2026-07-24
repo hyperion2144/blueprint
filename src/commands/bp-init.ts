@@ -165,7 +165,7 @@ async function initHandler(options: {
       }
     } else {
       writeFileSync(gitignorePath, gitignoreEntries.join('\n') + '\n', 'utf-8');
-      console.log('✓ .gitignore created (bp/, .omp/, .claude/, .agent/ ignored)');
+      console.log('✓ .gitignore created (bp/, .omp/, .claude/, .agent/, .codex/, .agents/ ignored)');
     }
   }
 
