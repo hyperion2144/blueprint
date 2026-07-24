@@ -69,7 +69,7 @@
 
   - **refs**: DS-3
   - **spec_ref**: specs/platform-gen/spec.md#codex-dispatch-isolation
-- [x] T-7: [type:behavior] Add Codex dispatch isolation and format <!-- commit: TBD -->
+- [x] T-7: [type:behavior] Add Codex dispatch isolation and format <!-- commit: 40ca2b3 -->
   - **files**: `src/commands/bp-dispatch.ts`, `tests/commands/bp-dispatch.test.ts`
   - **acceptance**: Codex executor output declares isolation `none`, tool `task`, and `git worktree add` orchestration.
   - **RED**: GIVEN Codex is configured and executor dispatch is requested
