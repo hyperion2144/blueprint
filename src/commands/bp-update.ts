@@ -88,6 +88,30 @@ function cleanupStaleFiles(baseDir: string, generatedPaths: string[]): void {
       checkRemove(agentAgentDir, '.agent/agents', file);
     }
   }
+
+  // .codex/hooks.json — only remove the exact generated hooks config;
+  // arbitrary files under .codex/ are user-owned and must be preserved.
+  const codexHooksPath = join(baseDir, '.codex', 'hooks.json');
+  if (existsSync(codexHooksPath) && !generatedSet.has('.codex/hooks.json')) {
+    rmSync(codexHooksPath);
+    console.log('  ✓ Removed stale: .codex/hooks.json');
+  }
+
+  // .agents/skills/bp-* — directory-based cleanup; non-bp skill
+  // directories must remain untouched.
+  const agentsSkillsDir = join(baseDir, '.agents', 'skills');
+  if (existsSync(agentsSkillsDir)) {
+    for (const entry of readdirSync(agentsSkillsDir)) {
+      const match = /^bp-(.+)$/.exec(entry);
+      if (!match) continue; // skip non-bp skills
+      // Stale = bp- directory not part of current generation set
+      const isCurrent = generatedSet.has(`.agents/skills/${entry}/SKILL.md`);
+      if (!isCurrent) {
+        rmSync(join(agentsSkillsDir, entry), { recursive: true, force: true });
+        console.log(`  ✓ Removed stale: .agents/skills/${entry}/`);
+      }
+    }
+  }
 }
 
 export function register(program: Command): void {

@@ -59,8 +59,7 @@
     WHEN platform options are inspected
     THEN Codex CLI is selectable with generation description and non-interactive defaults are unchanged.
 
-- [ ] T-6: [type:behavior] Safely clean stale Codex files on update <!-- commit: -->
-  - **refs**: DS-3
+- [x] T-6: [type:behavior] Safely clean stale Codex files on update <!-- commit: TBD -->
   - **spec_ref**: specs/platform-gen/spec.md#codex-update-cleanup
   - **files**: `src/commands/bp-update.ts`, `tests/commands/bp-update.test.ts`
   - **acceptance**: stale `bp-*` Skill directories and hooks.json are removed while arbitrary `.codex` files and non-bp Skills remain.
