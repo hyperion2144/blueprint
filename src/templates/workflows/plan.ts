@@ -57,16 +57,77 @@ Read \`proposal.md\` deliverables:
 2. Fill tasks.md with 1 wave
 3. No delta specs needed (no behavioral changes)
 
-### Step 4: Review planner output
+### Step 4: Review planner output for design quality
 
-Before committing, review the planner's design for soundness:
+Before committing, review the planner's design across FIVE content-quality dimensions. These are NOT format checks (Step 5 handles format) - they assess whether the design is correct, complete, and implementable. A flawed design cascades into implementation failure.
 
-1. Read \`design.md\` — are DS-N components well-decomposed? Is the architecture sound?
-2. Read \`tasks.md\` — are tasks properly split? Are TDD types correct? Are waves well-organized?
-3. Read \`specs/<domain>/spec.md\` — are requirements well-written? Do scenarios cover edge cases?
-4. Check \`## Impact Analysis\` section in design.md — did the planner identify all affected modules?
+For each dimension, ask the specific questions. If ANY fails, re-dispatch the planner with structured feedback (dimension + specific problem + expected state).
 
-**If problems found: re-dispatch planner with specific feedback on what to fix. After re-dispatch, return to Step 4 to review the updated output. Repeat this review loop until the design is sound.** Do NOT proceed with a flawed design — it will cascade into implementation failures.
+#### Dimension 1: Implementability (can the executor build it without guessing?)
+
+For each DS-N, read its Detailed Design section and ask:
+- Are interface signatures complete (parameters, return types, types)?
+- For data/state components: are internal state transitions, data structures, and read/write paths described?
+- For UI components: are Props, events, and all states (loading/empty/error/success) listed?
+- For API/CLI: are parameter validation rules, response format, and error codes specified?
+- Are error paths and side effects described (not just the happy path)?
+- Does Detailed Design add implementation detail beyond Key Interfaces, or does it just repeat them?
+
+FAIL example: DS-N Detailed Design says only "Implement ThemeContext class" - no state fields, no toggle logic, no persistence strategy. The executor would have to guess everything.
+
+#### Dimension 2: Design Correctness (is the architecture internally consistent?)
+
+- Do DS-N dependencies match the Architecture Diagram's arrows?
+- Does the Data Flow section cover every DS-N involved in the flow?
+- Do [NEW]/[MODIFIED]/[EXISTING] annotations in the diagram match the File Manifest's Action column?
+- Do Core Data Structures match the types used in DS-N Key Interfaces?
+- Are there circular dependencies or missing intermediate components?
+
+FAIL example: Architecture Diagram shows DS-2 depends on DS-1, but DS-2's Key Interfaces reference an export that DS-1 does not provide.
+
+#### Dimension 3: Decision Completeness (are all real technical choices recorded?)
+
+Check whether every technical choice with genuine alternatives has a D-N decision record:
+- State management approach (Context/Redux/Zustand/...)
+- Error handling strategy (try-catch/Result type/either/...)
+- Data persistence mechanism (localStorage/IndexedDB/cookie/...)
+- Async/concurrency pattern (callbacks/promises/async-await/observables/...)
+- Any external dependency introduction (recorded in External Dependencies table?)
+
+For each D-N, verify:
+- Reason states the driving constraint/tradeoff (not just "project uses X")
+- Alternatives were genuinely considered (not filler like "could also use Y")
+
+FAIL example: Design introduces localStorage persistence but has no D-N deciding "why not cookie/IndexedDB", and no D-N on "sync write vs debounced write".
+
+#### Dimension 4: Impact Completeness (did the planner find all downstream effects?)
+
+- Did the planner run \`bp map impact <module>\` for each modified module? (check the Impact Analysis section references impact queries)
+- Direct Impacts: does every File Manifest "Modify" entry appear here with a change description?
+- Indirect Impacts: are callers/dependents listed? If a public export's signature changes, Indirect Impacts MUST be non-empty.
+- Test Impacts: are existing tests that may break identified?
+- Is there a modified public export with empty Indirect Impacts? (likely a missed \`bp map impact\` query)
+
+FAIL example: File Manifest modifies src/core/auth.ts login() signature, but Indirect Impacts is empty (planner didn't run \`bp map impact auth\`).
+
+#### Dimension 5: File Manifest Consistency (does every file trace to a component?)
+
+- Does every DS-N have at least one File Manifest entry with Source: DS-N?
+- Does every File Manifest row's Source point to an existing DS-N?
+- Are there orphan files (in Manifest but no DS claims them) or orphan components (DS with no files)?
+- Any "etc." / "and other files" / "..." vague references? (must be exhaustive)
+
+FAIL example: DS-3 claims responsibility for ThemePersistence, but no File Manifest row has Source: DS-3.
+
+#### If problems found
+
+Re-dispatch the planner with structured feedback per finding:
+- Dimension: <1-5 name>
+- DS-N / file: <which component or file>
+- Problem: <what's wrong>
+- Expected: <what the design should show>
+
+After re-dispatch, return to Step 4 to review the updated output. Repeat until the design passes all five dimensions. Do NOT proceed with a flawed design - it will cascade into implementation failures.
 
 ### Step 5: Verify output
 
@@ -82,10 +143,8 @@ Before committing, review the planner's design for soundness:
 - Delta specs use correct sections (ADDED/MODIFIED/REMOVED)
 - File manifest lists every file (no "etc.")
 
-**Quality:**
+**Structural Completeness** (format checks - content quality is covered in Step 4):
 - No template placeholders remaining in any file
-- DS-N components have clear single responsibility
-- D-N decisions have real alternatives
 - type:behavior tasks have RED descriptions (GIVEN/WHEN/THEN)
 - Requirements use SHALL/MUST/SHOULD correctly
 - Each requirement has at least 1 scenario
