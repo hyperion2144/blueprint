@@ -92,7 +92,8 @@ function commitHandler(message: string, options: { files?: string[] }) {
   try {
     writeFileSync(msgFile, message, 'utf-8');
     execFileSync('git', ['commit', '-F', msgFile], { cwd, encoding: 'utf-8', stdio: 'pipe' });
-    console.log(`committed: ${message.slice(0, 60)}`);
+    const hash = execSync('git rev-parse HEAD', { cwd, encoding: 'utf-8' }).trim();
+    console.log(`committed: ${hash.slice(0, 7)} ${message.slice(0, 60)}`);
   } catch (e: unknown) {
     const stderr = e instanceof Error ? e.message : '';
     if (!stderr.includes('nothing to commit') && !stderr.includes('nothing added')) {
