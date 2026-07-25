@@ -284,7 +284,7 @@ function updateRoadmap(roadmap: string, changeName: string, date: string): Roadm
 
   // Find and update the change line (exact match on trimmed change name)
   for (let i = 0; i < lines.length; i++) {
-    const match = lines[i].match(/^- \[ \] (.+)$/);
+    const match = lines[i].match(/^- \[[- ]\] (.+)$/);
     if (match && match[1].trim() === changeName) {
       lines[i] = `- [x] ${changeName} ${dateStr}`;
       changeIdx = i;
@@ -295,7 +295,7 @@ function updateRoadmap(roadmap: string, changeName: string, date: string): Roadm
   // Fallback: try partial/includes match
   if (changeIdx === -1) {
     for (let i = 0; i < lines.length; i++) {
-      if (/^- \[ \]/.test(lines[i]) && lines[i].includes(changeName)) {
+    if (/^- \[[- ]\]/.test(lines[i]) && lines[i].includes(changeName)) {
         lines[i] = `- [x] ${changeName} ${dateStr}`;
         changeIdx = i;
         break;
