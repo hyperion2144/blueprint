@@ -827,6 +827,12 @@ export const ROADMAP_TEMPLATE = `# Roadmap: {{project-name}}
 **Goal**: {{what this milestone achieves}}
 **Status**: {{PLANNED | ACTIVE | SHIPPED}}
 
+<!--
+  Add as many phases as needed (P1.1, P1.2, P1.3...).
+  Phase count is driven by layer dependencies and scope, NOT a template limit.
+  First phase = thinnest end-to-end path.
+-->
+
 ### Phase: P1.1 - {{phase-name}} [{{STATUS}}]
 
 - **Goal**: {{what this phase delivers}}
@@ -842,36 +848,48 @@ export const ROADMAP_TEMPLATE = `# Roadmap: {{project-name}}
 - {{field-design / api-format / tech-stack / convention}} — {{decision content, reason, alternatives considered}}
 - {{field-design / api-format / tech-stack / convention}} — {{decision content, reason, alternatives considered}}
 
-**Changes** — Proposed changes with checkbox + status. These have been formally proposed (proposal.md exists).
-- [x] {{change-name}} (archived {{date}}) — {{one-line description}}
+**Changes** — Proposed changes with checkbox + status.
 - [x] {{change-name}} (archived {{date}}) — {{one-line description}}
 - [ ] {{change-name}} (proposed {{date}}) — {{one-line description}}
 
 **Next**: {{next-change-or "All changes completed"}}
 
-### Phase: P1.2 - {{phase-name}} [NOT_STARTED]
+---
 
-- **Goal**: {{what this phase delivers}}
-- **Description**: {{what work this phase involves — key areas, known constraints, estimated scope}}
-- **Spec domain**: {{domain-name}}
-- **Changes**: 0/{{total}}
-- **Status**: NOT_STARTED
+## Milestone: M2 - {{milestone-name}} [PLANNED]
+
+**Goal**: {{what this milestone achieves}}
+**Status**: PLANNED
+
+<!--
+  Future milestone — details known at roadmap time.
+  Phase structure follows the same pattern as M1 (P2.1, P2.2...).
+  Fill what IS known now, even if incomplete.
+  Key decisions made during discussion that belong to this milestone go here.
+-->
+
+### Phase: P2.1 - {{phase-name}} [NOT_STARTED]
+
+- **Goal**: {{what this phase delivers — fill what's known, even if high-level}}
+- **Description**: {{known scope, constraints, or "TBD — details deferred"}}
 
 ### Key Decisions
 
-<!-- Route-map discussion outcomes: technical conventions, design decisions, constraints. -->
+<!-- Route-map discussion outcomes that belong to this milestone. -->
 
-- {{field-design / api-format / tech-stack / convention}} — {{decision content, reason}}
+- {{convention / design / constraint}} — {{decision content}}
 
-**Planned changes** — Listed during route-map planning, not yet proposed. No checkbox. Move to **Changes** above once formally proposed.
-- {{change-name}} — {{one-line description of what this change does}}
-- {{change-name}} — {{one-line description of what this change does}}
 ---
 
-## Milestone: M1 - {{milestone-name}} [COMPLETED]
+## Future Considerations
 
-**Goal**: {{what this milestone achieved}}
-**Status**: COMPLETED
+<!--
+  Things discussed during roadmap planning that don't belong to a specific milestone yet.
+  Prevents losing ideas that came up in conversation.
+  Once scope solidifies, promote items here into a new milestone.
+-->
+
+- {{topic}} — {{notes}}
 
 ---
 
@@ -880,6 +898,7 @@ export const ROADMAP_TEMPLATE = `# Roadmap: {{project-name}}
 | Milestone | Phases | Changes | Status |
 |-----------|--------|---------|--------|
 | M1 - {{name}} | {{done}}/{{total}} | {{done}}/{{total}} | {{status}} |
+| M2 - {{name}} | {{done}}/{{total}} | {{done}}/{{total}} | {{status}} |
 `;
 
 export const CONFIG_TEMPLATE = `# Blueprint Project Configuration (v2)
