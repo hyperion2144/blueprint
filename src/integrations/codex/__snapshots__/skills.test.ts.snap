@@ -869,7 +869,7 @@ Before finishing, check:
 - [ ] Each PR-N has Research filled IF research was done during discussion/Step 1b
 - [ ] Each PR-N has Alternatives Considered filled IF alternatives were discussed
 - [ ] Each PR-N has Risks & Mitigations filled IF risks were identified
-- [ ] Template placeholders replaced — no \`{{...}}\` remaining
+- [ ] Template placeholders replaced — no remaining \`{{variable}}\` markers
 - [ ] PR count <= 5 (if more, suggest splitting)
 - [ ] The proposal captures the user's actual requirements, not AI guesswork
 - [ ] (Optional) Research Landscape filled IF cross-cutting research was done
