@@ -3,7 +3,7 @@
  * v2 always commits docs. Best-effort: failures are logged but not thrown.
  */
 
-import { execFileSync, execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { existsSync, writeFileSync, rmSync } from 'node:fs';
 import { loadConfig } from './config.js';
 import { join } from 'node:path';
@@ -22,22 +22,26 @@ export function commitDocChanges(bpDir: string, cwd: string, message: string, fi
   try {
     const config = loadConfig(bpDir);
     if (!config.commitDocs) return;
-  } catch {
-    return; // config not available - skip silently
+  } catch (e) {
+    // Config unreadable — surface the issue rather than silently committing.
+    console.warn(`\u26a0 auto-commit skipped: config unreadable (${(e as Error).message})`);
+    return;
   }
 
+  const msgFile = join(cwd, '.git', 'COMMIT_EDITMSG_TMP');
   try {
-    // git init if needed
+    // git init if needed — use execFileSync to avoid shell interpretation.
     if (!existsSync(join(cwd, '.git'))) {
-      execSync('git init', { cwd, stdio: 'pipe' });
+      execFileSync('git', ['init'], { cwd, stdio: 'pipe' });
       console.log('\u2713 git repository initialized');
     }
 
     const targets = files ?? ['bp/config.yaml'];
-    execFileSync('git', ['add', ...targets], { cwd, stdio: 'pipe' });
+    // Use `--` to terminate option parsing so a target starting with `-`
+    // (e.g. a file literally named `-e`) is not treated as a git flag.
+    execFileSync('git', ['add', '--', ...targets], { cwd, stdio: 'pipe' });
 
     // Write message to temp file to avoid shell escaping issues
-    const msgFile = join(cwd, '.git', 'COMMIT_EDITMSG_TMP');
     writeFileSync(msgFile, message, 'utf-8');
     try {
       execFileSync('git', ['commit', '-F', msgFile], { cwd, encoding: 'utf-8', stdio: 'pipe' });
@@ -47,8 +51,10 @@ export function commitDocChanges(bpDir: string, cwd: string, message: string, fi
         console.warn(`\u26a0 auto-commit failed: ${stderr.slice(0, 200)}`);
       }
     }
+  } catch (e) {
+    console.warn(`\u26a0 auto-commit skipped (git not available or not a repo): ${(e as Error).message}`);
+  } finally {
+    // Always clean up the temp file, even on crash.
     rmSync(msgFile, { force: true });
-  } catch {
-    console.warn('\u26a0 auto-commit skipped (git not available or not a repo)');
   }
 }

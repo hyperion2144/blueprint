@@ -67,13 +67,18 @@ function generateContextBlock(cwd) {
     var out = execFileSync("bp", ["context", "apply", "--format=compact"], {
       cwd: cwd,
       encoding: "utf-8",
-      stdio: ["ignore", "pipe", "ignore"],
+      stdio: ["ignore", "pipe", "pipe"],
+      timeout: 5000,
+      killSignal: "SIGTERM",
     }).trim();
     if (out.indexOf("<bp-context>") !== 0 || out.lastIndexOf("</bp-context>") !== out.length - "</bp-context>".length) {
       return "<bp-context>\\n</bp-context>";
     }
     return out;
-  } catch {
+  } catch (e) {
+    if (e && typeof e === "object" && "stderr" in e && e.stderr) {
+      process.stderr.write("bp context apply failed: " + e.stderr + "\\n");
+    }
     return "<bp-context>\\n</bp-context>";
   }
 }

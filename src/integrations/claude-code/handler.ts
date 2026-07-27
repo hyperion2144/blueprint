@@ -78,7 +78,9 @@ export function generateContextBlock(
     execFileSync('bp', ['context', 'apply', '--format=compact'], {
       cwd: c,
       encoding: 'utf-8',
-      stdio: ['ignore', 'pipe', 'ignore'],
+      stdio: ['ignore', 'pipe', 'pipe'],
+      timeout: 5000,
+      killSignal: 'SIGTERM',
     })
 ): string {
   if (!cwd || !hasBpConfig(cwd)) {
@@ -90,7 +92,11 @@ export function generateContextBlock(
       return '<bp-context>\n</bp-context>';
     }
     return out;
-  } catch {
+  } catch (e) {
+    // Surface subprocess stderr so users can diagnose a hung or failing `bp`.
+    if (e instanceof Error && 'stderr' in e && (e as { stderr?: string }).stderr) {
+      process.stderr.write(`bp context apply failed: ${(e as { stderr: string }).stderr}\n`);
+    }
     return '<bp-context>\n</bp-context>';
   }
 }

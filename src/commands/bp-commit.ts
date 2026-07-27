@@ -8,7 +8,7 @@
  * Usage: bp commit "<message>" [--files <path>...]
  */
 
-import { execFileSync, execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { existsSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { loadConfig } from '../core/config.js';
@@ -31,18 +31,21 @@ function commitHandler(message: string, options: { files?: string[] }) {
   }
 
   const cwd = join(bpDir, '..');
-  let docMode = true;
+  // Default to the SAFER behavior (don't stage bp/) when config is unreadable.
+  // Previously this defaulted to `true` (stage everything), which silently
+  // inverted the user's intent (`commitDocs: false`) on a corrupt config.
+  let docMode = false;
 
   // Check commitDocs config
   try {
     const config = loadConfig(bpDir);
     docMode = config.commitDocs;
-  } catch {
-    // config unreadable — default to committing everything
+  } catch (e) {
+    console.warn(`\u26a0 config unreadable, defaulting to commitDocs=false (bp/ excluded): ${(e as Error).message}`);
   }
 
   // Resolve files to stage
-  let candidates = options.files ?? ['bp/'];
+  const candidates = options.files ?? ['bp/'];
 
   // Filter bp/ paths when commitDocs is false
   const bpRel = 'bp/';
@@ -57,22 +60,22 @@ function commitHandler(message: string, options: { files?: string[] }) {
     finalFiles = candidates;
   }
 
-  // git init if needed
+  // git init if needed — use execFileSync (not execSync) to avoid shell.
   try {
     if (!existsSync(join(cwd, '.git'))) {
-      execSync('git init', { cwd, stdio: 'pipe' });
+      execFileSync('git', ['init'], { cwd, stdio: 'pipe' });
       console.log('git repository initialized');
     }
-  } catch {
-    console.warn('git init failed, skipping commit');
+  } catch (e) {
+    console.warn(`git init failed, skipping commit: ${(e as Error).message}`);
     return;
   }
 
-  // git add
+  // git add — use `--` so a target starting with `-` isn't treated as a flag.
   try {
-    execFileSync('git', ['add', ...finalFiles], { cwd, stdio: 'pipe' });
-  } catch {
-    console.warn('git add failed, skipping commit');
+    execFileSync('git', ['add', '--', ...finalFiles], { cwd, stdio: 'pipe' });
+  } catch (e) {
+    console.warn(`git add failed, skipping commit: ${(e as Error).message}`);
     return;
   }
 
@@ -83,16 +86,20 @@ function commitHandler(message: string, options: { files?: string[] }) {
       console.log('nothing to commit (clean working tree)');
       return;
     }
-  } catch {
-    // git status failed — try commit anyway
+  } catch (e) {
+    // git status failed — try commit anyway, but surface the issue.
+    console.warn(`\u26a0 git status failed, attempting commit anyway: ${(e as Error).message}`);
   }
 
-  // git commit via temp file (avoids shell escaping issues)
-  const msgFile = join(cwd, '.git', 'COMMIT_EDITMSG_TMP');
+  // git commit via temp file (avoids shell escaping issues).
+  // Use mkdtemp-style path under .git/ to avoid races with concurrent
+  // `bp commit` invocations overwriting a fixed filename.
+  const msgFile = join(cwd, '.git', `COMMIT_EDITMSG_TMP_${process.pid}`);
   try {
     writeFileSync(msgFile, message, 'utf-8');
     execFileSync('git', ['commit', '-F', msgFile], { cwd, encoding: 'utf-8', stdio: 'pipe' });
-    const hash = execSync('git rev-parse HEAD', { cwd, encoding: 'utf-8' }).trim();
+    // Use execFileSync (not execSync) for consistency with the rest of the file.
+    const hash = execFileSync('git', ['rev-parse', 'HEAD'], { cwd, encoding: 'utf-8' }).trim();
     console.log(`committed: ${hash.slice(0, 7)} ${message.slice(0, 60)}`);
   } catch (e: unknown) {
     const stderr = e instanceof Error ? e.message : '';

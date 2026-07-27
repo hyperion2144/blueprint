@@ -7,8 +7,10 @@
 import type { HeadingNode, SpecSection, Requirement, Scenario, ScenarioStep, ScenarioStepType } from '../types/index.js';
 import { findHeading, findHeadingsByPrefix, parseHeadings } from './heading-tree.js';
 
-/** RFC 2119 关键词 */
-const RFC2119_KEYWORDS = ['SHALL', 'MUST', 'SHOULD', 'MAY', 'SHALL NOT', 'MUST NOT', 'SHOULD NOT'];
+/** RFC 2119 关键词.
+ *  Ordered longest-first so that `content.includes('SHALL')` doesn't fire
+ *  when 'SHALL NOT' is present — otherwise both end up in the result. */
+const RFC2119_KEYWORDS = ['SHALL NOT', 'MUST NOT', 'SHOULD NOT', 'SHALL', 'MUST', 'SHOULD', 'MAY'];
 
 /**
  * 解析 spec Markdown 为结构化数据
@@ -43,11 +45,16 @@ export function extractSpecFromTree(root: HeadingNode[]): SpecSection {
 
 /**
  * 从内容中提取 RFC 2119 关键词
+ * Uses word-boundary regex so 'MUST' doesn't match 'MUSTER' etc.
  */
 function extractKeywords(content: string): string[] {
   const found: Record<string, true> = {};
   for (const kw of RFC2119_KEYWORDS) {
-    if (content.includes(kw)) found[kw] = true;
+    // Use word boundaries; 'SHALL NOT' contains a space, so build the pattern
+    // carefully — \b on each end of the multi-word phrase.
+    const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp(`\\b${escaped}\\b`);
+    if (re.test(content)) found[kw] = true;
   }
   return Object.keys(found);
 }
@@ -68,13 +75,17 @@ function extractScenarios(children: HeadingNode[]): Scenario[] {
 /**
  * 解析 scenario 步骤
  * - GIVEN / WHEN / THEN / AND / BUT
+ *
+ * Accepts optional `**` around the keyword (spec-stack templates emit
+ * `- **GIVEN** ...`). The previous regex only matched plain `- GIVEN ...`,
+ * so every generated scenario parsed to an empty `steps` array.
  */
 function parseScenarioSteps(content: string): ScenarioStep[] {
   const steps: ScenarioStep[] = [];
   const lines = content.split('\n');
 
   for (const line of lines) {
-    const match = line.match(/^\s*-\s*(GIVEN|WHEN|THEN|AND|BUT)\s+(.+)$/i);
+    const match = line.match(/^\s*-\s*\**\s*(GIVEN|WHEN|THEN|AND|BUT)\s*\**\s+(.+)$/i);
     if (match) {
       const type = match[1].toUpperCase() as ScenarioStepType;
       const text = match[2].trim();

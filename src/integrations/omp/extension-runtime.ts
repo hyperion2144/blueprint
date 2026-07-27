@@ -11,13 +11,27 @@
  */
 
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve, sep } from 'node:path';
 
 import { generateCompactContext, formatContextCompact } from '../../core/spec-injector.js';
 import { parseContextJsonl } from '../../core/context-jsonl-io.js';
 import type { ContextRefRow } from '../../types/context-jsonl-io.js';
 import { deriveState } from '../../commands/bp-state.js';
 export { EXTENSION_SOURCE } from '../../templates/omp/extension.tmpl.js';
+
+/**
+ * Defense-in-depth: assert a resolved path stays under the expected parent.
+ * `activeChangeName` is derived from `bp/state.md` — if that file is tampered
+ * with or the resolver returns an unexpected value, `..` segments could
+ * otherwise let the hook read arbitrary files outside `bp/changes/`.
+ */
+function assertWithinChanges(bpDir: string, changeName: string): void {
+  const changesRoot = resolve(join(bpDir, 'changes')) + sep;
+  const target = resolve(join(bpDir, 'changes', changeName));
+  if (!target.startsWith(changesRoot)) {
+    throw new Error(`Path traversal blocked: ${changeName} escapes bp/changes/`);
+  }
+}
 
 /** Content block the OMP API expects in `sendMessage` and `context.message`. */
 export interface BpTextBlock {
@@ -122,6 +136,11 @@ function formatStateSummary(bpDir: string): string {
 /** Read context.jsonl rows for a change; returns [] on any failure. */
 function readContextRows(bpDir: string, changeName: string | undefined): ContextRefRow[] {
   if (!changeName) return [];
+  try {
+    assertWithinChanges(bpDir, changeName);
+  } catch {
+    return [];
+  }
   const path = join(bpDir, 'changes', changeName, 'context.jsonl');
   if (!existsSync(path)) return [];
   try {
@@ -171,17 +190,20 @@ function renderAugmentedBody(
     } else {
       for (const r of rows) extra.push(`- ${r.reason}`);
     }
-    const tasksPath = join(bpDir, 'changes', activeChangeName ?? '', 'tasks.md');
-    if (activeChangeName && existsSync(tasksPath)) {
+    if (activeChangeName) {
       try {
-        const tasks = readFileSync(tasksPath, 'utf-8').trim();
-        if (tasks) {
-          extra.push('');
-          extra.push('## tasks.md acceptance');
-          extra.push(tasks);
+        assertWithinChanges(bpDir, activeChangeName);
+        const tasksPath = join(bpDir, 'changes', activeChangeName, 'tasks.md');
+        if (existsSync(tasksPath)) {
+          const tasks = readFileSync(tasksPath, 'utf-8').trim();
+          if (tasks) {
+            extra.push('');
+            extra.push('## tasks.md acceptance');
+            extra.push(tasks);
+          }
         }
       } catch {
-        // missing or unreadable tasks.md — omit silently
+        // traversal blocked, or tasks.md missing/unreadable — omit silently
       }
     }
   }

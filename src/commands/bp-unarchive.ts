@@ -9,7 +9,7 @@
 import { existsSync, readdirSync, renameSync } from 'node:fs';
 import { join } from 'node:path';
 import { findBpDir } from './_utils.js';
-import { archiveChangeDir } from '../core/file-tree.js';
+import { validateChangeName } from '../core/file-tree.js';
 import type { Command } from 'commander';
 
 export function register(program: Command): void {
@@ -41,10 +41,27 @@ function unarchiveHandler(name: string): void {
     process.exit(1);
   }
 
-  // Compute target name: strip date prefix if present
-  const restoredName = match.includes('-') ? match.slice(match.indexOf('-') + 1) : match;
+  // Strip the fixed `YYYY-MM-DD-` date prefix if present.
+  // The previous implementation used `match.indexOf('-')` which matched the
+  // first dash inside the date (position 4), producing names like
+  // `01-15-add-login` instead of `add-login`.
+  const restoredName = /^\d{4}-\d{2}-\d{2}-/.test(match) ? match.slice(11) : match;
+  try {
+    validateChangeName(restoredName);
+  } catch (e) {
+    console.error(`Restored name is invalid: ${(e as Error).message}`);
+    process.exit(1);
+  }
+
   const archivedPath = join(archiveDir, match);
   const restoredPath = join(bpDir, 'changes', restoredName);
+
+  // Guard against clobbering an existing active change
+  if (existsSync(restoredPath)) {
+    console.error(`Active change "${restoredName}" already exists at ${restoredPath}`);
+    console.error('Remove or rename the existing change first.');
+    process.exit(1);
+  }
 
   // Move the directory back
   renameSync(archivedPath, restoredPath);

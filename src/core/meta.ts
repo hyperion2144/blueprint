@@ -1,5 +1,6 @@
 import { join, dirname } from 'node:path';
 import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync } from 'node:fs';
+import { z } from 'zod';
 
 export interface RunMeta {
   role: string;          // planner | executor | reviewer
@@ -12,6 +13,20 @@ export interface RunMeta {
   blockers?: number;
   verdict?: string;
 }
+
+/** Zod schema for persisted run-meta JSON — protects against truncated or
+ *  hand-edited files crashing `bp stats` / `bp state`. */
+const RunMetaSchema = z.object({
+  role: z.string(),
+  round: z.number(),
+  start_time: z.string(),
+  end_time: z.string().optional(),
+  model: z.string().optional(),
+  token_estimate: z.number().optional(),
+  issues_found: z.number().optional(),
+  blockers: z.number().optional(),
+  verdict: z.string().optional(),
+});
 
 export function metaDir(bpDir: string, changeName: string): string {
   return join(bpDir, 'changes', changeName, '.meta');
@@ -27,10 +42,22 @@ export function appendRunMeta(bpDir: string, changeName: string, meta: RunMeta):
 export function readAllMeta(bpDir: string, changeName: string): RunMeta[] {
   const dir = metaDir(bpDir, changeName);
   if (!existsSync(dir)) return [];
-  return readdirSync(dir)
-    .filter((f) => f.endsWith('.json'))
-    .map((f) => JSON.parse(readFileSync(join(dir, f), 'utf-8')) as RunMeta)
-    .sort((a, b) => a.round - b.round);
+  const out: RunMeta[] = [];
+  for (const f of readdirSync(dir)) {
+    if (!f.endsWith('.json')) continue;
+    try {
+      const raw = JSON.parse(readFileSync(join(dir, f), 'utf-8'));
+      const parsed = RunMetaSchema.safeParse(raw);
+      if (!parsed.success) {
+        console.warn(`\u26a0 meta file ${f} is malformed, skipping: ${parsed.error.message}`);
+        continue;
+      }
+      out.push(parsed.data as RunMeta);
+    } catch (e) {
+      console.warn(`\u26a0 meta file ${f} unreadable: ${(e as Error).message}`);
+    }
+  }
+  return out.sort((a, b) => a.round - b.round);
 }
 
 export function summarizeMeta(bpDir: string, changeName: string): object {

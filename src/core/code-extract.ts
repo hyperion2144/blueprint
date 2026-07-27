@@ -4,7 +4,7 @@
  * archive 时调用，AI 辅助提取（标记 AUTO-EXTRACTED）
  */
 
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -52,14 +52,14 @@ export function extractFromGitDiff(
 /** 获取 git diff（unstaged + staged + 最近 commit） */
 function getGitDiff(repoDir: string): string | null {
   try {
-    const diff = execSync('git diff HEAD', {
+    const diff = execFileSync('git', ['diff', 'HEAD'], {
       cwd: repoDir,
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
     });
     if (diff.trim()) return diff;
 
-    const lastCommit = execSync('git diff HEAD~1 HEAD', {
+    const lastCommit = execFileSync('git', ['diff', 'HEAD~1', 'HEAD'], {
       cwd: repoDir,
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
