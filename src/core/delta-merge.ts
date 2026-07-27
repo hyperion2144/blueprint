@@ -37,20 +37,27 @@ export function mergeDeltaSpec(
   deltaSpec: string,
   baseFingerprint?: string,
 ): MergeResult {
-  // 1. 如果有指纹且匹配 → 快速路径：直接替换
-  if (baseFingerprint) {
+  // 1. Check for semantic delta format (ADDED/MODIFIED/REMOVED sections).
+  //    A semantic delta is a *partial* update — must not use the fast path
+  //    which would replace the live spec wholesale and drop every base
+  //    requirement not explicitly mentioned in the delta.
+  const isSemantic = hasSemanticSections(deltaSpec);
+
+  // 2. Fast path: only valid for non-semantic (full-spec replacement) deltas
+  //    where the live spec still matches the recorded base fingerprint.
+  if (!isSemantic && baseFingerprint) {
     const liveFingerprint = fingerprint(baseSpec);
     if (liveFingerprint === baseFingerprint) {
       return { type: 'ok', merged: deltaSpec };
     }
   }
 
-  // 2. Check for semantic delta format (ADDED/MODIFIED/REMOVED sections)
-  if (hasSemanticSections(deltaSpec)) {
+  // 3. Semantic merge for ADDED/MODIFIED/REMOVED deltas
+  if (isSemantic) {
     return semanticMerge(baseSpec, deltaSpec);
   }
 
-  // 3. 通用 heading-tree 合并（向后兼容旧格式 delta-specs）
+  // 4. 通用 heading-tree 合并（向后兼容旧格式 delta-specs）
   const baseTree = parseHeadings(baseSpec);
   const deltaTree = parseHeadings(deltaSpec);
   const merged = mergeTrees(baseTree, deltaTree);
@@ -130,19 +137,22 @@ function semanticMerge(baseSpec: string, deltaSpec: string): MergeResult {
 
   // 1. REMOVED: delete matching headers from base
   const removedReqs = extractRequirementsFromSection(deltaTree, 'REMOVED Requirements');
-  // Parse header names from the list items in REMOVED section
+  // Track deleted keys to avoid false conflicts when a requirement appears in
+  // both heading-style and list-style REMOVED entries.
+  const deletedKeys = new Set<string>();
   for (const removedNode of removedReqs) {
-    // REMOVED section items are list entries like `### Requirement: X` or text
     const headerText = removedNode.text;
     if (baseReqs.has(headerText)) {
       baseReqs.delete(headerText);
-    } else {
+      deletedKeys.add(headerText);
+    } else if (!deletedKeys.has(headerText)) {
       conflicts.push({
         section: headerText,
         message: `REMOVED requirement "${headerText}" not found in global spec`,
         baseContent: '',
         deltaContent: removedNode.content,
       });
+      deletedKeys.add(headerText);
     }
   }
 
@@ -156,13 +166,15 @@ function semanticMerge(baseSpec: string, deltaSpec: string): MergeResult {
         const headerText = `Requirement: ${match[1].trim().replace(/[`']/g, '')}`;
         if (baseReqs.has(headerText)) {
           baseReqs.delete(headerText);
-        } else if (!conflicts.some((c) => c.section === headerText)) {
+          deletedKeys.add(headerText);
+        } else if (!deletedKeys.has(headerText) && !conflicts.some((c) => c.section === headerText)) {
           conflicts.push({
             section: headerText,
             message: `REMOVED requirement "${headerText}" not found in global spec`,
             baseContent: '',
             deltaContent: line,
           });
+          deletedKeys.add(headerText);
         }
       }
     }
@@ -226,6 +238,16 @@ function renderSimpleNodes(nodes: HeadingNode[], lines: string[]): void {
   }
 }
 
+/** Recursively wrap a HeadingNode subtree as a MergedNode, preserving all
+ *  descendants. Used when one side of the merge is missing a heading — the
+ *  entire subtree from the present side is kept intact. */
+function wrapSubtree(node: HeadingNode): MergedNode {
+  return {
+    node,
+    children: node.children.map(wrapSubtree),
+  };
+}
+
 /** 合并两棵 heading tree */
 function mergeTrees(base: HeadingNode[], delta: HeadingNode[]): MergeOutput {
   const conflicts: Conflict[] = [];
@@ -240,11 +262,11 @@ function mergeTrees(base: HeadingNode[], delta: HeadingNode[]): MergeOutput {
     const d = deltaIndex.get(key);
 
     if (b && !d) {
-      // base 有 delta 无 → 保留
-      nodes.push({ node: b, children: b.children.map((c) => ({ node: c, children: [] })) });
+      // base 有 delta 无 → 保留 (preserve full subtree)
+      nodes.push(wrapSubtree(b));
     } else if (!b && d) {
-      // delta 新增 → 添加
-      nodes.push({ node: d, children: d.children.map((c) => ({ node: c, children: [] })) });
+      // delta 新增 → 添加 (preserve full subtree)
+      nodes.push(wrapSubtree(d));
     } else if (b && d) {
       // 两边都有 → 合并
       const childMerge = mergeTrees(b.children, d.children);

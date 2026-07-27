@@ -9,7 +9,10 @@ import { WORKFLOW_REGISTRY, type WorkflowStep } from '../../templates/workflows/
 
 function resolveBody(step: string): string {
   const entry = WORKFLOW_REGISTRY[step as WorkflowStep];
-  return entry ? entry.command().content : `# bp-${step}\n\nWorkflow guide.`;
+  // Use skill().instructions (matching OMP and Codex generators) — previously
+  // this returned entry.command().content, which is the slash-command template
+  // and produced command-flavored content in skill files.
+  return entry ? entry.skill().instructions : `# bp-${step}\n\nWorkflow guide.`;
 }
 
 function skillDescription(step: string): string {
@@ -28,7 +31,10 @@ function skillDescription(step: string): string {
   return map[step] ?? '';
 }
 
-const STEPS = ['init', 'roadmap', 'propose', 'plan', 'apply', 'review', 'archive', 'continue', 'ff', 'loop'];
+// Type as readonly WorkflowStep[] so a typo (e.g. 'continu') is caught at
+// compile time — previously inferred as string[] and would silently produce
+// a skill with no body.
+const STEPS: readonly WorkflowStep[] = ['init', 'roadmap', 'propose', 'plan', 'apply', 'review', 'archive', 'continue', 'ff', 'loop'];
 
 export function generateAgentSkills(_config: ProjectConfig): { path: string; content: string }[] {
   return STEPS.map((step) => {

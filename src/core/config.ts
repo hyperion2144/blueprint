@@ -66,22 +66,15 @@ export function loadConfig(bpDir: string): ProjectConfig {
   return ProjectConfigSchema.parse(raw) as ProjectConfig;
 }
 
-/** Save config to bp/config.yaml */
+/** Save config to bp/config.yaml.
+ *  Passes the full config object to the YAML document so no fields are
+ *  silently dropped on round-trip (load → mutate → save). */
 export function saveConfig(bpDir: string, config: ProjectConfig): void {
   const path = configPath(bpDir);
-  const doc = new Document({
-    version: config.version,
-    platform: config.platform,
-    profile: config.profile,
-    context: config.context,
-    brownfield: config.brownfield,
-    commitDocs: config.commitDocs,
-    rules: config.rules,
-    schema: config.schema,
-    models: config.models,
-    conventions: config.conventions,
-    git: config.git,
-  });
+  // Re-validate on save to catch any in-memory corruption from callers
+  // that bypassed the typed surface.
+  const validated = ProjectConfigSchema.parse(config) as ProjectConfig;
+  const doc = new Document(validated);
   writeYamlDoc(path, doc);
 }
 
@@ -97,12 +90,15 @@ export function resolveModels(config: ProjectConfig): ModelMap {
   const profile = config.profile as Profile;
   return { ...PROFILE_MODEL_MAP[profile], ...config.models };
 }
-/**: Resolve models with level-based dynamic downgrade */
+/**: Resolve models with level-based dynamic downgrade.
+ *  Per-role overrides in config.models are preserved even when downgrading. */
 export function resolveModelsForLevel(config: ProjectConfig, level: Profile, round: number = 1): ModelMap {
   const base = resolveModels(config);
-  // Trivial/Light -> downgrade all to fast
+  // Trivial/Light -> downgrade all to fast, but preserve explicit user overrides
   if (level === 'trivial' || level === 'light') {
-    return Object.fromEntries(Object.entries(base).map(([k]) => [k, 'pi/task']));
+    return Object.fromEntries(
+      Object.entries(base).map(([k]) => [k, config.models[k] ?? 'pi/task']),
+    );
   }
   // Reviewer round 2+ with no blockers -> downgrade reviewer
   if (round >= 2) {
@@ -111,15 +107,44 @@ export function resolveModelsForLevel(config: ProjectConfig, level: Profile, rou
   return base;
 }
 
-/** Migrate from v1 project.yml to v2 config.yaml */
+/** Loose Zod schema for v1 project.yml — accepts the v1 shape, then we map
+ *  fields explicitly. Prevents unvalidated casts from propagating malformed
+ *  values into the v2 config. */
+const V1ConfigSchema = z.object({
+  platform: z.union([z.string(), z.array(z.string())]).optional(),
+  profile: z.string().optional(),
+  context: z.string().optional(),
+  workflow: z.object({ commitDocs: z.boolean() }).partial().optional(),
+  models: z.record(z.string(), z.string()).optional(),
+  conventions: z.object({ inject: z.boolean() }).partial().optional(),
+  git: z.object({ create_tag: z.boolean() }).partial().optional(),
+}).partial();
+
+/** Migrate from v1 project.yml to v2 config.yaml.
+ *  Parses v1 input through Zod, then validates the migrated v2 config through
+ *  ProjectConfigSchema before saving. */
 function migrateConfig(bpDir: string): ProjectConfig {
   const oldPath = join(bpDir, 'project.yml');
   const doc = readYamlDoc(oldPath);
-  const old = doc.toJS() as Record<string, any>;
-  const config: ProjectConfig = {
+  const old = V1ConfigSchema.parse(doc.toJS() ?? {});
+  // Normalize platform: v1 allowed a single string; v2 requires an array.
+  const platformRaw = old.platform;
+  const platform = Array.isArray(platformRaw)
+    ? platformRaw
+    : (typeof platformRaw === 'string' ? [platformRaw] : ['omp']);
+  const profileRaw = old.profile;
+  // v1 'strict' → v2 'standard'; v1 'lite' → v2 'light'
+  const profile: Profile = profileRaw === 'strict'
+    ? 'standard'
+    : profileRaw === 'lite'
+      ? 'light'
+      : (profileRaw === 'trivial' || profileRaw === 'light' || profileRaw === 'standard' || profileRaw === 'critical')
+        ? profileRaw
+        : 'standard';
+  const draft: ProjectConfig = {
     version: 2,
-    platform: old.platform ?? ['omp'],
-    profile: old.profile === 'strict' ? 'standard' : (old.profile ?? 'standard'),
+    platform,
+    profile,
     context: old.context ?? '',
     workflow_version: '0.6.1',
     brownfield: false,
@@ -133,7 +158,8 @@ function migrateConfig(bpDir: string): ProjectConfig {
     approvers: [],
     budget: { max_subagent_runs: 5, max_review_rounds: 3, max_wall_time_min: 60, estimated_token_cap: 500000, no_progress_fuse_rounds: 2 },
   };
-
-  saveConfig(bpDir, config);
-  return config;
+  // Validate the migrated shape before persisting
+  const validated = ProjectConfigSchema.parse(draft) as ProjectConfig;
+  saveConfig(bpDir, validated);
+  return validated;
 }

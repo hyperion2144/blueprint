@@ -168,7 +168,13 @@ function roadmapHandler(options: {
   // --add-phase
   if (options.addPhase) {
     const milestoneName = options.addPhase;
-    const milestoneMatch = roadmap.match(new RegExp(`## Milestone:\\s*([^-]*-\\s*)?${escapeRegex(milestoneName)}`));
+    // Anchor the milestone name so `--add-phase M1` doesn't match M10/M100.
+    // Previously the regex was unanchored, so substring matches leaked across
+    // milestones. The (?=\s|$|\[) lookahead requires the name to be followed
+    // by whitespace, end-of-line, or `[` (status bracket).
+    const milestoneMatch = roadmap.match(
+      new RegExp(`## Milestone:\\s*([^-]*?-\\s*)?${escapeRegex(milestoneName)}(?=\\s|$|\\[)`),
+    );
     if (!milestoneMatch) {
       console.error(`Milestone not found: ${milestoneName}`);
       console.log('Available milestones:');
@@ -181,7 +187,13 @@ function roadmapHandler(options: {
 
     const goal = options.goal || 'TBD';
     const domain = options.domain || 'core';
-    const phaseId = getNextPhaseId(roadmap, milestoneName);
+    // Scope the phase-id scan to the requested milestone section so adding
+    // a phase to M1 when M3 exists returns P1.x (not P3.x). Previously the
+    // whole roadmap was scanned and `_milestoneName` was ignored.
+    const milestoneStart = milestoneMatch.index ?? 0;
+    const milestoneEnd = findMilestoneEnd(roadmap, milestoneStart);
+    const milestoneSection = roadmap.slice(milestoneStart, milestoneEnd);
+    const phaseId = getNextPhaseId(milestoneSection, milestoneName);
     const phaseSection = `
 ### Phase: P${phaseId} - ${goal} [NOT_STARTED]
 
@@ -196,7 +208,6 @@ function roadmapHandler(options: {
 `;
 
     // Insert at end of milestone section (before next milestone or end)
-    const milestoneEnd = findMilestoneEnd(roadmap, milestoneMatch.index!);
     roadmap = roadmap.slice(0, milestoneEnd) + phaseSection + roadmap.slice(milestoneEnd);
     writeFileSync(roadmapPath, roadmap, 'utf-8');
     console.log(`✓ Added phase P${phaseId} under ${milestoneName}`);
@@ -212,7 +223,10 @@ function roadmapHandler(options: {
       // Mark phase as completed: M1/P1.1
       const msId = parts[0];
       const phId = parts[1];
-      const phasePattern = new RegExp(`(### Phase:\\s*${escapeRegex(phId)}[^\n]*?)\\[([A-Z_]+)\\]`);
+      // Anchor phId so "P1" doesn't match "P1.1" or "P1.10".
+      const phasePattern = new RegExp(
+        `(### Phase:\\s*${escapeRegex(phId)}(?=\\s|\\[)[^\\n]*?)\\[([A-Z_]+)\\]`,
+      );
       if (phasePattern.test(roadmap)) {
         roadmap = roadmap.replace(phasePattern, `$1[COMPLETED]`);
         console.log(`✓ ${phId} marked COMPLETED`);
@@ -223,7 +237,9 @@ function roadmapHandler(options: {
     } else if (parts.length === 1) {
       // Mark milestone as shipped
       const msId = parts[0];
-      const msPattern = new RegExp(`(## Milestone:\\s*${escapeRegex(msId)}[^\n]*?)\\[([A-Z_]+)\\]`);
+      const msPattern = new RegExp(
+        `(## Milestone:\\s*${escapeRegex(msId)}(?=\\s|\\[)[^\\n]*?)\\[([A-Z_]+)\\]`,
+      );
       if (msPattern.test(roadmap)) {
         roadmap = roadmap.replace(msPattern, `$1[SHIPPED]`);
         console.log(`✓ ${msId} marked SHIPPED`);
@@ -239,6 +255,13 @@ function roadmapHandler(options: {
     writeFileSync(roadmapPath, roadmap, 'utf-8');
     return;
   }
+
+  // --shipped without --mark is a no-op — surface it instead of falling
+  // through to "display roadmap" silently.
+  if (options.shipped && !options.mark) {
+    console.error('--shipped requires --mark <milestone> or <milestone/phase>');
+    process.exit(1);
+  }
 }
 
 /** Get the next milestone numeric id */
@@ -252,18 +275,23 @@ function getNextMilestoneId(roadmap: string): number {
   return max + 1;
 }
 
-/** Get the next phase id (P{milestone}.{n}) for a milestone */
-function getNextPhaseId(roadmap: string, _milestoneName: string): string {
-  const matches = roadmap.matchAll(/P(\d+)\.(\d+)/g);
-  let maxMs = 0;
+/** Get the next phase id (P{milestone}.{n}) for a milestone.
+ *  The roadmap slice passed in is already scoped to a single milestone
+ *  section, so we extract the milestone number from the `## Milestone:` line
+ *  and find the highest existing phase sub-id within that section. */
+function getNextPhaseId(milestoneSection: string, _milestoneName: string): string {
+  // Extract the milestone number (M{N}) from the section header or name.
+  const msMatch = milestoneSection.match(/M(\d+)/);
+  const msId = msMatch ? parseInt(msMatch[1], 10) : 1;
+  // Find the highest existing phase sub-id (P{msId}.{n}) within this section.
+  const matches = milestoneSection.matchAll(/P(\d+)\.(\d+)/g);
   let maxPh = 0;
   for (const m of matches) {
     const ms = parseInt(m[1], 10);
     const ph = parseInt(m[2], 10);
-    if (ms > maxMs) { maxMs = ms; maxPh = ph; }
-    else if (ms === maxMs && ph > maxPh) { maxPh = ph; }
+    if (ms === msId && ph > maxPh) maxPh = ph;
   }
-  return `${maxMs || 1}.${maxPh + 1}`;
+  return `${msId}.${maxPh + 1}`;
 }
 
 /** Find the end index of a milestone section */

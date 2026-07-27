@@ -28,8 +28,8 @@ const regexParser: LanguageParser = {
       .map(m => { const mm = m.match(/\s+([^\s'"();]+)$/); return mm ? mm[1] : ''; })
       .filter(Boolean);
     const firstLine = content.split('\n')[0] || '';
-    const responsibility = (firstLine.startsWith('#') || firstLine.startsWith('//') || firstLine.startsWith('//'))
-      ? firstLine.replace(/^[#/]+\s*/, '').trim() : '';
+    const responsibility = (firstLine.startsWith('#') || firstLine.startsWith('//') || firstLine.startsWith('/*') || firstLine.startsWith('*'))
+      ? firstLine.replace(/^[#/*]+\s*/, '').trim() : '';
     return { exports, imports, responsibility };
   },
 };
@@ -89,7 +89,11 @@ export function generateCodebaseMap(rootDir: string): CodebaseMap {
   const sourceFiles: string[] = [];
   collectSourceFiles(rootDir, ALL_SOURCE_EXTENSIONS, '', sourceFiles, ig);
 
-  const fingerprint = computeFingerprint(rootDir, sourceFiles.map(f => join(rootDir, f)));
+  // Pass relative paths to computeFingerprint — it joins rootDir internally.
+  // Previously this joined rootDir twice, producing non-existent paths that
+  // made every statSync throw, so the fingerprint never changed on content
+  // edits (only on file list changes). isMapStale silently returned false.
+  const fingerprint = computeFingerprint(rootDir, sourceFiles);
 
   // Group files by module (directory path under src/)
   const moduleMap = new Map<string, { files: FileSummary[]; exports: string[]; imports: string[]; responsibility: string }>();
@@ -207,7 +211,7 @@ export function isMapStale(bpDir: string, rootDir: string): boolean {
     const ig = loadGitignore(rootDir);
     const sourceFiles: string[] = [];
     collectSourceFiles(rootDir, ALL_SOURCE_EXTENSIONS, '', sourceFiles, ig);
-    const currentFingerprint = computeFingerprint(rootDir, sourceFiles.map(f => join(rootDir, f)));
+    const currentFingerprint = computeFingerprint(rootDir, sourceFiles);
     return map.fingerprint !== currentFingerprint;
   } catch {
     return true;

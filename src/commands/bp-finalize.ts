@@ -10,8 +10,8 @@
  */
 
 import { existsSync, readFileSync, writeFileSync, readdirSync, mkdirSync } from 'node:fs';
-import { execSync } from 'node:child_process';
-import { join } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { join, dirname } from 'node:path';
 import { findBpDir, gateContextJsonl, resolveChangeName } from './_utils.js';
 import { changeDir, archiveChangeDir } from '../core/file-tree.js';
 import { generateCodebaseMap, writeCodebaseMap } from '../core/codebase-map.js';
@@ -28,7 +28,7 @@ export function register(program: Command): void {
     .action(finalizeHandler);
 }
 
-function finalizeHandler(name: string, options?: { dryRun?: boolean; ci?: boolean }): void {
+function finalizeHandler(name: string | undefined, options: { dryRun?: boolean; ci?: boolean } = {}): void {
   const bpDir = findBpDir();
   if (!bpDir) {
     console.error('Not in a blueprint project. Run "bp init" first.');
@@ -96,12 +96,17 @@ function finalizeHandler(name: string, options?: { dryRun?: boolean; ci?: boolea
   // F5a: Warn if working tree has uncommitted changes outside bp/
   if (!options?.ci) {
     try {
-      const status = execSync('git status --porcelain', { cwd: join(bpDir, '..'), encoding: 'utf-8' });
+      // Use execFileSync (not execSync) to avoid shell interpretation, in line
+      // with the rest of the codebase. Use dirname(bpDir) for the git root so
+      // the lookup is correct even when bpDir was resolved via walk-up.
+      const status = execFileSync('git', ['status', '--porcelain'], { cwd: dirname(bpDir), encoding: 'utf-8' });
       const nonBpChanges = status.split('\n').filter((l: string) => l.trim() && !l.includes('bp/'));
       if (nonBpChanges.length > 0) {
         console.warn(`Warning: ${nonBpChanges.length} uncommitted file(s) outside bp/ detected. These may be archived alongside the change.`);
       }
-    } catch { /* git not available -- skip */ }
+    } catch (e) {
+      console.warn(`\u26a0 git status check failed: ${(e as Error).message}`);
+    }
   }
 
   // ---- Step 2: Verify review status ----
@@ -131,22 +136,27 @@ function finalizeHandler(name: string, options?: { dryRun?: boolean; ci?: boolea
     process.exit(1);
   }
 
-  //  7.2.5: Critical change requires approver verification
+  //  7.2.5: Critical change requires approver verification.
+  //  The level parser accepts multiple formats: `**Level**:`, `## Level`, or
+  //  a plain `Level:` line. Previously only `**Level**:` was matched, so any
+  //  template drift silently downgraded to 'standard' and skipped the gate.
+  //  The approver regex captures the full line (not just the first token) so
+  //  "Approved by: John Doe" stores "John Doe", not "John".
   const proposalPath = join(changePath, 'proposal.md');
   const proposalContent = existsSync(proposalPath) ? readFileSync(proposalPath, 'utf-8') : '';
-  const levelMatch = proposalContent.match(/\*\*Level\*\*:\s*(\w+)/);
+  const levelMatch = proposalContent.match(/(?:\*\*)?Level(?:\*\*)?\s*:\s*(\w+)/i);
   const changeLevel = levelMatch ? levelMatch[1].toLowerCase() : 'standard';
   if (changeLevel === 'critical') {
     const approvers = config.approvers ?? [];
     if (approvers.length > 0) {
-      // Check if review.md has an approval signature
-      const approvalMatch = reviewContent.match(/## Approval[\s\S]*?Approved by:\s*(\S+)/i);
+      // Capture the full approver identifier up to end-of-line, then trim.
+      const approvalMatch = reviewContent.match(/## Approval[\s\S]*?Approved by:\s*(.+?)\s*$/im);
       if (!approvalMatch) {
         console.error('Cannot archive: Critical change requires explicit approval in review.md ## Approval section.');
         console.error(`Configured approvers: ${approvers.join(', ')}`);
         process.exit(1);
       }
-      const approver = approvalMatch[1];
+      const approver = approvalMatch[1].trim();
       if (!approvers.includes(approver)) {
         console.error(`Cannot archive: approver '${approver}' not in configured approvers list.`);
         process.exit(1);
@@ -257,7 +267,10 @@ function finalizeHandler(name: string, options?: { dryRun?: boolean; ci?: boolea
     const map = generateCodebaseMap(rootDir);
     writeCodebaseMap(bpDir, map);
     console.log('  \u2713 Codebase map refreshed');
-  } catch { /* non-fatal */ }
+  } catch (e) {
+    // Non-fatal — the archive itself succeeded.
+    console.warn(`\u26a0 Codebase map refresh skipped: ${(e as Error).message}`);
+  }
 }
 
 // ---- Roadmap helpers ----
@@ -365,9 +378,11 @@ function updateRoadmap(roadmap: string, changeName: string, date: string): Roadm
       }
     }
 
-    // Also update the bracket status in the phase header
+    // Also update the bracket status in the phase header. Include PLANNED —
+    // `bp roadmap --add-milestone` emits `[PLANNED]` as the default status,
+    // so omitting it would leave a fully-completed PLANNED phase unmarked.
     lines[phaseIdx] = lines[phaseIdx].replace(
-      /\[(NOT_STARTED|IN_PROGRESS|ACTIVE)\]/,
+      /\[(NOT_STARTED|IN_PROGRESS|ACTIVE|PLANNED)\]/,
       '[COMPLETED]',
     );
   }
@@ -394,7 +409,13 @@ function updateRoadmap(roadmap: string, changeName: string, date: string): Roadm
     }
 
     if (allPhasesCompleted) {
-      lines[milestoneIdx] = lines[milestoneIdx].replace(/\[ACTIVE\]/, '[SHIPPED]');
+      // Include PLANNED/IN_PROGRESS/NOT_STARTED in the milestone shipping
+      // transition — previously only `[ACTIVE]` was replaced, so a
+      // `[PLANNED]` milestone whose phases all completed never shipped.
+      lines[milestoneIdx] = lines[milestoneIdx].replace(
+        /\[(NOT_STARTED|IN_PROGRESS|ACTIVE|PLANNED)\]/,
+        '[SHIPPED]',
+      );
       milestoneCompleted = true;
     }
   }

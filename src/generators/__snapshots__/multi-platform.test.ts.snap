@@ -4304,13 +4304,18 @@ function generateContextBlock(cwd) {
     var out = execFileSync("bp", ["context", "apply", "--format=compact"], {
       cwd: cwd,
       encoding: "utf-8",
-      stdio: ["ignore", "pipe", "ignore"],
+      stdio: ["ignore", "pipe", "pipe"],
+      timeout: 5000,
+      killSignal: "SIGTERM",
     }).trim();
     if (out.indexOf("<bp-context>") !== 0 || out.lastIndexOf("</bp-context>") !== out.length - "</bp-context>".length) {
       return "<bp-context>\\n</bp-context>";
     }
     return out;
-  } catch {
+  } catch (e) {
+    if (e && typeof e === "object" && "stderr" in e && e.stderr) {
+      process.stderr.write("bp context apply failed: " + e.stderr + "\\n");
+    }
     return "<bp-context>\\n</bp-context>";
   }
 }
@@ -6585,10 +6590,23 @@ Check before finishing:
  */
 import { existsSync, readFileSync } from "node:fs";
 import { execSync } from "node:child_process";
-import { join } from "node:path";
+import { join, resolve, sep } from "node:path";
 
 function isDisabled() {
   return process.env.BP_HOOKS === "0" || process.env.BP_DISABLE_HOOKS === "1";
+}
+
+/**
+ * Defense-in-depth: assert a resolved path stays under bp/changes/.
+ * activeChangeName is derived from bp/state.md — if that file is tampered
+ * with, '..' segments could otherwise let the hook read arbitrary files.
+ */
+function assertWithinChanges(bpDir, changeName) {
+  var changesRoot = resolve(join(bpDir, "changes")) + sep;
+  var target = resolve(join(bpDir, "changes", changeName));
+  if (target.indexOf(changesRoot) !== 0) {
+    throw new Error("Path traversal blocked: " + changeName + " escapes bp/changes/");
+  }
 }
 
 function hasBpConfig(cwd) {
@@ -6621,6 +6639,7 @@ function readBpState(cwd) {
 
 function readContextRows(bpDir, changeName) {
   if (!changeName) return [];
+  try { assertWithinChanges(bpDir, changeName); } catch { return []; }
   const path = join(bpDir, "changes", changeName, "context.jsonl");
   if (!existsSync(path)) return [];
   try {
@@ -6635,6 +6654,7 @@ function readContextRows(bpDir, changeName) {
 
 function readTasksContent(bpDir, changeName) {
   if (!changeName) return "";
+  try { assertWithinChanges(bpDir, changeName); } catch { return ""; }
   const path = join(bpDir, "changes", changeName, "tasks.md");
   if (!existsSync(path)) return "";
   try {

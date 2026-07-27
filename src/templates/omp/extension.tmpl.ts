@@ -31,10 +31,23 @@ export const EXTENSION_SOURCE = `/**
  */
 import { existsSync, readFileSync } from "node:fs";
 import { execSync } from "node:child_process";
-import { join } from "node:path";
+import { join, resolve, sep } from "node:path";
 
 function isDisabled() {
   return process.env.BP_HOOKS === "0" || process.env.BP_DISABLE_HOOKS === "1";
+}
+
+/**
+ * Defense-in-depth: assert a resolved path stays under bp/changes/.
+ * activeChangeName is derived from bp/state.md — if that file is tampered
+ * with, '..' segments could otherwise let the hook read arbitrary files.
+ */
+function assertWithinChanges(bpDir, changeName) {
+  var changesRoot = resolve(join(bpDir, "changes")) + sep;
+  var target = resolve(join(bpDir, "changes", changeName));
+  if (target.indexOf(changesRoot) !== 0) {
+    throw new Error("Path traversal blocked: " + changeName + " escapes bp/changes/");
+  }
 }
 
 function hasBpConfig(cwd) {
@@ -67,6 +80,7 @@ function readBpState(cwd) {
 
 function readContextRows(bpDir, changeName) {
   if (!changeName) return [];
+  try { assertWithinChanges(bpDir, changeName); } catch { return []; }
   const path = join(bpDir, "changes", changeName, "context.jsonl");
   if (!existsSync(path)) return [];
   try {
@@ -81,6 +95,7 @@ function readContextRows(bpDir, changeName) {
 
 function readTasksContent(bpDir, changeName) {
   if (!changeName) return "";
+  try { assertWithinChanges(bpDir, changeName); } catch { return ""; }
   const path = join(bpDir, "changes", changeName, "tasks.md");
   if (!existsSync(path)) return "";
   try {

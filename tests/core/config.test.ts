@@ -52,10 +52,46 @@ describe('loadConfig', () => {
 describe('saveConfig + updateConfig', () => {
   it('write-back preserves updates', () => {
     updateConfig(tmpDir, (config) => {
-      config.profile = 'lite';
+      config.profile = 'light';
     });
     const content = readFileSync(configPath(tmpDir), 'utf-8');
-    expect(content).toContain('profile: lite');
+    expect(content).toContain('profile: light');
+  });
+
+  it('saveConfig preserves all schema fields on round-trip', () => {
+    // Regression test for C3: saveConfig previously dropped workflow_version,
+    // prompt_profile, approvers, and budget fields on round-trip.
+    updateConfig(tmpDir, (config) => {
+      config.workflow_version = '0.7.0';
+      config.prompt_profile = 'full';
+      config.approvers = ['alice', 'bob'];
+      config.budget.no_progress_fuse_rounds = 5;
+    });
+    const reloaded = loadConfig(tmpDir);
+    expect(reloaded.workflow_version).toBe('0.7.0');
+    expect(reloaded.prompt_profile).toBe('full');
+    expect(reloaded.approvers).toEqual(['alice', 'bob']);
+    expect(reloaded.budget.no_progress_fuse_rounds).toBe(5);
+  });
+
+  it('saveConfig rejects invalid profile values', () => {
+    // saveConfig now validates through Zod — 'lite' (v1 name) is rejected
+    // because v2 uses 'light'. Migration happens on load, not on save.
+    expect(() => {
+      updateConfig(tmpDir, (config) => {
+        // @ts-expect-error — intentionally invalid
+        config.profile = 'lite';
+      });
+    }).toThrow();
+  });
+
+  it('loadConfig migrates legacy "lite" profile to "light"', () => {
+    // Write a config with the legacy 'lite' value directly (bypassing saveConfig
+    // validation) to verify loadConfig's backward-compat migration.
+    const legacyConfig = testConfigYml.replace('profile: standard', 'profile: lite');
+    writeFileSync(configPath(tmpDir), legacyConfig, 'utf-8');
+    const config = loadConfig(tmpDir);
+    expect(config.profile).toBe('light');
   });
 });
 
@@ -80,9 +116,9 @@ describe('resolveModels', () => {
     expect(models.planner).toBe('pi/plan');
   });
 
-  it('lite profile mapping', () => {
+  it('light profile mapping (formerly "lite")', () => {
     updateConfig(tmpDir, (config) => {
-      config.profile = 'lite';
+      config.profile = 'light';
     });
     const config = loadConfig(tmpDir);
     const models = resolveModels(config);
