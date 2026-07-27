@@ -586,16 +586,77 @@ Read \`proposal.md\` deliverables:
 2. Fill tasks.md with 1 wave
 3. No delta specs needed (no behavioral changes)
 
-### Step 4: Review planner output
+### Step 4: Review planner output for design quality
 
-Before committing, review the planner's design for soundness:
+Before committing, review the planner's design across FIVE content-quality dimensions. These are NOT format checks (Step 5 handles format) - they assess whether the design is correct, complete, and implementable. A flawed design cascades into implementation failure.
 
-1. Read \`design.md\` — are DS-N components well-decomposed? Is the architecture sound?
-2. Read \`tasks.md\` — are tasks properly split? Are TDD types correct? Are waves well-organized?
-3. Read \`specs/<domain>/spec.md\` — are requirements well-written? Do scenarios cover edge cases?
-4. Check \`## Impact Analysis\` section in design.md — did the planner identify all affected modules?
+For each dimension, ask the specific questions. If ANY fails, re-dispatch the planner with structured feedback (dimension + specific problem + expected state).
 
-**If problems found: re-dispatch planner with specific feedback on what to fix. After re-dispatch, return to Step 4 to review the updated output. Repeat this review loop until the design is sound.** Do NOT proceed with a flawed design — it will cascade into implementation failures.
+#### Dimension 1: Implementability (can the executor build it without guessing?)
+
+For each DS-N, read its Detailed Design section and ask:
+- Are interface signatures complete (parameters, return types, types)?
+- For data/state components: are internal state transitions, data structures, and read/write paths described?
+- For UI components: are Props, events, and all states (loading/empty/error/success) listed?
+- For API/CLI: are parameter validation rules, response format, and error codes specified?
+- Are error paths and side effects described (not just the happy path)?
+- Does Detailed Design add implementation detail beyond Key Interfaces, or does it just repeat them?
+
+FAIL example: DS-N Detailed Design says only "Implement ThemeContext class" - no state fields, no toggle logic, no persistence strategy. The executor would have to guess everything.
+
+#### Dimension 2: Design Correctness (is the architecture internally consistent?)
+
+- Do DS-N dependencies match the Architecture Diagram's arrows?
+- Does the Data Flow section cover every DS-N involved in the flow?
+- Do [NEW]/[MODIFIED]/[EXISTING] annotations in the diagram match the File Manifest's Action column?
+- Do Core Data Structures match the types used in DS-N Key Interfaces?
+- Are there circular dependencies or missing intermediate components?
+
+FAIL example: Architecture Diagram shows DS-2 depends on DS-1, but DS-2's Key Interfaces reference an export that DS-1 does not provide.
+
+#### Dimension 3: Decision Completeness (are all real technical choices recorded?)
+
+Check whether every technical choice with genuine alternatives has a D-N decision record:
+- State management approach (Context/Redux/Zustand/...)
+- Error handling strategy (try-catch/Result type/either/...)
+- Data persistence mechanism (localStorage/IndexedDB/cookie/...)
+- Async/concurrency pattern (callbacks/promises/async-await/observables/...)
+- Any external dependency introduction (recorded in External Dependencies table?)
+
+For each D-N, verify:
+- Reason states the driving constraint/tradeoff (not just "project uses X")
+- Alternatives were genuinely considered (not filler like "could also use Y")
+
+FAIL example: Design introduces localStorage persistence but has no D-N deciding "why not cookie/IndexedDB", and no D-N on "sync write vs debounced write".
+
+#### Dimension 4: Impact Completeness (did the planner find all downstream effects?)
+
+- Did the planner run \`bp map impact <module>\` for each modified module? (check the Impact Analysis section references impact queries)
+- Direct Impacts: does every File Manifest "Modify" entry appear here with a change description?
+- Indirect Impacts: are callers/dependents listed? If a public export's signature changes, Indirect Impacts MUST be non-empty.
+- Test Impacts: are existing tests that may break identified?
+- Is there a modified public export with empty Indirect Impacts? (likely a missed \`bp map impact\` query)
+
+FAIL example: File Manifest modifies src/core/auth.ts login() signature, but Indirect Impacts is empty (planner didn't run \`bp map impact auth\`).
+
+#### Dimension 5: File Manifest Consistency (does every file trace to a component?)
+
+- Does every DS-N have at least one File Manifest entry with Source: DS-N?
+- Does every File Manifest row's Source point to an existing DS-N?
+- Are there orphan files (in Manifest but no DS claims them) or orphan components (DS with no files)?
+- Any "etc." / "and other files" / "..." vague references? (must be exhaustive)
+
+FAIL example: DS-3 claims responsibility for ThemePersistence, but no File Manifest row has Source: DS-3.
+
+#### If problems found
+
+Re-dispatch the planner with structured feedback per finding:
+- Dimension: <1-5 name>
+- DS-N / file: <which component or file>
+- Problem: <what's wrong>
+- Expected: <what the design should show>
+
+After re-dispatch, return to Step 4 to review the updated output. Repeat until the design passes all five dimensions. Do NOT proceed with a flawed design - it will cascade into implementation failures.
 
 ### Step 5: Verify output
 
@@ -611,10 +672,8 @@ Before committing, review the planner's design for soundness:
 - Delta specs use correct sections (ADDED/MODIFIED/REMOVED)
 - File manifest lists every file (no "etc.")
 
-**Quality:**
+**Structural Completeness** (format checks - content quality is covered in Step 4):
 - No template placeholders remaining in any file
-- DS-N components have clear single responsibility
-- D-N decisions have real alternatives
 - type:behavior tasks have RED descriptions (GIVEN/WHEN/THEN)
 - Requirements use SHALL/MUST/SHOULD correctly
 - Each requirement has at least 1 scenario
@@ -714,6 +773,7 @@ What to grill on (walk every branch):
 - **Scope**: What is in scope? What is explicitly excluded? Where does this change stop?
 - **Deliverables**: What observable behaviors? What inputs/outputs? What error conditions?
 - **Approach**: What technical approach? What alternatives were considered? Why this one?
+- **Research**: What needs investigation during discussion (libraries, existing code, external projects)? Track these for Step 1b.
 - **Edge cases**: What happens when input is invalid? Empty? Concurrent? Large scale?
 - **Dependencies**: Does this depend on existing code? Other changes? External services?
 - **Constraints**: Performance targets? Library choices? Backwards compatibility?
@@ -726,6 +786,31 @@ What to grill on (walk every branch):
 - Do NOT use [ASSUMPTION] tags. If you are about to assume, STOP and ask instead.
 - If the user says "use your best judgment" on a specific point, you may proceed without asking.
 
+### Step 1b: Technical research
+
+For non-trivial changes (standard or critical), research the technical landscape
+before writing the proposal. This ensures external references and codebase
+information are captured in the proposal, not lost after the discussion.
+
+> **Skip this step for trivial/light changes** — go directly to Step 2.
+
+1. **Codebase patterns** — Read relevant source files referenced in discussion.
+   What conventions, APIs, or constraints exist?
+2. **External projects/references** — If the discussion mentioned specific
+   libraries, projects, or documentation URLs, read them. Do NOT rely on
+   training data for technical details.
+3. **Call-site analysis** — For modifications, use LSP references or grep
+   to find current callers of code to be changed.
+4. **Web research** — Use web_search for anything unresolved.
+
+**Document as you go.** Keep notes per deliverable — each finding will go into
+its PR-N's Research table. If a finding affects multiple PR-Ns, note it for
+## Research Landscape instead.
+
+**If you cannot find the information needed**, return to the user with specific
+questions: "To confirm the PR-1 approach, I need to check X — found A and B but
+not C. Can you point me to C?"
+
 ### Step 2: Create change directory
 
 \`\`\`bash
@@ -734,28 +819,60 @@ mkdir -p bp/changes/$1
 
 If \`--phase\` is provided, note the milestone/phase for the proposal's Roadmap Reference section.
 
-### Step 3: Write proposal
+### Step 3: Write the detailed proposal
 
-Get the proposal template and fill it based on the discussion:
+Get the proposal template and fill it based on the discussion and research:
 
 1. Run \`bp template proposal --stdout\` to get the template
-2. Fill in each section:
-   - **Intent**: Capture what the user described as the problem to solve
-   - **Scope**: In scope and out of scope from the discussion
-   - **Approach**: User's preferred approach if given, or a reasonable high-level approach based on the discussion
-   - **Deliverables**: Observable, verifiable capabilities (PR-N). Each must have a SHALL statement and a Verify method.
-   - **Roadmap Reference**: If --phase provided, fill in milestone/phase
+2. Fill EVERY section, following these rules:
+
+   **Intent** — Write as much as needed. This is the permanent record of the
+   motivation. Include the problem context, why now, and what triggered the change.
+
+   **Scope (In/Out)** — Be precise. "Support GitHub OAuth login" not "improve auth".
+   List concrete capabilities in In Scope, explicit exclusions in Out of Scope.
+
+   **Research Landscape** — Use when a single investigation (e.g. reading a library's
+   docs) affected multiple PR-Ns. Per-PR-specific findings go in that PR-N's table.
+   Skip this section if no cross-cutting research was done.
+
+   **Approach** — High-level strategy. Per-deliverable breakdown goes in each PR-N's
+   Rationale section. Write as much as needed.
+
+   **Deliverables (PR-N)** — This is the core. Fill ALL sub-fields for each PR-N:
+
+   - **Behavior**: The SHALL statement — observable capability.
+   - **Rationale**: WHY this deliverable exists. Capture what was discussed:
+     user pain points, tradeoff conclusions, decision context. This is the
+     permanent record — someone reading this 3 months later should understand
+     why this choice was made.
+   - **Research**: Per-deliverable research findings from Step 1b. What was
+     checked, what was found, how it affected the design. Skip if no research
+     was needed for this deliverable.
+   - **Alternatives Considered**: What else was discussed and why rejected.
+     Skip if no alternatives were discussed for this deliverable.
+   - **Risks & Mitigations**: Known risks identified during discussion.
+     Skip if no risks were identified.
+   - **Verify**: How to verify this deliverable works.
+   - **Files**: Expected file paths (new or modified).
+
+   **Dependencies** / **Roadmap Reference** — Fill if applicable.
+
 3. Write to \`bp/changes/$1/proposal.md\`
 
 ### Step 4: Verify proposal quality
 
 Before finishing, check:
-- [ ] Intent clearly states the problem
+- [ ] Intent clearly states the problem with full context
 - [ ] Scope has both In Scope and Out of Scope sections
-- [ ] Each deliverable (PR-N) has a SHALL statement and Verify method
-- [ ] No template placeholders remaining
+- [ ] Each PR-N has ALL sub-fields filled (Behavior, Rationale, Verify)
+- [ ] Each PR-N has Research filled IF research was done during discussion/Step 1b
+- [ ] Each PR-N has Alternatives Considered filled IF alternatives were discussed
+- [ ] Each PR-N has Risks & Mitigations filled IF risks were identified
+- [ ] Template placeholders replaced — no \`{{...}}\` remaining
 - [ ] PR count <= 5 (if more, suggest splitting)
-- [ ] The proposal reflects what the user described (not AI guesswork)
+- [ ] The proposal captures the user's actual requirements, not AI guesswork
+- [ ] (Optional) Research Landscape filled IF cross-cutting research was done
 
 ### Step 5: Commit and suggest next step
 
@@ -777,6 +894,9 @@ Created bp/changes/$1/proposal.md
 ## Guardrails
 
 - **ALWAYS discuss with the user before writing.** Do not guess the requirements.
+- **ALWAYS research what was discussed.** Step 1b is mandatory for standard/critical changes.
+- **DO write the proposal in detail.** The proposal is the permanent record of the
+  discussion — lost details cannot be recovered later. Every PR-N's Rationale matters.
 - Do NOT create design.md, tasks.md, or specs/ - that's the planner's job
 - Do NOT run bp plan automatically - let the user review the proposal first
 - If the user wants to skip proposal review and go straight to planning, they can run bp plan $1 directly

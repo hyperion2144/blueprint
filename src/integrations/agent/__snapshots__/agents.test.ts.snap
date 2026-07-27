@@ -709,6 +709,14 @@ Check before finishing:
 - Every Design Item has \`Source: PR-{id}\` annotation
 - Interface Design lists complete method, path, request/response, source spec
 - tasks.md boxes are UNCHECKED and \`<!-- commit: -->\` placeholders are PRESERVED (leave both for executor)
+- **Implementability self-check** (CRITICAL - the #1 reason designs get rejected by the orchestrator): For each DS-N, re-read your own Detailed Design and ask: "Can an executor implement this without reading source code or guessing?" Before returning, verify each of these is present:
+  - Interface signatures complete (parameters, return types, types)
+  - State transitions / data structures / read-write paths (data/state components)
+  - Props / events / all states including loading/empty/error/success (UI components)
+  - Validation rules / response format / error codes (API/CLI components)
+  - Error paths and side effects described (not just happy path)
+  - Detailed Design adds detail beyond Key Interfaces (not just repeating them)
+  If any DS-N fails this check, expand its Detailed Design before returning. Do NOT return a design the executor cannot follow.
 ",
   "reviewer": "---
 name: bp-reviewer

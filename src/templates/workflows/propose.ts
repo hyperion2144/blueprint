@@ -47,6 +47,7 @@ What to grill on (walk every branch):
 - **Scope**: What is in scope? What is explicitly excluded? Where does this change stop?
 - **Deliverables**: What observable behaviors? What inputs/outputs? What error conditions?
 - **Approach**: What technical approach? What alternatives were considered? Why this one?
+- **Research**: What needs investigation during discussion (libraries, existing code, external projects)? Track these for Step 1b.
 - **Edge cases**: What happens when input is invalid? Empty? Concurrent? Large scale?
 - **Dependencies**: Does this depend on existing code? Other changes? External services?
 - **Constraints**: Performance targets? Library choices? Backwards compatibility?
@@ -59,6 +60,31 @@ What to grill on (walk every branch):
 - Do NOT use [ASSUMPTION] tags. If you are about to assume, STOP and ask instead.
 - If the user says "use your best judgment" on a specific point, you may proceed without asking.
 
+### Step 1b: Technical research
+
+For non-trivial changes (standard or critical), research the technical landscape
+before writing the proposal. This ensures external references and codebase
+information are captured in the proposal, not lost after the discussion.
+
+> **Skip this step for trivial/light changes** — go directly to Step 2.
+
+1. **Codebase patterns** — Read relevant source files referenced in discussion.
+   What conventions, APIs, or constraints exist?
+2. **External projects/references** — If the discussion mentioned specific
+   libraries, projects, or documentation URLs, read them. Do NOT rely on
+   training data for technical details.
+3. **Call-site analysis** — For modifications, use LSP references or grep
+   to find current callers of code to be changed.
+4. **Web research** — Use web_search for anything unresolved.
+
+**Document as you go.** Keep notes per deliverable — each finding will go into
+its PR-N's Research table. If a finding affects multiple PR-Ns, note it for
+## Research Landscape instead.
+
+**If you cannot find the information needed**, return to the user with specific
+questions: "To confirm the PR-1 approach, I need to check X — found A and B but
+not C. Can you point me to C?"
+
 ### Step 2: Create change directory
 
 \`\`\`bash
@@ -67,28 +93,60 @@ mkdir -p bp/changes/$1
 
 If \`--phase\` is provided, note the milestone/phase for the proposal's Roadmap Reference section.
 
-### Step 3: Write proposal
+### Step 3: Write the detailed proposal
 
-Get the proposal template and fill it based on the discussion:
+Get the proposal template and fill it based on the discussion and research:
 
 1. Run \`bp template proposal --stdout\` to get the template
-2. Fill in each section:
-   - **Intent**: Capture what the user described as the problem to solve
-   - **Scope**: In scope and out of scope from the discussion
-   - **Approach**: User's preferred approach if given, or a reasonable high-level approach based on the discussion
-   - **Deliverables**: Observable, verifiable capabilities (PR-N). Each must have a SHALL statement and a Verify method.
-   - **Roadmap Reference**: If --phase provided, fill in milestone/phase
+2. Fill EVERY section, following these rules:
+
+   **Intent** — Write as much as needed. This is the permanent record of the
+   motivation. Include the problem context, why now, and what triggered the change.
+
+   **Scope (In/Out)** — Be precise. "Support GitHub OAuth login" not "improve auth".
+   List concrete capabilities in In Scope, explicit exclusions in Out of Scope.
+
+   **Research Landscape** — Use when a single investigation (e.g. reading a library's
+   docs) affected multiple PR-Ns. Per-PR-specific findings go in that PR-N's table.
+   Skip this section if no cross-cutting research was done.
+
+   **Approach** — High-level strategy. Per-deliverable breakdown goes in each PR-N's
+   Rationale section. Write as much as needed.
+
+   **Deliverables (PR-N)** — This is the core. Fill ALL sub-fields for each PR-N:
+
+   - **Behavior**: The SHALL statement — observable capability.
+   - **Rationale**: WHY this deliverable exists. Capture what was discussed:
+     user pain points, tradeoff conclusions, decision context. This is the
+     permanent record — someone reading this 3 months later should understand
+     why this choice was made.
+   - **Research**: Per-deliverable research findings from Step 1b. What was
+     checked, what was found, how it affected the design. Skip if no research
+     was needed for this deliverable.
+   - **Alternatives Considered**: What else was discussed and why rejected.
+     Skip if no alternatives were discussed for this deliverable.
+   - **Risks & Mitigations**: Known risks identified during discussion.
+     Skip if no risks were identified.
+   - **Verify**: How to verify this deliverable works.
+   - **Files**: Expected file paths (new or modified).
+
+   **Dependencies** / **Roadmap Reference** — Fill if applicable.
+
 3. Write to \`bp/changes/$1/proposal.md\`
 
 ### Step 4: Verify proposal quality
 
 Before finishing, check:
-- [ ] Intent clearly states the problem
+- [ ] Intent clearly states the problem with full context
 - [ ] Scope has both In Scope and Out of Scope sections
-- [ ] Each deliverable (PR-N) has a SHALL statement and Verify method
-- [ ] No template placeholders remaining
+- [ ] Each PR-N has ALL sub-fields filled (Behavior, Rationale, Verify)
+- [ ] Each PR-N has Research filled IF research was done during discussion/Step 1b
+- [ ] Each PR-N has Alternatives Considered filled IF alternatives were discussed
+- [ ] Each PR-N has Risks & Mitigations filled IF risks were identified
+- [ ] Template placeholders replaced — no \`{{...}}\` remaining
 - [ ] PR count <= 5 (if more, suggest splitting)
-- [ ] The proposal reflects what the user described (not AI guesswork)
+- [ ] The proposal captures the user's actual requirements, not AI guesswork
+- [ ] (Optional) Research Landscape filled IF cross-cutting research was done
 
 ### Step 5: Commit and suggest next step
 
@@ -110,6 +168,9 @@ Created bp/changes/$1/proposal.md
 ## Guardrails
 
 - **ALWAYS discuss with the user before writing.** Do not guess the requirements.
+- **ALWAYS research what was discussed.** Step 1b is mandatory for standard/critical changes.
+- **DO write the proposal in detail.** The proposal is the permanent record of the
+  discussion — lost details cannot be recovered later. Every PR-N's Rationale matters.
 - Do NOT create design.md, tasks.md, or specs/ - that's the planner's job
 - Do NOT run bp plan automatically - let the user review the proposal first
 - If the user wants to skip proposal review and go straight to planning, they can run bp plan $1 directly

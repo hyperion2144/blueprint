@@ -12,8 +12,10 @@ export const PROPOSAL_TEMPLATE = `# Proposal: {{name}}
   The planner agent reads this to produce design.md, tasks.md, and delta specs.
 
   Quality bar:
-  - Intent explains the problem, not just the solution
+  - Intent explains the problem with full context, not just the solution
   - Scope boundaries are explicit and justified
+  - Each PR-N has Rationale documenting WHY decisions were made
+  - Each PR-N documents Research, Alternatives, and Risks where applicable
   - Deliverables are observable (you can verify each one)
   - Each deliverable traces to a spec domain
 -->
@@ -35,8 +37,8 @@ export const PROPOSAL_TEMPLATE = `# Proposal: {{name}}
 
 <!--
   What problem does this change solve? Why now?
+  Write as much as needed — this is the permanent record of the motivation.
   Don't describe the solution here - that goes in Approach.
-  2-4 sentences.
 -->
 
 {{intent}}
@@ -64,12 +66,25 @@ export const PROPOSAL_TEMPLATE = `# Proposal: {{name}}
 - {{excluded-1}}
 - {{excluded-2}}
 
+## Research Landscape
+
+<!--
+  Optional. Cross-cutting research that informed the overall approach.
+  Use when a single investigation affected multiple PR-Ns.
+  Per-PR-specific findings belong in that PR-N's Research table.
+-->
+
+> This change was informed by investigation of:
+> - {{source-1}}: {{finding}}
+> - {{source-2}}: {{finding}}
+> - {{source-3}}: {{finding}}
+
 ## Approach
 
 <!--
-  High-level method description. 2-4 sentences.
+  High-level method description. Write as much as needed to capture the strategy.
+  Per-deliverable breakdown goes in each PR-N's Rationale section below.
   Don't include technical details (class names, library choices) - those go in design.md.
-  Do mention if there are alternative approaches worth considering.
 -->
 
 {{approach}}
@@ -85,19 +100,107 @@ export const PROPOSAL_TEMPLATE = `# Proposal: {{name}}
   - Each PR-N has a Verify method (command, test, or manual step)
   - Source traces to a spec domain (existing or new)
   - Keep PR count ≤ 5. If more, consider splitting this change.
+
+  Per-PR-N sections:
+  - Rationale: WHY this deliverable exists — discussion context, user feedback,
+    problem analysis. This is the permanent record of the decision.
+  - Research: What was investigated (libraries, docs, source code, external
+    projects) and what was learned that influenced this deliverable.
+  - Alternatives: What else was considered and why it was rejected.
+  - Risks: Known risks specific to this deliverable and mitigation.
 -->
 
 ### PR-1: {{deliverable-title}}
 
-- **Source**: specs/{{domain}}/spec.md ({{existing-or-new}})
+- **Domain**: specs/{{domain}}/spec.md
 - **Behavior**: The system SHALL {{observable-behavior}}
-- **Verify**: {{command-or-test-or-manual-step}}
+
+**Rationale**:
+<!--
+  Why does this deliverable exist? What problem does it solve?
+  What was discussed and decided? Capture the "why", not just the "what".
+-->
+
+{{rationale}}
+
+**Research**:
+<!--
+  What external projects, libraries, documentation, or codebase analysis
+  informed this deliverable? Include URLs, key findings, and impact on design.
+  Skip if no research was needed for this deliverable.
+-->
+
+| Source | Finding | Impact |
+|--------|---------|--------|
+| {{url-or-path}} | {{finding}} | {{impact}} |
+
+**Alternatives Considered**:
+<!--
+  What else was considered for this deliverable and why rejected.
+  Skip if alternatives were not discussed.
+-->
+
+| Alternative | Reason Rejected |
+|-------------|----------------|
+| {{alt}} | {{reason}} |
+
+**Risks & Mitigations**:
+<!--
+  Known risks specific to this deliverable.
+  Skip if no risks were identified.
+-->
+
+| Risk | Likelihood | Mitigation |
+|------|-----------|------------|
+| {{risk}} | {{high/med/low}} | {{mitigation}} |
+
+- **Verify**: {{verification-method}}
 - **Files**: {{expected-file-paths}}
 
 ### PR-2: {{deliverable-title}}
 
-- **Source**: specs/{{domain}}/spec.md
+- **Domain**: specs/{{domain}}/spec.md
 - **Behavior**: The system SHALL {{observable-behavior}}
+
+**Rationale**:
+<!--
+  Why does this deliverable exist? What problem does it solve?
+  What was discussed and decided? Capture the "why", not just the "what".
+-->
+
+{{rationale}}
+
+**Research**:
+<!--
+  What external projects, libraries, documentation, or codebase analysis
+  informed this deliverable? Include URLs, key findings, and impact on design.
+  Skip if no research was needed for this deliverable.
+-->
+
+| Source | Finding | Impact |
+|--------|---------|--------|
+| {{url-or-path}} | {{finding}} | {{impact}} |
+
+**Alternatives Considered**:
+<!--
+  What else was considered for this deliverable and why rejected.
+  Skip if alternatives were not discussed.
+-->
+
+| Alternative | Reason Rejected |
+|-------------|----------------|
+| {{alt}} | {{reason}} |
+
+**Risks & Mitigations**:
+<!--
+  Known risks specific to this deliverable.
+  Skip if no risks were identified.
+-->
+
+| Risk | Likelihood | Mitigation |
+|------|-----------|------------|
+| {{risk}} | {{high/med/low}} | {{mitigation}} |
+
 - **Verify**: {{verification-method}}
 - **Files**: {{expected-file-paths}}
 
