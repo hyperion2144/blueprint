@@ -818,13 +818,21 @@ export const ROADMAP_TEMPLATE = `# Roadmap: {{project-name}}
   Format rules:
   - Status tags: [NOT_STARTED], [ACTIVE], [IN_PROGRESS], [COMPLETED], [SHIPPED]
   - Milestone: M{id} (e.g., M1, M2)
-  - Phase: P{milestone}.{id} (e.g., P1.1, P1.2)
+  - Phase: P{milestone}.{id} (e.g., P1.1, P1.2) — full-structure milestones only
   - Change: listed under phase with [x] (done) or [ ] (pending)
+  - All three layers share Goal / What / Deliverables / Outcomes fields
+  - Full-structure milestone: phases + changes decomposed
+  - Placeholder milestone: Goal/What/Deliverables/Outcomes + Key Decisions only (no phases)
+  - Phase status must match between heading [STATUS] and **Status** line
+  - Progress Summary: full-structure = numeric; placeholder = "-/-"
 -->
 
 ## Milestone: M1 - {{milestone-name}} [ACTIVE]
 
-**Goal**: {{what this milestone achieves}}
+**Goal**: {{product-level goal — what problem this milestone solves}}
+**What**: {{work scope — brief summary of phase coverage}}
+**Deliverables**: {{release-level artifacts — e.g. v2.0 CLI, docs site}}
+**Outcomes**: {{verifiable release criteria — e.g. user can run bp init→archive end-to-end}}
 **Status**: {{PLANNED | ACTIVE | SHIPPED}}
 
 <!--
@@ -835,35 +843,35 @@ export const ROADMAP_TEMPLATE = `# Roadmap: {{project-name}}
 
 ### Phase: P1.1 - {{phase-name}} [{{STATUS}}]
 
-- **Goal**: {{what this phase delivers}}
-- **Description**: {{what work this phase involves — key areas, known constraints, estimated scope}}
+- **Goal**: {{value or runnable artifact this phase delivers}}
+- **What**: {{work involved — key areas, approach, constraints}}
+- **Deliverables**: {{concrete artifacts — files, commands, features, tests}}
+- **Outcomes**: {{verifiable result — prefer Given/When/Then or executable command}}
+- **Depends on**: {{prior phase id, e.g. P1.1; none if first phase}}
 - **Spec domain**: {{domain-name}}
 - **Changes**: {{completed}}/{{total}} completed
 - **Status**: {{NOT_STARTED | IN_PROGRESS | COMPLETED}}
 
 ### Key Decisions
 
-<!-- Route-map discussion outcomes: technical conventions, design decisions, constraints. Reference format: [P1.1-KD] decision summary -->
+<!-- Roadmap discussion outcomes: technical conventions, design decisions, constraints. Reference format: [P1.1-KD] decision summary -->
 
-- {{field-design / api-format / tech-stack / convention}} — {{decision content, reason, alternatives considered}}
-- {{field-design / api-format / tech-stack / convention}} — {{decision content, reason, alternatives considered}}
+- [P1.1-KD] {{subject}} — {{decision}} (reason: {{why}}; alt: {{alternatives}})
 
-**Changes** — Planned changes with checkbox + status. Each change is a structured block:
-- **Goal**: what this change achieves
-- **What**: the work involved — key areas, approach, known constraints
-- **Deliverables**: concrete artifacts produced (files, commands, features, tests)
-- **Outcomes**: verifiable result — what becomes true after this change lands
+**Changes**:
 
 - [x] {{change-name}} (archived {{date}})
   - **Goal**: {{what this change achieves}}
   - **What**: {{work involved — key areas, approach, constraints}}
   - **Deliverables**: {{concrete artifacts produced}}
   - **Outcomes**: {{verifiable result after landing}}
+  - **Depends on**: {{prior change name; none if first}}
 - [ ] {{change-name}} (proposed {{date}})
   - **Goal**: {{what this change achieves}}
   - **What**: {{work involved — key areas, approach, constraints}}
   - **Deliverables**: {{concrete artifacts produced}}
   - **Outcomes**: {{verifiable result after landing}}
+  - **Depends on**: {{prior change name; none if first}}
 
 **Next**: {{next-change-or "All changes completed"}}
 
@@ -871,26 +879,23 @@ export const ROADMAP_TEMPLATE = `# Roadmap: {{project-name}}
 
 ## Milestone: M2 - {{milestone-name}} [PLANNED]
 
-**Goal**: {{what this milestone achieves}}
-**Status**: PLANNED
-
 <!--
-  Future milestone — details known at roadmap time.
-  Phase structure follows the same pattern as M1 (P2.1, P2.2...).
-  Fill what IS known now, even if incomplete.
-  Key decisions made during discussion that belong to this milestone go here.
+  Placeholder milestone — direction known, but NOT fully discussed yet.
+  DO NOT decompose into phases or list changes here.
+  Promote to full structure (with phase decomposition) when discussion is complete.
 -->
 
-### Phase: P2.1 - {{phase-name}} [NOT_STARTED]
-
-- **Goal**: {{what this phase delivers — fill what's known, even if high-level}}
-- **Description**: {{known scope, constraints, or "TBD — details deferred"}}
+**Goal**: {{what this milestone aims to achieve — TBD OK if high-level}}
+**What**: {{known scope or "TBD — details deferred"}}
+**Deliverables**: {{known artifacts or "TBD"}}
+**Outcomes**: {{known criteria or "TBD"}}
+**Status**: PLANNED
 
 ### Key Decisions
 
-<!-- Route-map discussion outcomes that belong to this milestone. -->
+<!-- Decisions discussed for this milestone, if any. Use milestone-level id since no phases yet. -->
 
-- {{convention / design / constraint}} — {{decision content}}
+- [M2-KD] {{subject}} — {{decision}} (reason: {{why}}; alt: {{alternatives}})
 
 ---
 
@@ -910,8 +915,8 @@ export const ROADMAP_TEMPLATE = `# Roadmap: {{project-name}}
 
 | Milestone | Phases | Changes | Status |
 |-----------|--------|---------|--------|
-| M1 - {{name}} | {{done}}/{{total}} | {{done}}/{{total}} | {{status}} |
-| M2 - {{name}} | {{done}}/{{total}} | {{done}}/{{total}} | {{status}} |
+| M1 - {{name}} | {{completed}}/{{total}} | {{archived}}/{{total}} | {{status}} |
+| M2 - {{name}} | -/- | -/- | PLANNED |
 `;
 
 export const CONFIG_TEMPLATE = `# Blueprint Project Configuration (v2)

@@ -84,6 +84,23 @@ function roadmapHandler(options: {
         console.error(`FAIL: Phase "${line}" missing [status]`);
         pass = false;
       }
+      // Phase status consistency: heading [STATUS] must match **Status** attribute.
+      const headingStatus = line.match(/\[([A-Z_]+)\]/)?.[1];
+      // Extract the phase block (from this heading line until next ### Phase or ## Milestone or end)
+      const blockStart = (p.index ?? 0) + p[0].length;
+      const after = content.slice(blockStart);
+      const blockEnd = after.search(/^##\s/m);
+      const phaseBlock = blockEnd >= 0 ? after.slice(0, blockEnd) : after;
+      const attrStatus = phaseBlock.match(/\*\*Status\*\*:\s*([A-Z_]+)/)?.[1];
+      if (headingStatus && attrStatus && headingStatus !== attrStatus) {
+        console.error(`FAIL: Phase "${line}" heading status [${headingStatus}] != attribute Status (${attrStatus})`);
+        pass = false;
+      }
+      // Phase must have Depends on field.
+      if (!/\*\*Depends on\*\*:/.test(phaseBlock)) {
+        console.error(`FAIL: Phase "${line}" missing **Depends on** field`);
+        pass = false;
+      }
     }
     if (phaseCount === 0) {
       console.error('FAIL: No ### Phase: headings found');
@@ -97,6 +114,24 @@ function roadmapHandler(options: {
       changeCount++;
       if (!c[2].trim()) {
         console.error(`FAIL: Change line "${c[0].trim()}" has no change name`);
+        pass = false;
+      }
+      // Change block must have Depends on field.
+      const blockStart = (c.index ?? 0) + c[0].length;
+      const after = content.slice(blockStart);
+      // Change block ends at next "- [x]" / "- [ ]" line, or a **Next**: / heading line.
+      const nextChange = after.search(/^-\s+\[[ x]\]/m);
+      const nextBoundary = after.search(/^(\*\*Next\*\*:|^#{2,3}\s)/m);
+      let changeBlock: string;
+      if (nextChange >= 0) {
+        changeBlock = after.slice(0, nextChange);
+      } else if (nextBoundary >= 0) {
+        changeBlock = after.slice(0, nextBoundary);
+      } else {
+        changeBlock = after;
+      }
+      if (!/\*\*Depends on\*\*:/.test(changeBlock)) {
+        console.error(`FAIL: Change "${c[2].trim()}" missing **Depends on** field`);
         pass = false;
       }
     }
@@ -140,31 +175,21 @@ function roadmapHandler(options: {
   if (options.addMilestone) {
     const goal = options.goal || 'TBD';
     const id = getNextMilestoneId(roadmap);
+    // Placeholder milestone: no phase decomposition until discussed.
+    // Promote to full structure (with phases) when discussion is complete.
     const section = `
 
 ## Milestone: M${id} - ${options.addMilestone} [PLANNED]
 
 **Goal**: ${goal}
+**What**: TBD
+**Deliverables**: TBD
+**Outcomes**: TBD
 **Status**: PLANNED
 
-### Phase: P${id}.1 - Initial Phase [NOT_STARTED]
+### Key Decisions
 
-- **Goal**: TBD
-- **Spec domain**: core
-- **Changes**: 0/0 completed
-- **Status**: NOT_STARTED
-
-**Changes** — Planned changes with checkbox + status. Each change is a structured block:
-- **Goal**: what this change achieves
-- **What**: the work involved — key areas, approach, known constraints
-- **Deliverables**: concrete artifacts produced (files, commands, features, tests)
-- **Outcomes**: verifiable result — what becomes true after this change lands
-
-- [ ] {{change-name}} (proposed {{date}})
-  - **Goal**: {{what this change achieves}}
-  - **What**: {{work involved — key areas, approach, constraints}}
-  - **Deliverables**: {{concrete artifacts produced}}
-  - **Outcomes**: {{verifiable result after landing}}
+- [M${id}-KD] (none yet)
 
 `;
 
@@ -203,25 +228,28 @@ function roadmapHandler(options: {
     const milestoneEnd = findMilestoneEnd(roadmap, milestoneStart);
     const milestoneSection = roadmap.slice(milestoneStart, milestoneEnd);
     const phaseId = getNextPhaseId(milestoneSection, milestoneName);
+    // Derive Depends on: id of the last existing phase in this milestone, or 'none'.
+    const existingPhaseIds = Array.from(milestoneSection.matchAll(/^### Phase:\s*(P\d+\.\d+)/gm)).map((m) => m[1]);
+    const dependsOn = existingPhaseIds.length > 0 ? existingPhaseIds[existingPhaseIds.length - 1] : 'none';
     const phaseSection = `
 ### Phase: P${phaseId} - ${goal} [NOT_STARTED]
 
 - **Goal**: ${goal}
+- **What**: TBD
+- **Deliverables**: TBD
+- **Outcomes**: TBD
+- **Depends on**: ${dependsOn}
 - **Spec domain**: ${domain}
 - **Changes**: 0/0 completed
 - **Status**: NOT_STARTED
 
-**Changes** — Planned changes with checkbox + status. Each change is a structured block:
-- **Goal**: what this change achieves
-- **What**: the work involved — key areas, approach, known constraints
-- **Deliverables**: concrete artifacts produced (files, commands, features, tests)
-- **Outcomes**: verifiable result — what becomes true after this change lands
+### Key Decisions
 
-- [ ] {{change-name}} (proposed {{date}})
-  - **Goal**: {{what this change achieves}}
-  - **What**: {{work involved — key areas, approach, constraints}}
-  - **Deliverables**: {{concrete artifacts produced}}
-  - **Outcomes**: {{verifiable result after landing}}
+- [${phaseId}-KD] (none yet)
+
+**Changes**:
+
+- (none yet)
 
 `;
 

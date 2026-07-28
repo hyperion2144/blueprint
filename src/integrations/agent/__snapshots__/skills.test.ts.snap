@@ -1129,44 +1129,95 @@ Use \`ask\` to determine the planning mode:
 
 ### Step 5: Define Milestones
 
-**HARD RULE: You MUST fetch the roadmap template by running \`bp template roadmap --stdout\` BEFORE writing \`bp/roadmap.md\`.** The template defines milestone and phase section structure, status tags, and progress summary format. Writing from memory will produce an unparesable roadmap.
+**HARD RULE: You MUST fetch the roadmap template by running \`bp template roadmap --stdout\` BEFORE writing \`bp/roadmap.md\`.** The template defines milestone and phase section structure, status tags, and progress summary format. Writing from memory will produce an unparsable roadmap.
 
-Fill the template with milestones and phases based on project requirements.
+Fill the template with milestones based on project requirements.
 
 **Milestones = product releases.** A project may have 1 milestone (ship everything at once) or multiple (v1, v2, v3...).
 
-**Create ALL known milestones right now**, not just M1. For each:
-- **M1** (current/upcoming): full detail — phases, key decisions, planned changes
-- **M2, M3...** (future): fill what's known now. Goal, rough scope, and any decisions discussed.
-  Incomplete is OK — "TBD phase details deferred" is better than omitting the milestone entirely.
-  Key decisions made during discussion that belong to later milestones go into their ## Key Decisions.
+**Create ALL known milestones right now**, not just M1. Each milestone is one of two tiers:
 
-**What if details aren't clear yet for later milestones?**
-- Document what IS known (e.g., "Goal: add payment") and mark scope as TBD
-- Put discussed-but-unassigned items in ## Future Considerations
-- The template supports this — M2 section has the right structure
-- Don't skip creating the milestone. Partial documentation preserves decisions.
+- **Discussed milestones** (full structure) — discussion is complete and the milestone is being planned or worked on:
+  - Goal / What / Deliverables / Outcomes (concrete)
+  - Phases decomposed (P{N}.1, P{N}.2...) with full fields
+  - Each phase lists planned changes as structured blocks
+  - Key Decisions captured during discussion
 
-When defining each phase, fill these areas:
+- **Future milestones** (placeholder only) — direction known but NOT fully discussed yet:
+  - Goal / What / Deliverables / Outcomes (TBD is OK; fill what's known)
+  - Key Decisions discussed for this milestone (if any)
+  - **DO NOT decompose into phases or list changes** — that happens after the milestone is discussed and promoted to full structure
+  - Rationale: premature decomposition locks in structure that later discussion will overturn.
 
-**Key Decisions** — As the user discusses technical details (field design, API format, conventions, tech stack choices), write the decisions into the appropriate milestone/phase's \`### Key Decisions\` section. If a decision belongs to a future milestone, put it there — don't leave it in the current milestone. Each decision includes: subject area, decision content, reason, and alternatives considered.
+The template's M1 section illustrates the full-structure form; the template's M2 section illustrates the placeholder form. A real project may have multiple full-structure milestones (e.g. M1 active, M3 discussed) and multiple placeholder milestones (e.g. M2 future) — assign each milestone the tier that matches its actual discussion state.
 
-**Planned changes** — For NOT_STARTED phases, list planned changes in \`**Changes**\` as a structured block per change. Each block has four fields: **Goal** (what this change achieves), **What** (work involved — key areas, approach, constraints), **Deliverables** (concrete artifacts produced: files, commands, features, tests), **Outcomes** (verifiable result — what becomes true after this change lands). The change name line keeps the \`- [ ] name (proposed date)\` format so \`bp archive\` can mark it \`[x]\`; the four fields are indented sub-items below it. This helps planners understand the scope and verifiable outcomes without re-reading the full discussion.
+#### Splitting granularity (applies to full-structure milestones only)
 
-**Changes** — Already existing or proposed changes get \`**Changes**\` with checkbox + status + structured block (Goal/What/Deliverables/Outcomes).
+- **Milestone** = one shippable product increment (user-perceptible, independently releasable).
+  If two milestones share >50% deliverables, merge them.
+- **Phase** = one runnable/testable end-to-end slice. After a phase completes, the system still runs
+  and can be independently verified. If two phases are so coupled they can't be verified separately,
+  merge them. First phase is always the thinnest end-to-end path.
+- **Change** = one feature. One feature corresponds to one change — do NOT split by task count or
+  wave count. If two features have a dependency, annotate \`Depends on\`; do NOT merge them into one
+  change just because of the dependency. Inside a change, split by layer dependencies into waves
+  and by behavioral paths into tasks (default 1 wave).
+
+#### Filling each layer (Goal / What / Deliverables / Outcomes)
+
+All three layers (Milestone / Phase / Change) use the same four fields:
+
+- **Goal**: the problem this layer solves or the value it delivers — WHY.
+- **What**: the work involved — key areas, approach, constraints. Milestone-level What is a brief
+  summary of phase coverage; phase/change-level What should be concrete.
+- **Deliverables**: concrete artifacts produced — files, commands, features, tests, docs.
+- **Outcomes**: verifiable result — what becomes true after this layer lands.
+  Prefer Given/When/Then or an executable command.
+  Bad: "improve telemetry"
+  Good: "Given any bp command completes, then \`.meta/<timestamp>.json\` exists with fields
+  {command, exitCode, durationMs, failureMode?}, and \`bp telemetry export\` outputs it."
+  For docs/config-type changes where Given/When/Then is too heavy, a concrete declarative
+  statement is acceptable (e.g., "bp/roadmap.md follows the structured-change template").
+
+#### Dependencies
+
+- Phase and Change both fill \`Depends on\`. No dependency → fill \`none\`.
+- Parallel phases can share the same \`Depends on\` value.
+- Cross-phase change dependencies: fill the change name and its phase id,
+  e.g., \`telemetry (P3.1)\`.
+
+**Key Decisions** — As the user discusses technical details (field design, API format, conventions, tech stack choices), write the decisions into the appropriate milestone/phase's \`### Key Decisions\` section. If a decision belongs to a future-milestone, put it there — don't leave it in the current milestone. Format: \`- [P{milestone}.{phase}-KD] {{subject}} — {{decision}} (reason: {{why}}; alt: {{alternatives}})\`. For placeholder milestones without phase decomposition, use milestone-level id: \`[M{N}-KD]\`.
+
+**Planned changes** — For NOT_STARTED phases, list planned changes in \`**Changes**\` as a structured block per change. Each block has four fields: **Goal** (what this change achieves), **What** (work involved — key areas, approach, constraints), **Deliverables** (concrete artifacts produced: files, commands, features, tests), **Outcomes** (verifiable result — what becomes true after this change lands), and **Depends on** (prior change name, or \`none\`). The change name line keeps the \`- [ ] name (proposed date)\` format so \`bp archive\` can mark it \`[x]\`; the five fields are indented sub-items below it. This helps planners understand the scope and verifiable outcomes without re-reading the full discussion.
+
+**Changes** — Already existing or proposed changes get \`**Changes**\` with checkbox + status + structured block (Goal/What/Deliverables/Outcomes/Depends on).
 
 **Future Considerations** — During discussion, items may come up that don't fit any defined milestone. Record these in the \`## Future Considerations\` section so they aren't lost. Promote to a new milestone when scope solidifies.
 
 ### Step 6: Validate
 
 Check before finishing:
-- All project requirements from Step 1 discussion are covered by some phase or Future Considerations
-- Phase dependencies form a DAG (no cycles)
-- Each phase has a concrete, verifiable deliverable
-- Phase count driven by scope, not a template limit
-- First phase is always the thinnest possible end-to-end path
+- All project requirements from Step 1 discussion are covered by some milestone (full-structure phase, placeholder goal, or Future Considerations)
+- Full-structure milestones: phase dependencies form a DAG (no cycles); \`Depends on\` is filled for every phase and change
+- Placeholder milestones: NOT decomposed into phases (only Goal/What/Deliverables/Outcomes + Key Decisions)
+- Each full-structure phase and change has concrete, verifiable Outcomes (not vague descriptions)
+- Phase status is consistent: all changes \`[x]\` → phase COMPLETED; any \`[ ]\` → IN_PROGRESS/NOT_STARTED
+- The \`[STATUS]\` tag in the phase heading line matches the \`**Status**\` attribute line
+- Milestone count driven by product releases, not a template limit
+- First phase of each full-structure milestone is always the thinnest possible end-to-end path
 - No template placeholders remaining
-- Future milestones documented even if details are high-level
+- All known milestones are present (full-structure or placeholder)
+
+#### Progress Summary calculation
+
+- Phases column:
+  - Full-structure milestone: \`<completed>/<total>\` (total = count of \`### Phase:\` lines under this milestone; completed = COMPLETED count)
+  - Placeholder milestone: \`-/-\` (not decomposed)
+- Changes column:
+  - Full-structure milestone: \`<archived>/<total>\` (archived = \`[x]\` count; total = \`[x]\` + \`[ ]\`)
+  - Placeholder milestone: \`-/-\` (not decomposed)
+  - Never write "planned" — always numeric form or \`-/-\`
+- Status column: the milestone's \`**Status**\` value.
 
 ## Output
 
