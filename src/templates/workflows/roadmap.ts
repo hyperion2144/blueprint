@@ -84,9 +84,9 @@ When defining each phase, fill these areas:
 
 **Key Decisions** — As the user discusses technical details (field design, API format, conventions, tech stack choices), write the decisions into the appropriate milestone/phase's \`### Key Decisions\` section. If a decision belongs to a future milestone, put it there — don't leave it in the current milestone. Each decision includes: subject area, decision content, reason, and alternatives considered.
 
-**Planned changes** — For NOT_STARTED phases, list planned changes in \`**Planned changes**\` with a one-line description of what each change does (\`- change-name — description\`). This helps planners understand the scope without re-reading the full discussion.
+**Planned changes** — For NOT_STARTED phases, list planned changes in \`**Changes**\` as a structured block per change. Each block has four fields: **Goal** (what this change achieves), **What** (work involved — key areas, approach, constraints), **Deliverables** (concrete artifacts produced: files, commands, features, tests), **Outcomes** (verifiable result — what becomes true after this change lands). The change name line keeps the \`- [ ] name (proposed date)\` format so \`bp archive\` can mark it \`[x]\`; the four fields are indented sub-items below it. This helps planners understand the scope and verifiable outcomes without re-reading the full discussion.
 
-**Changes** — Already existing or proposed changes get \`**Changes**\` with checkbox + status + description.
+**Changes** — Already existing or proposed changes get \`**Changes**\` with checkbox + status + structured block (Goal/What/Deliverables/Outcomes).
 
 **Future Considerations** — During discussion, items may come up that don't fit any defined milestone. Record these in the \`## Future Considerations\` section so they aren't lost. Promote to a new milestone when scope solidifies.
 

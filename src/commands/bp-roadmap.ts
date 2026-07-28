@@ -151,11 +151,20 @@ function roadmapHandler(options: {
 
 - **Goal**: TBD
 - **Spec domain**: core
-- **Changes**: 0/0
+- **Changes**: 0/0 completed
 - **Status**: NOT_STARTED
 
-**Planned changes**:
-- (none yet)
+**Changes** — Planned changes with checkbox + status. Each change is a structured block:
+- **Goal**: what this change achieves
+- **What**: the work involved — key areas, approach, known constraints
+- **Deliverables**: concrete artifacts produced (files, commands, features, tests)
+- **Outcomes**: verifiable result — what becomes true after this change lands
+
+- [ ] {{change-name}} (proposed {{date}})
+  - **Goal**: {{what this change achieves}}
+  - **What**: {{work involved — key areas, approach, constraints}}
+  - **Deliverables**: {{concrete artifacts produced}}
+  - **Outcomes**: {{verifiable result after landing}}
 
 `;
 
@@ -199,11 +208,20 @@ function roadmapHandler(options: {
 
 - **Goal**: ${goal}
 - **Spec domain**: ${domain}
-- **Changes**: 0/0
+- **Changes**: 0/0 completed
 - **Status**: NOT_STARTED
 
-**Planned changes**:
-- (none yet)
+**Changes** — Planned changes with checkbox + status. Each change is a structured block:
+- **Goal**: what this change achieves
+- **What**: the work involved — key areas, approach, known constraints
+- **Deliverables**: concrete artifacts produced (files, commands, features, tests)
+- **Outcomes**: verifiable result — what becomes true after this change lands
+
+- [ ] {{change-name}} (proposed {{date}})
+  - **Goal**: {{what this change achieves}}
+  - **What**: {{work involved — key areas, approach, constraints}}
+  - **Deliverables**: {{concrete artifacts produced}}
+  - **Outcomes**: {{verifiable result after landing}}
 
 `;
 

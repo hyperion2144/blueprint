@@ -848,9 +848,22 @@ export const ROADMAP_TEMPLATE = `# Roadmap: {{project-name}}
 - {{field-design / api-format / tech-stack / convention}} — {{decision content, reason, alternatives considered}}
 - {{field-design / api-format / tech-stack / convention}} — {{decision content, reason, alternatives considered}}
 
-**Changes** — Proposed changes with checkbox + status.
-- [x] {{change-name}} (archived {{date}}) — {{one-line description}}
-- [ ] {{change-name}} (proposed {{date}}) — {{one-line description}}
+**Changes** — Planned changes with checkbox + status. Each change is a structured block:
+- **Goal**: what this change achieves
+- **What**: the work involved — key areas, approach, known constraints
+- **Deliverables**: concrete artifacts produced (files, commands, features, tests)
+- **Outcomes**: verifiable result — what becomes true after this change lands
+
+- [x] {{change-name}} (archived {{date}})
+  - **Goal**: {{what this change achieves}}
+  - **What**: {{work involved — key areas, approach, constraints}}
+  - **Deliverables**: {{concrete artifacts produced}}
+  - **Outcomes**: {{verifiable result after landing}}
+- [ ] {{change-name}} (proposed {{date}})
+  - **Goal**: {{what this change achieves}}
+  - **What**: {{work involved — key areas, approach, constraints}}
+  - **Deliverables**: {{concrete artifacts produced}}
+  - **Outcomes**: {{verifiable result after landing}}
 
 **Next**: {{next-change-or "All changes completed"}}
 
