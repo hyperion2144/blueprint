@@ -802,6 +802,7 @@ export const REVIEW_TEMPLATE = `# Review: {{name}}
 - **R/Q/G issues**: {{count}} ({{list or "none"}})
 
 **Recommendation**: \`bp {{action}} {{name}}\`
+<!-- Advisory only. Orchestrator MUST ask the user before archiving, regardless of this recommendation. -->
 `;
 
 export const ROADMAP_TEMPLATE = `# Roadmap: {{project-name}}

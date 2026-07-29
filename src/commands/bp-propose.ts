@@ -1,58 +1,47 @@
-import type { Command } from 'commander';
-
 /**
- * bp propose <name> - create change folder and proposal.md
+ * bp propose <name> -- output workflow instructions for orchestrator
+ *
+ * Follows the same pattern as bp-plan, bp-apply, bp-review:
+ * validate state, then output workflow instructions for the agent.
+ * Does NOT create directories or write files — the orchestrator agent does that.
  */
 
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
-import { ARTIFACT_TEMPLATES } from '../templates/artifacts/index.js';
 import { findBpDir } from './_utils.js';
+import { getWorkflowInstructions } from '../core/continue.js';
+import type { Command } from 'commander';
 
 export function register(program: Command): void {
   program
-    .command('propose <name>')
-    .description('Create a change folder with proposal.md')
+    .command('propose [name]')
+    .description('Output propose workflow instructions — orchestrator discusses and writes proposal')
     .option('--phase <milestone>/<phase>', 'reference a roadmap phase')
     .action(proposeHandler);
 }
 
-function proposeHandler(name: string, options: { phase?: string }) {
+function proposeHandler(name: string | undefined, _options: { phase?: string }) {
   const bpDir = findBpDir();
   if (!bpDir) {
     console.error('Not in a blueprint project. Run "bp init" first.');
     process.exit(1);
   }
 
-  const changeDir = join(bpDir, 'changes', name);
-  if (existsSync(changeDir)) {
-    console.error(`Change already exists: ${name}`);
-    process.exit(1);
+  // If name provided, warn if change already exists (but don't block — agent handles it)
+  if (name) {
+    const changeDir = join(bpDir, 'changes', name);
+    if (existsSync(changeDir)) {
+      console.error(`Change already exists: ${name}`);
+      process.exit(1);
+    }
   }
 
-  // Create change directory
-  mkdirSync(changeDir, { recursive: true });
-
-  // Generate proposal from template
-  let content = ARTIFACT_TEMPLATES.proposal || '';
-  content = content.replace(/\{\{name\}\}/g, name);
-  content = content.replace(/\{\{date\}\}/g, new Date().toISOString().slice(0, 10));
-
-  // Fill in roadmap reference if provided
-  if (options.phase) {
-    const [milestone, phase] = options.phase.split('/');
-    content = content.replace(/\{\{milestone-name\}\}/g, milestone || '');
-    content = content.replace(/\{\{phase-name\}\}/g, phase || '');
+  const instructions = getWorkflowInstructions('propose');
+  if (instructions) {
+    console.log(instructions);
+    return;
   }
 
-  writeFileSync(join(changeDir, 'proposal.md'), content, 'utf-8');
-
-  // Write change metadata
-
-
-  console.log(`✓ Created bp/changes/${name}/proposal.md`);
-  console.log(`  Proposal is ready for planning.`);
-  console.log(`\n  Next: bp plan ${name}`);
-  console.log(`  (or: bp continue ${name})`);
+  console.error('Propose workflow instructions not found.');
+  process.exit(1);
 }
-

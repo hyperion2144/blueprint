@@ -35,22 +35,23 @@ describe('E2E: init -> propose -> template -> continue -> archive', () => {
     expect(existsSync(join(testDir, '.omp', 'agents', 'bp-planner.md'))).toBe(true);
   });
 
-  it('step 3: bp propose creates change with proposal.md', () => {
-    execSync(`node ${cliPath} propose add-auth`, { encoding: 'utf-8', cwd: testDir });
+  it('step 3: bp propose outputs workflow instructions', () => {
+    const output = execSync(`node ${cliPath} propose add-auth`, { encoding: 'utf-8', cwd: testDir });
+    // Should output orchestrator instructions, not create files directly
+    expect(output).toContain('Orchestrator Steps');
+    expect(output).toContain('Grill');
 
-    const proposalPath = join(testDir, 'bp', 'changes', 'add-auth', 'proposal.md');
-    expect(existsSync(proposalPath)).toBe(true);
-    const content = readFileSync(proposalPath, 'utf-8');
-    expect(content).toContain('add-auth');
-    expect(content).toContain('Intent');
-    expect(content).toContain('Scope');
+    // Create the proposal manually for subsequent test steps
+    const changeDir = join(testDir, 'bp', 'changes', 'add-auth');
+    mkdirSync(changeDir, { recursive: true });
+    writeFileSync(join(changeDir, 'proposal.md'), '# Proposal: add-auth\n\n## Intent\n\nAdd auth functionality.\n## Scope\n\nOAuth login.');
   });
 
   it('step 4: bp continue outputs next step instructions', () => {
     const output = execSync(`node ${cliPath} continue add-auth`, { encoding: 'utf-8', cwd: testDir });
-    // Should output plan workflow instructions directly (not a command reference)
-    expect(output).toContain('design.md');
-    expect(output).toContain('tasks.md');
+    // After proposal exists, continue should show plan as next step
+    expect(output).toContain('plan');
+    expect(output).toContain('Planner');
   });
 
   it('step 5: bp list shows active changes', () => {

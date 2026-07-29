@@ -1,6 +1,8 @@
+import { CONTEXT_JSONL_REMINDER } from './shared.js';
+import { ORCHESTRATOR_RULE } from '../types.js';
 import type { SkillTemplate, CommandTemplate } from '../types.js';
 
-const instructions = `## Input
+const instructions = ORCHESTRATOR_RULE + `${CONTEXT_JSONL_REMINDER}## Input
 
 - **\`$ARGUMENTS\`** (required): change name (kebab-case)
 - **\`--phase <milestone>/<phase>\`** (optional): reference a roadmap phase

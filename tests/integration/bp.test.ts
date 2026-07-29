@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { execSync } from 'node:child_process';
-import { existsSync, readFileSync, mkdirSync, rmSync } from 'node:fs';
+import { existsSync, readFileSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -10,8 +10,10 @@ const testDir = join(tmpdir(), `bp-int-test-${Date.now()}`);
 beforeAll(() => {
   mkdirSync(testDir, { recursive: true });
   execSync(`node ${cliPath} init --dir ${testDir} --yes`, { encoding: 'utf-8', cwd: testDir });
-  // Create a change for list test
-  execSync(`node ${cliPath} propose test-change`, { encoding: 'utf-8', cwd: testDir });
+  // Create a change for list test (manually — bp propose now outputs instructions only)
+  const changeDir = join(testDir, 'bp', 'changes', 'test-change');
+  mkdirSync(changeDir, { recursive: true });
+  writeFileSync(join(changeDir, 'proposal.md'), '# Proposal: test-change\n\n## Intent\n\nTest.');
 });
 
 afterAll(() => {
@@ -40,15 +42,19 @@ describe('bp integration', () => {
     expect(config).toContain('profile: standard');
   });
 
-  it('bp propose creates change and proposal.md', () => {
-    execSync(`node ${cliPath} propose another-change`, { encoding: 'utf-8', cwd: testDir });
-    const proposalPath = join(testDir, 'bp', 'changes', 'another-change', 'proposal.md');
-    expect(existsSync(proposalPath)).toBe(true);
-    const content = readFileSync(proposalPath, 'utf-8');
-    expect(content).toContain('# Proposal:');
+  it('bp propose outputs workflow instructions', () => {
+    const output = execSync(`node ${cliPath} propose another-change`, { encoding: 'utf-8', cwd: testDir });
+    // Should output orchestrator instructions, not create files directly
+    expect(output).toContain('Orchestrator Steps');
+    expect(output).toContain('Grill');
   });
 
   it('bp list shows active changes', () => {
+    // Create another-change manually for list test (propose no longer creates files)
+    const changeDir = join(testDir, 'bp', 'changes', 'another-change');
+    mkdirSync(changeDir, { recursive: true });
+    writeFileSync(join(changeDir, 'proposal.md'), '# Proposal: another-change\n\n## Intent\n\nTest.');
+
     const output = execSync(`node ${cliPath} list`, { encoding: 'utf-8', cwd: testDir });
     expect(output).toContain('Active Changes:');
     expect(output).toContain('test-change');
@@ -60,10 +66,10 @@ describe('bp integration', () => {
     expect(output).toContain('Spec Domains:');
   });
 
-  it('bp continue shows next step', () => {
+  it('bp continue shows next step after proposal', () => {
     const output = execSync(`node ${cliPath} continue test-change`, { encoding: 'utf-8', cwd: testDir });
-    expect(output).toContain('propose');
-    expect(output).toContain('proposal.md');
+    // After proposal exists, continue should show plan as next step
+    expect(output).toContain('plan');
   });
 
   it('bp template proposal outputs template', () => {

@@ -76,9 +76,17 @@ After reviewer completes:
 \`\`\`
 Review PASSED for $1
   All three dimensions clean.
-
-  Next: bp archive $1
 \`\`\`
+
+**HARD RULE: Ask the user before archiving.** Present the PASS verdict and any
+notable findings, then ask: "Review PASSED. Shall I archive this change?"
+
+- If user confirms → run \`bp archive $1\`
+- If user wants changes → run \`bp apply --fix $1\`
+- If user wants to review findings first → present them and wait
+
+Do NOT auto-archive. The guardrail in the guardrails section below says the
+same thing, but this is your immediate instruction.
 
 **If D-prefixed issues exist (design flaw):**
 \`\`\`

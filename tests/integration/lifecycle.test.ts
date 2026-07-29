@@ -46,20 +46,22 @@ describe('v2 lifecycle: init -> propose -> plan -> apply -> review -> archive', 
     expect(existsSync(join(testDir, '.omp', 'commands', 'bp-init.md'))).toBe(true);
   });
 
-  it('step 2: bp propose creates change with proposal.md', () => {
-    execSync(`node ${cliPath} propose add-auth`, { encoding: 'utf-8', cwd: testDir });
+  it('step 2: bp propose outputs workflow instructions', () => {
+    const output = execSync(`node ${cliPath} propose add-auth`, { encoding: 'utf-8', cwd: testDir });
+    // Should output orchestrator instructions, not create files directly
+    expect(output).toContain('Orchestrator Steps');
+    expect(output).toContain('Grill');
 
-    const proposalPath = join(testDir, 'bp', 'changes', 'add-auth', 'proposal.md');
-    expect(existsSync(proposalPath)).toBe(true);
-    const content = readFileSync(proposalPath, 'utf-8');
-    expect(content).toContain('# Proposal:');
-    expect(content).toContain('Intent');
+    // Manually create proposal for subsequent test steps
+    const changeDir = join(testDir, 'bp', 'changes', 'add-auth');
+    mkdirSync(changeDir, { recursive: true });
+    writeFileSync(join(changeDir, 'proposal.md'), '# Proposal: add-auth\n\n## Intent\n\nAdd auth functionality.');
   });
 
   it('step 3: bp continue shows progress for change', () => {
     const output = execSync(`node ${cliPath} continue add-auth`, { encoding: 'utf-8', cwd: testDir });
-    expect(output).toContain('propose');
-    expect(output).toContain('proposal.md');
+    // After proposal exists, continue should show plan as next step
+    expect(output).toContain('plan');
   });
 
   it('step 4: bp list shows active changes', () => {
