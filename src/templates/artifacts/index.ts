@@ -513,19 +513,21 @@ export const TASKS_TEMPLATE = `# Tasks: {{name}}
   - **spec_ref**: specs/{{domain}}/spec.md#{{requirement-id}}
   - **files**: {{file-path-1}}, {{file-path-1-test}}
   - **acceptance**: {{binary-criteria - e.g., "toggle() changes theme from 'light' to 'dark'"}}
-  - **RED**: GIVEN {{precondition}}
-    WHEN {{action}}
-    THEN {{observable-result}}
-    AND {{additional-assertion}}
+  - **RED**:
+    - **GIVEN** {{precondition}}
+    - **WHEN** {{action}}
+    - **THEN** {{observable-result}}
+    - **AND** {{additional-assertion}}
 
 - [ ] T-2: [type:behavior] {{task-title}} <!-- commit: -->
   - **refs**: DS-{{id}}
   - **spec_ref**: specs/{{domain}}/spec.md#{{requirement-id}}
   - **files**: {{file-path}}, {{file-path-test}}
   - **acceptance**: {{binary-criteria}}
-  - **RED**: GIVEN {{precondition}}
-    WHEN {{action}}
-    THEN {{observable-result}}
+  - **RED**:
+    - **GIVEN** {{precondition}}
+    - **WHEN** {{action}}
+    - **THEN** {{observable-result}}
   - **depends_on**: T-1
 
 - [ ] T-3: [type:scaffolding] {{task-title}} <!-- commit: -->
@@ -545,9 +547,10 @@ export const TASKS_TEMPLATE = `# Tasks: {{name}}
   - **spec_ref**: specs/{{domain}}/spec.md#{{requirement-id}}
   - **files**: {{file-path}}, {{file-path-test}}
   - **acceptance**: {{binary-criteria}}
-  - **RED**: GIVEN {{precondition}}
-    WHEN {{action}}
-    THEN {{observable-result}}
+  - **RED**:
+    - **GIVEN** {{precondition}}
+    - **WHEN** {{action}}
+    - **THEN** {{observable-result}}
   - **depends_on**: T-3
 
 ## Pre-Archive Checklist
