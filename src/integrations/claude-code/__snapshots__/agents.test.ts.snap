@@ -649,19 +649,27 @@ For each affected domain, create \`specs/<domain>/spec.md\` using the template.
 
 Requirements describe **what the system does**, not how.
 
+**HARD RULE: Every Requirement MUST have at least one \`#### Scenario:\` block. A Requirement with only a SHALL/MUST sentence and no Scenario block is INVALID. Scenarios MUST use the bolded keyword format (\`**GIVEN**\`, \`**WHEN**\`, \`**THEN**\`, \`**AND**\`) exactly as shown in the spec template — plain unbolded keywords are not accepted.**
+
 **Good requirement:**
 \`\`\`
 ### Requirement: Theme Selection
 The system SHALL allow users to choose between light and dark themes.
 
 #### Scenario: Manual toggle
-- GIVEN a user on any page
-- WHEN the user clicks the theme toggle
-- THEN the theme switches immediately
-- AND the preference persists across sessions
+- **GIVEN** a user on any page
+- **WHEN** the user clicks the theme toggle
+- **THEN** the theme switches immediately
+- **AND** the preference persists across sessions
 \`\`\`
 
-**Bad requirement:**
+**Bad requirement (no Scenario block — will be rejected by validator):**
+\`\`\`
+### Requirement: Theme Selection
+The system SHALL allow users to choose between light and dark themes.
+\`\`\`
+
+**Bad requirement (implementation, not behavior):**
 \`\`\`
 ### Requirement: Theme Selection
 The system SHALL use React Context with useState to manage theme.

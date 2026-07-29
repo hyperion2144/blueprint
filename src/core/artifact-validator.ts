@@ -176,9 +176,28 @@ export function validateDeltaSpec(content: string): ValidationResult {
     warnings.push('No RFC 2119 keywords (SHALL/MUST/SHOULD/MAY) found');
   }
 
-  // Check for scenarios (Given/When/Then)
-  if (!/\b(GIVEN|WHEN|THEN)\b/.test(content)) {
-    warnings.push('No Given/When/Then scenarios found');
+  // Every Requirement block MUST have at least one Scenario block.
+  // Split content into Requirement blocks and check each has #### Scenario:.
+  const requirementBlocks = content.match(/^### Requirement:.*$(?:\n(?!### (?:Requirement:|MODIFIED|REMOVED)).*)*/gm);
+  if (requirementBlocks) {
+    for (const block of requirementBlocks) {
+      const reqName = block.match(/^### Requirement:\s*(.*)$/m)?.[1] ?? '(unknown)';
+      if (!/^#### Scenario:/m.test(block)) {
+        errors.push(`Requirement "${reqName}" has no Scenario block — every Requirement MUST have at least one #### Scenario: block`);
+      }
+    }
+  }
+
+  // Scenarios MUST use bolded keywords (**GIVEN**/**WHEN**/**THEN**), not plain.
+  // Plain unbolded keywords (line starting with "- GIVEN") are a formatting error.
+  const plainKeywordLines = content.match(/^\s*-\s+(GIVEN|WHEN|THEN|AND|BUT)\s/m);
+  if (plainKeywordLines) {
+    errors.push('Scenario steps must use bolded keywords (**GIVEN**, **WHEN**, **THEN**) — plain unbolded keywords found');
+  }
+
+  // File-level check: must have at least one scenario somewhere
+  if (!/\*\*GIVEN\*\*/.test(content)) {
+    errors.push('No **GIVEN** scenarios found — every Requirement requires at least one Scenario with **GIVEN**/**WHEN**/**THEN**');
   }
 
   return { valid: errors.length === 0, errors, warnings };
