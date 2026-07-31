@@ -477,12 +477,13 @@ export const TASKS_TEMPLATE = `# Tasks: {{name}}
   Executors receive ONE wave at a time and implement its tasks via TDD.
 
   Quality bar:
-  - Each task is independently testable (one behavioral path)
+  - Each task is a cohesive module/deliverable unit (NOT one task per behavior path)
   - type:behavior tasks have RED descriptions (GIVEN/WHEN/THEN)
   - type:behavior tasks have spec_ref pointing to delta spec
   - Wave decomposition is based on real layer dependencies
   - depends_on is minimal (only when task B can't compile/test without task A)
   - Every DS-N in design.md is referenced by at least one task
+  - Granularity check: > 15 tasks per change = over-split, merge
 -->
 
 ## TDD Type Annotations

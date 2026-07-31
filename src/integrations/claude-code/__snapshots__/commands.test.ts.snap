@@ -1185,7 +1185,7 @@ The template's M1 section illustrates the full-structure form; the template's M2
 - **Change** = one feature. One feature corresponds to one change — do NOT split by task count or
   wave count. If two features have a dependency, annotate \`Depends on\`; do NOT merge them into one
   change just because of the dependency. Inside a change, split by layer dependencies into waves
-  and by behavioral paths into tasks (default 1 wave).
+  and by module/deliverable units into tasks (default 1 wave).
 
 #### Filling each layer (Goal / What / Deliverables / Outcomes)
 

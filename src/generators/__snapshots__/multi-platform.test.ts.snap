@@ -340,7 +340,7 @@ You are NOT a code writer. You produce the blueprint that executors follow. The 
 1. **Design before you write** - Read all context, understand the codebase, THEN design. Never start writing templates while still reading inputs.
 2. **Decompose by module boundary** - Each design item (DS-N) is a cohesive module with clear responsibility, not a single function or a whole subsystem.
 3. **Specs are behavior contracts** - Delta specs describe observable behavior (inputs, outputs, error conditions), NOT implementation details (class names, library choices).
-4. **Tasks are independently testable** - Each task verifies one behavioral path. If you can't write a failing test for it, it's not a good task.
+4. **Tasks are cohesive units** - Each task implements one module or deliverable unit with a RED test. If you can't write a failing test for it, it's not a good task. Do NOT split a module into one task per behavior path.
 5. **Every artifact traces** - proposal PR-N -> design DS-N -> tasks T-N -> spec SHALL-N. No orphans in either direction.
 6. **Never reduce scope** - If the proposal asks for 5 deliverables, your design covers all 5. If you think scope should change, flag it as a design risk, don't silently drop it.
 
@@ -566,20 +566,37 @@ After fetching the template, fill it following these principles:
 #### Task Decomposition
 <!-- ENGINEERING-CONSTRAINT: T-N format, type annotations, spec_ref, GIVEN/WHEN/THEN rules -->
 
-Each task (T-N) is **one independently testable behavioral path**.
+Each task (T-N) is **one cohesive module or deliverable unit** — a file, a module,
+or a self-contained capability that can be implemented and committed as a unit.
 
-**Examples:**
+**Examples (module granularity — one task per module):**
+\`\`\`
+- [ ] T-1: [type:behavior] ThemeContext (provide + toggle current theme) <!-- commit: -->
+- [ ] T-2: [type:behavior] ThemeToggle (render current theme + toggle on click) <!-- commit: -->
+- [ ] T-3: [type:scaffolding] Create ThemeToggle component shell <!-- commit: -->
+\`\`\`
+
+**Good decomposition (module-level):**
+\`\`\`
+- [ ] T-1: [type:behavior] ThemeContext — read/write/persist theme state <!-- commit: -->
+- [ ] T-2: [type:behavior] ThemeToggle — render + click handling <!-- commit: -->
+\`\`\`
+
+**Bad decomposition (behavior-path level — over-split):**
 \`\`\`
 - [ ] T-1: [type:behavior] ThemeContext provides current theme <!-- commit: -->
 - [ ] T-2: [type:behavior] ThemeContext toggles theme on call <!-- commit: -->
-- [ ] T-3: [type:behavior] ThemeToggle renders current theme <!-- commit: -->
-- [ ] T-4: [type:behavior] ThemeToggle calls toggle on click <!-- commit: -->
-- [ ] T-5: [type:scaffolding] Create ThemeToggle component shell <!-- commit: -->
+- [ ] T-3: [type:behavior] ThemeContext persists theme <!-- commit: -->
+- [ ] T-4: [type:behavior] ThemeToggle renders current theme <!-- commit: -->
+- [ ] T-5: [type:behavior] ThemeToggle calls toggle on click <!-- commit: -->
 \`\`\`
 
-
 **Rules:**
-- Each public behavior path of a DS gets its own task.
+- **One task per DS-N by default.** A DS spanning multiple files is still ONE task if the files are implemented together (same test file, same commit).
+- Only split a DS into multiple tasks when it has clearly separable layers that need independent testing (e.g. data model vs UI).
+- Do NOT split by behavior path: multiple behaviors of one module belong in ONE task, with a RED test covering all of them.
+- A task's RED test can contain multiple assertions/scenarios — one test file per task is the norm.
+- **Granularity check: if a change has more than 15 tasks, you are over-splitting — merge tasks.** More than 5 tasks per wave is a signal too.
 - TDD (RED-GREEN-REFACTOR) describes HOW to execute one task - do NOT split RED/GREEN/REFACTOR into separate tasks.
 - Every DS must be referenced by at least one task.
 - \`type:behavior\` tasks MUST have \`spec_ref\` pointing to a delta spec requirement.
@@ -2113,7 +2130,7 @@ The template's M1 section illustrates the full-structure form; the template's M2
 - **Change** = one feature. One feature corresponds to one change — do NOT split by task count or
   wave count. If two features have a dependency, annotate \`Depends on\`; do NOT merge them into one
   change just because of the dependency. Inside a change, split by layer dependencies into waves
-  and by behavioral paths into tasks (default 1 wave).
+  and by module/deliverable units into tasks (default 1 wave).
 
 #### Filling each layer (Goal / What / Deliverables / Outcomes)
 
@@ -2526,7 +2543,7 @@ You are NOT a code writer. You produce the blueprint that executors follow. The 
 1. **Design before you write** - Read all context, understand the codebase, THEN design. Never start writing templates while still reading inputs.
 2. **Decompose by module boundary** - Each design item (DS-N) is a cohesive module with clear responsibility, not a single function or a whole subsystem.
 3. **Specs are behavior contracts** - Delta specs describe observable behavior (inputs, outputs, error conditions), NOT implementation details (class names, library choices).
-4. **Tasks are independently testable** - Each task verifies one behavioral path. If you can't write a failing test for it, it's not a good task.
+4. **Tasks are cohesive units** - Each task implements one module or deliverable unit with a RED test. If you can't write a failing test for it, it's not a good task. Do NOT split a module into one task per behavior path.
 5. **Every artifact traces** - proposal PR-N -> design DS-N -> tasks T-N -> spec SHALL-N. No orphans in either direction.
 6. **Never reduce scope** - If the proposal asks for 5 deliverables, your design covers all 5. If you think scope should change, flag it as a design risk, don't silently drop it.
 
@@ -2752,20 +2769,37 @@ After fetching the template, fill it following these principles:
 #### Task Decomposition
 <!-- ENGINEERING-CONSTRAINT: T-N format, type annotations, spec_ref, GIVEN/WHEN/THEN rules -->
 
-Each task (T-N) is **one independently testable behavioral path**.
+Each task (T-N) is **one cohesive module or deliverable unit** — a file, a module,
+or a self-contained capability that can be implemented and committed as a unit.
 
-**Examples:**
+**Examples (module granularity — one task per module):**
+\`\`\`
+- [ ] T-1: [type:behavior] ThemeContext (provide + toggle current theme) <!-- commit: -->
+- [ ] T-2: [type:behavior] ThemeToggle (render current theme + toggle on click) <!-- commit: -->
+- [ ] T-3: [type:scaffolding] Create ThemeToggle component shell <!-- commit: -->
+\`\`\`
+
+**Good decomposition (module-level):**
+\`\`\`
+- [ ] T-1: [type:behavior] ThemeContext — read/write/persist theme state <!-- commit: -->
+- [ ] T-2: [type:behavior] ThemeToggle — render + click handling <!-- commit: -->
+\`\`\`
+
+**Bad decomposition (behavior-path level — over-split):**
 \`\`\`
 - [ ] T-1: [type:behavior] ThemeContext provides current theme <!-- commit: -->
 - [ ] T-2: [type:behavior] ThemeContext toggles theme on call <!-- commit: -->
-- [ ] T-3: [type:behavior] ThemeToggle renders current theme <!-- commit: -->
-- [ ] T-4: [type:behavior] ThemeToggle calls toggle on click <!-- commit: -->
-- [ ] T-5: [type:scaffolding] Create ThemeToggle component shell <!-- commit: -->
+- [ ] T-3: [type:behavior] ThemeContext persists theme <!-- commit: -->
+- [ ] T-4: [type:behavior] ThemeToggle renders current theme <!-- commit: -->
+- [ ] T-5: [type:behavior] ThemeToggle calls toggle on click <!-- commit: -->
 \`\`\`
 
-
 **Rules:**
-- Each public behavior path of a DS gets its own task.
+- **One task per DS-N by default.** A DS spanning multiple files is still ONE task if the files are implemented together (same test file, same commit).
+- Only split a DS into multiple tasks when it has clearly separable layers that need independent testing (e.g. data model vs UI).
+- Do NOT split by behavior path: multiple behaviors of one module belong in ONE task, with a RED test covering all of them.
+- A task's RED test can contain multiple assertions/scenarios — one test file per task is the norm.
+- **Granularity check: if a change has more than 15 tasks, you are over-splitting — merge tasks.** More than 5 tasks per wave is a signal too.
 - TDD (RED-GREEN-REFACTOR) describes HOW to execute one task - do NOT split RED/GREEN/REFACTOR into separate tasks.
 - Every DS must be referenced by at least one task.
 - \`type:behavior\` tasks MUST have \`spec_ref\` pointing to a delta spec requirement.
@@ -4296,7 +4330,7 @@ The template's M1 section illustrates the full-structure form; the template's M2
 - **Change** = one feature. One feature corresponds to one change — do NOT split by task count or
   wave count. If two features have a dependency, annotate \`Depends on\`; do NOT merge them into one
   change just because of the dependency. Inside a change, split by layer dependencies into waves
-  and by behavioral paths into tasks (default 1 wave).
+  and by module/deliverable units into tasks (default 1 wave).
 
 #### Filling each layer (Goal / What / Deliverables / Outcomes)
 
@@ -4892,7 +4926,7 @@ You are NOT a code writer. You produce the blueprint that executors follow. The 
 1. **Design before you write** - Read all context, understand the codebase, THEN design. Never start writing templates while still reading inputs.
 2. **Decompose by module boundary** - Each design item (DS-N) is a cohesive module with clear responsibility, not a single function or a whole subsystem.
 3. **Specs are behavior contracts** - Delta specs describe observable behavior (inputs, outputs, error conditions), NOT implementation details (class names, library choices).
-4. **Tasks are independently testable** - Each task verifies one behavioral path. If you can't write a failing test for it, it's not a good task.
+4. **Tasks are cohesive units** - Each task implements one module or deliverable unit with a RED test. If you can't write a failing test for it, it's not a good task. Do NOT split a module into one task per behavior path.
 5. **Every artifact traces** - proposal PR-N -> design DS-N -> tasks T-N -> spec SHALL-N. No orphans in either direction.
 6. **Never reduce scope** - If the proposal asks for 5 deliverables, your design covers all 5. If you think scope should change, flag it as a design risk, don't silently drop it.
 
@@ -5118,20 +5152,37 @@ After fetching the template, fill it following these principles:
 #### Task Decomposition
 <!-- ENGINEERING-CONSTRAINT: T-N format, type annotations, spec_ref, GIVEN/WHEN/THEN rules -->
 
-Each task (T-N) is **one independently testable behavioral path**.
+Each task (T-N) is **one cohesive module or deliverable unit** — a file, a module,
+or a self-contained capability that can be implemented and committed as a unit.
 
-**Examples:**
+**Examples (module granularity — one task per module):**
+\`\`\`
+- [ ] T-1: [type:behavior] ThemeContext (provide + toggle current theme) <!-- commit: -->
+- [ ] T-2: [type:behavior] ThemeToggle (render current theme + toggle on click) <!-- commit: -->
+- [ ] T-3: [type:scaffolding] Create ThemeToggle component shell <!-- commit: -->
+\`\`\`
+
+**Good decomposition (module-level):**
+\`\`\`
+- [ ] T-1: [type:behavior] ThemeContext — read/write/persist theme state <!-- commit: -->
+- [ ] T-2: [type:behavior] ThemeToggle — render + click handling <!-- commit: -->
+\`\`\`
+
+**Bad decomposition (behavior-path level — over-split):**
 \`\`\`
 - [ ] T-1: [type:behavior] ThemeContext provides current theme <!-- commit: -->
 - [ ] T-2: [type:behavior] ThemeContext toggles theme on call <!-- commit: -->
-- [ ] T-3: [type:behavior] ThemeToggle renders current theme <!-- commit: -->
-- [ ] T-4: [type:behavior] ThemeToggle calls toggle on click <!-- commit: -->
-- [ ] T-5: [type:scaffolding] Create ThemeToggle component shell <!-- commit: -->
+- [ ] T-3: [type:behavior] ThemeContext persists theme <!-- commit: -->
+- [ ] T-4: [type:behavior] ThemeToggle renders current theme <!-- commit: -->
+- [ ] T-5: [type:behavior] ThemeToggle calls toggle on click <!-- commit: -->
 \`\`\`
 
-
 **Rules:**
-- Each public behavior path of a DS gets its own task.
+- **One task per DS-N by default.** A DS spanning multiple files is still ONE task if the files are implemented together (same test file, same commit).
+- Only split a DS into multiple tasks when it has clearly separable layers that need independent testing (e.g. data model vs UI).
+- Do NOT split by behavior path: multiple behaviors of one module belong in ONE task, with a RED test covering all of them.
+- A task's RED test can contain multiple assertions/scenarios — one test file per task is the norm.
+- **Granularity check: if a change has more than 15 tasks, you are over-splitting — merge tasks.** More than 5 tasks per wave is a signal too.
 - TDD (RED-GREEN-REFACTOR) describes HOW to execute one task - do NOT split RED/GREEN/REFACTOR into separate tasks.
 - Every DS must be referenced by at least one task.
 - \`type:behavior\` tasks MUST have \`spec_ref\` pointing to a delta spec requirement.
@@ -6669,7 +6720,7 @@ The template's M1 section illustrates the full-structure form; the template's M2
 - **Change** = one feature. One feature corresponds to one change — do NOT split by task count or
   wave count. If two features have a dependency, annotate \`Depends on\`; do NOT merge them into one
   change just because of the dependency. Inside a change, split by layer dependencies into waves
-  and by behavioral paths into tasks (default 1 wave).
+  and by module/deliverable units into tasks (default 1 wave).
 
 #### Filling each layer (Goal / What / Deliverables / Outcomes)
 
