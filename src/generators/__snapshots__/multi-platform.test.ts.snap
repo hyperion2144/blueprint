@@ -2102,9 +2102,19 @@ Use \`ask\` to determine the planning mode:
 
 Fill the template with milestones based on project requirements.
 
-**Milestones = product releases.** A project may have 1 milestone (ship everything at once) or multiple (v1, v2, v3...).
+**Milestones = product releases. Default: exactly ONE milestone covering the entire project.**
+Do NOT create extra milestones to organize work — that's what phases are for.
 
-**Create ALL known milestones right now**, not just M1. Each milestone is one of two tiers:
+**Only create additional milestones (M2+) for work the user EXPLICITLY mentioned wanting to do
+later but that is NOT committed yet** — a vague future intention ("we'll probably do X someday").
+
+- If all discussed work belongs to the same product release → 1 milestone, phases inside it.
+- If the user explicitly said "later / someday / v2 idea" about something NOT in current scope
+  → create it as a placeholder milestone (Goal/What only, NO phase decomposition).
+- NEVER create a milestone just because the project is big or has many phases.
+- NEVER create a milestone for work the user never mentioned.
+
+Each milestone is one of two tiers:
 
 - **Discussed milestones** (full structure) — discussion is complete and the milestone is being planned or worked on:
   - Goal / What / Deliverables / Outcomes (concrete)
@@ -2112,13 +2122,15 @@ Fill the template with milestones based on project requirements.
   - Each phase lists planned changes as structured blocks
   - Key Decisions captured during discussion
 
-- **Future milestones** (placeholder only) — direction known but NOT fully discussed yet:
-  - Goal / What / Deliverables / Outcomes (TBD is OK; fill what's known)
+- **Future-intention milestones** (placeholder only) — user explicitly mentioned wanting this later, but NOT discussed yet:
+  - Goal / What (TBD is OK; fill what's known)
   - Key Decisions discussed for this milestone (if any)
   - **DO NOT decompose into phases or list changes** — that happens after the milestone is discussed and promoted to full structure
   - Rationale: premature decomposition locks in structure that later discussion will overturn.
 
-The template's M1 section illustrates the full-structure form; the template's M2 section illustrates the placeholder form. A real project may have multiple full-structure milestones (e.g. M1 active, M3 discussed) and multiple placeholder milestones (e.g. M2 future) — assign each milestone the tier that matches its actual discussion state.
+A real project MAY have one full-structure milestone (M1) plus one or more placeholder milestones
+(M2 future) — but the default is a single milestone. Assign each milestone the tier that matches
+its actual discussion state.
 
 #### Splitting granularity (applies to full-structure milestones only)
 
@@ -2127,6 +2139,9 @@ The template's M1 section illustrates the full-structure form; the template's M2
 - **Phase** = one runnable/testable end-to-end slice. After a phase completes, the system still runs
   and can be independently verified. If two phases are so coupled they can't be verified separately,
   merge them. First phase is always the thinnest end-to-end path.
+- **Phase contains MULTIPLE changes.** A phase is a slice of work with several features inside it —
+  one phase = one change is wrong. If a phase has only one change, that's an over-split signal:
+  merge that phase into a neighboring phase instead of keeping a phase per feature.
 - **Change** = one feature. One feature corresponds to one change — do NOT split by task count or
   wave count. If two features have a dependency, annotate \`Depends on\`; do NOT merge them into one
   change just because of the dependency. Inside a change, split by layer dependencies into waves
@@ -2172,10 +2187,10 @@ Check before finishing:
 - Each full-structure phase and change has concrete, verifiable Outcomes (not vague descriptions)
 - Phase status is consistent: all changes \`[x]\` → phase COMPLETED; any \`[ ]\` → IN_PROGRESS/NOT_STARTED
 - The \`[STATUS]\` tag in the phase heading line matches the \`**Status**\` attribute line
-- Milestone count driven by product releases, not a template limit
+- Milestone count: default 1 — only add M2+ for user-expressed future intentions
+- Every full-structure phase contains MULTIPLE changes; a phase with a single change is an over-split signal (merge into a neighbor phase)
 - First phase of each full-structure milestone is always the thinnest possible end-to-end path
 - No template placeholders remaining
-- All known milestones are present (full-structure or placeholder)
 
 #### Progress Summary calculation
 
@@ -2194,8 +2209,9 @@ Check before finishing:
 
 ## Guardrails
 
-- **Milestones = product releases.** No "foundation", "setup", "scaffolding" — M1 = first shippable increment.
-- **Create ALL known milestones now.** Future milestones with partial info are better than omitted milestones.
+- **Milestones = product releases. Default: exactly ONE milestone.** No "foundation", "setup", "scaffolding" — M1 = first shippable increment.
+- **Only add M2+ for user-expressed future intentions** ("later/someday/v2 idea"). Never split milestones to organize phases.
+- **A phase contains MULTIPLE changes.** One change per phase = over-split, merge into a neighbor phase.
 - **Capture partial knowledge.** If decisions were discussed for a future milestone, write them there. Fuzzy is OK.
 - **Future Considerations** for items discussed but not milestone-assigned yet.
 - Mode (MVP/technical-layer) shapes phases within a milestone, not the milestones themselves.
@@ -4302,9 +4318,19 @@ Use \`ask\` to determine the planning mode:
 
 Fill the template with milestones based on project requirements.
 
-**Milestones = product releases.** A project may have 1 milestone (ship everything at once) or multiple (v1, v2, v3...).
+**Milestones = product releases. Default: exactly ONE milestone covering the entire project.**
+Do NOT create extra milestones to organize work — that's what phases are for.
 
-**Create ALL known milestones right now**, not just M1. Each milestone is one of two tiers:
+**Only create additional milestones (M2+) for work the user EXPLICITLY mentioned wanting to do
+later but that is NOT committed yet** — a vague future intention ("we'll probably do X someday").
+
+- If all discussed work belongs to the same product release → 1 milestone, phases inside it.
+- If the user explicitly said "later / someday / v2 idea" about something NOT in current scope
+  → create it as a placeholder milestone (Goal/What only, NO phase decomposition).
+- NEVER create a milestone just because the project is big or has many phases.
+- NEVER create a milestone for work the user never mentioned.
+
+Each milestone is one of two tiers:
 
 - **Discussed milestones** (full structure) — discussion is complete and the milestone is being planned or worked on:
   - Goal / What / Deliverables / Outcomes (concrete)
@@ -4312,13 +4338,15 @@ Fill the template with milestones based on project requirements.
   - Each phase lists planned changes as structured blocks
   - Key Decisions captured during discussion
 
-- **Future milestones** (placeholder only) — direction known but NOT fully discussed yet:
-  - Goal / What / Deliverables / Outcomes (TBD is OK; fill what's known)
+- **Future-intention milestones** (placeholder only) — user explicitly mentioned wanting this later, but NOT discussed yet:
+  - Goal / What (TBD is OK; fill what's known)
   - Key Decisions discussed for this milestone (if any)
   - **DO NOT decompose into phases or list changes** — that happens after the milestone is discussed and promoted to full structure
   - Rationale: premature decomposition locks in structure that later discussion will overturn.
 
-The template's M1 section illustrates the full-structure form; the template's M2 section illustrates the placeholder form. A real project may have multiple full-structure milestones (e.g. M1 active, M3 discussed) and multiple placeholder milestones (e.g. M2 future) — assign each milestone the tier that matches its actual discussion state.
+A real project MAY have one full-structure milestone (M1) plus one or more placeholder milestones
+(M2 future) — but the default is a single milestone. Assign each milestone the tier that matches
+its actual discussion state.
 
 #### Splitting granularity (applies to full-structure milestones only)
 
@@ -4327,6 +4355,9 @@ The template's M1 section illustrates the full-structure form; the template's M2
 - **Phase** = one runnable/testable end-to-end slice. After a phase completes, the system still runs
   and can be independently verified. If two phases are so coupled they can't be verified separately,
   merge them. First phase is always the thinnest end-to-end path.
+- **Phase contains MULTIPLE changes.** A phase is a slice of work with several features inside it —
+  one phase = one change is wrong. If a phase has only one change, that's an over-split signal:
+  merge that phase into a neighboring phase instead of keeping a phase per feature.
 - **Change** = one feature. One feature corresponds to one change — do NOT split by task count or
   wave count. If two features have a dependency, annotate \`Depends on\`; do NOT merge them into one
   change just because of the dependency. Inside a change, split by layer dependencies into waves
@@ -4372,10 +4403,10 @@ Check before finishing:
 - Each full-structure phase and change has concrete, verifiable Outcomes (not vague descriptions)
 - Phase status is consistent: all changes \`[x]\` → phase COMPLETED; any \`[ ]\` → IN_PROGRESS/NOT_STARTED
 - The \`[STATUS]\` tag in the phase heading line matches the \`**Status**\` attribute line
-- Milestone count driven by product releases, not a template limit
+- Milestone count: default 1 — only add M2+ for user-expressed future intentions
+- Every full-structure phase contains MULTIPLE changes; a phase with a single change is an over-split signal (merge into a neighbor phase)
 - First phase of each full-structure milestone is always the thinnest possible end-to-end path
 - No template placeholders remaining
-- All known milestones are present (full-structure or placeholder)
 
 #### Progress Summary calculation
 
@@ -4394,8 +4425,9 @@ Check before finishing:
 
 ## Guardrails
 
-- **Milestones = product releases.** No "foundation", "setup", "scaffolding" — M1 = first shippable increment.
-- **Create ALL known milestones now.** Future milestones with partial info are better than omitted milestones.
+- **Milestones = product releases. Default: exactly ONE milestone.** No "foundation", "setup", "scaffolding" — M1 = first shippable increment.
+- **Only add M2+ for user-expressed future intentions** ("later/someday/v2 idea"). Never split milestones to organize phases.
+- **A phase contains MULTIPLE changes.** One change per phase = over-split, merge into a neighbor phase.
 - **Capture partial knowledge.** If decisions were discussed for a future milestone, write them there. Fuzzy is OK.
 - **Future Considerations** for items discussed but not milestone-assigned yet.
 - Mode (MVP/technical-layer) shapes phases within a milestone, not the milestones themselves.
@@ -6692,9 +6724,19 @@ Use \`ask\` to determine the planning mode:
 
 Fill the template with milestones based on project requirements.
 
-**Milestones = product releases.** A project may have 1 milestone (ship everything at once) or multiple (v1, v2, v3...).
+**Milestones = product releases. Default: exactly ONE milestone covering the entire project.**
+Do NOT create extra milestones to organize work — that's what phases are for.
 
-**Create ALL known milestones right now**, not just M1. Each milestone is one of two tiers:
+**Only create additional milestones (M2+) for work the user EXPLICITLY mentioned wanting to do
+later but that is NOT committed yet** — a vague future intention ("we'll probably do X someday").
+
+- If all discussed work belongs to the same product release → 1 milestone, phases inside it.
+- If the user explicitly said "later / someday / v2 idea" about something NOT in current scope
+  → create it as a placeholder milestone (Goal/What only, NO phase decomposition).
+- NEVER create a milestone just because the project is big or has many phases.
+- NEVER create a milestone for work the user never mentioned.
+
+Each milestone is one of two tiers:
 
 - **Discussed milestones** (full structure) — discussion is complete and the milestone is being planned or worked on:
   - Goal / What / Deliverables / Outcomes (concrete)
@@ -6702,13 +6744,15 @@ Fill the template with milestones based on project requirements.
   - Each phase lists planned changes as structured blocks
   - Key Decisions captured during discussion
 
-- **Future milestones** (placeholder only) — direction known but NOT fully discussed yet:
-  - Goal / What / Deliverables / Outcomes (TBD is OK; fill what's known)
+- **Future-intention milestones** (placeholder only) — user explicitly mentioned wanting this later, but NOT discussed yet:
+  - Goal / What (TBD is OK; fill what's known)
   - Key Decisions discussed for this milestone (if any)
   - **DO NOT decompose into phases or list changes** — that happens after the milestone is discussed and promoted to full structure
   - Rationale: premature decomposition locks in structure that later discussion will overturn.
 
-The template's M1 section illustrates the full-structure form; the template's M2 section illustrates the placeholder form. A real project may have multiple full-structure milestones (e.g. M1 active, M3 discussed) and multiple placeholder milestones (e.g. M2 future) — assign each milestone the tier that matches its actual discussion state.
+A real project MAY have one full-structure milestone (M1) plus one or more placeholder milestones
+(M2 future) — but the default is a single milestone. Assign each milestone the tier that matches
+its actual discussion state.
 
 #### Splitting granularity (applies to full-structure milestones only)
 
@@ -6717,6 +6761,9 @@ The template's M1 section illustrates the full-structure form; the template's M2
 - **Phase** = one runnable/testable end-to-end slice. After a phase completes, the system still runs
   and can be independently verified. If two phases are so coupled they can't be verified separately,
   merge them. First phase is always the thinnest end-to-end path.
+- **Phase contains MULTIPLE changes.** A phase is a slice of work with several features inside it —
+  one phase = one change is wrong. If a phase has only one change, that's an over-split signal:
+  merge that phase into a neighboring phase instead of keeping a phase per feature.
 - **Change** = one feature. One feature corresponds to one change — do NOT split by task count or
   wave count. If two features have a dependency, annotate \`Depends on\`; do NOT merge them into one
   change just because of the dependency. Inside a change, split by layer dependencies into waves
@@ -6762,10 +6809,10 @@ Check before finishing:
 - Each full-structure phase and change has concrete, verifiable Outcomes (not vague descriptions)
 - Phase status is consistent: all changes \`[x]\` → phase COMPLETED; any \`[ ]\` → IN_PROGRESS/NOT_STARTED
 - The \`[STATUS]\` tag in the phase heading line matches the \`**Status**\` attribute line
-- Milestone count driven by product releases, not a template limit
+- Milestone count: default 1 — only add M2+ for user-expressed future intentions
+- Every full-structure phase contains MULTIPLE changes; a phase with a single change is an over-split signal (merge into a neighbor phase)
 - First phase of each full-structure milestone is always the thinnest possible end-to-end path
 - No template placeholders remaining
-- All known milestones are present (full-structure or placeholder)
 
 #### Progress Summary calculation
 
@@ -6784,8 +6831,9 @@ Check before finishing:
 
 ## Guardrails
 
-- **Milestones = product releases.** No "foundation", "setup", "scaffolding" — M1 = first shippable increment.
-- **Create ALL known milestones now.** Future milestones with partial info are better than omitted milestones.
+- **Milestones = product releases. Default: exactly ONE milestone.** No "foundation", "setup", "scaffolding" — M1 = first shippable increment.
+- **Only add M2+ for user-expressed future intentions** ("later/someday/v2 idea"). Never split milestones to organize phases.
+- **A phase contains MULTIPLE changes.** One change per phase = over-split, merge into a neighbor phase.
 - **Capture partial knowledge.** If decisions were discussed for a future milestone, write them there. Fuzzy is OK.
 - **Future Considerations** for items discussed but not milestone-assigned yet.
 - Mode (MVP/technical-layer) shapes phases within a milestone, not the milestones themselves.
