@@ -31,25 +31,25 @@ export const AGENT_DEFS: AgentDef[] = [
   {
     role: 'planner',
     description: 'Change design — produce proposal/design/tasks/delta-specs',
-    tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'],
+    tools: [],
     spawns: '*',
   },
   {
     role: 'executor',
     description: 'Code implementation — TDD RED/GREEN/REFACTOR',
-    tools: ['read', 'edit', 'write', 'bash', 'grep', 'glob', 'lsp', 'ast_grep', 'ast_edit'],
+    tools: [],
     spawns: '*',
   },
   {
     role: 'reviewer',
     description: 'Triple review — spec review + quality review + goal review',
-    tools: ['read', 'write', 'grep', 'glob', 'lsp', 'ast_grep', 'bash'],
+    tools: [],
     spawns: '*',
   },
   {
     role: 'codebase-scanner',
     description: 'Brownfield codebase scan - extract behavioral contracts into specs',
-    tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'],
+    tools: [],
     spawns: '*',
   },
 ];
@@ -89,9 +89,9 @@ export function generateAgent(def: AgentDef, model: string, profile?: PromptProf
   return `---
 name: bp-${def.role}
 description: ${def.description}
-tools:
+${def.tools.length > 0 ? `tools:
 ${def.tools.map((t) => `  - ${t}`).join('\n')}
-model: ${model}
+` : ''}model: ${model}
 thinkingLevel: ${thinkingLevel}
 spawns: "${def.spawns}"
 blocking: false

@@ -5,13 +5,6 @@ exports[`multi-platform generation > all-platform golden-file snapshot 1`] = `
   ".agent/agents/bp-codebase-scanner.md": "---
 name: bp-codebase-scanner
 description: Brownfield codebase scan - extract behavioral contracts into specs
-tools:
-  - read
-  - grep
-  - glob
-  - lsp
-  - write
-  - bash
 ---
 
 ## Role
@@ -132,16 +125,6 @@ Check before finishing:
   ".agent/agents/bp-executor.md": "---
 name: bp-executor
 description: Code implementation
-tools:
-  - read
-  - edit
-  - write
-  - bash
-  - grep
-  - glob
-  - lsp
-  - ast_grep
-  - ast_edit
 ---
 
 ## Role
@@ -342,13 +325,6 @@ Do NOT run the full test suite. The orchestrator handles full-suite verification
   ".agent/agents/bp-planner.md": "---
 name: bp-planner
 description: Change design
-tools:
-  - read
-  - grep
-  - glob
-  - lsp
-  - write
-  - bash
 ---
 
 ## Role
@@ -729,14 +705,6 @@ Check before finishing:
   ".agent/agents/bp-reviewer.md": "---
 name: bp-reviewer
 description: Triple review
-tools:
-  - read
-  - write
-  - grep
-  - glob
-  - lsp
-  - ast_grep
-  - bash
 ---
 
 ## Role
@@ -2221,13 +2189,6 @@ Check before finishing:
   ".claude/agents/bp-codebase-scanner.md": "---
 name: bp-codebase-scanner
 description: Brownfield codebase scan - extract behavioral contracts into specs
-tools:
-  - read
-  - grep
-  - glob
-  - lsp
-  - write
-  - bash
 ---
 
 ## Role
@@ -2348,16 +2309,6 @@ Check before finishing:
   ".claude/agents/bp-executor.md": "---
 name: bp-executor
 description: Code implementation — TDD RED→GREEN→REFACTOR
-tools:
-  - read
-  - edit
-  - write
-  - bash
-  - grep
-  - glob
-  - lsp
-  - ast_grep
-  - ast_edit
 effort: high
 ---
 
@@ -2559,13 +2510,6 @@ Do NOT run the full test suite. The orchestrator handles full-suite verification
   ".claude/agents/bp-planner.md": "---
 name: bp-planner
 description: Change design — produce proposal/design/tasks/delta-specs
-tools:
-  - read
-  - grep
-  - glob
-  - lsp
-  - write
-  - bash
 effort: high
 ---
 
@@ -2947,14 +2891,6 @@ Check before finishing:
   ".claude/agents/bp-reviewer.md": "---
 name: bp-reviewer
 description: Triple review — spec review + quality review + goal review
-tools:
-  - read
-  - write
-  - grep
-  - glob
-  - lsp
-  - ast_grep
-  - bash
 effort: high
 ---
 
@@ -4601,13 +4537,6 @@ if (isDisabled() || !hasBpConfig(cwd)) {
   ".omp/agents/bp-codebase-scanner.md": "---
 name: bp-codebase-scanner
 description: Brownfield codebase scan - extract behavioral contracts into specs
-tools:
-  - read
-  - grep
-  - glob
-  - lsp
-  - write
-  - bash
 model: pi/default
 thinkingLevel: high
 spawns: "*"
@@ -4735,16 +4664,6 @@ Check before finishing:
   ".omp/agents/bp-executor.md": "---
 name: bp-executor
 description: Code implementation — TDD RED/GREEN/REFACTOR
-tools:
-  - read
-  - edit
-  - write
-  - bash
-  - grep
-  - glob
-  - lsp
-  - ast_grep
-  - ast_edit
 model: pi/default
 thinkingLevel: high
 spawns: "*"
@@ -4952,13 +4871,6 @@ Do NOT run the full test suite. The orchestrator handles full-suite verification
   ".omp/agents/bp-planner.md": "---
 name: bp-planner
 description: Change design — produce proposal/design/tasks/delta-specs
-tools:
-  - read
-  - grep
-  - glob
-  - lsp
-  - write
-  - bash
 model: pi/default
 thinkingLevel: xhigh
 spawns: "*"
@@ -5346,14 +5258,6 @@ Check before finishing:
   ".omp/agents/bp-reviewer.md": "---
 name: bp-reviewer
 description: Triple review — spec review + quality review + goal review
-tools:
-  - read
-  - write
-  - grep
-  - glob
-  - lsp
-  - ast_grep
-  - bash
 model: pi/default
 thinkingLevel: xhigh
 spawns: "*"

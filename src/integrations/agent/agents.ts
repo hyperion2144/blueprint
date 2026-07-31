@@ -17,10 +17,10 @@ export interface AgentAgentDef {
 }
 
 export const AGENT_DEFS: AgentAgentDef[] = [
-  { role: 'planner', description: 'Change design', tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'] },
-  { role: 'executor', description: 'Code implementation', tools: ['read', 'edit', 'write', 'bash', 'grep', 'glob', 'lsp', 'ast_grep', 'ast_edit'] },
-  { role: 'reviewer', description: 'Triple review', tools: ['read', 'write', 'grep', 'glob', 'lsp', 'ast_grep', 'bash'] },
-  { role: 'codebase-scanner', description: 'Brownfield codebase scan - extract behavioral contracts into specs', tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'] },
+  { role: 'planner', description: 'Change design', tools: [] },
+  { role: 'executor', description: 'Code implementation', tools: [] },
+  { role: 'reviewer', description: 'Triple review', tools: [] },
+  { role: 'codebase-scanner', description: 'Brownfield codebase scan - extract behavioral contracts into specs', tools: [] },
 ];
 export function generateAgentAgent(def: AgentAgentDef, profile?: PromptProfile): string {
   const prompt = AGENT_PROMPTS[def.role as keyof typeof AGENT_PROMPTS];

@@ -5,13 +5,6 @@ exports[`generateAgentAgents > generates matching snapshot 1`] = `
   "codebase-scanner": "---
 name: bp-codebase-scanner
 description: Brownfield codebase scan - extract behavioral contracts into specs
-tools:
-  - read
-  - grep
-  - glob
-  - lsp
-  - write
-  - bash
 ---
 
 ## Role
@@ -132,16 +125,6 @@ Check before finishing:
   "executor": "---
 name: bp-executor
 description: Code implementation
-tools:
-  - read
-  - edit
-  - write
-  - bash
-  - grep
-  - glob
-  - lsp
-  - ast_grep
-  - ast_edit
 ---
 
 ## Role
@@ -342,13 +325,6 @@ Do NOT run the full test suite. The orchestrator handles full-suite verification
   "planner": "---
 name: bp-planner
 description: Change design
-tools:
-  - read
-  - grep
-  - glob
-  - lsp
-  - write
-  - bash
 ---
 
 ## Role
@@ -729,14 +705,6 @@ Check before finishing:
   "reviewer": "---
 name: bp-reviewer
 description: Triple review
-tools:
-  - read
-  - write
-  - grep
-  - glob
-  - lsp
-  - ast_grep
-  - bash
 ---
 
 ## Role

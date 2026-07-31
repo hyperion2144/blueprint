@@ -19,10 +19,10 @@ export interface ClaudeAgentDef {
 }
 
 export const AGENT_DEFS: ClaudeAgentDef[] = [
-  { role: 'planner', description: 'Change design — produce proposal/design/tasks/delta-specs', tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'], effort: 'high' },
-  { role: 'executor', description: 'Code implementation — TDD RED→GREEN→REFACTOR', tools: ['read', 'edit', 'write', 'bash', 'grep', 'glob', 'lsp', 'ast_grep', 'ast_edit'], effort: 'high' },
-  { role: 'reviewer', description: 'Triple review — spec review + quality review + goal review', tools: ['read', 'write', 'grep', 'glob', 'lsp', 'ast_grep', 'bash'], effort: 'high' },
-  { role: 'codebase-scanner', description: 'Brownfield codebase scan - extract behavioral contracts into specs', tools: ['read', 'grep', 'glob', 'lsp', 'write', 'bash'] },
+  { role: 'planner', description: 'Change design — produce proposal/design/tasks/delta-specs', tools: [], effort: 'high' },
+  { role: 'executor', description: 'Code implementation — TDD RED→GREEN→REFACTOR', tools: [], effort: 'high' },
+  { role: 'reviewer', description: 'Triple review — spec review + quality review + goal review', tools: [], effort: 'high' },
+  { role: 'codebase-scanner', description: 'Brownfield codebase scan - extract behavioral contracts into specs', tools: [] },
 ];
 export function generateClaudeAgent(def: ClaudeAgentDef, profile?: PromptProfile): string {
   const prompt = AGENT_PROMPTS[def.role as keyof typeof AGENT_PROMPTS];
