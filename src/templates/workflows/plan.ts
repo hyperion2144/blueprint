@@ -53,9 +53,10 @@ Read \`proposal.md\` deliverables:
 3. Wait for planner to complete.
 
 **If LIGHTWEIGHT:**
-1. Fill design.md template directly
-2. Fill tasks.md with 1 wave
-3. No delta specs needed (no behavioral changes)
+1. Fetch templates: \`bp template design --stdout\` and \`bp template tasks --stdout\`
+2. Fill design.md and tasks.md (1 wave) from templates
+3. If any deliverable involves behavioral changes, write delta specs: run \`bp template spec --stdout\` for the format, then create \`specs/<domain>/spec.md\` per affected domain
+4. If no behavioral changes, skip delta specs
 
 ### Step 4: Review planner output for design quality
 

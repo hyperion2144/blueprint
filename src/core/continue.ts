@@ -120,7 +120,7 @@ function checkStepCompletion(
       const reviewPath = join(dir, 'review.md');
       if (!existsSync(reviewPath)) return false;
       const content = readFileSync(reviewPath, 'utf-8');
-      const verdictMatch = content.match(/## Overall Verdict:\s*(PASS|FAIL|NEEDS_REVISION)/i);
+      const verdictMatch = content.match(/## Overall Verdict:\s*\**\s*(PASS|FAIL|NEEDS_REVISION)/i);
       return verdictMatch?.[1]?.toUpperCase() === 'PASS';
     }
     case 'file_exists':
@@ -139,7 +139,7 @@ function readReviewStatus(dir: string): { verdict?: 'PASS' | 'FAIL' | 'NEEDS_REV
 
   const content = readFileSync(reviewPath, 'utf-8');
   let verdict: 'PASS' | 'FAIL' | 'NEEDS_REVISION' | undefined;
-  const verdictMatch = content.match(/## Overall Verdict:\s*(PASS|FAIL|NEEDS_REVISION)/i);
+  const verdictMatch = content.match(/## Overall Verdict:\s*\**\s*(PASS|FAIL|NEEDS_REVISION)/i);
   if (verdictMatch) {
     verdict = verdictMatch[1].toUpperCase() as 'PASS' | 'FAIL' | 'NEEDS_REVISION';
   }

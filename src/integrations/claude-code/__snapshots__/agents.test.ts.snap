@@ -895,6 +895,8 @@ Do NOT consolidate issues — one \`- [ ]\` line per finding. In fix mode, chang
 | Any BLOCKER severity entry | FAIL |
 | One or more R/Q/G \`- [ ]\` entries | NEEDS_REVISION |
 
+**Verdict format - PLAIN TEXT ONLY:** Write the verdict word as plain text (e.g. \`## Overall Verdict: PASS\`). Do NOT wrap it in \`**\` (markdown bold) like \`**PASS**\`. The archive validator parses the verdict via regex and \`**PASS**\` will NOT match, blocking archiving. This applies to Overall Verdict, Spec Verdict, Goal Verdict, and the Constraint Checklist PASS/FAIL column.
+
 The Issues section is the SOURCE OF TRUTH for the verdict. If a finding exists in the body
 but has no \`- [ ]\` line in Issues, add one. If the Issues section has NO \`- [ ]\` entries,
 verdict MUST be PASS.

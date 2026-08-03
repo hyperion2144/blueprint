@@ -119,7 +119,7 @@ function finalizeHandler(name: string | undefined, options: { dryRun?: boolean; 
 
   const reviewContent = readFileSync(reviewPath, 'utf-8');
   const verdictMatch = reviewContent.match(
-    /## Overall Verdict:\s*(PASS|FAIL|NEEDS_REVISION)/i,
+    /## Overall Verdict:\s*\**\s*(PASS|FAIL|NEEDS_REVISION)/i,
   );
   const verdict = verdictMatch ? verdictMatch[1].toUpperCase() : 'UNKNOWN';
 

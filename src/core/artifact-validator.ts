@@ -222,7 +222,7 @@ export function validateReview(content: string): ValidationResult {
   }
 
   // Check verdict is set
-  const verdictMatch = content.match(/## Overall Verdict:\s*(PASS|FAIL|NEEDS_REVISION)/i);
+  const verdictMatch = content.match(/## Overall Verdict:\s*\**\s*(PASS|FAIL|NEEDS_REVISION)/i);
   if (!verdictMatch) {
     warnings.push('Overall Verdict not set (should be PASS, FAIL, or NEEDS_REVISION)');
   }
