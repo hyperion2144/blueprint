@@ -17,6 +17,7 @@ export const PLATFORM_OPTIONS: ReadonlyArray<{ value: string; label: string; hin
   { value: 'claude-code', label: 'Claude Code', hint: 'generates .claude/commands/ + .claude/agents/' },
   { value: 'agent', label: 'Agent (generic)', hint: 'generates .agent/skills/ + .agent/agents/ with [BP:xxx] params' },
   { value: 'codex', label: 'Codex CLI', hint: 'generates .agents/skills/bp-*/ and .codex/hooks.json' },
+  { value: 'opencode', label: 'OpenCode', hint: 'generates .opencode/commands/ + .opencode/agents/' },
 ];
 
 export async function runInitWizard(defaults: { profile: string; yes: boolean }): Promise<WizardOptions> {
