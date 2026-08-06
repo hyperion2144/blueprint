@@ -1,0 +1,28 @@
+{"file": "bp/specs/platform-gen/spec.md", "reason": "Step generation contract — refactor slash command + skill lives here", "phase": "all", "tag": "spec", "read": "full"}
+{"file": "bp/specs/templates/spec.md", "reason": "Workflow registry and template source-of-truth rules", "phase": "all", "tag": "spec", "read": "full"}
+{"file": "bp/specs/general/spec.md", "reason": "Existing per-domain behavioral sink used as a reference for delta structure", "phase": "plan", "tag": "spec", "read": "full"}
+{"file": "bp/conventions/coding.md", "reason": "TS strict, ESM, kebab-case files, commit scopes — applies to all new files", "phase": "all", "tag": "convention", "read": "full"}
+{"file": "bp/config.yaml", "reason": "Project config — analyzer refactor.thresholds defaults ride here", "phase": "apply", "tag": "config", "read": "full"}
+{"file": "src/templates/workflows/registry.ts", "reason": "WORKFLOW_REGISTRY shape — new step must satisfy typed entry", "phase": "apply", "tag": "invariant", "read": "full"}
+{"file": "src/templates/workflows/propose.ts", "reason": "Reference template — getXxxSkillTemplate / getXxxCommandTemplate dual-export pattern", "phase": "apply", "tag": "pattern", "read": "full"}
+{"file": "src/templates/workflows/ff.ts", "reason": "Closest analog: non-lifecycle auxiliary step without proposal/plan artifacts", "phase": "apply", "tag": "pattern", "read": "full"}
+{"file": "src/templates/workflows/shared.ts", "reason": "CONTEXT_JSONL_REMINDER shared block for orchestrator instructions", "phase": "apply", "tag": "convention", "read": "full"}
+{"file": "src/integrations/omp/commands.ts", "reason": "STEP_DEFS — new refactor entry drives .omp/commands/bp-refactor.md", "phase": "apply", "tag": "invariant", "read": "full"}
+{"file": "src/integrations/omp/agents.ts", "reason": "AGENT_DEFS — refactorer role added for .omp/agents/bp-refactorer.md", "phase": "apply", "tag": "invariant", "read": "full"}
+{"file": "src/integrations/claude-code/commands.ts", "reason": "claude-code STEPS — refactor slash command", "phase": "apply", "tag": "invariant", "read": "full"}
+{"file": "src/integrations/claude-code/agents.ts", "reason": "claude-code AGENT_DEFS — refactorer agent", "phase": "apply", "tag": "invariant", "read": "full"}
+{"file": "src/integrations/opencode/commands.ts", "reason": "opencode STEPS — refactor slash command", "phase": "apply", "tag": "invariant", "read": "full"}
+{"file": "src/integrations/opencode/agents.ts", "reason": "opencode AGENT_DEFS — refactorer agent", "phase": "apply", "tag": "invariant", "read": "full"}
+{"file": "src/integrations/agent/skills.ts", "reason": "agent STEPS — refactor skill", "phase": "apply", "tag": "invariant", "read": "full"}
+{"file": "src/integrations/agent/agents.ts", "reason": "agent AGENT_DEFS — refactorer agent", "phase": "apply", "tag": "invariant", "read": "full"}
+{"file": "src/integrations/codex/skills.ts", "reason": "codex STEPS — refactor skill", "phase": "apply", "tag": "invariant", "read": "full"}
+{"file": "src/commands/bp-propose.ts", "reason": "CLI step-command pattern — bp-refactor mirrors getWorkflowInstructions surface", "phase": "apply", "tag": "pattern", "read": "full"}
+{"file": "src/commands/bp-dispatch.ts", "reason": "EXECUTOR_ISOLATION + FORMATS — refactorer dispatch reuses this machinery", "phase": "apply", "tag": "invariant", "read": "full"}
+{"file": "src/core/continue.ts", "reason": "getWorkflowInstructions fallback to WORKFLOW_REGISTRY — refactor CLI resolves through here", "phase": "apply", "tag": "invariant", "read": "full"}
+{"file": "src/core/codebase-map.ts", "reason": "Per-module exports/files/imports data and loadMap() — analyzer reuses fingerprints", "phase": "apply", "tag": "data-source", "read": "range:1-220"}
+{"file": "src/core/config.ts", "reason": "ProjectConfigSchema — extends with refactor.thresholds", "phase": "apply", "tag": "invariant", "read": "range:16-110"}
+{"file": "src/templates/agents/index.ts", "reason": "AGENT_CONSTRAINTS and AGENT_PROMPTS — new REFACTORER_PROMPT reuses shared constraints", "phase": "apply", "tag": "invariant", "read": "full"}
+{"file": "src/integrations/omp/extension-runtime.ts", "reason": "detectAgentType('refactorer') branch — extension must recognize new agent type", "phase": "apply", "tag": "invariant", "read": "range:76-152"}
+{"file": "src/cli.ts", "reason": "registerBpRefactor() call site to register new CLI command", "phase": "apply", "tag": "invariant", "read": "full"}
+{"file": "bp/changes/archive/2026-07-24-add-claude-code-hooks/design.md", "reason": "Style reference for DS-N layout, architecture decisions, file manifest, impact analysis", "phase": "plan", "tag": "style-ref", "read": "full"}
+{"file": "bp/changes/archive/2026-07-24-add-claude-code-hooks/tasks.md", "reason": "Style reference for T-N numbering, waves, TDD annotations, RED GIVEN/WHEN/THEN", "phase": "plan", "tag": "style-ref", "read": "full"}
