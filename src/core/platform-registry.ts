@@ -24,6 +24,15 @@ import type { ProjectConfig } from '../types/index.js';
 export interface GeneratedFile {
   path: string;
   content: string;
+  /**
+   * Optional merge callback for files that may carry user-owned content
+   * (e.g. `.claude/settings.json`, `.codex/hooks.json`). When the target
+   * file already exists, the writer calls `merge(existingContent)` and
+   * writes the result instead of blindly overwriting. The callback MUST
+   * throw on unparseable input so the writer can fall back to a backup
+   * + regenerate.
+   */
+  merge?: (existingContent: string) => string;
 }
 
 export interface PlatformCapabilities {

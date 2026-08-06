@@ -3,7 +3,8 @@
  *
  * Generates `.codex/hooks.json` describing the five Codex hook events
  * (SessionStart, SessionStop, UserPromptSubmit, PreToolUse, PostToolUse)
- * wired to a single byte-deterministic handler script.
+ * wired to a single byte-deterministic handler script. `SessionStop` is
+ * valid for Codex (unlike Claude Code, which uses `SessionEnd`).
  *
  * Schema (Codex v0.140+):
  *   {
@@ -13,9 +14,14 @@
  *       ]
  *     }
  *   }
+ *
+ * The descriptor carries a `merge` callback: hooks.json is shared with
+ * user-owned hooks, so existing files are merged item-by-item instead of
+ * overwritten (see `src/core/config-merge.ts`).
  */
 
 import type { ProjectConfig } from '../../types/index.js';
+import { isCommandHookGroup, mergeHookConfig } from '../../core/config-merge.js';
 
 /** Codex hook event names this generator emits (deterministic order). */
 export const CODEX_HOOK_EVENTS = [
@@ -33,6 +39,14 @@ export const CODEX_HANDLER_REL_PATH = '.codex/hooks/bp-handler.mjs';
 
 /** Path of the generated hooks configuration file. */
 export const CODEX_HOOKS_PATH = '.codex/hooks.json';
+
+/** Marker embedded in bp-generated hook commands; identifies bp-owned groups during merge. */
+export const CODEX_HANDLER_MARKER = 'bp-handler.mjs';
+
+/** True when a hook group's command targets the bp Codex handler. */
+export function isCodexBpHookGroup(group: Record<string, unknown>): boolean {
+  return isCommandHookGroup(CODEX_HANDLER_MARKER)(group);
+}
 
 interface CodexHookEntry {
   type: 'command';
@@ -82,18 +96,32 @@ export function buildCodexHookConfig(events: readonly CodexHookEvent[] = CODEX_H
  * the output stable across runs and easy to diff. A trailing newline matches
  * POSIX text-file conventions.
  */
-export function renderCodexHooksJson(config: CodexHookConfig): string {
+export function renderCodexHooksJson(config: unknown): string {
   return JSON.stringify(config, null, 2) + '\n';
+}
+
+/**
+ * Merge freshly generated bp hooks into an existing hooks.json, keeping
+ * user-owned hook groups. Throws on unparseable JSON so the writer falls
+ * back to a backup + regenerate.
+ */
+function mergeCodexHooks(existingContent: string): string {
+  const existing = JSON.parse(existingContent) as unknown;
+  const merged = mergeHookConfig(existing, buildCodexHookConfig(), isCodexBpHookGroup);
+  return renderCodexHooksJson(merged);
 }
 
 /**
  * Generate the `.codex/hooks.json` file descriptor.
  */
-export function generateCodexHooks(_config: ProjectConfig): { path: string; content: string }[] {
+export function generateCodexHooks(
+  _config: ProjectConfig
+): { path: string; content: string; merge: (existingContent: string) => string }[] {
   return [
     {
       path: CODEX_HOOKS_PATH,
       content: renderCodexHooksJson(buildCodexHookConfig()),
+      merge: mergeCodexHooks,
     },
   ];
 }

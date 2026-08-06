@@ -24,7 +24,7 @@
  *   - UserPromptSubmit                  -> emit bp-workflow-state payload
  *   - PreToolUse                        -> emit bp-workflow-state payload
  *   - PostToolUse                       -> emit bp-workflow-state payload
- *   - SessionStop                       -> no-op (exit 0)
+ *   - SessionEnd                        -> no-op (exit 0)
  */
 
 export const HANDLER_SOURCE = `#!/usr/bin/env node
@@ -36,7 +36,7 @@ export const HANDLER_SOURCE = `#!/usr/bin/env node
 //   UserPromptSubmit -> bp-workflow-state payload
 //   PreToolUse       -> bp-workflow-state payload (matcher: Bash)
 //   PostToolUse      -> bp-workflow-state payload (matcher: Bash)
-//   SessionStop      -> no-op (exit 0)
+//   SessionEnd       -> no-op (exit 0)
 //
 // Bypass:
 //   BP_HOOKS=0 or BP_DISABLE_HOOKS=1 -> exit 0 silently

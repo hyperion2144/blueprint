@@ -42,10 +42,14 @@ describe('bp update — Codex safe stale cleanup (T-6)', () => {
   });
 
   it('removes stale `.codex/hooks.json` from a previous run', () => {
-    // Seed a stale hooks.json — current generation no longer has it
+    // Seed a stale bp-generated hooks.json — current generation no longer has it
     const codexDir = join(testDir, '.codex');
     mkdirSync(codexDir, { recursive: true });
-    writeFileSync(join(codexDir, 'hooks.json'), '{"hooks": {}}', 'utf-8');
+    writeFileSync(
+      join(codexDir, 'hooks.json'),
+      '{"hooks": {"SessionStart": [{"hooks": [{"type": "command", "command": "node .codex/hooks/bp-handler.mjs SessionStart"}]}]}}',
+      'utf-8'
+    );
 
     // Drop codex from config so generateAll won't regenerate hooks.json
     const configPath = join(bpDir, 'config.yaml');
@@ -112,6 +116,74 @@ describe('bp update — Codex safe stale cleanup (T-6)', () => {
     // At least one current bp skill should be present
     expect(existsSync(join(testDir, '.agents', 'skills', 'bp-plan', 'SKILL.md'))).toBe(true);
   });
+
+  it('merges bp hooks into `.codex/hooks.json` and preserves user hooks with a backup', () => {
+    // Ensure codex is configured
+    const configPath = join(bpDir, 'config.yaml');
+    let config = readFileSync(configPath, 'utf-8');
+    if (!config.includes('- codex')) {
+      config = config.replace(/platform:\n  - omp\n/, 'platform:\n  - omp\n  - codex\n');
+      writeFileSync(configPath, config, 'utf-8');
+    }
+
+    // Seed a user-owned hooks.json: a custom Stop hook plus an old bp group
+    const codexDir = join(testDir, '.codex');
+    mkdirSync(codexDir, { recursive: true });
+    const original = JSON.stringify(
+      {
+        hooks: {
+          Stop: [{ hooks: [{ type: 'command', command: 'notify-send done' }] }],
+          SessionStart: [
+            { hooks: [{ type: 'command', command: 'node .codex/hooks/bp-handler.mjs SessionStart' }] },
+          ],
+        },
+      },
+      null,
+      2
+    );
+    writeFileSync(join(codexDir, 'hooks.json'), original, 'utf-8');
+
+    execSync(`node ${cliPath} update --dir bp`, { encoding: 'utf-8', cwd: testDir });
+
+    const merged = JSON.parse(readFileSync(join(codexDir, 'hooks.json'), 'utf-8'));
+    expect(merged.hooks.Stop[0].hooks[0].command).toBe('notify-send done');
+    expect(merged.hooks.SessionStart[0].hooks[0].command).toBe('node .codex/hooks/bp-handler.mjs SessionStart');
+    // Backup written before the merge
+    expect(readFileSync(join(codexDir, 'hooks.json.bak'), 'utf-8')).toBe(original);
+  });
+
+  it('strips bp hooks from `.codex/hooks.json` and keeps user hooks when codex is dropped', () => {
+    // Drop codex from config so hooks.json is stale
+    const configPath = join(bpDir, 'config.yaml');
+    let config = readFileSync(configPath, 'utf-8');
+    config = config.replace(/platform:\n(?:  - [^\n]+\n)+/, 'platform:\n  - omp\n');
+    writeFileSync(configPath, config, 'utf-8');
+
+    const codexDir = join(testDir, '.codex');
+    mkdirSync(codexDir, { recursive: true });
+    const original = JSON.stringify(
+      {
+        hooks: {
+          Stop: [{ hooks: [{ type: 'command', command: 'notify-send done' }] }],
+          SessionStart: [
+            { hooks: [{ type: 'command', command: 'node .codex/hooks/bp-handler.mjs SessionStart' }] },
+          ],
+        },
+      },
+      null,
+      2
+    );
+    writeFileSync(join(codexDir, 'hooks.json'), original, 'utf-8');
+
+    execSync(`node ${cliPath} update --dir bp`, { encoding: 'utf-8', cwd: testDir });
+
+    // File survives with user content; bp groups are gone
+    const merged = JSON.parse(readFileSync(join(codexDir, 'hooks.json'), 'utf-8'));
+    expect(merged.hooks.Stop[0].hooks[0].command).toBe('notify-send done');
+    expect(merged.hooks.SessionStart).toBeUndefined();
+    expect(merged.hooks.SessionStop).toBeUndefined();
+    expect(readFileSync(join(codexDir, 'hooks.json.bak'), 'utf-8')).toBe(original);
+  });
 });
 
 describe('bp update — Claude Code safe stale cleanup (T-4)', () => {
@@ -139,7 +211,11 @@ describe('bp update — Claude Code safe stale cleanup (T-4)', () => {
   it('removes stale `.claude/settings.json` from a previous run', () => {
     const claudeDir = join(testDir, '.claude');
     mkdirSync(claudeDir, { recursive: true });
-    writeFileSync(join(claudeDir, 'settings.json'), '{"hooks": {}}', 'utf-8');
+    writeFileSync(
+      join(claudeDir, 'settings.json'),
+      '{"hooks": {"SessionStart": [{"hooks": [{"type": "command", "command": "node .claude/hooks/bp-claude-handler.mjs SessionStart"}]}]}}',
+      'utf-8'
+    );
 
     // Drop claude-code from config so generateAll won't regenerate it
     const configPath = join(bpDir, 'config.yaml');
@@ -189,5 +265,77 @@ describe('bp update — Claude Code safe stale cleanup (T-4)', () => {
 
     expect(existsSync(join(testDir, '.claude', 'settings.json'))).toBe(true);
     expect(existsSync(join(testDir, '.claude', 'hooks', 'bp-claude-handler.mjs'))).toBe(true);
+  });
+
+  it('merges bp hooks into `.claude/settings.json` and preserves user settings with a backup', () => {
+    const configPath = join(bpDir, 'config.yaml');
+    let config = readFileSync(configPath, 'utf-8');
+    if (!config.includes('- claude-code')) {
+      config = config.replace(/platform:\n  - omp\n/, 'platform:\n  - omp\n  - claude-code\n');
+      writeFileSync(configPath, config, 'utf-8');
+    }
+
+    // Seed user-owned settings: permissions plus a custom Notification hook
+    // and an old bp group on the renamed event (SessionStop).
+    const claudeDir = join(testDir, '.claude');
+    mkdirSync(claudeDir, { recursive: true });
+    const original = JSON.stringify(
+      {
+        permissions: { allow: ['Bash(npm run *)'] },
+        hooks: {
+          Notification: [{ hooks: [{ type: 'command', command: 'osascript -e "display notification"' }] }],
+          SessionStop: [
+            { hooks: [{ type: 'command', command: 'node .claude/hooks/bp-claude-handler.mjs SessionStop' }] },
+          ],
+        },
+      },
+      null,
+      2
+    );
+    writeFileSync(join(claudeDir, 'settings.json'), original, 'utf-8');
+
+    execSync(`node ${cliPath} update --dir bp`, { encoding: 'utf-8', cwd: testDir });
+
+    const merged = JSON.parse(readFileSync(join(claudeDir, 'settings.json'), 'utf-8'));
+    expect(merged.permissions).toEqual({ allow: ['Bash(npm run *)'] });
+    expect(merged.hooks.Notification[0].hooks[0].command).toContain('osascript');
+    // Old bp event migrated to SessionEnd; SessionStop group removed
+    expect(merged.hooks.SessionStop).toBeUndefined();
+    expect(merged.hooks.SessionEnd[0].hooks[0].command).toBe(
+      'node .claude/hooks/bp-claude-handler.mjs SessionEnd'
+    );
+    expect(readFileSync(join(claudeDir, 'settings.json.bak'), 'utf-8')).toBe(original);
+  });
+
+  it('strips bp hooks from `.claude/settings.json` and keeps user settings when claude-code is dropped', () => {
+    const configPath = join(bpDir, 'config.yaml');
+    let config = readFileSync(configPath, 'utf-8');
+    config = config.replace(/platform:\n(?:  - [^\n]+\n)+/, 'platform:\n  - omp\n');
+    writeFileSync(configPath, config, 'utf-8');
+
+    const claudeDir = join(testDir, '.claude');
+    mkdirSync(claudeDir, { recursive: true });
+    const original = JSON.stringify(
+      {
+        permissions: { allow: ['Bash(npm run *)'] },
+        hooks: {
+          Stop: [{ hooks: [{ type: 'command', command: 'echo turn ended' }] }],
+          SessionStart: [
+            { hooks: [{ type: 'command', command: 'node .claude/hooks/bp-claude-handler.mjs SessionStart' }] },
+          ],
+        },
+      },
+      null,
+      2
+    );
+    writeFileSync(join(claudeDir, 'settings.json'), original, 'utf-8');
+
+    execSync(`node ${cliPath} update --dir bp`, { encoding: 'utf-8', cwd: testDir });
+
+    const merged = JSON.parse(readFileSync(join(claudeDir, 'settings.json'), 'utf-8'));
+    expect(merged.permissions).toEqual({ allow: ['Bash(npm run *)'] });
+    expect(merged.hooks.Stop[0].hooks[0].command).toBe('echo turn ended');
+    expect(merged.hooks.SessionStart).toBeUndefined();
+    expect(readFileSync(join(claudeDir, 'settings.json.bak'), 'utf-8')).toBe(original);
   });
 });

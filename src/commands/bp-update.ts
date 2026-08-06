@@ -3,11 +3,51 @@
  */
 
 import { join } from 'node:path';
-import { rmSync, readdirSync, existsSync } from 'node:fs';
+import { rmSync, readdirSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { Command } from 'commander';
 import { loadConfig } from '../core/config.js';
 import { generateAll } from '../generators/index.js';
 import { writeGeneratedFiles } from './_utils.js';
+import {
+  isCommandHookGroup,
+  mergeHookConfig,
+  containsBpHookGroups,
+  isEmptyJsonObject,
+} from '../core/config-merge.js';
+import { CLAUDE_HANDLER_MARKER } from '../integrations/claude-code/hooks.js';
+import { CODEX_HANDLER_MARKER } from '../integrations/codex/hooks.js';
+
+/**
+ * Strip bp-owned hook groups from a shared hook config file whose platform
+ * is no longer in the generation set. User-owned keys/groups are preserved;
+ * a backup copy is written before any modification. A file that ends up
+ * with no user content at all is removed. Unparseable files are left alone.
+ */
+function stripStaleHookConfig(baseDir: string, relPath: string, marker: string): void {
+  const fullPath = join(baseDir, relPath);
+  if (!existsSync(fullPath)) return;
+  let existing: unknown;
+  try {
+    existing = JSON.parse(readFileSync(fullPath, 'utf-8'));
+  } catch {
+    return; // Not JSON — not a file bp generated; leave untouched.
+  }
+  const isBpGroup = isCommandHookGroup(marker);
+  if (!containsBpHookGroups(existing, isBpGroup)) return;
+  const merged = mergeHookConfig(existing, {}, isBpGroup);
+  if (isEmptyJsonObject(merged)) {
+    rmSync(fullPath);
+    console.log(`  ✓ Removed stale: ${relPath}`);
+    return;
+  }
+  const rendered = JSON.stringify(merged, null, 2) + '\n';
+  const original = readFileSync(fullPath, 'utf-8');
+  if (rendered !== original) {
+    writeFileSync(`${fullPath}.bak`, original, 'utf-8');
+    writeFileSync(fullPath, rendered, 'utf-8');
+    console.log(`  ✓ Removed bp hooks from ${relPath} (preserved user content)`);
+  }
+}
 
 /** Remove stale generated files that no longer exist in the current v2 generation set. */
 
@@ -89,12 +129,11 @@ function cleanupStaleFiles(baseDir: string, generatedPaths: string[]): void {
     }
   }
 
-  // .codex/hooks.json — only remove the exact generated hooks config;
-  // arbitrary files under .codex/ are user-owned and must be preserved.
-  const codexHooksPath = join(baseDir, '.codex', 'hooks.json');
-  if (existsSync(codexHooksPath) && !generatedSet.has('.codex/hooks.json')) {
-    rmSync(codexHooksPath);
-    console.log('  ✓ Removed stale: .codex/hooks.json');
+  // .codex/hooks.json — when codex is no longer configured, strip bp-owned
+  // hook groups and keep any user-owned hooks/settings (backed up first).
+  // Arbitrary files under .codex/ are user-owned and must be preserved.
+  if (!generatedSet.has('.codex/hooks.json')) {
+    stripStaleHookConfig(baseDir, '.codex/hooks.json', CODEX_HANDLER_MARKER);
   }
 
   // .agents/skills/bp-* — directory-based cleanup; non-bp skill
@@ -113,12 +152,11 @@ function cleanupStaleFiles(baseDir: string, generatedPaths: string[]): void {
     }
   }
 
-  // .claude/settings.json — only remove the exact generated settings config;
-  // arbitrary files under .claude/ are user-owned and must be preserved.
-  const claudeSettingsPath = join(baseDir, '.claude', 'settings.json');
-  if (existsSync(claudeSettingsPath) && !generatedSet.has('.claude/settings.json')) {
-    rmSync(claudeSettingsPath);
-    console.log('  ✓ Removed stale: .claude/settings.json');
+  // .claude/settings.json — when claude-code is no longer configured, strip
+  // bp-owned hook groups and keep any user-owned settings/hooks (backed up
+  // first). Arbitrary files under .claude/ are user-owned and preserved.
+  if (!generatedSet.has('.claude/settings.json')) {
+    stripStaleHookConfig(baseDir, '.claude/settings.json', CLAUDE_HANDLER_MARKER);
   }
 
   // .claude/hooks/bp-claude-handler.mjs — only remove the bp-generated

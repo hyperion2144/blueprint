@@ -10,6 +10,8 @@ import { mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
 interface GeneratedFile {
   path: string;
   content: string;
+  /** Merge existing file content instead of overwriting when present. */
+  merge?: (existingContent: string) => string;
 }
 
 /** Default bp/ directory (based on cwd). */
@@ -37,7 +39,27 @@ export function writeGeneratedFiles(files: GeneratedFile[]): void {
   for (const file of files) {
     const dir = dirname(file.path);
     if (dir) mkdirSync(dir, { recursive: true });
-    writeFileSync(file.path, file.content, 'utf-8');
+    if (file.merge && existsSync(file.path)) {
+      const existing = readFileSync(file.path, 'utf-8');
+      let merged: string;
+      try {
+        merged = file.merge(existing);
+      } catch (err) {
+        console.warn(
+          `  ~ ${file.path}: could not merge with existing content (${(err as Error).message}); backed up and regenerated`
+        );
+        writeFileSync(`${file.path}.bak`, existing, 'utf-8');
+        writeFileSync(file.path, file.content, 'utf-8');
+        continue;
+      }
+      if (merged !== existing) {
+        // Backup the pre-update file, then write the item-by-item merge.
+        writeFileSync(`${file.path}.bak`, existing, 'utf-8');
+        writeFileSync(file.path, merged, 'utf-8');
+      }
+    } else {
+      writeFileSync(file.path, file.content, 'utf-8');
+    }
   }
 }
 

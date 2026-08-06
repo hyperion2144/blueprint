@@ -229,7 +229,7 @@ describe('v2 lifecycle: claude-code platform generation (T-5)', () => {
     );
     const events = Object.keys(settings.hooks);
     expect(events.sort()).toEqual(
-      ['PostToolUse', 'PreToolUse', 'SessionStart', 'SessionStop', 'UserPromptSubmit'].sort()
+      ['PostToolUse', 'PreToolUse', 'SessionStart', 'SessionEnd', 'UserPromptSubmit'].sort()
     );
     expect(settings.hooks.PreToolUse[0].matcher).toBe('Bash');
     expect(settings.hooks.PostToolUse[0].matcher).toBe('Bash');

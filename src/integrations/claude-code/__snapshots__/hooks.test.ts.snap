@@ -13,12 +13,12 @@ exports[`generateClaudeHooks > matches the documented snapshot 1`] = `
         ]
       }
     ],
-    "SessionStop": [
+    "SessionEnd": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/bp-claude-handler.mjs SessionStop"
+            "command": "node .claude/hooks/bp-claude-handler.mjs SessionEnd"
           }
         ]
       }

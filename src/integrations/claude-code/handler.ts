@@ -126,7 +126,7 @@ export type HandlerResult =
  *   - UserPromptSubmit -> { kind: 'state',   payload }
  *   - PreToolUse       -> { kind: 'state',   payload }
  *   - PostToolUse      -> { kind: 'state',   payload }
- *   - SessionStop      -> { kind: 'noop' }
+ *   - SessionEnd       -> { kind: 'noop' }
  *
  * Bypass cases (env disabled OR missing bp/config.yaml) return
  * `{ kind: 'bypass' }` so the handler can exit 0 without a payload.
@@ -144,7 +144,7 @@ export function dispatchHandler(
   if (WORKFLOW_STATE_EVENT_TABLE[event] === true) {
     return { kind: 'state', payload: generateWorkflowState(cwd) };
   }
-  // SessionStop and unknown events: no-op success.
+  // SessionEnd and unknown events: no-op success.
   return { kind: 'noop' };
 }
 

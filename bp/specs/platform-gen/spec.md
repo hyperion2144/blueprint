@@ -183,7 +183,7 @@ The system SHALL extend the registered `claude-code` platform to generate a dete
 #### Scenario: Wire the five lifecycle events
 - **GIVEN** generated `.claude/settings.json`
 - **WHEN** the JSON is parsed
-- **THEN** its top-level `hooks` object SHALL contain exactly `SessionStart`, `SessionStop`, `UserPromptSubmit`, `PreToolUse`, and `PostToolUse`
+- **THEN** its top-level `hooks` object SHALL contain exactly `SessionStart`, `SessionEnd`, `UserPromptSubmit`, `PreToolUse`, and `PostToolUse`
 - **AND** `PreToolUse` and `PostToolUse` SHALL have matcher `Bash`
 - **AND** every hook command SHALL invoke `.claude/hooks/bp-claude-handler.mjs` with its event name.
 
@@ -197,7 +197,7 @@ The system SHALL extend the registered `claude-code` platform to generate a dete
 
 #### Scenario: Stop event is a successful no-op
 - **GIVEN** a configured project
-- **WHEN** Claude Code invokes `SessionStop`
+- **WHEN** Claude Code invokes `SessionEnd`
 - **THEN** the handler SHALL exit successfully with `continue: true`
 - **AND** it SHALL not invoke the bp runtime or emit workflow-state content.
 
@@ -224,6 +224,26 @@ The system SHALL extend the registered `claude-code` platform to generate a dete
 - **WHEN** `bp update` runs without generating the stale paths
 - **THEN** only the two exact stale generated paths SHALL be removed
 - **AND** unrelated Claude files SHALL remain unchanged.
+
+
+### Requirement: hook-config-merge-preservation
+The system SHALL merge generated hook entries into existing `.claude/settings.json` and `.codex/hooks.json` item-by-item instead of overwriting them, and SHALL back up the pre-update file to `<path>.bak` before any modification.
+#### Scenario: User content survives update
+- **GIVEN** `.claude/settings.json` or `.codex/hooks.json` contains user-owned keys and hook groups alongside bp-generated groups
+- **WHEN** `bp update` runs with the platform still configured
+- **THEN** user-owned keys and non-bp hook groups SHALL remain unchanged
+- **AND** bp hook groups SHALL be refreshed to the current generation
+- **AND** the pre-update file SHALL be preserved at `<path>.bak`
+#### Scenario: Renamed events migrate
+- **GIVEN** an existing bp hook group on `SessionStop` in `.claude/settings.json`
+- **WHEN** `bp update` runs with claude-code configured
+- **THEN** the `SessionStop` group SHALL be removed
+- **AND** `SessionEnd` SHALL be wired to the generated handler instead
+#### Scenario: Platform removal strips only bp hooks
+- **GIVEN** `.claude/settings.json` or `.codex/hooks.json` contains both bp and user-owned hook groups, and the platform is removed from the config
+- **WHEN** `bp update` runs
+- **THEN** bp hook groups SHALL be stripped and user-owned content SHALL remain
+- **AND** the file SHALL be deleted only when no user-owned content remains
 
 
 

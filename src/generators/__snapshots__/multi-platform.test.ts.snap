@@ -4450,7 +4450,7 @@ Check before finishing:
 //   UserPromptSubmit -> bp-workflow-state payload
 //   PreToolUse       -> bp-workflow-state payload (matcher: Bash)
 //   PostToolUse      -> bp-workflow-state payload (matcher: Bash)
-//   SessionStop      -> no-op (exit 0)
+//   SessionEnd       -> no-op (exit 0)
 //
 // Bypass:
 //   BP_HOOKS=0 or BP_DISABLE_HOOKS=1 -> exit 0 silently
@@ -4561,12 +4561,12 @@ if (isDisabled() || !hasBpConfig(cwd)) {
         ]
       }
     ],
-    "SessionStop": [
+    "SessionEnd": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/bp-claude-handler.mjs SessionStop"
+            "command": "node .claude/hooks/bp-claude-handler.mjs SessionEnd"
           }
         ]
       }

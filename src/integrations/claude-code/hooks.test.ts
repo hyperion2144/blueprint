@@ -4,7 +4,7 @@
  * T-1 RED: GIVEN a valid ProjectConfig
  *          WHEN generateClaudeHooks(config) runs
  *          THEN the rendered JSON contains exactly SessionStart,
- *               SessionStop, UserPromptSubmit, PreToolUse, and PostToolUse,
+ *               SessionEnd, UserPromptSubmit, PreToolUse, and PostToolUse,
  *               only the two tool events carry matcher "Bash",
  *               every command invokes .claude/hooks/bp-claude-handler.mjs
  *               with its event name,
@@ -44,7 +44,7 @@ describe('generateClaudeHooks', () => {
     expect(keys).toEqual([...CLAUDE_HOOK_EVENTS]);
     expect(keys).toEqual([
       'SessionStart',
-      'SessionStop',
+      'SessionEnd',
       'UserPromptSubmit',
       'PreToolUse',
       'PostToolUse',
@@ -59,7 +59,7 @@ describe('generateClaudeHooks', () => {
     expect(parsed.hooks.PreToolUse[0].matcher).toBe('Bash');
     expect(parsed.hooks.PostToolUse).toHaveLength(1);
     expect(parsed.hooks.PostToolUse[0].matcher).toBe('Bash');
-    for (const evt of ['SessionStart', 'SessionStop', 'UserPromptSubmit']) {
+    for (const evt of ['SessionStart', 'SessionEnd', 'UserPromptSubmit']) {
       expect(parsed.hooks[evt]).toHaveLength(1);
       expect(parsed.hooks[evt][0].matcher).toBeUndefined();
     }

@@ -197,7 +197,7 @@ and third-party Skills are preserved.
 Anthropic Claude Code reads project-scoped configuration from
 `.claude/settings.json`, which carries a top-level `hooks` object
 mapping event names to arrays of `{ matcher?, hooks: [{ type: 'command', command }] }` entries. Five events are wired by `bp update`:
-`SessionStart`, `SessionStop`, `UserPromptSubmit`, `PreToolUse` (matcher
+`SessionStart`, `SessionEnd`, `UserPromptSubmit`, `PreToolUse` (matcher
 `Bash`), and `PostToolUse` (matcher `Bash`). The runtime handler lives
 at `.claude/hooks/bp-claude-handler.mjs` and is byte-deterministic.
 

@@ -2,8 +2,10 @@
  * claude-code/hooks.ts — Claude Code settings.json hook generator
  *
  * Generates `.claude/settings.json` describing the five Claude Code hook
- * events (SessionStart, SessionStop, UserPromptSubmit, PreToolUse,
+ * events (SessionStart, SessionEnd, UserPromptSubmit, PreToolUse,
  * PostToolUse) wired to a single byte-deterministic handler script.
+ * `SessionEnd` is Claude Code's session-termination event — the Codex
+ * platform's `SessionStop` does not exist in Claude Code.
  *
  * Schema (Claude Code):
  *   {
@@ -13,14 +15,20 @@
  *       ]
  *     }
  *   }
+ *
+ * The descriptor carries a `merge` callback: settings.json is shared with
+ * user-owned content (permissions, env, the user's own hooks), so existing
+ * files are merged item-by-item instead of overwritten (see
+ * `src/core/config-merge.ts`).
  */
 
 import type { ProjectConfig } from '../../types/index.js';
+import { isCommandHookGroup, mergeHookConfig } from '../../core/config-merge.js';
 
 /** Claude Code hook event names this generator emits (deterministic order). */
 export const CLAUDE_HOOK_EVENTS = [
   'SessionStart',
-  'SessionStop',
+  'SessionEnd',
   'UserPromptSubmit',
   'PreToolUse',
   'PostToolUse',
@@ -33,6 +41,14 @@ export const CLAUDE_HANDLER_REL_PATH = '.claude/hooks/bp-claude-handler.mjs';
 
 /** Path of the generated settings.json hook configuration file. */
 export const CLAUDE_HOOKS_PATH = '.claude/settings.json';
+
+/** Marker embedded in bp-generated hook commands; identifies bp-owned groups during merge. */
+export const CLAUDE_HANDLER_MARKER = 'bp-claude-handler.mjs';
+
+/** True when a hook group's command targets the bp Claude Code handler. */
+export function isClaudeBpHookGroup(group: Record<string, unknown>): boolean {
+  return isCommandHookGroup(CLAUDE_HANDLER_MARKER)(group);
+}
 
 interface ClaudeHookEntry {
   type: 'command';
@@ -84,18 +100,32 @@ export function buildClaudeHookConfig(
  * keeps the output stable across runs and easy to diff. A trailing
  * newline matches POSIX text-file conventions.
  */
-export function renderClaudeHooksJson(config: ClaudeHookConfig): string {
+export function renderClaudeHooksJson(config: unknown): string {
   return JSON.stringify(config, null, 2) + '\n';
+}
+
+/**
+ * Merge freshly generated bp hooks into an existing settings.json, keeping
+ * user-owned keys and hook groups. Throws on unparseable JSON so the writer
+ * falls back to a backup + regenerate.
+ */
+function mergeClaudeHooks(existingContent: string): string {
+  const existing = JSON.parse(existingContent) as unknown;
+  const merged = mergeHookConfig(existing, buildClaudeHookConfig(), isClaudeBpHookGroup);
+  return renderClaudeHooksJson(merged);
 }
 
 /**
  * Generate the `.claude/settings.json` file descriptor.
  */
-export function generateClaudeHooks(_config: ProjectConfig): { path: string; content: string }[] {
+export function generateClaudeHooks(
+  _config: ProjectConfig
+): { path: string; content: string; merge: (existingContent: string) => string }[] {
   return [
     {
       path: CLAUDE_HOOKS_PATH,
       content: renderClaudeHooksJson(buildClaudeHookConfig()),
+      merge: mergeClaudeHooks,
     },
   ];
 }

@@ -6,7 +6,7 @@
  *          THEN it emits the expected bp-context or bp-workflow-state
  *               payload, validates wrapper tags, returns the trimmed
  *               workflow state for prompt/tool events, no-ops for
- *               SessionStop, bypasses on BP_HOOKS=0 / BP_DISABLE_HOOKS=1
+ *               SessionEnd, bypasses on BP_HOOKS=0 / BP_DISABLE_HOOKS=1
  *               or missing config, AND uses deterministic fallbacks
  *               when the bp context command fails or returns malformed
  *               output. The generated descriptor content is byte-identical
@@ -241,28 +241,28 @@ describe('Claude Code handler runtime helpers', () => {
       expect(result.kind).toBe('state');
     });
 
-    it('SessionStop emits a no-op payload', () => {
-      const result = dispatchHandler('SessionStop', cwd);
+    it('SessionEnd emits a no-op payload', () => {
+      const result = dispatchHandler('SessionEnd', cwd);
       expect(result.kind).toBe('noop');
     });
 
     it('BP_HOOKS=0 bypass returns bypass for every event', () => {
       process.env.BP_HOOKS = '0';
-      for (const evt of ['SessionStart', 'SessionStop', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse']) {
+      for (const evt of ['SessionStart', 'SessionEnd', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse']) {
         expect(dispatchHandler(evt, cwd).kind).toBe('bypass');
       }
     });
 
     it('BP_DISABLE_HOOKS=1 bypass returns bypass for every event', () => {
       process.env.BP_DISABLE_HOOKS = '1';
-      for (const evt of ['SessionStart', 'SessionStop', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse']) {
+      for (const evt of ['SessionStart', 'SessionEnd', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse']) {
         expect(dispatchHandler(evt, cwd).kind).toBe('bypass');
       }
     });
 
     it('missing bp/config.yaml returns bypass for every event', () => {
       rmSync(join(cwd, 'bp', 'config.yaml'));
-      for (const evt of ['SessionStart', 'SessionStop', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse']) {
+      for (const evt of ['SessionStart', 'SessionEnd', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse']) {
         expect(dispatchHandler(evt, cwd).kind).toBe('bypass');
       }
     });
