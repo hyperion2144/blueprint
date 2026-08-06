@@ -68,3 +68,6 @@ conventions:
 # Git configuration
 git:
   create_tag: true    # Create git tag when milestone is shipped
+
+# Commit bp/ artifacts (proposals, specs, roadmap) to git with bp commit
+commitDocs: true
