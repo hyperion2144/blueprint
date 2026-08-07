@@ -101,7 +101,7 @@ describe('v2 lifecycle: init -> propose -> plan -> apply -> review -> archive', 
     execSync('git add -A', { cwd: testDir });
     execSync('git commit -m "add completed change"', { cwd: testDir });
 
-    const output = execSync(`node ${cliPath} finalize complete-change`, { encoding: 'utf-8', cwd: testDir });
+    const output = execSync(`node ${cliPath} finish complete-change`, { encoding: 'utf-8', cwd: testDir });
     expect(output).toContain('Archived');
     expect(existsSync(join(testDir, 'bp/changes/complete-change'))).toBe(false);
   });
@@ -115,7 +115,7 @@ describe('v2 lifecycle: init -> propose -> plan -> apply -> review -> archive', 
     // Archive the other active change so none remain
     execSync(
       `node ${cliPath} check add-auth 2>/dev/null; ` +
-      `node ${cliPath} finalize add-auth 2>/dev/null; ` +
+      `node ${cliPath} finish add-auth 2>/dev/null; ` +
       `rm -rf bp/changes/add-auth`,
       { encoding: 'utf-8', cwd: testDir },
     );

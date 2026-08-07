@@ -1,8 +1,8 @@
 /**
- * bp archive [name] — Output archive workflow steps (run bp finalize to execute)
+ * bp archive [name] — Output archive workflow steps (run bp finish to execute)
  *
  * This command outputs instructions for the orchestrator to follow.
- * Actual archive execution is handled by `bp finalize`.
+ * Actual archive execution is handled by `bp finish`.
  */
 
 import { findBpDir, gateContextJsonl, resolveChangeName, gatePlaceholders } from './_utils.js';
@@ -12,7 +12,7 @@ import type { Command } from 'commander';
 export function register(program: Command): void {
   program
     .command('archive [name]')
-    .description('Output archive workflow steps (run bp finalize to execute)')
+    .description('Output archive workflow steps (run bp finish to execute)')
     .option('--ci', 'CI mode hint')
     .action(archiveHandler);
 }

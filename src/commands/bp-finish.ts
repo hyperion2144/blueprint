@@ -1,5 +1,5 @@
 /**
- * bp finalize [name] — Execute archive: merge delta specs, move change to archive, update roadmap
+ * bp finish [name] — Execute archive: merge delta specs, move change to archive, update roadmap
  *
  * 1. Verifies review.md exists and verdict is PASS.
  * 2. Merges each delta spec (specs/<domain>/spec.md) into the global spec
@@ -21,14 +21,14 @@ import type { Command } from 'commander';
 
 export function register(program: Command): void {
   program
-    .command('finalize [name]')
+    .command('finish [name]')
     .description('Execute archive: merge delta specs, move change to archive, update roadmap')
     .option('--dry-run', 'Preview merge without writing')
     .option('--ci', 'CI mode: non-interactive')
-    .action(finalizeHandler);
+    .action(finishHandler);
 }
 
-function finalizeHandler(name: string | undefined, options: { dryRun?: boolean; ci?: boolean } = {}): void {
+function finishHandler(name: string | undefined, options: { dryRun?: boolean; ci?: boolean } = {}): void {
   const bpDir = findBpDir();
   if (!bpDir) {
     console.error('Not in a blueprint project. Run "bp init" first.');
@@ -113,7 +113,7 @@ function finalizeHandler(name: string | undefined, options: { dryRun?: boolean; 
   const reviewPath = join(changePath, 'review.md');
   if (!existsSync(reviewPath)) {
     console.error(`Cannot archive: review.md not found for "${changeName}".`);
-    console.error('Run "bp review" first.');
+    console.error('Run "bp check" first.');
     process.exit(1);
   }
 
@@ -125,14 +125,14 @@ function finalizeHandler(name: string | undefined, options: { dryRun?: boolean; 
 
   if (verdict !== 'PASS') {
     console.error(`Cannot archive: review verdict is ${verdict} (expected PASS).`);
-    console.error(`  Fix issues first: bp apply --fix ${changeName}`);
+    console.error(`  Fix issues first: bp check ${changeName}`);
     process.exit(1);
   }
 
   const unresolved = (reviewContent.match(/^- \[ \] [RQGD]\d+/gm) || []).length;
   if (unresolved > 0) {
     console.error(`Cannot archive: ${unresolved} unresolved issue(s) in review.md.`);
-    console.error(`  Fix issues first: bp apply --fix ${changeName}`);
+    console.error(`  Fix issues first: bp check ${changeName}`);
     process.exit(1);
   }
 
