@@ -58,6 +58,12 @@ export const AGENT_DEFS: AgentDef[] = [
     tools: ['edit', 'write', 'bash'],
     spawns: '*',
   },
+  {
+    role: 'fixer',
+    description: 'Fix proposal/design/implementation per reviewer report',
+    tools: ['edit', 'write', 'bash'],
+    spawns: '*',
+  },
 ];
 /* ================================================================
  * Agent file generation

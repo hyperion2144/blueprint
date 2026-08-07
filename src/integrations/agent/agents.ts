@@ -22,6 +22,7 @@ export const AGENT_DEFS: AgentAgentDef[] = [
   { role: 'reviewer', description: 'Triple review', tools: [] },
   { role: 'codebase-scanner', description: 'Brownfield codebase scan - extract behavioral contracts into specs', tools: [] },
   { role: 'refactorer', description: 'Behavior-preserving consolidation + spec sync per assigned module', tools: ['edit', 'write', 'bash'] },
+  { role: 'fixer', description: 'Fix proposal/design/implementation per reviewer report', tools: ['edit', 'write', 'bash'] },
 ];
 export function generateAgentAgent(def: AgentAgentDef, profile?: PromptProfile): string {
   const prompt = AGENT_PROMPTS[def.role as keyof typeof AGENT_PROMPTS];

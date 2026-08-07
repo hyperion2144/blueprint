@@ -74,7 +74,7 @@ export interface HandlerResult {
 }
 
 /** Detected OMP sub-agent type for the current session. */
-export type AgentType = 'planner' | 'executor' | 'reviewer' | 'refactorer' | 'default';
+export type AgentType = 'planner' | 'executor' | 'reviewer' | 'refactorer' | 'fixer' | 'default';
 
 // ---------------------------------------------------------------------------
 // Env-bypass and config-skip predicates. Each handler invokes these at entry.
@@ -98,6 +98,7 @@ export function detectAgentType(ctx: ExtensionContext): AgentType {
   if (tpl.includes('executor')) return 'executor';
   if (tpl.includes('reviewer')) return 'reviewer';
   if (tpl.includes('refactorer')) return 'refactorer';
+  if (tpl.includes('fixer')) return 'fixer';
   return 'default';
 }
 
@@ -152,6 +153,20 @@ function readContextRows(bpDir: string, changeName: string | undefined): Context
   }
 }
 
+/** Inline a change's context.jsonl rows (path + reason); prefix guard-rail rows. */
+function appendContextRows(extra: string[], bpDir: string, changeName: string | undefined): void {
+  const rows = readContextRows(bpDir, changeName);
+  if (rows.length === 0) {
+    extra.push('_no context.jsonl rows_');
+    return;
+  }
+  for (const r of rows) {
+    const prefix = r.tag === 'guard-rail' ? '> GUARD-RAIL: ' : '';
+    const phase = r.phase ? ` [${r.phase}]` : '';
+    extra.push(`${prefix}file: ${r.file}${phase} | reason: ${r.reason}`);
+  }
+}
+
 
 /**
  * Render the augmented body for sub-agent variants (planner / executor / reviewer).
@@ -172,17 +187,8 @@ function renderAugmentedBody(
   if (agentType === 'planner') {
     extra.push('## Roadmap State');
     extra.push(formatStateSummary(bpDir));
-  } else if (agentType === 'executor') {
-    const rows = readContextRows(bpDir, activeChangeName);
-    if (rows.length === 0) {
-      extra.push('_no context.jsonl rows_');
-    } else {
-      for (const r of rows) {
-        const prefix = r.tag === 'guard-rail' ? '> GUARD-RAIL: ' : '';
-        const phase = r.phase ? ` [${r.phase}]` : '';
-        extra.push(`${prefix}file: ${r.file}${phase} | reason: ${r.reason}`);
-      }
-    }
+  } else if (agentType === 'executor' || agentType === 'fixer') {
+    appendContextRows(extra, bpDir, activeChangeName);
   } else if (agentType === 'reviewer') {
     const rows = readContextRows(bpDir, activeChangeName);
     extra.push('## Invariants');

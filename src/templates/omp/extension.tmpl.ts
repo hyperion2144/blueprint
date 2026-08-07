@@ -61,6 +61,7 @@ function detectAgentType(ctx) {
   if (tpl.indexOf("executor") !== -1) return "executor";
   if (tpl.indexOf("reviewer") !== -1) return "reviewer";
   if (tpl.indexOf("refactorer") !== -1) return "refactorer";
+  if (tpl.indexOf("fixer") !== -1) return "fixer";
   return "default";
 }
 
@@ -150,7 +151,7 @@ export default function bpExtension(api) {
     if (agentType === "planner") {
       var state = readBpState(cwd);
       body = body + "\\n\\n## Roadmap State\\n" + state;
-    } else if (agentType === "executor") {
+    } else if (agentType === "executor" || agentType === "fixer") {
       var rows = readContextRows(bpDir, activeChangeName);
       var lines = rows.length === 0
         ? ["_no context.jsonl rows_"]
