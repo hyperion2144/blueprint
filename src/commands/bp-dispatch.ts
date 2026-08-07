@@ -120,6 +120,11 @@ function isExecutorLike(role: string): boolean {
 }
 
 function dispatchHandler(role: string, options: { change?: string; dir: string; target?: string }) {
+  // refactorer dispatch is per-module — reject unscoped runs before emitting any output.
+  if (role === 'refactorer' && !options.target) {
+    console.error('Usage: bp dispatch refactorer --target <module>');
+    process.exit(1);
+  }
   const bpDir = findBpDir() ?? join(process.cwd(), options.dir);
   const config = loadConfig(bpDir);
   const platforms: string[] = config.platform || ['omp'];
