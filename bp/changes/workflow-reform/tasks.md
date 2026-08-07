@@ -183,7 +183,7 @@ The fixer role, reviewer full-review reform, platform agents/OMP discrimination,
 
 ## Wave 3: Archive reform — finish + archive check (PR-3)
 
-- [ ] T-14: [type:behavior] Finish command (rename `bp finalize` → `bp finish`) <!-- commit: -->
+- [x] T-14: [type:behavior] Finish command (rename `bp finalize` → `bp finish`) <!-- commit: e6b22e5 -->
   - **refs**: DS-12
   - **spec_ref**: specs/archive/spec.md#Finish-Command
   - **files**: src/commands/bp-finish.ts, src/commands/bp-finalize.ts (delete), src/cli.ts
