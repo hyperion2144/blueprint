@@ -221,7 +221,7 @@ The fixer role, reviewer full-review reform, platform agents/OMP discrimination,
 
 ## Wave 4: Planning quality + roadmap grilling (PR-4, PR-5)
 
-- [ ] T-17: [type:behavior] Propose template — grilling-first, write proposal from grilling output <!-- commit: -->
+- [x] T-17: [type:behavior] Propose template — grilling-first, write proposal from grilling output <!-- commit: af58a5c -->
   - **refs**: DS-15
   - **spec_ref**: specs/templates/spec.md#Propose-Grilling-First
   - **files**: src/templates/workflows/propose.ts
