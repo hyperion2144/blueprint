@@ -23,7 +23,7 @@
   dispatch role wiring) and have no file-write side effects.
 -->
 
-- [ ] T-1: [type:behavior] Dual-export refactor workflow template + registry entry <!-- commit: -->
+- [x] T-1: [type:behavior] Dual-export refactor workflow template + registry entry <!-- commit: a838c7fc26baecf2ff04f76a0ca740357dbf4cc1 -->
   - **refs**: DS-1, DS-2
   - **spec_ref**: bp/changes/refactor-command/specs/templates/spec.md#Refactor-Workflow-Template
   - **files**: `src/templates/workflows/refactor.ts`, `src/templates/workflows/refactor.test.ts`, `src/templates/workflows/registry.ts`
@@ -36,7 +36,7 @@
     - **AND** `WORKFLOW_REGISTRY['refactor'].command().content === getRefactorCommandTemplate().content` holds.
   - **depends_on**: none
 
-- [ ] T-2: [type:config] Extend ProjectConfigSchema with `refactor.thresholds` defaults <!-- commit: -->
+- [x] T-2: [type:config] Extend ProjectConfigSchema with `refactor.thresholds` defaults <!-- commit: b25cfea40ab15fd1be6edbd0f4fdb0a461638501 -->
   - **refs**: DS-8
   - **spec_ref**: bp/changes/refactor-command/specs/platform-gen/spec.md#Refactor-Analyzer-Contract
   - **files**: `src/core/config.ts`, `src/core/config.test.ts`
@@ -48,7 +48,7 @@
     - **AND** `result.refactor.thresholds.duplication.similarityMin === 0.8`
     - **AND** `result.refactor.thresholds.lowReuse.fanInMax === 1`.
 
-- [ ] T-3: [type:behavior] Allow `refactorer` role in `bp dispatch` with executor isolation <!-- commit: -->
+- [x] T-3: [type:behavior] Allow `refactorer` role in `bp dispatch` with executor isolation <!-- commit: 4d7f4c28da7941e5f4e213a3f6c08354517967ad -->
   - **refs**: DS-3, DS-6
   - **spec_ref**: bp/changes/refactor-command/specs/general/spec.md#Refactorer-Behavior-Preservation
   - **files**: `src/commands/bp-dispatch.ts`, `tests/commands/bp-dispatch.test.ts`
