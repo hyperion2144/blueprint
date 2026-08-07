@@ -122,7 +122,7 @@
 - [ ] R2 - platform-gen delta scenario "threshold overrides change the findings" has no test coverage; all analyzer tests use `DEFAULT_REFACTOR_THRESHOLDS` (`src/core/refactor-analyzer.test.ts:153`) (spec)
 - [ ] Q1 - context.jsonl row 9 reason stale: refactor template omits `CONTEXT_JSONL_REMINDER` that DS-1 and the row require (`src/templates/workflows/refactor.ts:9-10`) (quality)
 - [ ] Q2 - `--format full|short` documented in design DS-4 is not implemented (`src/commands/bp-refactor.ts:22`) (quality)
-- [ ] Q3 - nonexistent target silently exits 0 with "No modules analyzed." instead of the design's `MiNotFoundError` → exit 1 (`src/core/refactor-analyzer.ts:135-141`, `src/commands/bp-refactor.ts:96`) (quality)
+- [~] Q3 - nonexistent target silently exits 0 with "No modules analyzed." instead of the design's `MiNotFoundError` → exit 1 (`src/core/refactor-analyzer.ts:135-141`, `src/commands/bp-refactor.ts:96`) (quality)
 - [ ] G1 - PR-2 duplication metric only scans within each module, so cross-module duplicated blocks (the proposal's core "copy-pasted across modules" problem) are never detected (`src/core/refactor-analyzer.ts:373`) (goal)
 
 ## Routing
