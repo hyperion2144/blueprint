@@ -6,10 +6,11 @@
  * same orchestrator-facing text.
  */
 
+import { CONTEXT_JSONL_REMINDER } from './shared.js';
 import { ORCHESTRATOR_RULE } from '../types.js';
 import type { SkillTemplate, CommandTemplate } from '../types.js';
 
-const instructions = `${ORCHESTRATOR_RULE}## Input
+const instructions = ORCHESTRATOR_RULE + `${CONTEXT_JSONL_REMINDER}## Input
 
 - **\`$ARGUMENTS\`** (required): target module path (e.g. \`src/core\`) or \`.\` for the whole repository.
 - **\`--change <name>\`** (optional): change name passed through to \`bp dispatch refactorer\`.
