@@ -6,7 +6,7 @@
 
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
 import { execSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -16,6 +16,15 @@ const testDir = join(tmpdir(), `refactor-cli-test-${Date.now()}`);
 beforeAll(() => {
   mkdirSync(testDir, { recursive: true });
   execSync(`node ${cliPath} init --dir ${testDir} --yes`, { encoding: 'utf-8', cwd: testDir });
+  // Give the project a real module so `bp refactor analyze src/core` resolves
+  // (an unmatched target now throws MiNotFoundError → exit 1, per Q3).
+  const srcCore = join(testDir, 'src', 'core');
+  mkdirSync(srcCore, { recursive: true });
+  writeFileSync(
+    join(srcCore, 'index.ts'),
+    '// core index\n\nexport function run(): number {\n  return 1;\n}\n',
+    'utf-8',
+  );
 });
 
 afterAll(() => {
