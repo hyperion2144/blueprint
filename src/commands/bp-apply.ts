@@ -12,11 +12,10 @@ export function register(program: Command): void {
   program
     .command('apply [name]')
     .description('Dispatch executor sub-agents (implement tasks per wave)')
-    .option('--fix', 'fix mode: read review.md R/Q/G issues and fix')
     .action(applyHandler);
 }
 
-function applyHandler(name: string | undefined, options: { fix?: boolean }) {
+function applyHandler(name: string | undefined) {
   const bpDir = findBpDir();
   if (!bpDir) {
     console.error('Not in a blueprint project. Run "bp init" first.');
@@ -37,13 +36,11 @@ function applyHandler(name: string | undefined, options: { fix?: boolean }) {
 
   if (!name) {
     console.log('No change name provided.');
-    console.log('Usage: bp apply <change-name> [--fix]');
+    console.log('Usage: bp apply <change-name>');
     console.log('  Dispatches executor sub-agents per wave to implement tasks.');
-    console.log('  Use --fix to re-apply with review.md R/Q/G issue context.');
     return;
   }
 
   console.log(`Change: ${name}`);
-  console.log(`Mode: ${options.fix ? 'fix' : 'normal'}`);
 }
 

@@ -17,12 +17,11 @@ export function register(program: Command): void {
   program
     .command('plan [name]')
     .description('Dispatch planner sub-agent (produce design, tasks, delta specs)')
-    .option('--fix', 'fix mode: read review.md D-issues and redesign')
     .option('--write-context', 'write bp/changes/<name>/context.jsonl from design/task refs and exit')
     .action(planHandler);
 }
 
-function planHandler(name: string | undefined, options: { fix?: boolean; writeContext?: boolean }) {
+function planHandler(name: string | undefined, options: { writeContext?: boolean }) {
   const bpDir = findBpDir();
   if (!bpDir) {
     console.error('Not in a blueprint project. Run "bp init" first.');

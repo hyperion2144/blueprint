@@ -5,14 +5,12 @@ import type { SkillTemplate, CommandTemplate } from '../types.js';
 const instructions = ORCHESTRATOR_RULE + `${CONTEXT_JSONL_REMINDER}## Input
 
 - **\`$ARGUMENTS\`** (optional): change name. If empty, use the most recently planned change.
-- **\`--fix\`** (optional): fix mode — executors read review.md issues and fix them.
 
 ## Prerequisites
 
 - \`design.md\` exists and is not a template
 - \`tasks.md\` exists, has at least 1 wave, checkboxes are unchecked (normal mode)
 - Delta specs exist for each affected domain
-- In --fix mode: \`review.md\` exists with unresolved R/Q/G issues
 
 ## Steps
 
@@ -56,7 +54,6 @@ Read \`tasks.md\` and parse into execution plan:
    - Change name and directory path
    - Wave number and which task IDs (T-N) are in this wave
    - Summary of completed tasks from prior waves: task ID, title, files, key public interfaces
-   - In --fix mode: which R/Q/G issue numbers are assigned to this wave
 
    **CRITICAL: Do NOT inject file contents into the dispatch prompt.**
    The executor has \`read\` tool access and will read these files itself:
@@ -64,7 +61,6 @@ Read \`tasks.md\` and parse into execution plan:
    - design.md (for DS-N technical context)
    - specs/<domain>/spec.md (for delta specs)
    - bp/conventions/coding.md (for coding conventions)
-   - review.md (in --fix mode, for issue details)
 
    Providing paths saves tokens and prevents the orchestrator from biasing
    the executor with its interpretation of the content.
@@ -124,7 +120,7 @@ If all tasks are non-behavior:
 git add bp/changes/$1/
 bp commit "feat: implementation complete for $1" --files bp/changes/$1/
 \`\`\`
-  Next: bp review $1
+  Next: bp check $1
   (or: bp continue $1)
 
 Output:
@@ -134,7 +130,7 @@ Implementation complete for $1
   - N commits created
   - All tests pass
 
-  Next: bp review $1
+  Next: bp check $1
   (or: bp continue $1)
 \`\`\`
 
@@ -145,8 +141,7 @@ Implementation complete for $1
 - **Concurrent waves in the same round: dispatch ALL in one task tool call (parallel).**
 - **After each wave: verify git log, tasks.md marking, test pass.** No-op or incomplete = failure.
 - **NEVER skip review.** Apply's test pass is NOT a replacement for review.
-- In --fix mode: executors read review.md, fix R/Q/G issues, then mark each issue \`[ ]\` → \`[~]\` (\`~\` = fixed, pending verification). Do NOT mark \`[x]\` — that's the re-review's job. Do NOT fix D issues (those need replan).
-- Do NOT run bp review automatically - let the user decide.
+- Do NOT run bp check automatically - let the user decide.
 - **Wave retry limit: max 2 re-dispatches per wave (global cap: config.budget.max_subagent_runs, default 5).** If a wave fails verification 2 times after re-dispatch with specific feedback, STOP and report as blocker. Do not re-dispatch indefinitely.
 - **Budget awareness**: Track sub-agent dispatch count against config.budget.max_subagent_runs (default 5). Track wall time against config.budget.max_wall_time_min (default 60). If estimated token usage approaches config.budget.estimated_token_cap (default 500000), warn. These are advisory — stop and report if exceeded.
 - **Level-aware execution**: Trivial = inline (no sub-agent). Light = single agent, TDD optional. Standard = wave + TDD. Critical = wave + TDD + security audit checkpoint.

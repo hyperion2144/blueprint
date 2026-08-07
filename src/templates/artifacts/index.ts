@@ -677,10 +677,7 @@ export const REVIEW_TEMPLATE = `# Review: {{name}}
   3. Goal Review (Goal Gate): proposal deliverables vs implementation
 
   Issue prefixes:
-  - R-N: Spec non-compliance -> reapply (bp apply --fix)
-  - Q-N: Quality issue -> reapply (bp apply --fix)
-  - G-N: Goal not achieved -> reapply (bp apply --fix)
-  - D-N: Design/architecture flaw -> replan (bp plan --fix)
+  - R/Q/G/D-N: issue -> check step dispatches bp-fixer then a full re-review
 
   Verdict rules:
   - Zero issues -> PASS
@@ -783,12 +780,11 @@ export const REVIEW_TEMPLATE = `# Review: {{name}}
   Every finding gets ONE checkbox line: - [ ] R1 - description (source)
   Prefixes: R=spec, Q=quality, G=goal, D=design
 
-  Three states:
+  Two states:
   - [ ]  open (not fixed yet)
-  - [~]  fixed, pending verification (set by executor after code fix)
-  - [x]  verified and resolved (set by reviewer after re-review)
+  - [x]  verified and resolved (set by reviewer after the full re-review)
 
-  The verdict MUST match the Issues section: any [ ] or [~] = not PASS.
+  The verdict MUST match the Issues section: any [ ] = not PASS.
 -->
 
 - [ ] R1 - {{spec requirement not implemented}} (spec)

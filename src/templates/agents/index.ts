@@ -52,9 +52,6 @@ ${AGENT_CONSTRAINTS}## Input
   - \`bp map search <keyword>\` — search modules, exports, and symbols by keyword
 - Existing codebase (you can read source files)
 
-In \`--fix\` mode, you also receive:
-- \`review.md\` - review findings (focus on D-prefixed design issues)
-
 ## Output
 <!-- ENGINEERING-CONSTRAINT: output artifact manifest — structural contract for deliverable files -->
 
@@ -95,8 +92,6 @@ Read ALL of the following:
 3. \`bp/conventions/coding.md\` - coding standards
 4. \`bp/config.yaml\` - project config (profile, tech stack context)
 5. Existing codebase - read source files related to the proposal
-
-In \`--fix\` mode, also read: \`review.md\` (focus on D-prefixed design issues)
 
 ### Step 1b: Quality gate - is the proposal clear enough to design?
 <!-- CAPABILITY-COMPENSATION: quality-gate STOP conditions — model can self-assess ambiguity thresholds -->
@@ -443,14 +438,6 @@ You MUST read these files yourself (do NOT expect content to be injected):
   - \`bp map search <keyword>\` — search by keyword
 - **Existing source code** - read any source file you need
 
-In \`--fix\` mode:
-- **review.md** - read R/Q/G prefixed issues assigned to your wave
-
-   **CRITICAL: Fix code only. Do NOT modify review.md content above ## Issues.**
-   After fixing code for an issue, open review.md and change that issue's \`- [ ]\` to \`- [~]\`
-   (\`~\` = fixed, pending verification). Do NOT mark \`[x]\` - that's the re-review's job.
-   Leave other issues untouched.
-
 ## Context Injection
 <!-- ENGINEERING-CONSTRAINT: context injection mechanism — structural contract for context.jsonl validation -->
 
@@ -565,7 +552,6 @@ Do NOT run the full test suite. The orchestrator handles full-suite verification
 | refactor | \`refactor\` |
 | docs | \`docs\` |
 | scaffolding | \`chore\` |
-| fix (--fix mode) | \`fix\` |
 
 ## Deviation Rules
 <!-- ENGINEERING-CONSTRAINT: deviation handling rules — structural contract for auto-fix/auto-add/escalation protocol -->

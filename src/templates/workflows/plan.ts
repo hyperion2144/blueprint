@@ -5,7 +5,6 @@ import type { SkillTemplate, CommandTemplate } from '../types.js';
 const instructions = ORCHESTRATOR_RULE + `${CONTEXT_JSONL_REMINDER}## Input
 
 - **\`$ARGUMENTS\`** (optional): change name. If empty, use most recently proposed change.
-- **\`--fix\`** (optional): fix mode — planner reads review.md D-issues and redesigns.
 
 ## Prerequisites
 
@@ -38,7 +37,6 @@ Read \`proposal.md\` deliverables:
    - Change name and directory path
    - List files to read: proposal.md, bp/specs/<domain>/spec.md (per affected domain), bp/conventions/coding.md, bp/config.yaml
    - Instruction: "Read planner agent prompt, produce design.md, tasks.md, and specs/<domain>/spec.md (delta specs under the change directory, NOT bp/specs/)"
-   - In --fix mode: also include review.md, focus on D-prefixed issues
 
 2. Dispatch via task tool:
    - Agent type: bp-planner
@@ -188,7 +186,6 @@ Planner completed for $1
 - **Full mode: MUST dispatch sub-agent.** Do NOT write design/tasks/specs yourself.
 - Lightweight mode: write templates directly (no sub-agent needed)
 - tasks.md boxes must remain UNCHECKED
-- In --fix mode: planner only redesigns — does NOT modify tasks.md or specs
 - **Review planner output before committing.** If design is flawed, re-dispatch planner — do not proceed with broken design.
 - **Task granularity is advisory, not blocking.** Warn on tasks>20/files>15/waves>5/per-wave>8, but let the user decide whether to proceed or split.
 - **Level-aware dispatch**: Trivial/Light changes may skip planner sub-agent (orchestrator fills templates directly). Standard/Critical MUST dispatch planner. Critical adds security dimension to design.
