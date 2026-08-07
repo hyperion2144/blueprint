@@ -32,7 +32,7 @@
 **Outcomes**: User can run `bp init` → `bp propose` → `bp plan` → `bp apply` → `bp review` → `bp archive` end-to-end with artifact-based progress detection.
 **Status**: ACTIVE
 
-### Phase: P1.1 - Core Engine [IN_PROGRESS]
+### Phase: P1.1 - Core Engine [COMPLETED]
 
 - **Goal**: Rewrite core types, config, file-tree, continue engine for artifact-based progress detection
 - **What**: Replace v1 state machine with file-existence-based progress detection; migrate config to Zod-validated YAML; implement delta-spec merge with SHA-256 fingerprinting.
@@ -40,8 +40,8 @@
 - **Outcomes**: `bp continue` reads change directory, detects artifact presence, outputs next step without any state.md file.
 - **Depends on**: none
 - **Spec domain**: core
-- **Changes**: 1/2 completed
-- **Status**: IN_PROGRESS
+- **Changes**: 2/2 completed
+- **Status**: COMPLETED
 
 ### Key Decisions
 
@@ -54,7 +54,7 @@
   - **Deliverables**: 10 core modules under src/core/
   - **Outcomes**: `bp continue` works without state.md; all 13 commands resolve via artifact presence
   - **Depends on**: none
-- [-] refactor-command (implemented 2026-08-06)
+- [x] refactor-command (archived 2026-08-07)
   - **Goal**: Dedicated refactor workflow step (bp-refactor command/skill) with deterministic analyzer + refactorer sub-agent to consolidate fragmented/duplicated/flat/low-reuse code into deep modules and keep specs in sync
   - **What**: New `refactor` step in WORKFLOW_REGISTRY/STEP_DEFS + platform generators; `bp refactor <target>` outputs step content; `bp refactor analyze <target>` computes four anti-pattern metrics + depth ratio to bp/.refactor-report.md; refactorer sub-agent performs behavior-preserving consolidation + affected-spec sync
   - **Deliverables**: src/commands/bp-refactor.ts, src/core/refactor-analyzer.ts, src/templates/workflows/refactor.ts, src/templates/agents refactorer prompt, platform generators

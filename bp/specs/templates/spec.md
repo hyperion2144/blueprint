@@ -1,9 +1,6 @@
 # Templates — Delta Spec
-
 ## SHALL
-
 ### SHALL generate commands and skills from single source
-
 - SHALL each workflow step: a single TypeScript module exports both `getXxxSkillTemplate()` and `getXxxCommandTemplate()` sharing the same `instructions` string.
   - GIVEN the `apply` workflow step
   - WHEN `getApplySkillTemplate()` is called
@@ -11,14 +8,12 @@
   - AND `getApplyCommandTemplate()` returns a `CommandTemplate` with `content` equal to the same `instructions` string
 
 ### SHALL follow Input/Steps/Output format
-
 - SHALL every `instructions` string: structured with `## Input`, `## Steps` (numbered), `## Output`, and `## Guardrails` sections.
   - GIVEN any workflow template's `instructions`
   - WHEN parsed for section headers
   - THEN headers `## Input`, `## Steps`, `## Output`, `## Guardrails` are all present in order
 
 ### SHALL use English for all template content
-
 - SHALL every generated command file (`.omp/commands/blueprint-*.md`): contain only English prose (no Chinese characters).
   - GIVEN a regenerated command file
   - WHEN scanned for CJK Unicode range (U+4E00–U+9FFF)
@@ -28,7 +23,6 @@
 - SHALL every output artifact template (proposal, design, tasks, etc.): contain only English prose.
 
 ### SHALL `blueprint continue` output inline instructions
-
 - SHALL `blueprint continue`: the output includes the full `instructions` text of the next workflow step, not just a file path reference.
   - GIVEN current state routes to `plan` step
   - WHEN `blueprint continue` is executed
@@ -36,14 +30,12 @@
   - AND no file path reference like `.omp/commands/blueprint-plan.md` appears as the primary action
 
 ### SHALL templates be TypeScript modules, not markdown files
-
 - SHALL all workflow templates: defined as TypeScript functions in `src/templates/workflows/`, not as `.md` files under `src/public/templates/`.
 - SHALL all artifact templates: defined as TypeScript constants in `src/templates/artifacts/index.ts`.
 - SHALL all agent prompts: defined as TypeScript constants in `src/templates/agents/index.ts`.
 - SHALL `src/public/templates/` directory: not exist after this change.
 
 ### SHALL `blueprint template` read from TS registry
-
 - SHALL `blueprint template <type>`: resolve template content from the in-memory TypeScript template registry, not from disk files.
   - GIVEN `blueprint template proposal --name test`
   - WHEN executed
@@ -51,7 +43,6 @@
   - AND no `readFileSync` call accesses `src/public/templates/`
 
 ### SHALL `blueprint update` regenerate correctly
-
 - SHALL `blueprint update`: produce output files identical to the current format (frontmatter + body) but with English content and Input/Steps/Output structure.
   - GIVEN a clean blueprint project
   - WHEN `blueprint update` is executed
@@ -59,23 +50,20 @@
   - AND all `.omp/skills/blueprint-*/SKILL.md` files exist with English content
   - AND all `.omp/agents/blueprint-*.md` files exist with English content
 
+
 ## MUST
-
 ### MUST preserve existing file paths
-
 - MUST all generated files: written to the same paths as before (`.omp/commands/blueprint-<step>.md`, `.omp/skills/blueprint-<step>/SKILL.md`, `.omp/agents/blueprint-<role>.md`).
   - GIVEN the refactored generator
   - WHEN `blueprint update` runs
   - THEN output files land at the same paths as before the refactor
 
 ### MUST preserve frontmatter format
-
 - MUST command files: retain YAML frontmatter with `name` and `description` fields.
 - MUST skill files: retain YAML frontmatter with `name`, `description`, `hide` fields.
 - MUST agent files: retain YAML frontmatter with `name`, `description`, `model`, `thinkingLevel` fields.
 
 ### MUST pass existing integration tests
-
 - MUST all existing tests in `tests/`: pass after `blueprint update` regeneration.
   - GIVEN the refactored codebase
   - WHEN `npm test` is executed
@@ -83,10 +71,9 @@
 
 <!-- AUTO-EXTRACTED: 以下内容由 code-extract 从代码 diff 提取，请人工审核 -->
 
+
 ## Auto-Extracted Behaviors
-
 ### Detected Behaviors
-
 - 新增: function readYamlDoc(path) {
 - 新增: function writeYamlDoc(path, doc) {
 - 新增: function configPath(blueprintDir) {
@@ -340,7 +327,6 @@
 - 新增: export function generateAllSkills(_config: ProjectConfig): { path: string; content: string }[] {
 
 ### Detected Constraints
-
 - 约束: if (existsSync(configPath(blueprintDir))) {
 - 约束: if (config.workflow) doc.set("workflow", config.workflow);
 - 约束: if (config.review) doc.set("review", config.review);
@@ -553,3 +539,56 @@
 - 约束: if (wfStep && WORKFLOW_REGISTRY[wfStep]) {
 
 <!-- END AUTO-EXTRACTED -->
+
+
+
+## Requirements
+### Requirement: Refactor-Workflow-Template
+The system SHALL export `getRefactorSkillTemplate()` and `getRefactorCommandTemplate()` from `src/templates/workflows/refactor.ts`, both returning a non-empty `SkillTemplate` / `CommandTemplate` whose `instructions` / `content` are the same string. `WORKFLOW_REGISTRY['refactor']` SHALL be a typed entry whose `skill()` and `command()` resolve to these two functions. The `instructions` string SHALL be English-only prose containing the section headers `## Input`, `## Steps`, `## Output`, `## Guardrails` in that order, and SHALL describe the five orchestrator steps: (1) run `bp refactor analyze <target>`, (2) display the report and obtain explicit human confirmation, (3) dispatch `bp dispatch refactorer --target <module>` per affected module, (4) refactorer applies behavior-preserving consolidation + spec sync, (5) summarize the diff.
+#### Scenario: dual-export template exists and is registered
+- **GIVEN** the new `src/templates/workflows/refactor.ts` module
+- **WHEN** `getRefactorSkillTemplate()` and `getRefactorCommandTemplate()` are imported and called
+- **THEN** both return objects whose `instructions` / `content` field is identical
+- **AND** the string contains `## Input`, `## Steps`, `## Output`, `## Guardrails`
+- **AND** `WORKFLOW_REGISTRY['refactor'].command().content === getRefactorCommandTemplate().content`.
+
+#### Scenario: registry resolution surfaces the refactor body
+- **GIVEN** an initialized bp project
+- **WHEN** `getWorkflowInstructions('refactor', bpDir)` runs
+- **THEN** the returned string equals `WORKFLOW_REGISTRY['refactor'].command().content`
+- **AND** it contains a `### Step 1:` instructing the orchestrator to run `bp refactor analyze`.
+
+#### Scenario: instructions forbid lifecycle integration
+- **GIVEN** the refactor `instructions` body
+- **WHEN** parsed for forbidden patterns
+- **THEN** the body MUST NOT mention lifecycle artifact paths such as `bp/changes/<name>/proposal.md`, `bp/changes/<name>/design.md`, `bp/changes/<name>/tasks.md`, or `bp/changes/<name>/review.md`, nor the lifecycle commands `bp plan`, `bp apply`, `bp review`, or `bp archive` (refactor is a standalone auxiliary step; the shared `CONTEXT_JSONL_REMINDER`'s `bp/changes/<name>/context.jsonl` schema pointer is not a lifecycle artifact)
+- **AND** the body MUST instruct the orchestrator to pause for explicit human confirmation before dispatching the refactorer.
+
+
+### Requirement: Refactorer-Agent-Prompt
+The system SHALL export `REFACTORER_PROMPT` from `src/templates/agents/index.ts` and register it under `AGENT_PROMPTS['refactorer']`. The prompt SHALL be a non-empty English-only string containing the sections `## Role`, `## Inputs`, `## Behaviors`, `## Guardrails`, and SHALL reference `bp/.refactor-report.md` and `bp/specs/<domain>/spec.md`. The guardrails SHALL forbid (a) renaming exported symbols without updating every caller and the affected spec, (b) altering observable behavior — any failing test requires reverting the move, (c) editing specs outside the affected domains listed in the report, (d) introducing new dependencies or format/lint changes, and (e) dispatching further refactors — the refactorer SHALL stop after one assigned module.
+#### Scenario: REFACTORER_PROMPT exposes required sections
+- **GIVEN** the `REFACTORER_PROMPT` constant is exported from `src/templates/agents/index.ts`
+- **WHEN** the string is inspected
+- **THEN** it contains `## Role`, `## Inputs`, `## Behaviors`, `## Guardrails`
+- **AND** it references `bp/.refactor-report.md`
+- **AND** it references `bp/specs/`.
+
+#### Scenario: AGENT_PROMPTS exposes the refactorer role
+- **GIVEN** the `AGENT_PROMPTS` map exported from `src/templates/agents/index.ts`
+- **WHEN** `AGENT_PROMPTS['refactorer']` is read
+- **THEN** its value is a non-empty string identical to `REFACTORER_PROMPT`.
+
+#### Scenario: platform generators render the refactorer body
+- **GIVEN** a ProjectConfig with `platform: [omp, claude-code, opencode, agent]`
+- **WHEN** each platform's `generate*` function runs with role `refactorer`
+- **THEN** the produced agent file embeds `AGENT_PROMPTS['refactorer']` as its body
+- **AND** each generated file's frontmatter names the file `bp-refactorer.md`.
+
+#### Scenario: guardrails constrain behavior preservation
+- **GIVEN** the `REFACTORER_PROMPT` guardrails block
+- **WHEN** parsed for invariant keywords
+- **THEN** it contains the substring `revert` and the substring `behavior preserv`
+- **AND** it states that spec edits are limited to `bp/specs/<domain>/spec.md` files referenced in the assigned module's report section.
+
+
