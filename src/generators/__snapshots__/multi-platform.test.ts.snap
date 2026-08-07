@@ -543,6 +543,8 @@ DS-3: Add tests (tests are per-task, not per-component)
 
 **Key: Every DS-N's Detailed Design section must be filled to a level where the executor can implement without guessing.** Interface signatures alone are insufficient — include state transitions, error handling, side effects, and other implementation details. Choose content appropriate to the component type (data components → data flow, UI components → Props/events/states, API → validation rules and error codes).
 
+**Every DS-N must carry three contract fields**: \`Requirements\` (observable behaviors it must satisfy), \`Constraints\` (hard limits — protocols, boundaries, non-negotiables), and \`Acceptance Criteria\` (binary pass/fail — "X happens when Y"). Fill all three for every DS-N.
+
 #### Architecture Decisions (D-N)
 <!-- ENGINEERING-CONSTRAINT: D-N decision record format with alternatives -->
 
@@ -755,6 +757,7 @@ Check before finishing:
   - Validation rules / response format / error codes (API/CLI components)
   - Error paths and side effects described (not just happy path)
   - Detailed Design adds detail beyond Key Interfaces (not just repeating them)
+  - Requirements, Constraints, and Acceptance Criteria present for every DS-N (acceptance criteria must be binary pass/fail)
   If any DS-N fails this check, expand its Detailed Design before returning. Do NOT return a design the executor cannot follow.
 ",
   ".agent/agents/bp-refactorer.md": "---
@@ -1760,8 +1763,10 @@ For each DS-N, read its Detailed Design section and ask:
 - For API/CLI: are parameter validation rules, response format, and error codes specified?
 - Are error paths and side effects described (not just the happy path)?
 - Does Detailed Design add implementation detail beyond Key Interfaces, or does it just repeat them?
+- Do Requirements, Constraints, and Acceptance Criteria exist for every DS-N (a binary pass/fail acceptance bar)?
 
 FAIL example: DS-N Detailed Design says only "Implement ThemeContext class" - no state fields, no toggle logic, no persistence strategy. The executor would have to guess everything.
+FAIL example: DS-N lists only Responsibility + Key Interfaces with no Requirements, Constraints, or Acceptance Criteria — there is no acceptance bar to verify against.
 
 #### Dimension 2: Design Correctness (is the architecture internally consistent?)
 
@@ -2900,6 +2905,8 @@ DS-3: Add tests (tests are per-task, not per-component)
 
 **Key: Every DS-N's Detailed Design section must be filled to a level where the executor can implement without guessing.** Interface signatures alone are insufficient — include state transitions, error handling, side effects, and other implementation details. Choose content appropriate to the component type (data components → data flow, UI components → Props/events/states, API → validation rules and error codes).
 
+**Every DS-N must carry three contract fields**: \`Requirements\` (observable behaviors it must satisfy), \`Constraints\` (hard limits — protocols, boundaries, non-negotiables), and \`Acceptance Criteria\` (binary pass/fail — "X happens when Y"). Fill all three for every DS-N.
+
 #### Architecture Decisions (D-N)
 <!-- ENGINEERING-CONSTRAINT: D-N decision record format with alternatives -->
 
@@ -3112,6 +3119,7 @@ Check before finishing:
   - Validation rules / response format / error codes (API/CLI components)
   - Error paths and side effects described (not just happy path)
   - Detailed Design adds detail beyond Key Interfaces (not just repeating them)
+  - Requirements, Constraints, and Acceptance Criteria present for every DS-N (acceptance criteria must be binary pass/fail)
   If any DS-N fails this check, expand its Detailed Design before returning. Do NOT return a design the executor cannot follow.
 ",
   ".claude/agents/bp-refactorer.md": "---
@@ -4116,8 +4124,10 @@ For each DS-N, read its Detailed Design section and ask:
 - For API/CLI: are parameter validation rules, response format, and error codes specified?
 - Are error paths and side effects described (not just the happy path)?
 - Does Detailed Design add implementation detail beyond Key Interfaces, or does it just repeat them?
+- Do Requirements, Constraints, and Acceptance Criteria exist for every DS-N (a binary pass/fail acceptance bar)?
 
 FAIL example: DS-N Detailed Design says only "Implement ThemeContext class" - no state fields, no toggle logic, no persistence strategy. The executor would have to guess everything.
+FAIL example: DS-N lists only Responsibility + Key Interfaces with no Requirements, Constraints, or Acceptance Criteria — there is no acceptance bar to verify against.
 
 #### Dimension 2: Design Correctness (is the architecture internally consistent?)
 
@@ -5444,6 +5454,8 @@ DS-3: Add tests (tests are per-task, not per-component)
 
 **Key: Every DS-N's Detailed Design section must be filled to a level where the executor can implement without guessing.** Interface signatures alone are insufficient — include state transitions, error handling, side effects, and other implementation details. Choose content appropriate to the component type (data components → data flow, UI components → Props/events/states, API → validation rules and error codes).
 
+**Every DS-N must carry three contract fields**: \`Requirements\` (observable behaviors it must satisfy), \`Constraints\` (hard limits — protocols, boundaries, non-negotiables), and \`Acceptance Criteria\` (binary pass/fail — "X happens when Y"). Fill all three for every DS-N.
+
 #### Architecture Decisions (D-N)
 <!-- ENGINEERING-CONSTRAINT: D-N decision record format with alternatives -->
 
@@ -5656,6 +5668,7 @@ Check before finishing:
   - Validation rules / response format / error codes (API/CLI components)
   - Error paths and side effects described (not just happy path)
   - Detailed Design adds detail beyond Key Interfaces (not just repeating them)
+  - Requirements, Constraints, and Acceptance Criteria present for every DS-N (acceptance criteria must be binary pass/fail)
   If any DS-N fails this check, expand its Detailed Design before returning. Do NOT return a design the executor cannot follow.
 
 ",
@@ -6673,8 +6686,10 @@ For each DS-N, read its Detailed Design section and ask:
 - For API/CLI: are parameter validation rules, response format, and error codes specified?
 - Are error paths and side effects described (not just the happy path)?
 - Does Detailed Design add implementation detail beyond Key Interfaces, or does it just repeat them?
+- Do Requirements, Constraints, and Acceptance Criteria exist for every DS-N (a binary pass/fail acceptance bar)?
 
 FAIL example: DS-N Detailed Design says only "Implement ThemeContext class" - no state fields, no toggle logic, no persistence strategy. The executor would have to guess everything.
+FAIL example: DS-N lists only Responsibility + Key Interfaces with no Requirements, Constraints, or Acceptance Criteria — there is no acceptance bar to verify against.
 
 #### Dimension 2: Design Correctness (is the architecture internally consistent?)
 

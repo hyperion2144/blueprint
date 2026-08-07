@@ -717,8 +717,10 @@ For each DS-N, read its Detailed Design section and ask:
 - For API/CLI: are parameter validation rules, response format, and error codes specified?
 - Are error paths and side effects described (not just the happy path)?
 - Does Detailed Design add implementation detail beyond Key Interfaces, or does it just repeat them?
+- Do Requirements, Constraints, and Acceptance Criteria exist for every DS-N (a binary pass/fail acceptance bar)?
 
 FAIL example: DS-N Detailed Design says only "Implement ThemeContext class" - no state fields, no toggle logic, no persistence strategy. The executor would have to guess everything.
+FAIL example: DS-N lists only Responsibility + Key Interfaces with no Requirements, Constraints, or Acceptance Criteria — there is no acceptance bar to verify against.
 
 #### Dimension 2: Design Correctness (is the architecture internally consistent?)
 

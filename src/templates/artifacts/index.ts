@@ -249,7 +249,7 @@ export const DESIGN_TEMPLATE = `# Design: {{name}}
 
   Rules:
   - Every PR-N in proposal.md must be referenced by at least one DS-N
-  - Each DS-N has: refs (PR-N), Source (PR-N), Responsibility
+  - Each DS-N has: refs (PR-N), Source (PR-N), Responsibility, Requirements, Constraints, Acceptance Criteria
   - A single PR may need multiple DS if it spans layers
   - Multiple PRs may share a DS if they modify the same module
 -->
@@ -259,6 +259,9 @@ export const DESIGN_TEMPLATE = `# Design: {{name}}
 - **Refs**: PR-{{id}}
 - **Source**: PR-{{id}} (proposal.md)
 - **Responsibility**: {{what this component is responsible for - one sentence}}
+- **Requirements**: {{what this component must satisfy - observable behaviors}}
+- **Constraints**: {{hard limits - protocols, boundaries, non-negotiables}}
+- **Acceptance Criteria**: {{binary pass/fail - "X happens when Y"}}
 - **Key Interfaces**: {{public functions/classes this component exposes}}
 
 #### Detailed Design
@@ -283,6 +286,9 @@ export const DESIGN_TEMPLATE = `# Design: {{name}}
 - **Refs**: PR-{{id}}, PR-{{id}}
 - **Source**: PR-{{id}} (proposal.md)
 - **Responsibility**: {{responsibility}}
+- **Requirements**: {{requirements}}
+- **Constraints**: {{constraints}}
+- **Acceptance Criteria**: {{acceptance-criteria}}
 - **Key Interfaces**: {{interfaces}}
 
 #### Detailed Design
