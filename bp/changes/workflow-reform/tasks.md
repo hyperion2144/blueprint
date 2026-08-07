@@ -120,7 +120,7 @@ The fixer role, reviewer full-review reform, platform agents/OMP discrimination,
     - **AND** no `bp fix` command is registered in `src/cli.ts`
   - **depends_on**: T-1
 
-- [ ] T-9: [type:behavior] Reviewer full-review reform (remove Fix Mode / `--fix` from REVIEWER_PROMPT) <!-- commit: -->
+- [x] T-9: [type:behavior] Reviewer full-review reform (remove Fix Mode / `--fix` from REVIEWER_PROMPT) <!-- commit: bc7ba98 -->
   - **refs**: DS-8
   - **spec_ref**: specs/templates/spec.md#Reviewer-Full-Review
   - **files**: src/templates/agents/index.ts, .claude/agents/bp-reviewer.md
