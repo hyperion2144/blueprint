@@ -191,7 +191,7 @@ hide: false
 
 ## Orchestrator Steps
 
-> These are the steps you (orchestrator) execute in order. \`bp archive\` only outputs these steps — it does not auto-execute. Actual archive is done by \`bp finalize\`.
+> These are the steps you (orchestrator) execute in order. \`bp archive\` only outputs these steps — it does not auto-execute. Actual archive is done by \`bp finish\`.
 
 ### Step 1: Resolve change name and paths
 
@@ -210,15 +210,22 @@ Cannot archive: review not passed
   Verdict: FAIL/NEEDS_REVISION
   Unresolved issues: N
 
-  Fix issues first: bp apply --fix $1
+  Fix issues first: bp check $1
 \`\`\`
 
-### Step 3: Run finalize command
+### Step 3: Archive check — reconcile delta specs with reality
 
-The \`bp finalize\` command handles everything: review verification, delta spec merge, change directory move, and roadmap update.
+The change's delta specs must match what was actually implemented before they are merged into \`bp/specs/\`. Read \`bp/changes/$1/proposal.md\` (PR-N behaviors), \`bp/changes/$1/design.md\` (DS-N), the implementation (source + tests), and each delta spec at \`bp/changes/$1/specs/<domain>/spec.md\`:
+- For every implemented behavior the delta spec does not yet require, ADD a requirement (with a scenario) to that domain's delta spec.
+- For every delta requirement whose described behavior drifted from the implementation, MODIFY it — write the full new requirement text and annotate the change with a \`(was: ...)\` note.
+- Write ONLY to the change's \`specs/<domain>/spec.md\` delta files — never to \`bp/specs/\` directly. The merge into \`bp/specs/\` happens when \`bp finish\` runs.
+
+### Step 4: Run finish command
+
+The \`bp finish\` command handles everything: review verification, delta spec merge, change directory move, and roadmap update.
 
 \`\`\`bash
-bp finalize $1
+bp finish $1
 \`\`\`
 
 The command will:
@@ -230,7 +237,7 @@ The command will:
 
 If the command reports a merge conflict, resolve it in the delta spec and re-run.
 
-### Step 4: Verify archive success
+### Step 5: Verify archive success
 
 Check the following after the command completes:
 
@@ -245,7 +252,7 @@ Check the following after the command completes:
 
 If any check fails, investigate — the archive command may have partially completed.
 
-### Step 5: Commit changes
+### Step 6: Commit changes
 
 The archive command does NOT run git commit. Commit the merged specs, roadmap, and archived change:
 
@@ -253,7 +260,7 @@ The archive command does NOT run git commit. Commit the merged specs, roadmap, a
 bp commit "archive: $1 - specs merged, roadmap updated" --files bp/specs/ bp/roadmap.md bp/changes/
 \`\`\`
 
-### Step 6: Suggest next step
+### Step 7: Suggest next step
 
 Output:
 \`\`\`
@@ -268,7 +275,8 @@ Archived $1
 ## Guardrails
 
 - **Review must PASS before archive.** The archive command enforces this, but pre-checking saves a failed command.
-- **If merge conflict occurs**, resolve in the delta spec (change directory) and re-run \`bp finalize $1\`. Do NOT edit global specs directly.
+- **Archive-check writes only to the change's delta specs.** Never edit \`bp/specs/\` directly — \`bp finish\` performs the merge.
+- **If merge conflict occurs**, resolve in the delta spec (change directory) and re-run \`bp finish $1\`. Do NOT edit global specs directly.
 - **Archive preserves full context.** All artifacts move to archive together.
 - **Post-archive drift check**: After archive, consider running bp spec refresh --check to detect if the merged specs still match code reality.
 - **CI mode (--ci)**: Skip working-tree warnings and post-archive suggestions. Exit 0 on success, 1 on any failure.
