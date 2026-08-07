@@ -1,7 +1,8 @@
 /**
- * bp review [name] [--fix] — triple review orchestration
+ * bp check [name] [--ci] — triple check orchestration
  * Checks code implementation status, outputs workflow instructions
- * for the orchestrator to dispatch a reviewer sub-agent.
+ * for the orchestrator to dispatch a reviewer sub-agent (full triple
+ * review) and, on a non-PASS verdict, the fixer for a full re-review.
  * Does NOT directly dispatch sub-agents itself.
  */
 
@@ -16,14 +17,13 @@ import { WORKFLOW_REGISTRY } from '../templates/workflows/registry.js';
 
 export function register(program: Command): void {
   program
-    .command('review [name]')
-    .description('Triple review of a change -- outputs dispatch instructions')
-    .option('--fix', 'Re-review mode for in-place issue resolution')
+    .command('check [name]')
+    .description('Triple check of a change -- full verify + fixer loopback + full re-review')
     .option('--ci', 'CI mode: non-interactive, FAIL exits 1 immediately')
-    .action(reviewHandler);
+    .action(checkHandler);
 }
 
-function reviewHandler(name: string | undefined, options: { fix?: boolean; ci?: boolean }): void {
+function checkHandler(name: string | undefined, options: { ci?: boolean }): void {
   const bpDir = findBpDir();
   if (!bpDir) {
     console.error('Not in a blueprint project. Run "bp init" first.');
@@ -45,7 +45,7 @@ function reviewHandler(name: string | undefined, options: { fix?: boolean; ci?: 
     console.error(`Change "${changeName}" not found.`);
     process.exit(1);
   }
-  if (!gateContextJsonl(bpDir, changeName, 'review')) process.exit(2);
+  if (!gateContextJsonl(bpDir, changeName, 'check')) process.exit(2);
   if (!gatePlaceholders(bpDir, changeName, ['tasks.md'])) process.exit(1);
 
   // Check that code is fully implemented (all tasks [x])
@@ -54,7 +54,7 @@ function reviewHandler(name: string | undefined, options: { fix?: boolean; ci?: 
   if (!artifacts.allTasksDone) {
     if (artifacts.tasksCompleted < artifacts.tasksTotal) {
       console.log(`\nTasks not fully implemented: ${artifacts.tasksCompleted}/${artifacts.tasksTotal} tasks complete.`);
-      console.log('Run "bp apply" to execute remaining tasks before review.');
+      console.log('Run "bp apply" to execute remaining tasks before check.');
     } else {
       console.log(`\nPre-Archive Checklist incomplete: ${artifacts.checklistCompleted}/${artifacts.checklistTotal} items checked.`);
       console.log('Run build/tests, then mark checklist items [x] in tasks.md. Do NOT re-dispatch executor.');
@@ -63,20 +63,13 @@ function reviewHandler(name: string | undefined, options: { fix?: boolean; ci?: 
   }
 
   // Output workflow instructions from registry
-  const reviewTemplate = WORKFLOW_REGISTRY.check.command();
+  const checkTemplate = WORKFLOW_REGISTRY.check.command();
 
   console.log(`\nChange: ${changeName}`);
-  if (options.fix) {
-    console.log('\nMode: --fix (re-review)');
-    console.log('Reviewer will mark resolved issues in existing review.md and add new findings.\n');
-  }
-
   if (options.ci) {
     console.log('\nCI MODE: no human confirmation. If review verdict is not PASS, exit 1 immediately.');
   }
-  console.log('--- Review Workflow Instructions ---');
+  console.log('--- Check Workflow Instructions ---');
   console.log('');
-  console.log(reviewTemplate.content);
+  console.log(checkTemplate.content);
 }
-
-

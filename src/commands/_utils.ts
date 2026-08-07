@@ -84,7 +84,7 @@ export function resolveChangeName(bpDir: string, name?: string): string | null {
 export function gateContextJsonl(
   bpDir: string,
   changeName: string,
-  phase: 'plan' | 'apply' | 'review' | 'archive',
+  phase: 'plan' | 'apply' | 'check' | 'archive',
 ): boolean {
   const contextPath = join(bpDir, 'changes', changeName, 'context.jsonl');
   if (!existsSync(contextPath)) return true;

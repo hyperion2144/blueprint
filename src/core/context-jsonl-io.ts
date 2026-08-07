@@ -13,7 +13,7 @@ export interface ParseContextJsonlResult {
 
 export interface ValidateContextJsonlOpts {
   bpDir: string;
-  currentPhase: 'plan' | 'apply' | 'review' | 'archive';
+  currentPhase: 'plan' | 'apply' | 'check' | 'archive';
 }
 
 export interface ContextValidationResult {

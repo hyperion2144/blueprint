@@ -33,7 +33,7 @@ export interface ChangeValidationResults {
 export function validateContextJsonlFile(
   contextPath: string,
   bpDir: string,
-  currentPhase: 'plan' | 'apply' | 'review' | 'archive',
+  currentPhase: 'plan' | 'apply' | 'check' | 'archive',
 ): ContextArtifactValidation {
   const parsed = parseContextJsonl(readFileSync(contextPath, 'utf-8'));
   const checked = validateContextJsonl(parsed.rows, { bpDir, currentPhase });

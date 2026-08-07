@@ -30,7 +30,7 @@ The structural rename layer: check template + registry + schema + routing + CLI 
     - **THEN** it resolves (module named `check.ts`, exports `getCheckSkillTemplate`/`getCheckCommandTemplate`, `name: 'bp-check'`)
     - **AND** the content contains `bp dispatch fixer`, a full re-review instruction, and `review.md`, and does NOT contain `--fix` or `bp apply --fix`
 
-- [ ] T-2: [type:behavior] Registry + schema rename (`WORKFLOW_REGISTRY['check']`, schema step `check`) <!-- commit: -->
+- [x] T-2: [type:behavior] Registry + schema rename (`WORKFLOW_REGISTRY['check']`, schema step `check`) <!-- commit: a282a4a -->
   - **refs**: DS-2
   - **spec_ref**: specs/templates/spec.md#Check-Step-Rename
   - **files**: src/templates/workflows/registry.ts, src/core/schema.ts, tests/core/continue.test.ts
@@ -43,7 +43,7 @@ The structural rename layer: check template + registry + schema + routing + CLI 
     - **AND** `WORKFLOW_REGISTRY['review']` does not exist
   - **depends_on**: T-1
 
-- [ ] T-3: [type:behavior] Continue routing + state nextAction (`check`, fix-routing relocation) <!-- commit: -->
+- [x] T-3: [type:behavior] Continue routing + state nextAction (`check`, fix-routing relocation) <!-- commit: c75a6e9 -->
   - **refs**: DS-3
   - **spec_ref**: specs/templates/spec.md#Check-Step-Rename
   - **files**: src/core/continue.ts, src/commands/bp-state.ts, tests/core/continue.test.ts
