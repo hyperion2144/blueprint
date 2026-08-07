@@ -1,12 +1,14 @@
 /**
  * Deterministic refactor analyzer (T-7).
  *
- * Fixture tree shapes (one module each, 5 map modules total):
+ * Fixture tree shapes (one module each, 7 map modules total):
  *  - src/frag        — two fragmented sibling files (<=2 exports, <=50 non-blank lines)
  *  - src/dup         — one duplicated 15-gram block pair across two files
  *  - src/flat        — one flat module (no subdirectory)
  *  - src/lowreuse    — one low-reuse module (fanIn 0, exports >= 3)
  *  - src/wellshaped  — one well-shaped module (no findings)
+ *  - src/xdupa       — one file sharing a duplicated block with src/xdupb (cross-module)
+ *  - src/xdupb       — one file sharing a duplicated block with src/xdupa (cross-module)
  *
  * Every module except src/flat carries a non-source `misc/` subdirectory so
  * the flatness metric only fires for src/flat. src/flat and src/wellshaped
@@ -26,8 +28,14 @@ import { DEFAULT_REFACTOR_THRESHOLDS } from './config.js';
 /** 24 distinct words per line, plus a unique per-line token — 15-gram windows stay unique. */
 const GREEK_LINE = 'alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau upsilon phi chi psi omega';
 
+/** Distinct word set for the cross-module block — shares no 15-gram with GREEK_LINE. */
+const LATIN_LINE = 'amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua';
+
 const dupBlock = (lines: number): string =>
   Array.from({ length: lines }, (_, i) => `// ${GREEK_LINE} line${String(i).padStart(4, '0')}`).join('\n');
+
+const xdupBlock = (lines: number): string =>
+  Array.from({ length: lines }, (_, i) => `// ${LATIN_LINE} line${String(i).padStart(4, '0')}`).join('\n');
 
 function writeFile(root: string, relPath: string, content: string): void {
   const full = join(root, relPath);
@@ -35,7 +43,7 @@ function writeFile(root: string, relPath: string, content: string): void {
   writeFileSync(full, content, 'utf-8');
 }
 
-/** Build the 5-shape fixture tree; returns the fixture root. */
+/** Build the 7-shape fixture tree; returns the fixture root. */
 function buildFixture(root: string): void {
   // Fragmented siblings: each <=2 exports and <=50 non-blank lines.
   writeFile(root, 'src/frag/a.ts', [
@@ -142,6 +150,33 @@ function buildFixture(root: string): void {
     '',
   ].join('\n'));
   writeFile(root, 'src/wellshaped/inner/README.md', '# wellshaped inner\n');
+
+  // Cross-module duplicated pair: one file in each of two DIFFERENT modules
+  // shares the same 60-line block (LATIN word set — distinct from src/dup).
+  writeFile(root, 'src/xdupa/dup-a.ts', [
+    '// Cross-module duplicated block (A)',
+    "import { alpha } from '../wellshaped.js';",
+    '',
+    'export function dupA(): number {',
+    '  return alpha();',
+    '}',
+    '',
+    xdupBlock(60),
+    '',
+  ].join('\n'));
+  writeFile(root, 'src/xdupa/misc/README.md', '# xdupa misc\n');
+  writeFile(root, 'src/xdupb/dup-b.ts', [
+    '// Cross-module duplicated block (B)',
+    "import { alpha } from '../wellshaped.js';",
+    '',
+    'export function dupB(): number {',
+    '  return alpha();',
+    '}',
+    '',
+    xdupBlock(60),
+    '',
+  ].join('\n'));
+  writeFile(root, 'src/xdupb/misc/README.md', '# xdupb misc\n');
 }
 
 describe('runRefactorAnalyzer (T-7)', () => {
@@ -157,18 +192,41 @@ describe('runRefactorAnalyzer (T-7)', () => {
         map,
       });
 
-      // Five fixture modules analyzed.
-      expect(result.perModule).toHaveLength(5);
+      // Seven fixture modules analyzed.
+      expect(result.perModule).toHaveLength(7);
 
       // Fragmentation: exactly one module with two fragmented file findings.
       const fragmented = result.perModule.filter((m) => m.fragmentation.length > 0);
       expect(fragmented).toHaveLength(1);
       expect(fragmented[0].fragmentation).toHaveLength(2);
 
-      // Duplication: exactly one module with at least one pair.
+      // Same-module duplication: exactly one module with at least one pair.
       const duplicated = result.perModule.filter((m) => m.duplication.length > 0);
       expect(duplicated).toHaveLength(1);
       expect(duplicated[0].duplication.length).toBeGreaterThanOrEqual(1);
+
+      // Cross-module duplication (G1): the src/xdupa <-> src/xdupb pair surfaces
+      // in the top-level list, NOT in any per-module duplication array.
+      expect(result.crossModuleDuplication).toHaveLength(1);
+      const crossPair = result.crossModuleDuplication[0];
+      expect([crossPair.leftPath, crossPair.rightPath].sort()).toEqual([
+        'src/xdupa/dup-a.ts',
+        'src/xdupb/dup-b.ts',
+      ]);
+      expect([crossPair.leftModule, crossPair.rightModule].sort()).toEqual([
+        'src/xdupa',
+        'src/xdupb',
+      ]);
+      expect(crossPair.similarity).toBeGreaterThanOrEqual(0.8);
+
+      // The global duplication count (same-module + cross-module) is reflected
+      // in the report's ## Summary.
+      const summaryMatch = result.report.match(/- Duplication pairs: (\d+)/);
+      expect(summaryMatch).not.toBeNull();
+      expect(Number(summaryMatch![1])).toBe(1 + result.crossModuleDuplication.length);
+      expect(result.report).toContain('## Cross-Module Duplication');
+      expect(result.report).toContain('src/xdupa/dup-a.ts');
+      expect(result.report).toContain('src/xdupb/dup-b.ts');
 
       // Flatness: exactly one flat module.
       const flat = result.perModule.filter((m) => m.flat === true);
