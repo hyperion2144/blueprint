@@ -208,7 +208,7 @@ The fixer role, reviewer full-review reform, platform agents/OMP discrimination,
     - **AND** the instructions contain no `bp finalize`
   - **depends_on**: T-14
 
-- [ ] T-16: [type:docs] Repair stale `bp/specs/archive/spec.md` command surface <!-- commit: -->
+- [x] T-16: [type:docs] Repair stale `bp/specs/archive/spec.md` command surface <!-- commit: 5beff28 -->
   - **refs**: DS-14
   - **spec_ref**: specs/archive/spec.md#Finish-Command
   - **files**: bp/specs/archive/spec.md
