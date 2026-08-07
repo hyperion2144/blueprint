@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { execSync } from 'node:child_process';
+import { execSync, spawnSync } from 'node:child_process';
 import { mkdirSync, rmSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -141,5 +141,15 @@ describe('bp dispatch refactorer (T-3)', () => {
       cwd: refactorerTestDir,
     });
     expect(output).not.toContain('Cannot read property');
+  });
+
+  it('refactorer dispatch without --target rejects with usage on stderr and exit 1', () => {
+    const res = spawnSync(process.execPath, [cliPath, 'dispatch', 'refactorer'], {
+      encoding: 'utf-8',
+      cwd: refactorerTestDir,
+    });
+    expect(res.status).toBe(1);
+    expect(res.stderr).toContain('--target');
+    expect(res.stdout).not.toContain('## Dispatch:');
   });
 });
