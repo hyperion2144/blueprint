@@ -161,6 +161,86 @@ exported from `src/integrations/omp/extension-runtime.ts` as
 | `.claude/settings.json`          | `src/integrations/claude-code/hooks.ts`          |
 | `.claude/hooks/bp-claude-handler.mjs` | `src/templates/claude-code/handler.tmpl.ts` |
 
+## Refactor step
+
+`refactor` is a standalone auxiliary workflow step (like `ff` / `loop`): it never
+creates `bp/changes/` lifecycle artifacts. `/bp-refactor <target>` (or
+`bp refactor <target>`) prints the step's orchestrator instructions, and
+`bp refactor analyze <target>` runs the deterministic analyzer. The LLM never
+re-judges the metrics — the analyzer output is the only evidence source.
+
+### Generated files
+
+`bp update` emits one `refactor` file per configured platform, all sharing the
+same instruction body resolved from `WORKFLOW_REGISTRY['refactor']`:
+
+| Platform | Path |
+|----------|------|
+| OMP | `.omp/commands/bp-refactor.md` — frontmatter `name: bp:refactor`, `argument-hint: "<target>"` |
+| Claude Code | `.claude/commands/bp-refactor.md` — frontmatter `name: bp:refactor`, `argument-hint: "<target>"` |
+| OpenCode | `.opencode/commands/bp-refactor.md` — frontmatter `description` only |
+| Agent | `.agent/skills/bp-refactor/SKILL.md` — frontmatter `name: bp-refactor`, `hide: false` |
+| Codex | `.agents/skills/bp-refactor/SKILL.md` — frontmatter `name: bp:refactor` |
+
+The `refactorer` sub-agent role is generated alongside on the platforms that
+ship agents: `.omp/agents/bp-refactorer.md`, `.claude/agents/bp-refactorer.md`,
+`.opencode/agents/bp-refactorer.md`, and `.agent/agents/bp-refactorer.md`, all
+rendering the same `REFACTORER_PROMPT` body.
+
+### Analyzer metrics and thresholds
+
+`bp refactor analyze <target>` scores every module under the target scope
+against four anti-pattern metrics plus a depth ratio:
+
+- **Fragmentation** — sibling files with few exports and few lines, spread too
+  thin to be navigable.
+- **Duplication** — cross-file n-gram similarity at or above the configured
+  threshold (Jaccard-like normalization over shared shingles).
+- **Flatness** — a module tree with no meaningful subdirectory structure.
+- **Low reuse** — modules that export a lot but are imported by almost nothing.
+- **Depth ratio** — implementation-line density relative to interface size and
+  fan-in; reported as a distribution (min / median / max) over the target scope.
+
+Thresholds are configurable in `bp/config.yaml` under `refactor.thresholds`
+(an absent `refactor:` block falls back to these defaults):
+
+| Path | Default |
+|------|---------|
+| `refactor.thresholds.fragmentation.exportsMax` | `2` |
+| `refactor.thresholds.fragmentation.fileLinesMax` | `50` |
+| `refactor.thresholds.duplication.similarityMin` | `0.8` |
+| `refactor.thresholds.duplication.gramSize` | `15` |
+| `refactor.thresholds.flatness.maxDepth` | `1` |
+| `refactor.thresholds.flatness.subdirMin` | `2` |
+| `refactor.thresholds.lowReuse.fanInMax` | `1` |
+| `refactor.thresholds.lowReuse.exportsMin` | `3` |
+
+### Report artifact
+
+The analyzer writes a deterministic Markdown report to `bp/.refactor-report.md`:
+`# Refactor Report` header with the target scope, thresholds, and ISO date,
+then a `## Summary` section, then one `## Module: <path>` block per module with
+`### Fragmentation` / `### Duplication` / `### Flatness` / `### Low Reuse` /
+`### Depth Ratio` subsections. Two runs over an unchanged tree produce
+byte-identical files, so the report is diff-friendly.
+
+### Per-module dispatch flow
+
+The orchestrator executes the step in five phases:
+
+1. **Analyze** — `bp refactor analyze <target>` writes `bp/.refactor-report.md`
+   and prints a one-line stdout summary.
+2. **Human confirmation** — the report is shown to the user and the orchestrator
+   pauses for an explicit `yes | no | scope: <reduced target>` before any dispatch.
+3. **Dispatch per module** — `bp dispatch refactorer --change <name> | --target <module>`
+   for each affected module, one isolated sub-agent per module (executor-style
+   isolation; the refactorer stops after its single assigned module).
+4. **Spec sync** — each refactorer consolidates behavior-preservingly, keeps the
+   test suite green, and edits only the `bp/specs/<domain>/spec.md` files whose
+   contracts reference the changed file paths or exports.
+5. **Diff summary** — the orchestrator prints `git diff --stat` plus the
+   changed-spec list and returns control to the user.
+
 ## Codex CLI — Skills and Hooks
 
 OpenAI Codex CLI v0.140+ ships a project-scoped Skills mechanism at
