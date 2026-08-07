@@ -110,7 +110,7 @@ function extractSummaryBlock(report) {
   const summaryIdx = report.indexOf("## Summary");
   if (summaryIdx === -1) return null;
   const afterHeading = summaryIdx + "## Summary".length;
-  const nextSection = report.indexOf("\n## ", afterHeading);
+  const nextSection = report.indexOf("\\n## ", afterHeading);
   const end = nextSection === -1 ? report.length : nextSection;
   return report.slice(summaryIdx, end).trim();
 }
