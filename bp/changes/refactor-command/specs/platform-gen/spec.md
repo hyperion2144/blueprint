@@ -69,6 +69,14 @@ The reported per-module evidence SHALL be deterministic across two consecutive r
 - **AND** stdout contains a line beginning with `Refactor report for .:` listing counts
 - **AND** the command exits with code `0`.
 
+#### Scenario: analyzer detects cross-module duplication
+
+- **GIVEN** an initialized bp project whose source tree contains two files in different modules sharing a duplicated block above the similarity threshold
+- **WHEN** `bp refactor analyze .` runs
+- **THEN** the report contains a `## Cross-Module Duplication` section listing both file paths and their module names
+- **AND** the `## Summary` duplication-pairs count includes the cross-module pair
+- **AND** each such pair is not attributed to a single per-module `### Duplication` block.
+
 #### Scenario: threshold overrides change the findings
 
 - **GIVEN** a project whose `bp/config.yaml` defines `refactor.thresholds.fragmentation.exportsMax: 5`
