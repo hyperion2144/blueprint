@@ -262,7 +262,7 @@ The fixer role, reviewer full-review reform, platform agents/OMP discrimination,
 
 Runs last over the final structure — every template and agent prompt simplified, asserted keywords preserved.
 
-- [ ] T-20: [type:refactor] Workflow template simplification (dedupe into shared.ts, one sentence per point) <!-- commit: -->
+- [x] T-20: [type:refactor] Workflow template simplification (dedupe into shared.ts, one sentence per point) <!-- commit: 3b00bb5 -->
   - **refs**: DS-18
   - **spec_ref**: specs/templates/spec.md#Prompt-Simplification
   - **files**: src/templates/workflows/init.ts, roadmap.ts, propose.ts, plan.ts, apply.ts, check.ts, archive.ts, continue.ts, ff.ts, loop.ts, refactor.ts, shared.ts, snapshots
