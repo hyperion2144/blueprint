@@ -49,6 +49,12 @@ export const AGENT_DEFS: OpenCodeAgentDef[] = [
     mode: 'subagent',
     tools: { write: false, edit: false, bash: false },
   },
+  {
+    role: 'refactorer',
+    description: 'Behavior-preserving consolidation + spec sync per assigned module',
+    mode: 'subagent',
+    tools: { write: true, edit: true, bash: true },
+  },
 ];
 
 export function generateOpenCodeAgent(def: OpenCodeAgentDef, profile?: PromptProfile): string {

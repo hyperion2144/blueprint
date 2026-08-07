@@ -52,6 +52,12 @@ export const AGENT_DEFS: AgentDef[] = [
     tools: [],
     spawns: '*',
   },
+  {
+    role: 'refactorer',
+    description: 'Behavior-preserving consolidation + spec sync per assigned module',
+    tools: ['edit', 'write', 'bash'],
+    spawns: '*',
+  },
 ];
 /* ================================================================
  * Agent file generation
