@@ -56,6 +56,7 @@ const ROLE_TEMPLATES: Record<string, string[]> = {
   planner: ['design', 'tasks', 'spec', 'global-spec'],
   executor: [],  // produces code, no artifact templates
   refactorer: [],  // produces code, no artifact templates
+  fixer: [],  // produces code/artifact edits, no artifact templates
   reviewer: ['review'],
 };
 
@@ -116,7 +117,7 @@ function detectReviewRound(bpDir: string, changeName: string | null): number {
 }
 /** Roles that edit code and therefore need executor-style isolation. */
 function isExecutorLike(role: string): boolean {
-  return role === 'executor' || role === 'refactorer';
+  return role === 'executor' || role === 'refactorer' || role === 'fixer';
 }
 
 function dispatchHandler(role: string, options: { change?: string; dir: string; target?: string }) {
