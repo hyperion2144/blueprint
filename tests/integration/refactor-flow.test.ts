@@ -22,8 +22,12 @@ const testDir = join(tmpdir(), `refactor-flow-${Date.now()}`);
 
 /** 24 distinct words per line, unique per-line token — deterministic 15-gram shingles. */
 const GREEK_LINE = 'alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau upsilon phi chi psi omega';
+/** Distinct word set for the cross-module block — shares no 15-gram with GREEK_LINE. */
+const LATIN_LINE = 'amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua';
 const dupBlock = (lines: number): string =>
   Array.from({ length: lines }, (_, i) => `// ${GREEK_LINE} line${String(i).padStart(4, '0')}`).join('\n');
+const xdupBlock = (lines: number): string =>
+  Array.from({ length: lines }, (_, i) => `// ${LATIN_LINE} line${String(i).padStart(4, '0')}`).join('\n');
 
 function writeFile(root: string, relPath: string, content: string): void {
   const full = join(root, relPath);
@@ -133,6 +137,33 @@ function buildFixture(root: string): void {
     '',
   ].join('\n'));
   writeFile(root, 'src/wellshaped/inner/README.md', '# wellshaped inner\n');
+
+  // Cross-module duplicated pair: one file in each of two DIFFERENT modules
+  // shares the same 60-line block (LATIN word set — distinct from src/dup).
+  writeFile(root, 'src/xdupa/dup-a.ts', [
+    '// Cross-module duplicated block (A)',
+    "import { alpha } from '../wellshaped.js';",
+    '',
+    'export function dupA(): number {',
+    '  return alpha();',
+    '}',
+    '',
+    xdupBlock(60),
+    '',
+  ].join('\n'));
+  writeFile(root, 'src/xdupa/misc/README.md', '# xdupa misc\n');
+  writeFile(root, 'src/xdupb/dup-b.ts', [
+    '// Cross-module duplicated block (B)',
+    "import { alpha } from '../wellshaped.js';",
+    '',
+    'export function dupB(): number {',
+    '  return alpha();',
+    '}',
+    '',
+    xdupBlock(60),
+    '',
+  ].join('\n'));
+  writeFile(root, 'src/xdupb/misc/README.md', '# xdupb misc\n');
 }
 
 beforeAll(() => {
@@ -175,6 +206,11 @@ describe('bp refactor analyze on a fixture repo (T-12)', () => {
     expect(report).toContain('### Duplication');
     expect(report).toContain('### Flatness');
     expect(report).toContain('### Low Reuse');
+
+    // Cross-module duplication (G1) is surfaced as a top-level section.
+    expect(report).toContain('## Cross-Module Duplication');
+    expect(report).toContain('src/xdupa/dup-a.ts');
+    expect(report).toContain('src/xdupb/dup-b.ts');
   });
 
   it('produces a byte-identical report on a second run', () => {
