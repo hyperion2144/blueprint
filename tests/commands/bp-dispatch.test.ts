@@ -153,3 +153,57 @@ describe('bp dispatch refactorer (T-3)', () => {
     expect(res.stdout).not.toContain('## Dispatch:');
   });
 });
+
+describe('bp dispatch fixer (T-11)', () => {
+  const fixerTestDir = join(tmpdir(), `bp-dispatch-fixer-${Date.now()}`);
+  const fixerBpDir = join(fixerTestDir, 'bp');
+
+  beforeAll(() => {
+    mkdirSync(fixerTestDir, { recursive: true });
+    execSync(`node ${cliPath} init --dir ${fixerTestDir} --yes`, {
+      encoding: 'utf-8',
+      cwd: fixerTestDir,
+    });
+    // Replace platform: [omp] with platform: [omp, claude-code]
+    const cfg = readFileSync(join(fixerBpDir, 'config.yaml'), 'utf-8');
+    const updated = cfg.replace(/platform:\n  - omp\n/, 'platform:\n  - omp\n  - claude-code\n');
+    writeFileSync(join(fixerBpDir, 'config.yaml'), updated, 'utf-8');
+  });
+
+  afterAll(() => {
+    rmSync(fixerTestDir, { recursive: true, force: true });
+  });
+
+  it('fixer output mirrors executor isolation per platform', () => {
+    const output = execSync(`node ${cliPath} dispatch fixer --change test-change`, {
+      encoding: 'utf-8',
+      cwd: fixerTestDir,
+    });
+    expect(output).toContain('## Dispatch: bp-fixer (omp)');
+    expect(output).toContain('## Dispatch: bp-fixer (claude-code)');
+    expect(output).toContain('### Isolation');
+    // omp: Type: param
+    expect(output).toContain('- Type: param');
+    expect(output).toContain('- Support: yes');
+    // claude-code: worktree param
+    expect(output).toContain('worktree: <change>-<wave>');
+    expect(output).toContain('- Support: yes');
+  });
+
+  it('fixer does not require --target and exits 0', () => {
+    const res = spawnSync(process.execPath, [cliPath, 'dispatch', 'fixer', '--change', 'test-change'], {
+      encoding: 'utf-8',
+      cwd: fixerTestDir,
+    });
+    expect(res.status).toBe(0);
+    expect(res.stdout).toContain('## Dispatch: bp-fixer');
+  });
+
+  it('fixer dispatch produces no artifact templates', () => {
+    const output = execSync(`node ${cliPath} dispatch fixer --change test-change`, {
+      encoding: 'utf-8',
+      cwd: fixerTestDir,
+    });
+    expect(output).not.toContain('bp template');
+  });
+});
