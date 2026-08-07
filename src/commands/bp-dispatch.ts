@@ -55,6 +55,7 @@ interface DispatchFormat {
 const ROLE_TEMPLATES: Record<string, string[]> = {
   planner: ['design', 'tasks', 'spec', 'global-spec'],
   executor: [],  // produces code, no artifact templates
+  refactorer: [],  // produces code, no artifact templates
   reviewer: ['review'],
 };
 
@@ -97,6 +98,7 @@ export function register(program: Command): void {
     .command('dispatch <role>')
     .description('Output platform-specific sub-agent dispatch instructions')
     .option('--change <name>', 'change name to pass to the sub-agent')
+    .option('--target <module>', 'single module path for the sub-agent to work on (refactorer)')
     .option('--dir <path>', 'bp directory', 'bp')
     .action(dispatchHandler);
 }
@@ -112,7 +114,12 @@ function detectReviewRound(bpDir: string, changeName: string | null): number {
     return rounds.length > 0 ? Math.max(...rounds) : 1;
   } catch { return 1; }
 }
-function dispatchHandler(role: string, options: { change?: string; dir: string }) {
+/** Roles that edit code and therefore need executor-style isolation. */
+function isExecutorLike(role: string): boolean {
+  return role === 'executor' || role === 'refactorer';
+}
+
+function dispatchHandler(role: string, options: { change?: string; dir: string; target?: string }) {
   const bpDir = findBpDir() ?? join(process.cwd(), options.dir);
   const config = loadConfig(bpDir);
   const platforms: string[] = config.platform || ['omp'];
@@ -133,13 +140,16 @@ function dispatchHandler(role: string, options: { change?: string; dir: string }
       const resolved = value.replace('<role>', role);
       lines.push(`  ${key}: ${resolved}`);
     }
+    if (options.target) {
+      lines.push(`  target: ${options.target}`);
+    }
     if (changeName) {
       lines.push('  context: Change ' + changeName + ' at bp/changes/' + changeName + '/');
     }
     // Isolation info
     lines.push('');
     lines.push('### Isolation');
-    const isolation: IsolationInfo = role === 'executor'
+    const isolation: IsolationInfo = isExecutorLike(role)
       ? (EXECUTOR_ISOLATION[platform] ?? { type: 'none', description: 'No isolation configured for this platform.' })
       : { type: 'none', description: 'Read-only role — no isolation needed.' };
     if (isolation.type === 'param') {
@@ -154,9 +164,9 @@ function dispatchHandler(role: string, options: { change?: string; dir: string }
     } else {
       lines.push(`- Support: no`);
       lines.push(`- Type: none`);
-      // For executor role with a configured description, show it (e.g. codex/agent worktree instructions).
+      // For executor-like roles with a configured description, show it (e.g. codex/agent worktree instructions).
       // For read-only roles, fall back to the default message.
-      if (role === 'executor' && isolation.description) {
+      if (isExecutorLike(role) && isolation.description) {
         lines.push(`- ${isolation.description}`);
       } else {
         lines.push(`- Read-only role — no isolation needed.`);
@@ -190,8 +200,8 @@ function dispatchHandler(role: string, options: { change?: string; dir: string }
       lines.push(`- If BLOCKER found this round: upgrade back + record degradation_failed.`);
     }
     // Template instructions
-    const templates = ROLE_TEMPLATES[role];
-    if (templates && templates.length > 0) {
+    const templates = ROLE_TEMPLATES[role] ?? [];
+    if (templates.length > 0) {
       lines.push('Output templates for the sub-agent to use:');
       for (const t of templates) {
         lines.push(`  bp template ${t}`);
