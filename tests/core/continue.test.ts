@@ -173,32 +173,36 @@ describe('determineNextStepForChange', () => {
       writeArtifact('test-change', 'review.md', `## Overall Verdict: ${verdict}\n${issues}`);
     }
 
-    it('NEEDS_REVISION + design issues routes to plan --fix', () => {
+    it('NEEDS_REVISION + design issues routes to bp check', () => {
       setupChangeWithVerdict('NEEDS_REVISION', '\n- [ ] D1 Fix design\n- [ ] R1 Review issue\n');
       const result = determineNextStepForChange(tmpDir, 'test-change');
       expect(result.nextStep).not.toBeNull();
-      expect(result.nextStep!.command).toContain('plan --fix');
+      expect(result.nextStep!.command).toContain('check');
+      expect(result.nextStep!.command).not.toContain('--fix');
     });
 
-    it('NEEDS_REVISION without design issues routes to apply --fix', () => {
+    it('NEEDS_REVISION without design issues routes to bp check', () => {
       setupChangeWithVerdict('NEEDS_REVISION', '\n- [ ] R1 Review issue\n');
       const result = determineNextStepForChange(tmpDir, 'test-change');
       expect(result.nextStep).not.toBeNull();
-      expect(result.nextStep!.command).toContain('apply --fix');
+      expect(result.nextStep!.command).toContain('check');
+      expect(result.nextStep!.command).not.toContain('--fix');
     });
 
-    it('FAIL + design issues routes to plan --fix', () => {
+    it('FAIL + design issues routes to bp check', () => {
       setupChangeWithVerdict('FAIL', '\n- [ ] D1 Design flaw\n- [ ] R1 Code issue\n');
       const result = determineNextStepForChange(tmpDir, 'test-change');
       expect(result.nextStep).not.toBeNull();
-      expect(result.nextStep!.command).toContain('plan --fix');
+      expect(result.nextStep!.command).toContain('check');
+      expect(result.nextStep!.command).not.toContain('plan --fix');
     });
 
-    it('FAIL without design issues routes to apply --fix', () => {
+    it('FAIL without design issues routes to bp check', () => {
       setupChangeWithVerdict('FAIL', '\n- [ ] R1 Code issue\n');
       const result = determineNextStepForChange(tmpDir, 'test-change');
       expect(result.nextStep).not.toBeNull();
-      expect(result.nextStep!.command).toContain('apply --fix');
+      expect(result.nextStep!.command).toContain('check');
+      expect(result.nextStep!.command).not.toContain('apply --fix');
     });
   });
   it('single active change auto-selects', () => {
