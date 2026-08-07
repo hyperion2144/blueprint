@@ -15,21 +15,23 @@ import { createBlueprintStructure, createChangeDir } from '../../src/core/file-t
 import { gateContextJsonl } from '../../src/commands/_utils.js';
 import { validateContextJsonlFile } from '../../src/core/artifact-validator.js';
 
-const tmpDir = join(process.cwd(), 'tests/tmp-context-phase');
+const root = join(process.cwd(), 'tests/tmp-context-phase');
+let bpDir: string;
 
 beforeEach(() => {
-  mkdirSync(tmpDir, { recursive: true });
-  createBlueprintStructure(tmpDir);
-  writeFileSync(join(tmpDir, 'config.yaml'), '', 'utf-8');
+  mkdirSync(root, { recursive: true });
+  bpDir = join(root, 'bp');
+  createBlueprintStructure(bpDir);
+  writeFileSync(join(bpDir, 'config.yaml'), '', 'utf-8');
 });
 
 afterEach(() => {
-  rmSync(tmpDir, { recursive: true, force: true });
+  rmSync(root, { recursive: true, force: true });
 });
 
 describe('context phase rename (review -> check)', () => {
   it('gateContextJsonl accepts a check-phase context.jsonl', () => {
-    const change = createChangeDir(tmpDir, 'test-change');
+    const change = createChangeDir(bpDir, 'test-change');
     writeFileSync(join(change, 'proposal.md'), '# Proposal\n', 'utf-8');
     writeFileSync(
       join(change, 'context.jsonl'),
@@ -41,11 +43,11 @@ describe('context phase rename (review -> check)', () => {
       }) + '\n',
       'utf-8',
     );
-    expect(gateContextJsonl(tmpDir, 'test-change', 'check')).toBe(true);
+    expect(gateContextJsonl(bpDir, 'test-change', 'check')).toBe(true);
   });
 
   it('validateContextJsonlFile accepts phase check and rejects phase review', () => {
-    const change = createChangeDir(tmpDir, 'test-change');
+    const change = createChangeDir(bpDir, 'test-change');
     writeFileSync(join(change, 'proposal.md'), '# Proposal\n', 'utf-8');
 
     const checkPath = join(change, 'context-check.jsonl');
@@ -59,7 +61,7 @@ describe('context phase rename (review -> check)', () => {
       }) + '\n',
       'utf-8',
     );
-    expect(validateContextJsonlFile(checkPath, tmpDir, 'check').valid).toBe(true);
+    expect(validateContextJsonlFile(checkPath, bpDir, 'check').valid).toBe(true);
 
     const reviewPath = join(change, 'context-review.jsonl');
     writeFileSync(
@@ -73,6 +75,6 @@ describe('context phase rename (review -> check)', () => {
       'utf-8',
     );
     // After the rename, `review` is no longer a valid phase value.
-    expect(validateContextJsonlFile(reviewPath, tmpDir, 'check').valid).toBe(false);
+    expect(validateContextJsonlFile(reviewPath, bpDir, 'check').valid).toBe(false);
   });
 });

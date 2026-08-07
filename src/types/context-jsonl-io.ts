@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const CONTEXT_PHASES = ['plan', 'apply', 'review', 'archive', 'all'] as const;
+export const CONTEXT_PHASES = ['plan', 'apply', 'check', 'archive', 'all'] as const;
 const CONTEXT_READ_MODES = ['full', 'range'] as const;
 
 /** A single repository-relative reference in a change's context.jsonl artifact. */
