@@ -243,4 +243,42 @@ describe('runRefactorAnalyzer (T-7)', () => {
       rmSync(root, { recursive: true, force: true });
     }
   });
+
+  it('threshold overrides change the findings and the report prints the active thresholds (R2)', () => {
+    const root = join(tmpdir(), `refactor-threshold-${Date.now()}`);
+    buildFixture(root);
+    try {
+      const map = generateCodebaseMap(root);
+
+      // Default exportsMin=3: src/lowreuse (3 exports, fanIn 0) is reported.
+      const defaults = runRefactorAnalyzer({
+        rootDir: root,
+        target: '.',
+        thresholds: DEFAULT_REFACTOR_THRESHOLDS,
+        map,
+      });
+      const defaultLow = defaults.perModule.find((m) => m.module === 'src/lowreuse')!;
+      expect(defaultLow.lowReuse).not.toBeNull();
+
+      // Override exportsMin=4: src/lowreuse drops out of the finding set.
+      const overridden = runRefactorAnalyzer({
+        rootDir: root,
+        target: '.',
+        thresholds: {
+          ...DEFAULT_REFACTOR_THRESHOLDS,
+          lowReuse: { ...DEFAULT_REFACTOR_THRESHOLDS.lowReuse, exportsMin: 4 },
+        },
+        map,
+      });
+      const overrideLow = overridden.perModule.find((m) => m.module === 'src/lowreuse')!;
+      expect(overrideLow.lowReuse).toBeNull();
+      expect(overridden.report).not.toBe(defaults.report);
+
+      // The report header prints the active (overridden) thresholds.
+      expect(overridden.report).toContain('**Thresholds**');
+      expect(overridden.report).toContain('lowReuse fanInMax=1 exportsMin=4');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
 });
