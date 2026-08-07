@@ -23,11 +23,11 @@ import { generateCodebaseMap } from './codebase-map.js';
 import { runRefactorAnalyzer, writeRefactorReport, readRefactorReport } from './refactor-analyzer.js';
 import { DEFAULT_REFACTOR_THRESHOLDS } from './config.js';
 
-/** 24 distinct words per line — 15-gram windows are stable and unique per position. */
+/** 24 distinct words per line, plus a unique per-line token — 15-gram windows stay unique. */
 const GREEK_LINE = 'alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau upsilon phi chi psi omega';
 
 const dupBlock = (lines: number): string =>
-  Array.from({ length: lines }, () => `// ${GREEK_LINE}`).join('\n');
+  Array.from({ length: lines }, (_, i) => `// ${GREEK_LINE} line${String(i).padStart(4, '0')}`).join('\n');
 
 function writeFile(root: string, relPath: string, content: string): void {
   const full = join(root, relPath);
