@@ -4,7 +4,7 @@
  * Templates are imported from src/templates/artifacts/index.ts — no disk reads.
  * Supports:
  * - v2 artifact templates: proposal, design, tasks, spec, review, roadmap, config, global-spec
- * - Workflow step templates: discuss, plan, apply, review, archive, etc.
+ * - Workflow step templates: discuss, plan, apply, check, archive, etc.
  */
 
 import { join, dirname } from 'node:path';
