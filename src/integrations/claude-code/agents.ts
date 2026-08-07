@@ -24,6 +24,7 @@ export const AGENT_DEFS: ClaudeAgentDef[] = [
   { role: 'reviewer', description: 'Triple review — spec review + quality review + goal review', tools: [], effort: 'high' },
   { role: 'codebase-scanner', description: 'Brownfield codebase scan - extract behavioral contracts into specs', tools: [] },
   { role: 'refactorer', description: 'Behavior-preserving consolidation + spec sync per assigned module', tools: ['edit', 'write', 'bash'], effort: 'high' },
+  { role: 'fixer', description: 'Fix proposal/design/implementation per reviewer report', tools: ['edit', 'write', 'bash'], effort: 'high' },
 ];
 export function generateClaudeAgent(def: ClaudeAgentDef, profile?: PromptProfile): string {
   const prompt = AGENT_PROMPTS[def.role as keyof typeof AGENT_PROMPTS];
