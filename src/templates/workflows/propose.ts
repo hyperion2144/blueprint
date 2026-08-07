@@ -26,14 +26,14 @@ Auto-assess based on the user's described scope. If --level <X> provided, use th
 Write the level to proposal.md's ## Level section.
 
 **If trivial or light**: may skip Step 1 (grill) per existing lightweight logic. Go directly to Step 2 with a minimal proposal derived from the user's one-line description. Fill template directly, no interview.
-**If standard or critical**: continue to Step 1 (relentless interview).
+**If standard or critical**: continue to Step 1 (grill the user).
 **If critical**: flag for security audit in design.md.
 
-### Step 1: Grill the user on requirements (Skip if Step 0 classified as trivial or light) (RELENTLESS - do NOT skip)
+### Step 1: Grill the user (grilling method — one question at a time, recommended answer, resolve every branch)
 
-Before writing anything, you must reach FULL shared understanding with the user.
-This is NOT a checklist. It is a relentless interview that walks every branch of the decision tree,
-resolving dependencies between decisions one by one.
+> **Skip for trivial/light changes** (Step 0 classified as trivial or light): go directly to Step 2 and fill the template from the user's one-line description — no interview.
+
+This step follows the **grilling method**: ask ONE question at a time, always provide a recommended answer, and resolve every decision-tree branch before proceeding. This is NOT a checklist — it is a grilling interview that walks every branch of the decision tree, resolving dependencies between decisions one by one.
 
 Process:
 1. Start with what the user described. Map the decision tree in your mind:
@@ -58,7 +58,7 @@ What to grill on (walk every branch):
 **Hard rules:**
 - Ask ONE question at a time. Wait for the answer. Do not batch.
 - Always provide a recommended answer when one exists.
-- Do NOT proceed to Step 2 until you can describe every deliverable without guessing.
+- Resolve every decision-tree branch before proceeding — do NOT proceed to Step 2 until you can describe every deliverable without guessing.
 - Do NOT use [ASSUMPTION] tags. If you are about to assume, STOP and ask instead.
 - If the user says "use your best judgment" on a specific point, you may proceed without asking.
 
@@ -95,12 +95,12 @@ mkdir -p bp/changes/$1
 
 If \`--phase\` is provided, note the milestone/phase for the proposal's Roadmap Reference section.
 
-### Step 3: Write the detailed proposal
+### Step 3: Write the detailed proposal from the grilling output
 
-Get the proposal template and fill it based on the discussion and research:
+Fetch the proposal template AFTER grilling completes and fill it **from the grilling output** — capture every grilling detail in the proposal. If the proposal template has no section for a grilled detail, reference the grilling content to extend it.
 
 1. Run \`bp template proposal --stdout\` to get the template
-2. Fill EVERY section, following these rules:
+2. Fill EVERY section from the grilling output, following these rules:
 
    **Intent** — Write as much as needed. This is the permanent record of the
    motivation. Include the problem context, why now, and what triggered the change.
