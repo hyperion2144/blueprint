@@ -16,6 +16,7 @@ import {
   type ExtensionAPI,
   type ExtensionContext,
 } from './extension-runtime.js';
+import { EXTENSION_SOURCE } from '../../templates/omp/extension.tmpl.js';
 
 const testDir = join(tmpdir(), `bp-omp-refactorer-${Date.now()}`);
 
@@ -77,6 +78,50 @@ describe('detectAgentType refactorer (T-9)', () => {
   it('still returns default for unrelated templates', () => {
     expect(detectAgentType({ agentTemplate: 'unrelated-agent' })).toBe('default');
     expect(detectAgentType({})).toBe('default');
+  });
+});
+
+describe('detectAgentType fixer (T-10)', () => {
+  it('returns fixer for the bp-fixer agent template', () => {
+    expect(detectAgentType({ agentTemplate: 'bp-fixer' })).toBe('fixer');
+  });
+
+  it('returns fixer for the bp:fixer template name (substring match)', () => {
+    expect(detectAgentType({ agentTemplate: 'bp:fixer' })).toBe('fixer');
+  });
+
+  it('does not regress existing role detection', () => {
+    expect(detectAgentType({ agentTemplate: 'bp-executor-v2' })).toBe('executor');
+    expect(detectAgentType({ agentTemplate: 'bp-reviewer-v2' })).toBe('reviewer');
+  });
+});
+
+describe('handleSessionStart fixer path (T-10)', () => {
+  it('inlines every context.jsonl row and prefixes guard-rail tagged rows with > GUARD-RAIL:', async () => {
+    writeFile(
+      'bp/changes/demo/context.jsonl',
+      [
+        JSON.stringify({ file: 'src/core/a.ts', reason: 'core invariant A', phase: 'all' }),
+        JSON.stringify({ file: 'src/core/b.ts', reason: 'guard rail B', phase: 'all', tag: 'guard-rail' }),
+      ].join('\n') + '\n',
+    );
+    const { api, sent } = makeApi();
+    const ctx: ExtensionContext = { cwd: testDir, agentTemplate: 'bp-fixer', activeChangeName: 'demo' };
+    await handleSessionStart({}, ctx, api);
+    expect(sent).toHaveLength(1);
+    const text = (sent[0].content as Array<{ type: string; text: string }>)[0].text;
+    expect(text).toContain('<bp-context>');
+    expect(text).toContain('file: src/core/a.ts');
+    expect(text).toContain('reason: core invariant A');
+    expect(text).toContain('> GUARD-RAIL: file: src/core/b.ts');
+  });
+});
+
+describe('extension template fixer mirror (T-10)', () => {
+  it('EXTENSION_SOURCE contains a fixer detect branch and render branch', () => {
+    expect(EXTENSION_SOURCE).toContain('"fixer"');
+    expect(EXTENSION_SOURCE).toMatch(/tpl\.indexOf\("fixer"\) !== -1/);
+    expect(EXTENSION_SOURCE).toMatch(/agentType === "fixer"/);
   });
 });
 

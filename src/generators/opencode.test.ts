@@ -34,7 +34,7 @@ describe('opencode platform generation', () => {
   it('emits agent files at .opencode/agents/', () => {
     const files = generateAll(config(['opencode']));
     const agentFiles = files.filter((f) => f.path.startsWith('.opencode/agents/'));
-    expect(agentFiles).toHaveLength(5);
+    expect(agentFiles).toHaveLength(6);
     for (const f of agentFiles) {
       expect(f.path).toMatch(/^\.opencode\/agents\/bp-[a-z-]+\.md$/);
     }

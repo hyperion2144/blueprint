@@ -87,6 +87,23 @@ describe('multi-platform generation', () => {
     }
   });
 
+  it('fixer agent generates across all four agent platforms embedding the fixer prompt', () => {
+    const files = generateAll(config(['omp', 'claude-code', 'opencode', 'agent']));
+    const content: Record<string, string> = {};
+    for (const f of files) content[f.path] = f.content;
+
+    for (const path of [
+      '.omp/agents/bp-fixer.md',
+      '.claude/agents/bp-fixer.md',
+      '.opencode/agents/bp-fixer.md',
+      '.agent/agents/bp-fixer.md',
+    ]) {
+      expect(content[path]).toBeDefined();
+      expect(content[path]).toContain('Fix proposal/design/implementation per reviewer report');
+      expect(content[path]).toContain('the reviewer\'s report is your only source of truth');
+    }
+  });
+
   it('all-platform golden-file snapshot', () => {
     const files = generateAll(config(['omp', 'claude-code', 'agent']));
     const snapshot: Record<string, string> = {};
