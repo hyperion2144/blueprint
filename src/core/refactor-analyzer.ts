@@ -35,6 +35,22 @@ export interface DuplicationPair {
   sampleShingles: string[];
 }
 
+/**
+ * A duplicated-block pair whose two files live in DIFFERENT modules — the
+ * proposal's core "copy-pasted across modules" signal. Surfaced in the
+ * report's top-level `## Cross-Module Duplication` section.
+ */
+export interface CrossModuleDuplicationPair {
+  leftPath: string;
+  rightPath: string;
+  leftModule: string;
+  rightModule: string;
+  similarity: number;
+  similarityMin: number;
+  gramSize: number;
+  sampleShingles: string[];
+}
+
 /** Flatness evidence for a module. */
 export interface FlatnessFinding {
   module: string;
@@ -82,6 +98,8 @@ export interface AnalyzerResult {
   summary: string;
   /** Per-module evidence, in map (lexicographic) order. */
   perModule: ModuleAnalysis[];
+  /** Duplicated-block pairs whose files span two different modules. */
+  crossModuleDuplication: CrossModuleDuplicationPair[];
   /** SHA-256 of the report — dedupe key for consecutive analyze runs. */
   fingerprint: string;
 }
@@ -347,6 +365,20 @@ function renderModuleSection(m: ModuleAnalysis): string {
   return lines.join('\n');
 }
 
+/** Top-level `## Cross-Module Duplication` section (empty string when none). */
+function renderCrossModuleSection(pairs: CrossModuleDuplicationPair[]): string {
+  if (pairs.length === 0) return '';
+  const lines: string[] = ['## Cross-Module Duplication', ''];
+  for (const p of pairs) {
+    lines.push(
+      `- ${p.leftPath} (${p.leftModule}) <-> ${p.rightPath} (${p.rightModule}) — similarity ${p.similarity.toFixed(2)} (min ${p.similarityMin}, gramSize ${p.gramSize})`,
+    );
+    for (const s of p.sampleShingles) lines.push(`  - sample shingle: \`${s}\``);
+  }
+  lines.push('');
+  return lines.join('\n');
+}
+
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
@@ -368,6 +400,44 @@ export function runRefactorAnalyzer(opts: AnalyzerOptions): AnalyzerResult {
 
   const fanIn = computeFanIn(map);
 
+  // G1: duplication is a GLOBAL scan over the union of every file in scope —
+  // near-duplicate blocks copy-pasted across different modules are the
+  // proposal's core problem, so they must not be hidden by per-module scoping.
+  const allFiles = [
+    ...new Map(modules.flatMap((m) => m.files.map((f) => [f.path, f] as const))).values(),
+  ].sort((a, b) => a.path.localeCompare(b.path));
+
+  const fileToModule = new Map<string, string>();
+  for (const mod of modules) {
+    for (const f of mod.files) fileToModule.set(f.path, mod.name);
+  }
+
+  // Global pairs, then classify: same module → per-module attribution;
+  // different modules → top-level cross-module list.
+  const globalPairs = duplicationPairs(rootDir, allFiles, thresholds);
+  const pairsByModule = new Map<string, DuplicationPair[]>();
+  const crossModuleDuplication: CrossModuleDuplicationPair[] = [];
+  for (const pair of globalPairs) {
+    const leftModule = fileToModule.get(pair.leftPath);
+    const rightModule = fileToModule.get(pair.rightPath);
+    if (leftModule && rightModule && leftModule === rightModule) {
+      const list = pairsByModule.get(leftModule) ?? [];
+      list.push(pair);
+      pairsByModule.set(leftModule, list);
+    } else if (leftModule && rightModule) {
+      crossModuleDuplication.push({
+        leftPath: pair.leftPath,
+        rightPath: pair.rightPath,
+        leftModule,
+        rightModule,
+        similarity: pair.similarity,
+        similarityMin: pair.similarityMin,
+        gramSize: pair.gramSize,
+        sampleShingles: pair.sampleShingles,
+      });
+    }
+  }
+
   const perModule: ModuleAnalysis[] = [];
   for (const mod of modules) {
     const files = [...mod.files].sort((a, b) => a.path.localeCompare(b.path));
@@ -386,7 +456,7 @@ export function runRefactorAnalyzer(opts: AnalyzerOptions): AnalyzerResult {
       fanIn: mFanIn,
       depthRatio,
       fragmentation: fragmentationFindings(rootDir, files, thresholds),
-      duplication: duplicationPairs(rootDir, files, thresholds),
+      duplication: pairsByModule.get(mod.name) ?? [],
       flat: flat !== null,
       flatness: flat,
       lowReuse: lowReuseFinding(mod.name, mFanIn, mod.public_api, thresholds),
@@ -395,7 +465,8 @@ export function runRefactorAnalyzer(opts: AnalyzerOptions): AnalyzerResult {
 
   const fragmentedCount = perModule.filter((m) => m.fragmentation.length > 0).length;
   const fragmentedFiles = perModule.reduce((n, m) => n + m.fragmentation.length, 0);
-  const duplicationCount = perModule.reduce((n, m) => n + m.duplication.length, 0);
+  const duplicationCount =
+    perModule.reduce((n, m) => n + m.duplication.length, 0) + crossModuleDuplication.length;
   const flatCount = perModule.filter((m) => m.flat).length;
   const lowReuseCount = perModule.filter((m) => m.lowReuse !== null).length;
 
@@ -435,11 +506,12 @@ export function runRefactorAnalyzer(opts: AnalyzerOptions): AnalyzerResult {
   for (const m of perModule) {
     reportLines.push(renderModuleSection(m));
   }
+  reportLines.push(renderCrossModuleSection(crossModuleDuplication));
 
   const report = reportLines.join('\n').replace(/\n+$/, '') + '\n';
   const fingerprint = createHash('sha256').update(report).digest('hex');
 
-  return { report, summary, perModule, fingerprint };
+  return { report, summary, perModule, crossModuleDuplication, fingerprint };
 }
 
 /**
