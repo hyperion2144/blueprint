@@ -27,7 +27,7 @@ The system SHALL export `getRefactorSkillTemplate()` and `getRefactorCommandTemp
 
 - **GIVEN** the refactor `instructions` body
 - **WHEN** parsed for forbidden patterns
-- **THEN** the body MUST NOT mention `bp/changes/`, `bp plan`, `bp apply`, `bp review`, or `bp archive` (refactor is a standalone auxiliary step)
+- **THEN** the body MUST NOT mention lifecycle artifact paths such as `bp/changes/<name>/proposal.md`, `bp/changes/<name>/design.md`, `bp/changes/<name>/tasks.md`, or `bp/changes/<name>/review.md`, nor the lifecycle commands `bp plan`, `bp apply`, `bp review`, or `bp archive` (refactor is a standalone auxiliary step; the shared `CONTEXT_JSONL_REMINDER`'s `bp/changes/<name>/context.jsonl` schema pointer is not a lifecycle artifact)
 - **AND** the body MUST instruct the orchestrator to pause for explicit human confirmation before dispatching the refactorer.
 
 ### Requirement: Refactorer-Agent-Prompt
