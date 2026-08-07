@@ -111,7 +111,7 @@
   three flows lives in T-12.
 -->
 
-- [ ] T-7: [type:behavior] Deterministic refactor analyzer engine + report writer <!-- commit: -->
+- [x] T-7: [type:behavior] Deterministic refactor analyzer engine + report writer <!-- commit: e2cd86b2df3a25473ebec30962e81705f4fde5c6 -->
   - **refs**: DS-5, DS-10
   - **spec_ref**: bp/changes/refactor-command/specs/platform-gen/spec.md#Refactor-Analyzer-Contract
   - **files**: `src/core/refactor-analyzer.ts`, `src/core/refactor-analyzer.test.ts`
@@ -128,7 +128,7 @@
     - **AND** running the function twice yields identical `fingerprint` strings.
   - **depends_on**: T-2
 
-- [ ] T-8: [type:behavior] Refactorer agent prompt + AGENT_PROMPTS wiring <!-- commit: -->
+- [x] T-8: [type:behavior] Refactorer agent prompt + AGENT_PROMPTS wiring <!-- commit: e6cc791dac45204f0cbcb0a29f1c6a99f2110c46 -->
   - **refs**: DS-6
   - **spec_ref**: bp/changes/refactor-command/specs/templates/spec.md#Refactorer-Agent-Prompt
   - **files**: `src/templates/agents/index.ts`, `tests/templates/agents-refactorer.test.ts`
@@ -142,7 +142,7 @@
     - **AND** it contains the substring `bp/specs/`.
   - **depends_on**: T-1
 
-- [ ] T-9: [type:behavior] OMP extension: detect `refactorer` agent type + `## Refactor Targets` augmentation <!-- commit: -->
+- [x] T-9: [type:behavior] OMP extension: detect `refactorer` agent type + `## Refactor Targets` augmentation <!-- commit: b9da28cb1e6e755916667602a0182c9470b43a69 -->
   - **refs**: DS-6
   - **spec_ref**: bp/changes/refactor-command/specs/platform-gen/spec.md#Refactor-Step-Generation
   - **files**: `src/integrations/omp/extension-runtime.ts`, `src/integrations/omp/extension-runtime.test.ts`, `tests/integration/omp-extension.test.ts`
@@ -154,7 +154,7 @@
     - **AND** `renderAugmentedBody({ cwd, agentType: 'refactorer', activeChangeName: <name> })` includes `## Refactor Targets` followed by the report's summary text.
   - **depends_on**: T-7, T-8
 
-- [ ] T-10: [type:behavior] `bp refactor <target>` CLI + `bp refactor analyze <target>` subcommand <!-- commit: -->
+- [x] T-10: [type:behavior] `bp refactor <target>` CLI + `bp refactor analyze <target>` subcommand <!-- commit: 92b9cb8d2b3cff79fee255535bc8942ef8b5174e -->
   - **refs**: DS-4, DS-10
   - **spec_ref**: bp/changes/refactor-command/specs/platform-gen/spec.md#Refactor-Step-Generation
   - **files**: `src/commands/bp-refactor.ts`, `src/commands/bp-refactor.test.ts`, `src/cli.ts`
@@ -166,13 +166,13 @@
     - **AND** stdout contains `## Input` and `## Steps` and `## Output` and `## Guardrails`
     - **AND** `node bin/cli.js refactor analyze src/core` writes `bp/.refactor-report.md` and prints a line beginning with `Refactor report for src/core:`.
 
-- [ ] T-11: [type:scaffolding] Wire `bp refactor` into `src/cli.ts` <!-- commit: -->
+- [x] T-11: [type:scaffolding] Wire `bp refactor` into `src/cli.ts` <!-- commit: 92b9cb8d2b3cff79fee255535bc8942ef8b5174e -->
   - **refs**: DS-4
   - **files**: `src/cli.ts`
   - **acceptance**: `src/cli.ts` contains `import { register as registerRefactor } from './commands/bp-refactor.js';` and `registerRefactor(program);`; running `node bin/cli.js --help` lists `refactor` in the Commands list.
   - **depends_on**: T-10
 
-- [ ] T-12: [type:behavior] Integration: full refactor flow on fixture tree <!-- commit: -->
+- [x] T-12: [type:behavior] Integration: full refactor flow on fixture tree <!-- commit: ec2aac6b964fc798597472071f0175ec232fed23 -->
   - **refs**: DS-4, DS-5, DS-6, DS-7
   - **spec_ref**: bp/changes/refactor-command/specs/general/spec.md#Refactorer-Behavior-Preservation
   - **files**: `tests/integration/refactor-flow.test.ts`

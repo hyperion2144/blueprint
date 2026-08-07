@@ -87,7 +87,7 @@ describe('handleSessionStart refactorer path (T-9)', () => {
     const ctx: ExtensionContext = { cwd: testDir, agentTemplate: 'bp-refactorer' };
     await handleSessionStart({}, ctx, api);
     expect(sent).toHaveLength(1);
-    const text = sent[0].content[0].text;
+    const text = (sent[0].content as Array<{ type: string; text: string }>)[0].text;
     expect(text).toContain('<bp-context>');
     expect(text).toContain('## Refactor Targets');
     const targetsIdx = text.indexOf('## Refactor Targets');
