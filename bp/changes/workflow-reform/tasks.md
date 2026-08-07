@@ -274,7 +274,7 @@ Runs last over the final structure — every template and agent prompt simplifie
     - **AND** `auto-injected by the OMP Extension` and the `### Context injection (OMP Extension)` block remain before `## Input`
   - **depends_on**: T-1, T-15, T-17, T-18, T-19
 
-- [ ] T-21: [type:refactor] Agent prompt simplification (all 6 prompts + regenerated agent files) <!-- commit: -->
+- [x] T-21: [type:refactor] Agent prompt simplification (all 6 prompts + regenerated agent files) <!-- commit: 6dd5e6c -->
   - **refs**: DS-18
   - **spec_ref**: specs/templates/spec.md#Prompt-Simplification
   - **files**: src/templates/agents/index.ts, .claude/agents/*.md (regenerated), .omp/agents/*.md (regenerated), .agent/agents/*.md (regenerated), snapshots
