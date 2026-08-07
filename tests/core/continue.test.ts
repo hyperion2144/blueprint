@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { checkArtifacts, getChangeProgress, determineNextStepForChange } from '../../src/core/continue.js';
 import { createBlueprintStructure, createChangeDir } from '../../src/core/file-tree.js';
 import { DEFAULT_SCHEMA } from '../../src/core/schema.js';
+import { WORKFLOW_REGISTRY } from '../../src/templates/workflows/registry.js';
 
 const tmpDir = join(process.cwd(), 'tests/tmp-continue');
 
@@ -142,14 +143,14 @@ describe('determineNextStepForChange', () => {
     expect(result.nextStep!.command).toContain('apply');
   });
 
-  it('all tasks done without review suggests review', () => {
+  it('all tasks done without review suggests check', () => {
     writeArtifact('test-change', 'proposal.md');
     writeArtifact('test-change', 'design.md');
     ensureSpecsDir('test-change');
     writeArtifact('test-change', 'tasks.md', '- [x] T-1\n');
     const result = determineNextStepForChange(tmpDir, 'test-change');
     expect(result.nextStep).not.toBeNull();
-    expect(result.nextStep!.command).toContain('review');
+    expect(result.nextStep!.command).toContain('check');
   });
 
   it('review passed means change is complete (no next step)', () => {
@@ -219,5 +220,28 @@ describe('determineNextStepForChange', () => {
   it('non-existent change returns empty result', () => {
     const result = determineNextStepForChange(tmpDir, 'nonexistent');
     expect(result.progress).toBeNull();
+  });
+});
+
+describe('registry and schema rename (review -> check)', () => {
+  it('WORKFLOW_REGISTRY exposes check and not review', () => {
+    expect(WORKFLOW_REGISTRY['check']).toBeDefined();
+    expect(WORKFLOW_REGISTRY['check'].skill().name).toBe('bp-check');
+    expect((WORKFLOW_REGISTRY as Record<string, unknown>)['review']).toBeUndefined();
+  });
+
+  it('default schema routes check before archive and archive requires check', () => {
+    const steps = DEFAULT_SCHEMA.steps;
+    const checkStep = steps.find((s) => s.id === 'check');
+    expect(checkStep).toBeDefined();
+    expect(checkStep!.command).toBe('check');
+    expect(checkStep!.completion).toBe('review_exists');
+    const archiveStep = steps.find((s) => s.id === 'archive');
+    expect(archiveStep!.requires).toEqual(['check']);
+    expect(steps.find((s) => s.id === 'review')).toBeUndefined();
+    // check must come before archive in the step order
+    expect(steps.indexOf(steps.find((s) => s.id === 'check')!)).toBeLessThan(
+      steps.indexOf(steps.find((s) => s.id === 'archive')!),
+    );
   });
 });
