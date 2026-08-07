@@ -195,7 +195,7 @@ The fixer role, reviewer full-review reform, platform agents/OMP discrimination,
     - **AND** `node src/cli.js finalize <name>` exits non-zero (unknown command)
   - **depends_on**: T-1
 
-- [ ] T-15: [type:behavior] Archive workflow template — orchestrated archive-check step + `bp finish` <!-- commit: -->
+- [x] T-15: [type:behavior] Archive workflow template — orchestrated archive-check step + `bp finish` <!-- commit: e4f4f55 -->
   - **refs**: DS-13
   - **spec_ref**: specs/archive/spec.md#Archive-Check-Step
   - **files**: src/templates/workflows/archive.ts, tests/integration/archive-check-finish.test.ts
