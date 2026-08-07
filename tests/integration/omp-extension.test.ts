@@ -125,6 +125,11 @@ describe('OMP Extension sub-agent discrimination', () => {
     expect(detectAgentType({ agentTemplate: 'bp-reviewer-v2' })).toBe('reviewer');
   });
 
+  it('returns refactorer for agentTemplate containing refactorer [T-9]', () => {
+    expect(detectAgentType({ agentTemplate: 'bp-refactorer' })).toBe('refactorer');
+    expect(detectAgentType({ agentTemplate: 'bp:refactorer' })).toBe('refactorer');
+  });
+
   it('returns default for non-matching agentTemplate', () => {
     expect(detectAgentType({ agentTemplate: 'something-else' })).toBe('default');
     expect(detectAgentType({})).toBe('default');
@@ -189,6 +194,63 @@ describe('handleSessionStart reviewer path [T-29]', () => {
     expect(text).toContain('- core invariant A');
     expect(text).toContain('- guard rail B');
     expect(text).toContain('T-1 acceptance: paths compile');
+  });
+});
+
+describe('handleSessionStart refactorer path [T-9]', () => {
+  it('inlines the report ## Summary block under ## Refactor Targets when the report exists', async () => {
+    writeFile(
+      'bp/.refactor-report.md',
+      [
+        '# Refactor Report',
+        '',
+        '**Target**: .',
+        '',
+        '## Summary',
+        '',
+        '- Fragmented modules: 1 (2 files)',
+        '- Duplication pairs: 1',
+        '- Flat modules: 1',
+        '- Low-reuse modules: 1',
+        '',
+        '## Module: src/frag',
+        '',
+        '### Fragmentation',
+        '',
+        '- src/frag/a.ts — 1 exports, 5 non-blank lines',
+        '',
+      ].join('\n') + '\n',
+    );
+    const { api, sent } = makeApi();
+    const ctx: ExtensionContext = { cwd: testDir, agentTemplate: 'bp-refactorer' };
+    await handleSessionStart({}, ctx, api);
+    const text = (sent[0].content as Array<{ type: string; text: string }>)[0].text;
+    expect(text).toContain('## Refactor Targets');
+    const targetsIdx = text.indexOf('## Refactor Targets');
+    const summaryIdx = text.indexOf('## Summary');
+    expect(targetsIdx).toBeGreaterThan(-1);
+    expect(summaryIdx).toBeGreaterThan(targetsIdx);
+    expect(text).toContain('- Duplication pairs: 1');
+    // Only the summary block is inlined — not the per-module sections.
+    expect(text).not.toContain('## Module:');
+  });
+
+  it('renders no Refactor Targets when the report file is missing', async () => {
+    const { api, sent } = makeApi();
+    const missingDir = join(tmpdir(), `bp-omp-refactorer-missing-${Date.now()}-${Math.random()}`);
+    mkdirSync(join(missingDir, 'bp'), { recursive: true });
+    writeFileSync(join(missingDir, 'bp', 'config.yaml'), 'profile: standard\nplatform: [omp]\n', 'utf-8');
+    try {
+      await handleSessionStart(
+        {},
+        { cwd: missingDir, agentTemplate: 'bp-refactorer' } as ExtensionContext,
+        api,
+      );
+      const text = (sent[0].content as Array<{ type: string; text: string }>)[0].text;
+      expect(text).not.toContain('## Refactor Targets');
+    } finally {
+      rmSync(missingDir, { recursive: true, force: true });
+    }
   });
 });
 
