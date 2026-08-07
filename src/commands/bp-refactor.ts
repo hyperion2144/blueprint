@@ -20,6 +20,7 @@ export function register(program: Command): void {
     .command('refactor [target]')
     .description('Output refactor workflow instructions — or run the deterministic analyzer via "refactor analyze <target>"')
     .option('--change <name>', 'change name passed through to bp dispatch refactorer')
+    .option('--format <full|short>', 'output format: full prints the whole workflow, short prints only the first step', 'full')
     .action(refactorHandler);
 
   refactor
@@ -28,7 +29,7 @@ export function register(program: Command): void {
     .action(analyzeHandler);
 }
 
-function refactorHandler(target: string | undefined, _options: { change?: string }): void {
+function refactorHandler(target: string | undefined, options: { change?: string; format?: string }): void {
   if (!target) {
     console.error('Usage: bp refactor <target> [--change <name>]');
     process.exit(1);
@@ -43,7 +44,15 @@ function refactorHandler(target: string | undefined, _options: { change?: string
     console.error('Refactor workflow instructions not found.');
     process.exit(1);
   }
-  console.log(instructions);
+  console.log(options.format === 'short' ? firstStep(instructions) : instructions);
+}
+
+/** `--format short` → print only the `### Step 1:` section (up to `### Step 2:`). */
+function firstStep(instructions: string): string {
+  const step1 = instructions.indexOf('### Step 1:');
+  const step2 = instructions.indexOf('### Step 2:');
+  if (step1 === -1 || step2 === -1 || step2 <= step1) return instructions;
+  return instructions.slice(step1, step2).replace(/\s+$/, '');
 }
 
 function analyzeHandler(target: string): void {
