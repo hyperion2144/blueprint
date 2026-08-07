@@ -20,7 +20,7 @@ export interface CodexSkillDef {
   description: string;
 }
 
-/** Canonical ten Codex Skill steps, mirrored from WORKFLOW_REGISTRY keys. */
+/** Canonical eleven Codex Skill steps, mirrored from WORKFLOW_REGISTRY keys. */
 const STEPS: readonly WorkflowStep[] = [
   'init',
   'roadmap',
@@ -32,6 +32,7 @@ const STEPS: readonly WorkflowStep[] = [
   'continue',
   'ff',
   'loop',
+  'refactor',
 ];
 
 /** Description per step (Codex-tuned wording; differs from OMP/Claude variants). */
@@ -52,7 +53,7 @@ function codexSkillDescription(step: WorkflowStep): string {
   return map[step];
 }
 
-/** Canonical ten Codex Skill definitions (immutable order). */
+/** Canonical eleven Codex Skill definitions (immutable order). */
 export const CODEX_SKILL_DEFS: CodexSkillDef[] = STEPS.map((step) => ({
   step,
   name: `bp:${step}`,

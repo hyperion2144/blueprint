@@ -27,6 +27,7 @@ const STEPS: ClaudeCommandDef[] = [
   { step: 'continue', name: 'bp:continue', description: 'Check progress and suggest next step', argumentHint: '[change-name]' },
   { step: 'ff', name: 'bp:ff', description: 'Fast-forward: auto-advance through all steps by calling bp continue after each' },
   { step: 'loop', name: 'bp:loop', description: 'Autonomous loop: same as ff but skip all user interaction until roadmap complete' },
+  { step: 'refactor', name: 'bp:refactor', description: 'Run deterministic refactor analyzer and dispatch refactorer sub-agents per module', argumentHint: '<target>' },
 ];
 
 export function generateClaudeCommand(def: ClaudeCommandDef): string {

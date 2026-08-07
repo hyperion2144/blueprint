@@ -1,6 +1,6 @@
 /**
  * OMP command generator
- * Generates .omp/commands/bp-<step>.md files (16 slash commands).
+ * Generates .omp/commands/bp-<step>.md files (11 slash commands).
  *
  * Templates are imported from TypeScript modules in src/templates/workflows/
  * instead of reading markdown files — following OpenSpec's pattern.
@@ -18,7 +18,7 @@ export interface CommandDef {
   argumentHint?: string;
 }
 
-/** 22 step definitions */
+/** 11 step definitions */
 export const STEP_DEFS: CommandDef[] = [
   { step: 'init', name: 'bp:init', description: 'Initialize blueprint project structure and generate platform files', usesAgent: false, agents: [] },
   { step: 'roadmap', name: 'bp:roadmap', description: 'View or modify roadmap.md', usesAgent: false, agents: [] },
@@ -30,6 +30,7 @@ export const STEP_DEFS: CommandDef[] = [
   { step: 'continue', name: 'bp:continue', description: 'Check progress and suggest next step', usesAgent: false, agents: [], argumentHint: '[change-name]' },
   { step: 'ff', name: 'bp:ff', description: 'Fast-forward: auto-advance through all steps by running bp continue after each', usesAgent: false, agents: [] },
   { step: 'loop', name: 'bp:loop', description: 'Autonomous loop: same as ff but skip all user interaction until roadmap complete', usesAgent: false, agents: [] },
+  { step: 'refactor', name: 'bp:refactor', description: 'Run deterministic refactor analyzer and dispatch refactorer sub-agents per module', usesAgent: false, agents: [], argumentHint: '<target>' },
 ];
 
 function fallbackBody(def: CommandDef): string {
