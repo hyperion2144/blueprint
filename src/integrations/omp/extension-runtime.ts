@@ -74,7 +74,7 @@ export interface HandlerResult {
 }
 
 /** Detected OMP sub-agent type for the current session. */
-export type AgentType = 'planner' | 'executor' | 'reviewer' | 'default';
+export type AgentType = 'planner' | 'executor' | 'reviewer' | 'refactorer' | 'default';
 
 // ---------------------------------------------------------------------------
 // Env-bypass and config-skip predicates. Each handler invokes these at entry.
@@ -97,6 +97,7 @@ export function detectAgentType(ctx: ExtensionContext): AgentType {
   if (tpl.includes('planner')) return 'planner';
   if (tpl.includes('executor')) return 'executor';
   if (tpl.includes('reviewer')) return 'reviewer';
+  if (tpl.includes('refactorer')) return 'refactorer';
   return 'default';
 }
 
@@ -206,9 +207,31 @@ function renderAugmentedBody(
         // traversal blocked, or tasks.md missing/unreadable — omit silently
       }
     }
+  } else if (agentType === 'refactorer') {
+    // Inline the report's ## Summary block so the refactorer knows the
+    // module targets without opening the file. Missing report -> no section.
+    const reportPath = join(bpDir, '.refactor-report.md');
+    if (existsSync(reportPath)) {
+      const report = readFileSync(reportPath, 'utf-8');
+      const summaryBlock = extractSummaryBlock(report);
+      if (summaryBlock) {
+        extra.push('## Refactor Targets');
+        extra.push(summaryBlock);
+      }
+    }
   }
 
   return block + '\n\n' + extra.join('\n');
+}
+
+/** Extract the `## Summary` section (up to the next `## ` heading) from a refactor report. */
+function extractSummaryBlock(report: string): string | null {
+  const summaryIdx = report.indexOf('## Summary');
+  if (summaryIdx === -1) return null;
+  const afterHeading = summaryIdx + '## Summary'.length;
+  const nextSection = report.indexOf('\n## ', afterHeading);
+  const end = nextSection === -1 ? report.length : nextSection;
+  return report.slice(summaryIdx, end).trim();
 }
 
 /**

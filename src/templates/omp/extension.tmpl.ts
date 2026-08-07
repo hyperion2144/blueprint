@@ -60,6 +60,7 @@ function detectAgentType(ctx) {
   if (tpl.indexOf("planner") !== -1) return "planner";
   if (tpl.indexOf("executor") !== -1) return "executor";
   if (tpl.indexOf("reviewer") !== -1) return "reviewer";
+  if (tpl.indexOf("refactorer") !== -1) return "refactorer";
   return "default";
 }
 
@@ -103,6 +104,15 @@ function readTasksContent(bpDir, changeName) {
   } catch {
     return "";
   }
+}
+
+function extractSummaryBlock(report) {
+  const summaryIdx = report.indexOf("## Summary");
+  if (summaryIdx === -1) return null;
+  const afterHeading = summaryIdx + "## Summary".length;
+  const nextSection = report.indexOf("\n## ", afterHeading);
+  const end = nextSection === -1 ? report.length : nextSection;
+  return report.slice(summaryIdx, end).trim();
 }
 
 function generateCompactBlock(cwd) {
@@ -159,6 +169,14 @@ export default function bpExtension(api) {
       var tasks = readTasksContent(bpDir, activeChangeName).trim();
       if (tasks) {
         body = body + "\\n\\n## tasks.md acceptance\\n" + tasks;
+      }
+    } else if (agentType === "refactorer") {
+      var reportPath = join(bpDir, ".refactor-report.md");
+      if (existsSync(reportPath)) {
+        var summaryBlock = extractSummaryBlock(readFileSync(reportPath, "utf-8"));
+        if (summaryBlock) {
+          body = body + "\\n\\n## Refactor Targets\\n" + summaryBlock;
+        }
       }
     }
 
