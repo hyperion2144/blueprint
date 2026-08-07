@@ -15,77 +15,32 @@ const instructions = ORCHESTRATOR_RULE + `${CONTEXT_JSONL_REMINDER}## Input
 
 ### Step 0: Risk assessment and level assignment
 
-Assess the change's risk level based on scope and failure cost:
+Assess risk and assign a level:
+- **Trivial**: single file, docs/config/scaffolding only, no behavior change → inline execution, no sub-agents.
+- **Light**: 2-5 files, low-risk behavior, good test coverage → single agent, TDD optional.
+- **Standard**: cross-module, new behavior, medium risk (DEFAULT) → planner + wave executor + triple review.
+- **Critical**: auth/payment/data-consistency/core-path → full flow + security audit + human approval gate.
 
-- **Trivial**: single file, docs/config/scaffolding only, no behavior change -> inline execution, no sub-agents
-- **Light**: 2-5 files, low-risk behavior change, good test coverage -> single agent, TDD optional
-- **Standard**: cross-module, new behavior, medium risk (DEFAULT) -> planner + wave executor + triple review
-- **Critical**: involves auth/payment/data-consistency/core-path -> full flow + security audit + human approval gate
-
-Auto-assess based on the user's described scope. If --level <X> provided, use that instead.
-Write the level to proposal.md's ## Level section.
-
-**If trivial or light**: may skip Step 1 (grill) per existing lightweight logic. Go directly to Step 2 with a minimal proposal derived from the user's one-line description. Fill template directly, no interview.
-**If standard or critical**: continue to Step 1 (grill the user).
-**If critical**: flag for security audit in design.md.
+Auto-assess from the user's described scope (or use \`--level <X>\` if provided) and write it to proposal.md's \`## Level\` section. Trivial/light may skip Step 1; standard/critical proceed to grill; critical is flagged for a security audit in design.md.
 
 ### Step 1: Grill the user (grilling method — one question at a time, recommended answer, resolve every branch)
 
-> **Skip for trivial/light changes** (Step 0 classified as trivial or light): go directly to Step 2 and fill the template from the user's one-line description — no interview.
+> **Skip for trivial/light changes** (Step 0): go directly to Step 2 and fill the template from the user's one-line description — no interview.
 
-This step follows the **grilling method**: ask ONE question at a time, always provide a recommended answer, and resolve every decision-tree branch before proceeding. This is NOT a checklist — it is a grilling interview that walks every branch of the decision tree, resolving dependencies between decisions one by one.
+Follow the **grilling method**: ask ONE question at a time, always provide a recommended answer, and resolve every decision-tree branch before proceeding. Map the decision tree in your mind (choices, dependencies, edge cases, scope boundaries, unknowns), then walk each branch: pick the first unresolved branch, ask ONE focused question with your recommended answer, and check whether the answer opens new branches. If a question is answerable by exploring the codebase, explore it yourself — do NOT ask the user. Repeat until every branch is resolved.
 
-Process:
-1. Start with what the user described. Map the decision tree in your mind:
-   every choice, dependency, edge case, scope boundary, and unknown.
-2. Pick the first unresolved branch. Ask ONE focused question about it.
-   **Provide your recommended answer** so the user can just confirm or correct.
-3. If the question can be answered by exploring the codebase, explore it yourself - do NOT ask the user.
-4. After the user answers, check if their answer opened new branches. If so, ask about those next.
-5. Repeat until every branch is resolved and you have shared understanding.
-
-What to grill on (walk every branch):
-- **Problem**: What problem does this change solve? Why now?
-- **Scope**: What is in scope? What is explicitly excluded? Where does this change stop?
-- **Deliverables**: What observable behaviors? What inputs/outputs? What error conditions?
-- **Approach**: What technical approach? What alternatives were considered? Why this one?
-- **Research**: What needs investigation during discussion (libraries, existing code, external projects)? Track these for Step 1b.
-- **Edge cases**: What happens when input is invalid? Empty? Concurrent? Large scale?
-- **Dependencies**: Does this depend on existing code? Other changes? External services?
-- **Constraints**: Performance targets? Library choices? Backwards compatibility?
-- **Roadmap context**: If --phase provided, how does this align with the phase goal?
+Grill on: problem, scope (in/out), deliverables (observable behaviors, inputs/outputs, error conditions), approach + alternatives, research needed, edge cases, dependencies, constraints, and roadmap context (if \`--phase\` given).
 
 **Hard rules:**
 - Ask ONE question at a time. Wait for the answer. Do not batch.
 - Always provide a recommended answer when one exists.
-- Resolve every decision-tree branch before proceeding — do NOT proceed to Step 2 until you can describe every deliverable without guessing.
-- Do NOT use [ASSUMPTION] tags. If you are about to assume, STOP and ask instead.
-- If the user says "use your best judgment" on a specific point, you may proceed without asking.
+- Resolve every branch before proceeding — do NOT proceed until you can describe every deliverable without guessing.
+- Do NOT use [ASSUMPTION] tags — if you are about to assume, STOP and ask.
+- If the user says "use your best judgment", you may proceed without asking.
 
 ### Step 1b: Technical research
 
-For non-trivial changes (standard or critical), research the technical landscape
-before writing the proposal. This ensures external references and codebase
-information are captured in the proposal, not lost after the discussion.
-
-> **Skip this step for trivial/light changes** — go directly to Step 2.
-
-1. **Codebase patterns** — Read relevant source files referenced in discussion.
-   What conventions, APIs, or constraints exist?
-2. **External projects/references** — If the discussion mentioned specific
-   libraries, projects, or documentation URLs, read them. Do NOT rely on
-   training data for technical details.
-3. **Call-site analysis** — For modifications, use LSP references or grep
-   to find current callers of code to be changed.
-4. **Web research** — Use web_search for anything unresolved.
-
-**Document as you go.** Keep notes per deliverable — each finding will go into
-its PR-N's Research table. If a finding affects multiple PR-Ns, note it for
-## Research Landscape instead.
-
-**If you cannot find the information needed**, return to the user with specific
-questions: "To confirm the PR-1 approach, I need to check X — found A and B but
-not C. Can you point me to C?"
+For standard/critical changes, research before writing so findings are captured in the proposal. Skip for trivial/light. Read relevant source files, external references mentioned in discussion, callers of code to be changed, and web_search anything unresolved. Document findings as you go (per-PR research goes in the PR's Research field; cross-cutting findings in \`## Research Landscape\`). If information is missing, return to the user with specific questions.
 
 ### Step 2: Create change directory
 
@@ -97,58 +52,26 @@ If \`--phase\` is provided, note the milestone/phase for the proposal's Roadmap 
 
 ### Step 3: Write the detailed proposal from the grilling output
 
-Fetch the proposal template AFTER grilling completes and fill it **from the grilling output** — capture every grilling detail in the proposal. If the proposal template has no section for a grilled detail, reference the grilling content to extend it.
+Fetch the proposal template AFTER grilling completes and fill it **from the grilling output** — capture every grilled detail; if the template has no section for a detail, extend it.
 
-1. Run \`bp template proposal --stdout\` to get the template
-2. Fill EVERY section from the grilling output, following these rules:
-
-   **Intent** — Write as much as needed. This is the permanent record of the
-   motivation. Include the problem context, why now, and what triggered the change.
-
-   **Scope (In/Out)** — Be precise. "Support GitHub OAuth login" not "improve auth".
-   List concrete capabilities in In Scope, explicit exclusions in Out of Scope.
-
-   **Research Landscape** — Use when a single investigation (e.g. reading a library's
-   docs) affected multiple PR-Ns. Per-PR-specific findings go in that PR-N's table.
-   Skip this section if no cross-cutting research was done.
-
-   **Approach** — High-level strategy. Per-deliverable breakdown goes in each PR-N's
-   Rationale section. Write as much as needed.
-
-   **Deliverables (PR-N)** — This is the core. Fill ALL sub-fields for each PR-N:
-
-   - **Behavior**: The SHALL statement — observable capability.
-   - **Rationale**: WHY this deliverable exists. Capture what was discussed:
-     user pain points, tradeoff conclusions, decision context. This is the
-     permanent record — someone reading this 3 months later should understand
-     why this choice was made.
-   - **Research**: Per-deliverable research findings from Step 1b. What was
-     checked, what was found, how it affected the design. Skip if no research
-     was needed for this deliverable.
-   - **Alternatives Considered**: What else was discussed and why rejected.
-     Skip if no alternatives were discussed for this deliverable.
-   - **Risks & Mitigations**: Known risks identified during discussion.
-     Skip if no risks were identified.
-   - **Verify**: How to verify this deliverable works.
-   - **Files**: Expected file paths (new or modified).
-
-   **Dependencies** / **Roadmap Reference** — Fill if applicable.
-
-3. Write to \`bp/changes/$1/proposal.md\`
+1. Run \`bp template proposal --stdout\`.
+2. Fill EVERY section from the grilling output:
+   - **Intent**: the problem, why now, what triggered the change — the permanent record.
+   - **Scope (In/Out)**: precise — "Support GitHub OAuth login", not "improve auth".
+   - **Research Landscape**: only when one investigation affected multiple PR-Ns.
+   - **Approach**: high-level strategy; per-deliverable breakdown goes in each PR-N's Rationale.
+   - **Deliverables (PR-N)**: the core — fill ALL sub-fields: Behavior (SHALL statement), Rationale (WHY — pain points, tradeoffs, decision context), Research (from Step 1b), Alternatives Considered, Risks & Mitigations, Verify, Files.
+   - **Dependencies / Roadmap Reference**: fill if applicable.
+3. Write to \`bp/changes/$1/proposal.md\`.
 
 ### Step 4: Verify proposal quality
 
-Before finishing, check:
-- [ ] Intent clearly states the problem with full context
-- [ ] Scope has both In Scope and Out of Scope sections
-- [ ] Each PR-N has ALL sub-fields filled (Behavior, Rationale, Verify)
-- [ ] Each PR-N has Research filled IF research was done during discussion/Step 1b
-- [ ] Each PR-N has Alternatives Considered filled IF alternatives were discussed
-- [ ] Each PR-N has Risks & Mitigations filled IF risks were identified
-- [ ] Template placeholders replaced — no unreplaced template variables remain
-- [ ] PR count <= 5 (if more, suggest splitting)
-- [ ] The proposal captures the user's actual requirements, not AI guesswork
-- [ ] (Optional) Research Landscape filled IF cross-cutting research was done
+- Intent states the problem with full context.
+- Scope has both In Scope and Out of Scope.
+- Each PR-N has ALL sub-fields (Behavior, Rationale, Verify) plus Research/Alternatives/Risks when discussed.
+- No unreplaced template placeholders.
+- PR count <= 5 (suggest splitting if more).
+- The proposal captures the user's actual requirements, not AI guesswork.
 
 ### Step 5: Commit and suggest next step
 
@@ -167,16 +90,18 @@ Created bp/changes/$1/proposal.md
   (or: bp continue $1)
 \`\`\`
 
+## Output
+
+- \`bp/changes/$1/proposal.md\` — the detailed proposal written from the grilling output.
+
 ## Guardrails
 
-- **ALWAYS discuss with the user before writing.** Do not guess the requirements.
-- **ALWAYS research what was discussed.** Step 1b is mandatory for standard/critical changes.
-- **DO write the proposal in detail.** The proposal is the permanent record of the
-  discussion — lost details cannot be recovered later. Every PR-N's Rationale matters.
-- Do NOT create design.md, tasks.md, or specs/ - that's the planner's job
-- Do NOT run bp plan automatically - let the user review the proposal first
-- If the user wants to skip proposal review and go straight to planning, they can run bp plan $1 directly
-- Architecture decisions and technical design come from the planner, not from propose
+- ALWAYS discuss with the user before writing — do not guess the requirements.
+- ALWAYS research what was discussed — Step 1b is mandatory for standard/critical changes.
+- DO write the proposal in detail — it is the permanent record; lost details cannot be recovered.
+- Do NOT create design.md, tasks.md, or specs/ — that's the planner's job.
+- Do NOT run bp plan automatically — let the user review the proposal first (they can run bp plan $1 directly to skip).
+- Architecture decisions and technical design come from the planner, not from propose.
 `;
 
 export function getProposeSkillTemplate(): SkillTemplate {

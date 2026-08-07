@@ -4,43 +4,32 @@ const instructions = `## Input
 
 - **\`$ARGUMENTS\`** (optional): change name. If empty, starts from current project state.
 
-## Note
+## Steps
 
-> \`bp ff\` / \`bp loop\` auto-advance through steps by calling \`bp continue\` after each. Follow the instructions each \`bp continue\` outputs.
-
-## What to do
-
-Fast-forward: execute the current step, then auto-call \`bp continue\` to get the next step, then execute that. Repeat until complete.
-
-### Loop
+> \`bp ff\` auto-advances through steps by calling \`bp continue\` after each. Follow the instructions each \`bp continue\` outputs.
 
 For each iteration:
 
-1. **Get current step**: \`\`\`bash
-   bp continue $ARGUMENTS
-   \`\`\`
-   The CLI outputs the next step's full workflow instructions.
+1. Get the current step:
 
-2. **Execute those instructions** — dispatch sub-agents, write files, run code, etc. as the instructions describe.
+\`\`\`bash
+bp continue $ARGUMENTS
+\`\`\`
 
-3. **After the step completes**, return to step 1.
+2. Execute the instructions it outputs — dispatch sub-agents, write files, run code, etc.
+3. After the step completes, return to step 1.
+4. Stop when \`bp continue\` shows no more actionable steps (no active changes, roadmap has no \`[ ]\` items), or an unrecoverable error occurs — report it and stop.
 
-4. **Stop when**:
-   - \`bp continue\` shows no more actionable steps (no active changes, roadmap has no \`[ ]\` items)
-   - OR an unrecoverable error occurs (report it and stop)
+## Output
 
-### Constraints
-
-- Respect all gates: \`bp review\` must PASS before \`bp archive\`; design issues (D-prefixed) route to \`bp plan --fix\`; code issues route to \`bp apply --fix\`.
-- You MAY ask the user clarifying questions if truly blocked (e.g. ambiguous requirement). But default to proceeding with the most reasonable interpretation.
-- Each \`bp continue\` invocation is independent — it re-checks artifact state.
-- Report progress to the user after each iteration.
+- Progress report to the user after each iteration.
 
 ## Guardrails
 
-- Do NOT skip the review gate.
-- Do NOT auto-archive if review verdict is FAIL or NEEDS_REVISION.
-- If \`bp continue\` suggests a fix loop (plan --fix or apply --fix), execute that fix loop before continuing.
+- Respect all gates: review.md must be PASS before \`bp archive\`; any non-PASS verdict routes to \`bp check\` (fixer loopback + full re-review).
+- Do NOT skip the check step.
+- Do NOT auto-archive if the review verdict is FAIL or NEEDS_REVISION.
+- You MAY ask the user clarifying questions if truly blocked, but default to proceeding with the most reasonable interpretation.
 - If a step is unclear or the output is unexpected, stop and ask the user.
 `;
 
