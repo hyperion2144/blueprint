@@ -132,7 +132,7 @@ The fixer role, reviewer full-review reform, platform agents/OMP discrimination,
     - **AND** it still contains `check every row's \`reason\` is still satisfied`
   - **depends_on**: T-8
 
-- [ ] T-10: [type:behavior] Platform agents generators + OMP fixer discrimination (`bp-fixer.md` on 4 platforms + detectAgentType) <!-- commit: -->
+- [x] T-10: [type:behavior] Platform agents generators + OMP fixer discrimination (`bp-fixer.md` on 4 platforms + detectAgentType) <!-- commit: 046ed76 -->
   - **refs**: DS-9
   - **spec_ref**: specs/platform-gen/spec.md#Fixer-Platform-Generation
   - **files**: src/integrations/omp/agents.ts, src/integrations/claude-code/agents.ts, src/integrations/agent/agents.ts, src/integrations/opencode/agents.ts, src/integrations/omp/extension-runtime.ts, src/templates/omp/extension.tmpl.ts, snapshots
