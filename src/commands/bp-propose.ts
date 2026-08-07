@@ -1,7 +1,7 @@
 /**
  * bp propose <name> -- output workflow instructions for orchestrator
  *
- * Follows the same pattern as bp-plan, bp-apply, bp-review:
+ * Follows the same pattern as bp-plan, bp-apply, bp-check:
  * validate state, then output workflow instructions for the agent.
  * Does NOT create directories or write files — the orchestrator agent does that.
  */
