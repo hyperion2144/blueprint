@@ -36,13 +36,13 @@ afterEach(() => {
   rmSync(testDir, { recursive: true, force: true });
 });
 
-describe('bp finalize', () => {
+describe('bp finish', () => {
   it('archive non-existent change shows error', () => {
-    expect(() => cli('finalize', 'nonexistent')).toThrow();
+    expect(() => cli('finish', 'nonexistent')).toThrow();
   });
 
   it('archive from invalid path rejected', () => {
-    expect(() => cli('finalize', '/tmp/evil')).toThrow();
+    expect(() => cli('finish', '/tmp/evil')).toThrow();
   });
 
   it('archives a valid change', () => {
@@ -56,7 +56,7 @@ describe('bp finalize', () => {
 
     execSync('git add -f -A && git commit -m "add test change"', { cwd: testDir });
 
-    const output = cli('finalize', 'test-change');
+    const output = cli('finish', 'test-change');
     expect(output).toContain('Archived');
 
     // Verify original change directory is gone
@@ -66,5 +66,11 @@ describe('bp finalize', () => {
     expect(existsSync(join(testDir, 'bp/changes/archive'))).toBe(true);
     const archiveEntries = execSync(`ls -1 ${join(testDir, 'bp/changes/archive')}`, { encoding: 'utf-8' }).trim().split('\n');
     expect(archiveEntries.some((e) => e.includes('test-change'))).toBe(true);
+  });
+
+  it('bp finalize is not a registered command', () => {
+    // A PASS-reviewed change exists, so a registered finalize would succeed.
+    write('bp/changes/test-change/review.md', '## Overall Verdict: PASS\n');
+    expect(() => cli('finalize', 'test-change')).toThrow(/unknown command/i);
   });
 });
