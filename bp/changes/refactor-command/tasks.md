@@ -193,25 +193,25 @@
   text artifacts.
 -->
 
-- [ ] T-13: [type:docs] Write archive-ready platform-gen delta spec <!-- commit: -->
+- [x] T-13: [type:docs] Write archive-ready platform-gen delta spec <!-- commit: b4f500de57b173f50ffc1ab27a318c00fd458e39 -->
   - **refs**: DS-7, DS-9
   - **files**: `bp/changes/refactor-command/specs/platform-gen/spec.md`
   - **acceptance**: The file exists; contains `## ADDED Requirements` with `Refactor-Step-Generation` and `Refactor-Analyzer-Contract`; each requirement has at least one `#### Scenario:` block using the bolded `**GIVEN**` / `**WHEN**` / `**THEN**` format; the file passes the artifact validator (`npx vitest run tests/core/artifact-validator.test.ts`).
   - **depends_on**: none
 
-- [ ] T-14: [type:docs] Write archive-ready templates delta spec <!-- commit: -->
+- [x] T-14: [type:docs] Write archive-ready templates delta spec <!-- commit: b4f500de57b173f50ffc1ab27a318c00fd458e39 -->
   - **refs**: DS-7, DS-9
   - **files**: `bp/changes/refactor-command/specs/templates/spec.md`
   - **acceptance**: The file exists; contains `## ADDED Requirements` with `Refactor-Workflow-Template` and `Refactorer-Agent-Prompt`; each requirement has at least one `#### Scenario:` block in the bolded format; the file passes the artifact validator.
   - **depends_on**: none
 
-- [ ] T-15: [type:docs] Write archive-ready general delta spec (refactorer behavior preservation) <!-- commit: -->
+- [x] T-15: [type:docs] Write archive-ready general delta spec (refactorer behavior preservation) <!-- commit: b4f500de57b173f50ffc1ab27a318c00fd458e39 -->
   - **refs**: DS-7, DS-9
   - **files**: `bp/changes/refactor-command/specs/general/spec.md`
   - **acceptance**: The file exists; contains `## ADDED Requirements` with `Refactorer-Behavior-Preservation`; the requirement has at least one scenario asserting that the refactorer dispatch uses executor isolation and preserves test-suite status.
   - **depends_on**: none
 
-- [ ] T-16: [type:docs] Update `docs/platform-integration.md` with the refactor step and analyzer section <!-- commit: -->
+- [x] T-16: [type:docs] Update `docs/platform-integration.md` with the refactor step and analyzer section <!-- commit: 708d72d32c6831f35ccb77303494026240c9faf8 -->
   - **refs**: DS-7
   - **files**: `docs/platform-integration.md`
   - **acceptance**: A `## Refactor step` section describes `bp-refactor` per platform file paths, the four anti-pattern metrics, the configurable thresholds, the `bp/.refactor-report.md` artifact, and the per-module dispatch flow.
