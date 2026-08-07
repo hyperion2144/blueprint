@@ -55,7 +55,7 @@ The structural rename layer: check template + registry + schema + routing + CLI 
     - **AND** for a change with a `FAIL` review and open issues, `nextStep.command` contains `check` (not `plan --fix` or `apply --fix`)
   - **depends_on**: T-2
 
-- [ ] T-4: [type:behavior] Check CLI command (`bp-check.ts`, cli registration, `--fix` removed) <!-- commit: -->
+- [x] T-4: [type:behavior] Check CLI command (`bp-check.ts`, cli registration, `--fix` removed) <!-- commit: 88d5cc9 -->
   - **refs**: DS-4
   - **spec_ref**: specs/templates/spec.md#Check-Step-Rename
   - **files**: src/commands/bp-check.ts, src/commands/bp-review.ts (delete), src/cli.ts
@@ -67,7 +67,7 @@ The structural rename layer: check template + registry + schema + routing + CLI 
     - **AND** `node src/cli.js review <name>` exits non-zero with an unknown-command error
   - **depends_on**: T-1
 
-- [ ] T-5: [type:behavior] Context phase rename (`review` → `check` in context.jsonl gates) <!-- commit: -->
+- [x] T-5: [type:behavior] Context phase rename (`review` → `check` in context.jsonl gates) <!-- commit: b843eee -->
   - **refs**: DS-4
   - **spec_ref**: specs/context/spec.md#Check-Phase-Value
   - **files**: src/commands/_utils.ts, src/core/artifact-validator.ts, src/core/context-jsonl-io.ts, src/types/context-jsonl-io.ts
@@ -79,7 +79,7 @@ The structural rename layer: check template + registry + schema + routing + CLI 
     - **AND** `CONTEXT_PHASES` contains `'check'` and not `'review'`
   - **depends_on**: T-4
 
-- [ ] T-6: [type:behavior] Platform step generators rename (`review` → `check` across 6 files + snapshots) <!-- commit: -->
+- [x] T-6: [type:behavior] Platform step generators rename (`review` → `check` across 6 files + snapshots) <!-- commit: 1634a85 -->
   - **refs**: DS-5
   - **spec_ref**: specs/templates/spec.md#Check-Step-Rename
   - **files**: src/integrations/omp/commands.ts, src/integrations/omp/skills.ts, src/integrations/claude-code/commands.ts, src/integrations/agent/skills.ts, src/integrations/opencode/commands.ts, src/integrations/codex/skills.ts, src/integrations/*/__snapshots__/*.snap, src/generators/__snapshots__/*.snap
@@ -91,7 +91,7 @@ The structural rename layer: check template + registry + schema + routing + CLI 
     - **AND** no `bp-review` path is generated
   - **depends_on**: T-2
 
-- [ ] T-7: [type:refactor] `bp-template` step mapping (`check` while `review` artifact template stays) <!-- commit: -->
+- [x] T-7: [type:refactor] `bp-template` step mapping (`check` while `review` artifact template stays) <!-- commit: 5783985 -->
   - **refs**: DS-6
   - **spec_ref**: specs/templates/spec.md#Check-Step-Rename
   - **files**: src/commands/bp-template.ts
