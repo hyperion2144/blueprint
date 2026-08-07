@@ -53,6 +53,26 @@ describe('bp refactor <target> (T-10)', () => {
     expect(res.stderr).toContain('Usage: bp refactor <target>');
   });
 
+  it('--format short prints only the first workflow step (Q2)', () => {
+    const res = spawnSync(process.execPath, [cliPath, 'refactor', 'src/core', '--format', 'short'], {
+      cwd: testDir,
+      encoding: 'utf-8',
+    });
+    expect(res.status).toBe(0);
+    expect(res.stdout).toContain('### Step 1:');
+    expect(res.stdout).not.toContain('### Step 2:');
+  });
+
+  it('--format full prints the entire workflow body (Q2)', () => {
+    const res = spawnSync(process.execPath, [cliPath, 'refactor', 'src/core', '--format', 'full'], {
+      cwd: testDir,
+      encoding: 'utf-8',
+    });
+    expect(res.status).toBe(0);
+    expect(res.stdout).toContain('### Step 5:');
+    expect(res.stdout).toContain('## Guardrails');
+  });
+
   it('exits 1 when no bp/ project is present', () => {
     const res = spawnSync(process.execPath, [cliPath, 'refactor', 'src/core'], {
       cwd: tmpdir(),
