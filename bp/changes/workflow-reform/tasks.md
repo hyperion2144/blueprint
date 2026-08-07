@@ -157,7 +157,7 @@ The fixer role, reviewer full-review reform, platform agents/OMP discrimination,
     - **AND** the isolation section matches the executor's isolation type for each platform
   - **depends_on**: T-10
 
-- [ ] T-12: [type:behavior] Fix-loopback removal from apply/plan (+ prompts + review template) <!-- commit: -->
+- [x] T-12: [type:behavior] Fix-loopback removal from apply/plan (+ prompts + review template) <!-- commit: 39a78cd -->
   - **refs**: DS-11
   - **spec_ref**: specs/templates/spec.md#Reviewer-Full-Review
   - **files**: src/commands/bp-apply.ts, src/commands/bp-plan.ts, src/templates/workflows/apply.ts, src/templates/workflows/plan.ts, src/templates/agents/index.ts, src/templates/artifacts/index.ts
