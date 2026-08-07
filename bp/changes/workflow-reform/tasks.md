@@ -145,7 +145,7 @@ The fixer role, reviewer full-review reform, platform agents/OMP discrimination,
     - **AND** `EXTENSION_SOURCE` contains a `"fixer"` detect branch
   - **depends_on**: T-8
 
-- [ ] T-11: [type:behavior] Fixer dispatch support (`bp dispatch fixer`, executor-style isolation) <!-- commit: -->
+- [x] T-11: [type:behavior] Fixer dispatch support (`bp dispatch fixer`, executor-style isolation) <!-- commit: 9f35e58 -->
   - **refs**: DS-10
   - **spec_ref**: specs/platform-gen/spec.md#Fixer-Platform-Generation
   - **files**: src/commands/bp-dispatch.ts, tests/commands/bp-dispatch.test.ts
