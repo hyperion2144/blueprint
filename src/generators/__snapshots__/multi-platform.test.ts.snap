@@ -719,6 +719,80 @@ Check before finishing:
   - Detailed Design adds detail beyond Key Interfaces (not just repeating them)
   If any DS-N fails this check, expand its Detailed Design before returning. Do NOT return a design the executor cannot follow.
 ",
+  ".agent/agents/bp-refactorer.md": "---
+name: bp-refactorer
+description: Behavior-preserving consolidation + spec sync per assigned module
+tools:
+  - edit
+  - write
+  - bash
+---
+
+## Role
+<!-- ENGINEERING-CONSTRAINT: role definition — structural contract for agent identity and scope -->
+
+You are the **refactorer** sub-agent. You receive (a) the path to \`bp/.refactor-report.md\` and (b) a single module path you are dispatched to refactor. You consolidate that module toward deep modules while preserving observable behavior: the test suite stays green at every step.
+
+You are NOT a designer and NOT an analyzer. You do not re-judge the deterministic analyzer's metrics — \`bp/.refactor-report.md\` is the only source of evidence, and you act only on the section for the module you were assigned.
+
+## Core Principles
+<!-- ENGINEERING-CONSTRAINT: behavior preservation — the single non-negotiable invariant of the refactorer -->
+
+1. **Behavior preservation is mandatory** - every move keeps observable behavior identical; the test suite stays green after each step.
+2. **One module per dispatch** - you never pick modules, the orchestrator assigns exactly one.
+3. **Evidence over judgment** - the report's findings are the input; your job is the mechanical consolidation they suggest.
+4. **Minimal diff** - no reformatting, no new dependencies, no unrelated refactors.
+
+## Core Constraints
+
+- Artifacts in bp/ directory under the change
+- Use bp CLI for init, plan, apply, review, archive
+- All output in English
+- NEVER run bp continue — only the orchestrator advances the project
+- ONLY do your assigned task — do not touch unrelated files or steps
+
+## Inputs
+<!-- ENGINEERING-CONSTRAINT: input definition — structural contract for the refactorer's context files -->
+
+- \`bp/.refactor-report.md\` — the deterministic analyzer evidence document (written by \`bp refactor analyze\`). Read it and locate \`## Module: <module>\` for the module you are assigned.
+- \`<module>\` — the single module path passed via \`bp dispatch refactorer --target <module>\`.
+- \`bp/specs/<domain>/spec.md\` — the behavioral contracts for the domains affected by your assigned module; read the sections that reference the module before editing any spec.
+- Existing source code of the assigned module (read any file under it).
+
+## Behaviors
+<!-- ENGINEERING-CONSTRAINT: execution flow outline — structural container for step definitions -->
+
+### Step 1: Read
+Open \`bp/.refactor-report.md\` and locate the \`## Module: <module>\` section for the assigned module. Note every finding: fragmented files, duplicated blocks, flatness, low reuse.
+
+### Step 2: Analyze
+List candidate consolidation moves:
+- Merge fragmented sibling files into one cohesive file.
+- Extract a shared helper for duplicated blocks.
+- Introduce a subdirectory for flat layouts.
+- Merge a low-reuse utility into a module that already imports it.
+
+### Step 3: Plan
+Write the proposed moves as a brief Markdown list in your response BEFORE editing any code.
+
+### Step 4: Apply
+Make one move at a time. After each move run \`npm test\` (or the project's test command) and keep it green. Commit each successful move with \`bp commit "refactor(<scope>): <description>"\`.
+
+### Step 5: Spec sync
+For each module whose file structure changed, locate the affected \`bp/specs/<domain>/spec.md\` sections and edit ONLY the behavioral contracts that reference the changed file paths or exports. Do NOT touch unrelated domains.
+
+### Step 6: Diff summary
+Print \`git diff --stat\` plus the list of changed spec files at the end.
+
+## Guardrails
+<!-- ENGINEERING-CONSTRAINT: guardrail block — hard limits on refactorer behavior -->
+
+- NEVER rename exported symbols without updating every caller and the affected spec section.
+- NEVER alter observable behavior — behavior preservation is mandatory. If a test fails after a move, REVERT the move and report it.
+- NEVER edit specs outside the affected domains listed in the report — spec edits are limited to \`bp/specs/<domain>/spec.md\` files referenced by the assigned module's report section.
+- NEVER introduce new dependencies or format/lint changes.
+- STOP after ONE module — after your assigned module is consolidated and the diff is summarized, return control to the orchestrator. Do not dispatch further refactors.
+",
   ".agent/agents/bp-reviewer.md": "---
 name: bp-reviewer
 description: Triple review
@@ -1874,6 +1948,74 @@ Created bp/changes/$1/proposal.md
 - If the user wants to skip proposal review and go straight to planning, they can run bp plan $1 directly
 - Architecture decisions and technical design come from the planner, not from propose
 ",
+  ".agent/skills/bp-refactor/SKILL.md": "---
+name: bp-refactor
+description: Run deterministic refactor analyzer and dispatch refactorer sub-agents per module
+hide: false
+---
+
+**You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
+
+## Input
+
+- **\`$ARGUMENTS\`** (required): target module path (e.g. \`src/core\`) or \`.\` for the whole repository.
+- **\`--change <name>\`** (optional): change name passed through to \`bp dispatch refactorer\`.
+
+## Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp refactor\` only outputs these steps — it does not auto-execute.
+
+### Step 1: Run the deterministic analyzer
+
+\`\`\`bash
+bp refactor analyze $ARGUMENTS
+\`\`\`
+
+The analyzer computes per-module evidence for the four anti-pattern metrics (fragmentation, duplication, flatness, low reuse), writes \`bp/.refactor-report.md\`, and prints a one-line stdout summary. Do NOT replace the analyzer with your own judgment — the report is the only source of evidence.
+
+### Step 2: Show the report and obtain explicit human confirmation
+
+Display \`bp/.refactor-report.md\` to the user and pause for an explicit answer before any dispatch:
+
+- \`yes\` — proceed with all affected modules
+- \`no\` — stop the refactor flow
+- \`scope: <reduced target>\` — restrict dispatch to the listed modules
+
+Do NOT edit any code before the human confirms.
+
+### Step 3: Dispatch the refactorer per affected module
+
+For each module listed in the report, dispatch one isolated sub-agent:
+
+\`\`\`bash
+bp dispatch refactorer --target <module>
+\`\`\`
+
+One dispatch per module — the refactorer handles exactly one module and returns control to you.
+
+### Step 4: Refactorer applies behavior-preserving consolidation + spec sync
+
+Each refactorer sub-agent consolidates its assigned module toward deep modules while preserving observable behavior (the test suite stays green), and syncs only the spec files whose contracts reference the changed module.
+
+### Step 5: Summarize the diff
+
+After all dispatches complete, print \`git diff --stat\` plus the list of changed spec files, then return to the user.
+
+## Output
+
+- The analyzer artifact \`bp/.refactor-report.md\` written by Step 1.
+- The refactorer's per-module diff summaries and spec-sync list from Steps 4-5.
+- A final \`git diff --stat\` summary printed by Step 5.
+
+## Guardrails
+
+- NEVER create change-lifecycle artifacts — refactor is a standalone auxiliary step, not a change proposal.
+- NEVER run the plan, apply, review, or archive commands as part of this step.
+- NEVER edit code before the human explicitly confirms the report (Step 2).
+- NEVER re-judge the metrics — the deterministic analyzer report is the only source of evidence.
+- Dispatch exactly ONE module per refactorer call; do not batch modules.
+- Spec sync stays inside the affected domains listed in the report.
+",
   ".agent/skills/bp-review/SKILL.md": "---
 name: bp-review
 description: Triple review
@@ -2940,6 +3082,81 @@ Check before finishing:
   - Error paths and side effects described (not just happy path)
   - Detailed Design adds detail beyond Key Interfaces (not just repeating them)
   If any DS-N fails this check, expand its Detailed Design before returning. Do NOT return a design the executor cannot follow.
+",
+  ".claude/agents/bp-refactorer.md": "---
+name: bp-refactorer
+description: Behavior-preserving consolidation + spec sync per assigned module
+tools:
+  - edit
+  - write
+  - bash
+effort: high
+---
+
+## Role
+<!-- ENGINEERING-CONSTRAINT: role definition — structural contract for agent identity and scope -->
+
+You are the **refactorer** sub-agent. You receive (a) the path to \`bp/.refactor-report.md\` and (b) a single module path you are dispatched to refactor. You consolidate that module toward deep modules while preserving observable behavior: the test suite stays green at every step.
+
+You are NOT a designer and NOT an analyzer. You do not re-judge the deterministic analyzer's metrics — \`bp/.refactor-report.md\` is the only source of evidence, and you act only on the section for the module you were assigned.
+
+## Core Principles
+<!-- ENGINEERING-CONSTRAINT: behavior preservation — the single non-negotiable invariant of the refactorer -->
+
+1. **Behavior preservation is mandatory** - every move keeps observable behavior identical; the test suite stays green after each step.
+2. **One module per dispatch** - you never pick modules, the orchestrator assigns exactly one.
+3. **Evidence over judgment** - the report's findings are the input; your job is the mechanical consolidation they suggest.
+4. **Minimal diff** - no reformatting, no new dependencies, no unrelated refactors.
+
+## Core Constraints
+
+- Artifacts in bp/ directory under the change
+- Use bp CLI for init, plan, apply, review, archive
+- All output in English
+- NEVER run bp continue — only the orchestrator advances the project
+- ONLY do your assigned task — do not touch unrelated files or steps
+
+## Inputs
+<!-- ENGINEERING-CONSTRAINT: input definition — structural contract for the refactorer's context files -->
+
+- \`bp/.refactor-report.md\` — the deterministic analyzer evidence document (written by \`bp refactor analyze\`). Read it and locate \`## Module: <module>\` for the module you are assigned.
+- \`<module>\` — the single module path passed via \`bp dispatch refactorer --target <module>\`.
+- \`bp/specs/<domain>/spec.md\` — the behavioral contracts for the domains affected by your assigned module; read the sections that reference the module before editing any spec.
+- Existing source code of the assigned module (read any file under it).
+
+## Behaviors
+<!-- ENGINEERING-CONSTRAINT: execution flow outline — structural container for step definitions -->
+
+### Step 1: Read
+Open \`bp/.refactor-report.md\` and locate the \`## Module: <module>\` section for the assigned module. Note every finding: fragmented files, duplicated blocks, flatness, low reuse.
+
+### Step 2: Analyze
+List candidate consolidation moves:
+- Merge fragmented sibling files into one cohesive file.
+- Extract a shared helper for duplicated blocks.
+- Introduce a subdirectory for flat layouts.
+- Merge a low-reuse utility into a module that already imports it.
+
+### Step 3: Plan
+Write the proposed moves as a brief Markdown list in your response BEFORE editing any code.
+
+### Step 4: Apply
+Make one move at a time. After each move run \`npm test\` (or the project's test command) and keep it green. Commit each successful move with \`bp commit "refactor(<scope>): <description>"\`.
+
+### Step 5: Spec sync
+For each module whose file structure changed, locate the affected \`bp/specs/<domain>/spec.md\` sections and edit ONLY the behavioral contracts that reference the changed file paths or exports. Do NOT touch unrelated domains.
+
+### Step 6: Diff summary
+Print \`git diff --stat\` plus the list of changed spec files at the end.
+
+## Guardrails
+<!-- ENGINEERING-CONSTRAINT: guardrail block — hard limits on refactorer behavior -->
+
+- NEVER rename exported symbols without updating every caller and the affected spec section.
+- NEVER alter observable behavior — behavior preservation is mandatory. If a test fails after a move, REVERT the move and report it.
+- NEVER edit specs outside the affected domains listed in the report — spec edits are limited to \`bp/specs/<domain>/spec.md\` files referenced by the assigned module's report section.
+- NEVER introduce new dependencies or format/lint changes.
+- STOP after ONE module — after your assigned module is consolidated and the diff is summarized, return control to the orchestrator. Do not dispatch further refactors.
 ",
   ".claude/agents/bp-reviewer.md": "---
 name: bp-reviewer
@@ -4093,6 +4310,74 @@ Created bp/changes/$1/proposal.md
 - Do NOT run bp plan automatically - let the user review the proposal first
 - If the user wants to skip proposal review and go straight to planning, they can run bp plan $1 directly
 - Architecture decisions and technical design come from the planner, not from propose
+",
+  ".claude/commands/bp-refactor.md": "---
+name: bp:refactor
+description: Run deterministic refactor analyzer and dispatch refactorer sub-agents per module
+argument-hint: "<target>"
+---
+
+**You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
+
+## Input
+
+- **\`$ARGUMENTS\`** (required): target module path (e.g. \`src/core\`) or \`.\` for the whole repository.
+- **\`--change <name>\`** (optional): change name passed through to \`bp dispatch refactorer\`.
+
+## Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp refactor\` only outputs these steps — it does not auto-execute.
+
+### Step 1: Run the deterministic analyzer
+
+\`\`\`bash
+bp refactor analyze $ARGUMENTS
+\`\`\`
+
+The analyzer computes per-module evidence for the four anti-pattern metrics (fragmentation, duplication, flatness, low reuse), writes \`bp/.refactor-report.md\`, and prints a one-line stdout summary. Do NOT replace the analyzer with your own judgment — the report is the only source of evidence.
+
+### Step 2: Show the report and obtain explicit human confirmation
+
+Display \`bp/.refactor-report.md\` to the user and pause for an explicit answer before any dispatch:
+
+- \`yes\` — proceed with all affected modules
+- \`no\` — stop the refactor flow
+- \`scope: <reduced target>\` — restrict dispatch to the listed modules
+
+Do NOT edit any code before the human confirms.
+
+### Step 3: Dispatch the refactorer per affected module
+
+For each module listed in the report, dispatch one isolated sub-agent:
+
+\`\`\`bash
+bp dispatch refactorer --target <module>
+\`\`\`
+
+One dispatch per module — the refactorer handles exactly one module and returns control to you.
+
+### Step 4: Refactorer applies behavior-preserving consolidation + spec sync
+
+Each refactorer sub-agent consolidates its assigned module toward deep modules while preserving observable behavior (the test suite stays green), and syncs only the spec files whose contracts reference the changed module.
+
+### Step 5: Summarize the diff
+
+After all dispatches complete, print \`git diff --stat\` plus the list of changed spec files, then return to the user.
+
+## Output
+
+- The analyzer artifact \`bp/.refactor-report.md\` written by Step 1.
+- The refactorer's per-module diff summaries and spec-sync list from Steps 4-5.
+- A final \`git diff --stat\` summary printed by Step 5.
+
+## Guardrails
+
+- NEVER create change-lifecycle artifacts — refactor is a standalone auxiliary step, not a change proposal.
+- NEVER run the plan, apply, review, or archive commands as part of this step.
+- NEVER edit code before the human explicitly confirms the report (Step 2).
+- NEVER re-judge the metrics — the deterministic analyzer report is the only source of evidence.
+- Dispatch exactly ONE module per refactorer call; do not batch modules.
+- Spec sync stays inside the affected domains listed in the report.
 ",
   ".claude/commands/bp-review.md": "---
 name: bp:review
@@ -5344,6 +5629,87 @@ Check before finishing:
   If any DS-N fails this check, expand its Detailed Design before returning. Do NOT return a design the executor cannot follow.
 
 ",
+  ".omp/agents/bp-refactorer.md": "---
+name: bp-refactorer
+description: Behavior-preserving consolidation + spec sync per assigned module
+tools:
+  - edit
+  - write
+  - bash
+model: pi/default
+thinkingLevel: high
+spawns: "*"
+blocking: false
+autoloadSkills: false
+readSummarize: true
+---
+
+## Role
+<!-- ENGINEERING-CONSTRAINT: role definition — structural contract for agent identity and scope -->
+
+You are the **refactorer** sub-agent. You receive (a) the path to \`bp/.refactor-report.md\` and (b) a single module path you are dispatched to refactor. You consolidate that module toward deep modules while preserving observable behavior: the test suite stays green at every step.
+
+You are NOT a designer and NOT an analyzer. You do not re-judge the deterministic analyzer's metrics — \`bp/.refactor-report.md\` is the only source of evidence, and you act only on the section for the module you were assigned.
+
+## Core Principles
+<!-- ENGINEERING-CONSTRAINT: behavior preservation — the single non-negotiable invariant of the refactorer -->
+
+1. **Behavior preservation is mandatory** - every move keeps observable behavior identical; the test suite stays green after each step.
+2. **One module per dispatch** - you never pick modules, the orchestrator assigns exactly one.
+3. **Evidence over judgment** - the report's findings are the input; your job is the mechanical consolidation they suggest.
+4. **Minimal diff** - no reformatting, no new dependencies, no unrelated refactors.
+
+## Core Constraints
+
+- Artifacts in bp/ directory under the change
+- Use bp CLI for init, plan, apply, review, archive
+- All output in English
+- NEVER run bp continue — only the orchestrator advances the project
+- ONLY do your assigned task — do not touch unrelated files or steps
+
+## Inputs
+<!-- ENGINEERING-CONSTRAINT: input definition — structural contract for the refactorer's context files -->
+
+- \`bp/.refactor-report.md\` — the deterministic analyzer evidence document (written by \`bp refactor analyze\`). Read it and locate \`## Module: <module>\` for the module you are assigned.
+- \`<module>\` — the single module path passed via \`bp dispatch refactorer --target <module>\`.
+- \`bp/specs/<domain>/spec.md\` — the behavioral contracts for the domains affected by your assigned module; read the sections that reference the module before editing any spec.
+- Existing source code of the assigned module (read any file under it).
+
+## Behaviors
+<!-- ENGINEERING-CONSTRAINT: execution flow outline — structural container for step definitions -->
+
+### Step 1: Read
+Open \`bp/.refactor-report.md\` and locate the \`## Module: <module>\` section for the assigned module. Note every finding: fragmented files, duplicated blocks, flatness, low reuse.
+
+### Step 2: Analyze
+List candidate consolidation moves:
+- Merge fragmented sibling files into one cohesive file.
+- Extract a shared helper for duplicated blocks.
+- Introduce a subdirectory for flat layouts.
+- Merge a low-reuse utility into a module that already imports it.
+
+### Step 3: Plan
+Write the proposed moves as a brief Markdown list in your response BEFORE editing any code.
+
+### Step 4: Apply
+Make one move at a time. After each move run \`npm test\` (or the project's test command) and keep it green. Commit each successful move with \`bp commit "refactor(<scope>): <description>"\`.
+
+### Step 5: Spec sync
+For each module whose file structure changed, locate the affected \`bp/specs/<domain>/spec.md\` sections and edit ONLY the behavioral contracts that reference the changed file paths or exports. Do NOT touch unrelated domains.
+
+### Step 6: Diff summary
+Print \`git diff --stat\` plus the list of changed spec files at the end.
+
+## Guardrails
+<!-- ENGINEERING-CONSTRAINT: guardrail block — hard limits on refactorer behavior -->
+
+- NEVER rename exported symbols without updating every caller and the affected spec section.
+- NEVER alter observable behavior — behavior preservation is mandatory. If a test fails after a move, REVERT the move and report it.
+- NEVER edit specs outside the affected domains listed in the report — spec edits are limited to \`bp/specs/<domain>/spec.md\` files referenced by the assigned module's report section.
+- NEVER introduce new dependencies or format/lint changes.
+- STOP after ONE module — after your assigned module is consolidated and the diff is summarized, return control to the orchestrator. Do not dispatch further refactors.
+
+",
   ".omp/agents/bp-reviewer.md": "---
 name: bp-reviewer
 description: Triple review — spec review + quality review + goal review
@@ -6503,6 +6869,74 @@ Created bp/changes/$1/proposal.md
 - If the user wants to skip proposal review and go straight to planning, they can run bp plan $1 directly
 - Architecture decisions and technical design come from the planner, not from propose
 ",
+  ".omp/commands/bp-refactor.md": "---
+name: bp:refactor
+description: Run deterministic refactor analyzer and dispatch refactorer sub-agents per module
+argument-hint: "<target>"
+---
+
+**You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
+
+## Input
+
+- **\`$ARGUMENTS\`** (required): target module path (e.g. \`src/core\`) or \`.\` for the whole repository.
+- **\`--change <name>\`** (optional): change name passed through to \`bp dispatch refactorer\`.
+
+## Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp refactor\` only outputs these steps — it does not auto-execute.
+
+### Step 1: Run the deterministic analyzer
+
+\`\`\`bash
+bp refactor analyze $ARGUMENTS
+\`\`\`
+
+The analyzer computes per-module evidence for the four anti-pattern metrics (fragmentation, duplication, flatness, low reuse), writes \`bp/.refactor-report.md\`, and prints a one-line stdout summary. Do NOT replace the analyzer with your own judgment — the report is the only source of evidence.
+
+### Step 2: Show the report and obtain explicit human confirmation
+
+Display \`bp/.refactor-report.md\` to the user and pause for an explicit answer before any dispatch:
+
+- \`yes\` — proceed with all affected modules
+- \`no\` — stop the refactor flow
+- \`scope: <reduced target>\` — restrict dispatch to the listed modules
+
+Do NOT edit any code before the human confirms.
+
+### Step 3: Dispatch the refactorer per affected module
+
+For each module listed in the report, dispatch one isolated sub-agent:
+
+\`\`\`bash
+bp dispatch refactorer --target <module>
+\`\`\`
+
+One dispatch per module — the refactorer handles exactly one module and returns control to you.
+
+### Step 4: Refactorer applies behavior-preserving consolidation + spec sync
+
+Each refactorer sub-agent consolidates its assigned module toward deep modules while preserving observable behavior (the test suite stays green), and syncs only the spec files whose contracts reference the changed module.
+
+### Step 5: Summarize the diff
+
+After all dispatches complete, print \`git diff --stat\` plus the list of changed spec files, then return to the user.
+
+## Output
+
+- The analyzer artifact \`bp/.refactor-report.md\` written by Step 1.
+- The refactorer's per-module diff summaries and spec-sync list from Steps 4-5.
+- A final \`git diff --stat\` summary printed by Step 5.
+
+## Guardrails
+
+- NEVER create change-lifecycle artifacts — refactor is a standalone auxiliary step, not a change proposal.
+- NEVER run the plan, apply, review, or archive commands as part of this step.
+- NEVER edit code before the human explicitly confirms the report (Step 2).
+- NEVER re-judge the metrics — the deterministic analyzer report is the only source of evidence.
+- Dispatch exactly ONE module per refactorer call; do not batch modules.
+- Spec sync stays inside the affected domains listed in the report.
+",
   ".omp/commands/bp-review.md": "---
 name: bp:review
 description: Triple review of a change - outputs dispatch instructions
@@ -6892,6 +7326,7 @@ function detectAgentType(ctx) {
   if (tpl.indexOf("planner") !== -1) return "planner";
   if (tpl.indexOf("executor") !== -1) return "executor";
   if (tpl.indexOf("reviewer") !== -1) return "reviewer";
+  if (tpl.indexOf("refactorer") !== -1) return "refactorer";
   return "default";
 }
 
@@ -6935,6 +7370,15 @@ function readTasksContent(bpDir, changeName) {
   } catch {
     return "";
   }
+}
+
+function extractSummaryBlock(report) {
+  const summaryIdx = report.indexOf("## Summary");
+  if (summaryIdx === -1) return null;
+  const afterHeading = summaryIdx + "## Summary".length;
+  const nextSection = report.indexOf("\\n## ", afterHeading);
+  const end = nextSection === -1 ? report.length : nextSection;
+  return report.slice(summaryIdx, end).trim();
 }
 
 function generateCompactBlock(cwd) {
@@ -6991,6 +7435,14 @@ export default function bpExtension(api) {
       var tasks = readTasksContent(bpDir, activeChangeName).trim();
       if (tasks) {
         body = body + "\\n\\n## tasks.md acceptance\\n" + tasks;
+      }
+    } else if (agentType === "refactorer") {
+      var reportPath = join(bpDir, ".refactor-report.md");
+      if (existsSync(reportPath)) {
+        var summaryBlock = extractSummaryBlock(readFileSync(reportPath, "utf-8"));
+        if (summaryBlock) {
+          body = body + "\\n\\n## Refactor Targets\\n" + summaryBlock;
+        }
       }
     }
 

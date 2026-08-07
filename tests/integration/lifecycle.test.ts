@@ -171,10 +171,11 @@ describe('v2 lifecycle: codex platform generation (T-8)', () => {
     expect(CONFIG_TEMPLATE).toMatch(/^\s*-\s*codex\s*$/m);
   });
 
-  it('greenfield lifecycle generates the ten Codex Skills', () => {
+  it('greenfield lifecycle generates the eleven Codex Skills', () => {
     const skills = [
       'bp-init', 'bp-roadmap', 'bp-propose', 'bp-plan', 'bp-apply',
       'bp-review', 'bp-archive', 'bp-continue', 'bp-ff', 'bp-loop',
+      'bp-refactor',
     ];
     for (const step of skills) {
       const path = join(codexTestDir, '.agents', 'skills', step, 'SKILL.md');
