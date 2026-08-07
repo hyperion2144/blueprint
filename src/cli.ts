@@ -24,6 +24,7 @@ import { register as registerSpecRefresh } from './commands/bp-spec-refresh.js';
 import { register as registerSplit } from './commands/bp-split.js';
 import { register as registerMap } from './commands/bp-map.js';
 import { register as registerStats } from './commands/bp-stats.js';
+import { register as registerRefactor } from './commands/bp-refactor.js';
 import { register as registerLock } from './commands/bp-lock.js';
 
 import { register as registerUnarchive } from './commands/bp-unarchive.js';
@@ -60,6 +61,7 @@ registerSplit(program);
 registerUnarchive(program);
 registerMap(program);
 registerLock(program);
+registerRefactor(program);
 
 registerStats(program);
 program.parse(process.argv);
