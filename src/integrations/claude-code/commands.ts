@@ -22,7 +22,7 @@ const STEPS: ClaudeCommandDef[] = [
   { step: 'propose', name: 'bp:propose', description: 'Create a change folder with proposal.md', argumentHint: '[change-name]' },
   { step: 'plan', name: 'bp:plan', description: 'Dispatch planner sub-agent (produce design, tasks, delta specs)', argumentHint: '[change-name]' },
   { step: 'apply', name: 'bp:apply', description: 'Dispatch executor sub-agents (implement tasks per wave)', argumentHint: '[change-name]' },
-  { step: 'review', name: 'bp:review', description: 'Triple review of a change - outputs dispatch instructions', argumentHint: '[change-name]' },
+  { step: 'check', name: 'bp:check', description: 'Triple check of a change - full verify + fixer loopback + full re-review', argumentHint: '[change-name]' },
   { step: 'archive', name: 'bp:archive', description: 'Archive a change (merge delta specs, archive dir, update roadmap)', argumentHint: '[change-name]' },
   { step: 'continue', name: 'bp:continue', description: 'Check progress and suggest next step', argumentHint: '[change-name]' },
   { step: 'ff', name: 'bp:ff', description: 'Fast-forward: auto-advance through all steps by calling bp continue after each' },

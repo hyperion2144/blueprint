@@ -25,7 +25,7 @@ export const STEP_DEFS: CommandDef[] = [
   { step: 'propose', name: 'bp:propose', description: 'Create a change folder with proposal.md', usesAgent: false, agents: [], argumentHint: '[change-name]' },
   { step: 'plan', name: 'bp:plan', description: 'Dispatch planner sub-agent (produce design, tasks, delta specs)', usesAgent: true, agents: ['planner'], argumentHint: '[change-name]' },
   { step: 'apply', name: 'bp:apply', description: 'Dispatch executor sub-agents (implement tasks per wave)', usesAgent: true, agents: ['executor'], argumentHint: '[change-name]' },
-  { step: 'review', name: 'bp:review', description: 'Triple review of a change - outputs dispatch instructions', usesAgent: true, agents: ['reviewer'], argumentHint: '[change-name]' },
+  { step: 'check', name: 'bp:check', description: 'Triple check of a change - full verify + fixer loopback + full re-review', usesAgent: true, agents: ['reviewer', 'fixer'], argumentHint: '[change-name]' },
   { step: 'archive', name: 'bp:archive', description: 'Archive a change (merge delta specs, archive dir, update roadmap)', usesAgent: false, agents: [], argumentHint: '[change-name]' },
   { step: 'continue', name: 'bp:continue', description: 'Check progress and suggest next step', usesAgent: false, agents: [], argumentHint: '[change-name]' },
   { step: 'ff', name: 'bp:ff', description: 'Fast-forward: auto-advance through all steps by running bp continue after each', usesAgent: false, agents: [] },

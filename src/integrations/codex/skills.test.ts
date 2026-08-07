@@ -41,7 +41,7 @@ describe('generateCodexSkills', () => {
       'propose',
       'plan',
       'apply',
-      'review',
+      'check',
       'archive',
       'continue',
       'ff',

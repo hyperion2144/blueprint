@@ -33,7 +33,9 @@ describe('platform step generators rename (review -> check)', () => {
     expect(paths.some((p) => p.endsWith('.agents/skills/bp-check/SKILL.md'))).toBe(true);
     expect(paths.some((p) => p.endsWith('.opencode/commands/bp-check.md'))).toBe(true);
     for (const p of paths) {
-      expect(p).not.toContain('bp-review');
+      // bp-reviewer agent files are intentionally unchanged; the step file
+      // rename only affects bp-review command/skill paths.
+      expect(p).not.toMatch(/bp-review[^e]/);
     }
   });
 

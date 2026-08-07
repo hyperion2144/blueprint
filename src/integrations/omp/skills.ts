@@ -29,7 +29,7 @@ function skillDescription(step: string): string {
     propose: 'Create a change folder with proposal.md',
     plan: 'Dispatch planner sub-agent (produce design, tasks, delta specs)',
     apply: 'Dispatch executor sub-agents (implement tasks per wave)',
-    review: 'Triple review of a change - outputs dispatch instructions',
+    check: 'Triple check of a change - full verify + fixer loopback + full re-review',
     archive: 'Archive a change (merge delta specs, archive dir, update roadmap)',
     continue: 'Check progress and suggest next step',
     ff: 'Fast-forward: auto-advance through all steps by running bp continue after each',
@@ -37,7 +37,7 @@ function skillDescription(step: string): string {
   };
   return map[step] ?? '';
 }
-const STEPS = ['init', 'roadmap', 'propose', 'plan', 'apply', 'review', 'archive', 'continue', 'ff', 'loop'] as const;
+const STEPS = ['init', 'roadmap', 'propose', 'plan', 'apply', 'check', 'archive', 'continue', 'ff', 'loop'] as const;
 
 export const SKILL_DEFS: SkillDef[] = STEPS.map((step) => ({
   step,

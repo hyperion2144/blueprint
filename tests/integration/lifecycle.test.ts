@@ -114,7 +114,7 @@ describe('v2 lifecycle: init -> propose -> plan -> apply -> review -> archive', 
   it('step 8: bp continue when no active changes shows hint', () => {
     // Archive the other active change so none remain
     execSync(
-      `node ${cliPath} review add-auth 2>/dev/null; ` +
+      `node ${cliPath} check add-auth 2>/dev/null; ` +
       `node ${cliPath} finalize add-auth 2>/dev/null; ` +
       `rm -rf bp/changes/add-auth`,
       { encoding: 'utf-8', cwd: testDir },
@@ -174,7 +174,7 @@ describe('v2 lifecycle: codex platform generation (T-8)', () => {
   it('greenfield lifecycle generates the eleven Codex Skills', () => {
     const skills = [
       'bp-init', 'bp-roadmap', 'bp-propose', 'bp-plan', 'bp-apply',
-      'bp-review', 'bp-archive', 'bp-continue', 'bp-ff', 'bp-loop',
+      'bp-check', 'bp-archive', 'bp-continue', 'bp-ff', 'bp-loop',
       'bp-refactor',
     ];
     for (const step of skills) {
