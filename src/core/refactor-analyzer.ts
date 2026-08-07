@@ -88,6 +88,14 @@ export interface AnalyzerResult {
 
 const REPORT_FILE = '.refactor-report.md';
 
+/** Thrown when `runRefactorAnalyzer` cannot resolve a non-`.` target to any module. */
+export class MiNotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'MiNotFoundError';
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Deterministic helpers
 // ---------------------------------------------------------------------------
@@ -350,6 +358,14 @@ function renderModuleSection(m: ModuleAnalysis): string {
 export function runRefactorAnalyzer(opts: AnalyzerOptions): AnalyzerResult {
   const { rootDir, target, thresholds, map } = opts;
   const modules = selectModules(map, target);
+
+  // Q3: a typo'd / nonexistent target must not report false success with an
+  // empty per-module list — surface it as a not-found error (CLI maps to exit 1).
+  const trimmed = target.trim();
+  if (modules.length === 0 && trimmed !== '' && trimmed !== '.') {
+    throw new MiNotFoundError(`Target "${target}" does not match any module in the codebase map.`);
+  }
+
   const fanIn = computeFanIn(map);
 
   const perModule: ModuleAnalysis[] = [];
