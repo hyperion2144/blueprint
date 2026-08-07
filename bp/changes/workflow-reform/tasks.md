@@ -169,7 +169,7 @@ The fixer role, reviewer full-review reform, platform agents/OMP discrimination,
     - **AND** the apply template's `Next:` line reads `bp check`
   - **depends_on**: T-3
 
-- [ ] T-13: [type:behavior] Integration test: check → fixer → full re-review on a fixture <!-- commit: -->
+- [x] T-13: [type:behavior] Integration test: check → fixer → full re-review on a fixture <!-- commit: e9ad4ad -->
   - **refs**: DS-7, DS-10
   - **spec_ref**: specs/templates/spec.md#Check-Step-Full-Rereview
   - **files**: tests/integration/check-fixer-rereview.test.ts
