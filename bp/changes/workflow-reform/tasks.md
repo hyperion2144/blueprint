@@ -107,7 +107,7 @@ The structural rename layer: check template + registry + schema + routing + CLI 
 
 The fixer role, reviewer full-review reform, platform agents/OMP discrimination, dispatch, and `--fix` removal. Depends on Wave 1 so the check step already exists.
 
-- [ ] T-8: [type:behavior] Fixer agent prompt (`FIXER_PROMPT` + `AGENT_PROMPTS['fixer']`, `.claude/agents/bp-fixer.md`) <!-- commit: -->
+- [x] T-8: [type:behavior] Fixer agent prompt (`FIXER_PROMPT` + `AGENT_PROMPTS['fixer']`, `.claude/agents/bp-fixer.md`) <!-- commit: 961f00a -->
   - **refs**: DS-7
   - **spec_ref**: specs/templates/spec.md#Fixer-Agent-Role
   - **files**: src/templates/agents/index.ts, .claude/agents/bp-fixer.md
