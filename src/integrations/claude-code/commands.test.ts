@@ -11,7 +11,7 @@ describe('generateClaudeCommands', () => {
     const config = { platform: ['claude-code'] } as unknown as ProjectConfig;
     const files = generateClaudeCommands(config);
     expect(files).toBeDefined();
-    expect(files.length).toBe(10);
+    expect(files.length).toBe(11);
 
     for (const file of files) {
       expect(file.path).toMatch(/^\.claude\/commands\/bp-[a-z-]+\.md$/);
@@ -38,5 +38,14 @@ describe('generateClaudeCommands', () => {
     expect(planFile).toBeDefined();
     expect(planFile!.content).toContain('name: bp:plan');
     expect(planFile!.content).toContain('argument-hint:');
+  });
+
+  it('generates bp-refactor command with bp:refactor name and argument-hint', () => {
+    const config = { platform: ['claude-code'] } as unknown as ProjectConfig;
+    const files = generateClaudeCommands(config);
+    const refactorFile = files.find((f) => f.path === '.claude/commands/bp-refactor.md');
+    expect(refactorFile).toBeDefined();
+    expect(refactorFile!.content).toContain('name: bp:refactor');
+    expect(refactorFile!.content).toContain('argument-hint: "<target>"');
   });
 });

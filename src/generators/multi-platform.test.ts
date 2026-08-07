@@ -52,6 +52,24 @@ describe('multi-platform generation', () => {
     }
   });
 
+  it('refactor step generates across all five platforms', () => {
+    const files = generateAll(config(['omp', 'claude-code', 'opencode', 'agent', 'codex']));
+    const content: Record<string, string> = {};
+    for (const f of files) content[f.path] = f.content;
+
+    expect(content['.omp/commands/bp-refactor.md']).toBeDefined();
+    expect(content['.claude/commands/bp-refactor.md']).toBeDefined();
+    expect(content['.opencode/commands/bp-refactor.md']).toBeDefined();
+    expect(content['.agent/skills/bp-refactor/SKILL.md']).toBeDefined();
+    expect(content['.agents/skills/bp-refactor/SKILL.md']).toBeDefined();
+
+    expect(content['.omp/commands/bp-refactor.md']).toContain('name: bp:refactor');
+    expect(content['.omp/commands/bp-refactor.md']).toContain('argument-hint: "<target>"');
+    expect(content['.claude/commands/bp-refactor.md']).toContain('name: bp:refactor');
+    expect(content['.claude/commands/bp-refactor.md']).toContain('argument-hint: "<target>"');
+    expect(content['.agents/skills/bp-refactor/SKILL.md']).toContain('name: bp:refactor');
+  });
+
   it('all-platform golden-file snapshot', () => {
     const files = generateAll(config(['omp', 'claude-code', 'agent']));
     const snapshot: Record<string, string> = {};

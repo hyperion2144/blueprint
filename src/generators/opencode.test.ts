@@ -25,7 +25,7 @@ describe('opencode platform generation', () => {
   it('emits command files at .opencode/commands/', () => {
     const files = generateAll(config(['opencode']));
     const cmdFiles = files.filter((f) => f.path.startsWith('.opencode/commands/'));
-    expect(cmdFiles).toHaveLength(10);
+    expect(cmdFiles).toHaveLength(11);
     for (const f of cmdFiles) {
       expect(f.path).toMatch(/^\.opencode\/commands\/bp-[a-z-]+\.md$/);
     }

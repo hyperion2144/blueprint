@@ -31,7 +31,7 @@ describe('codex platform generation', () => {
   it('emits the ten Codex Skill files at .agents/skills/...', () => {
     const files = generateAll(config(['codex']));
     const skillFiles = files.filter((f) => f.path.startsWith('.agents/skills/'));
-    expect(skillFiles).toHaveLength(10);
+    expect(skillFiles).toHaveLength(11);
     for (const f of skillFiles) {
       expect(f.path).toMatch(/^\.agents\/skills\/bp-[a-z-]+\/SKILL\.md$/);
     }

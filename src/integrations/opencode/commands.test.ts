@@ -3,10 +3,10 @@ import { generateOpenCodeCommands } from './commands.js';
 import type { ProjectConfig } from '../../types/index.js';
 
 describe('generateOpenCodeCommands', () => {
-  it('generates all 10 command files with correct paths', () => {
+  it('generates all 11 command files with correct paths', () => {
     const config = {} as ProjectConfig;
     const files = generateOpenCodeCommands(config);
-    expect(files.length).toBe(10);
+    expect(files.length).toBe(11);
     for (const file of files) {
       expect(file.path).toMatch(/^\.opencode\/commands\/bp-[a-z-]+\.md$/);
       expect(file.content).toContain('---');
@@ -49,5 +49,13 @@ describe('generateOpenCodeCommands', () => {
       snapshot[step] = file.content;
     }
     expect(snapshot).toMatchSnapshot();
+  });
+
+  it('generates bp-refactor command with description-only frontmatter', () => {
+    const config = {} as ProjectConfig;
+    const files = generateOpenCodeCommands(config);
+    const refactorFile = files.find((f) => f.path === '.opencode/commands/bp-refactor.md');
+    expect(refactorFile).toBeDefined();
+    expect(refactorFile!.content).toMatch(/^---\ndescription: Run deterministic refactor analyzer/);
   });
 });

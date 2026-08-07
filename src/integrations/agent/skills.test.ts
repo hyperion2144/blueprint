@@ -6,7 +6,7 @@ describe('generateAgentSkills', () => {
   it('generates all skill files with correct paths', () => {
     const config = {} as ProjectConfig;
     const files = generateAgentSkills(config);
-    expect(files.length).toBe(10);
+    expect(files.length).toBe(11);
     for (const file of files) {
       expect(file.path).toMatch(/^\.agent\/skills\/bp-[a-z-]+\/SKILL\.md$/);
       expect(file.content).toContain('---');
@@ -48,5 +48,14 @@ describe('generateAgentSkills', () => {
       snapshot[step] = file.content;
     }
     expect(snapshot).toMatchSnapshot();
+  });
+
+  it('generates bp-refactor skill with refactor description', () => {
+    const config = {} as ProjectConfig;
+    const files = generateAgentSkills(config);
+    const refactorFile = files.find((f) => f.path === '.agent/skills/bp-refactor/SKILL.md');
+    expect(refactorFile).toBeDefined();
+    expect(refactorFile!.content).toContain('name: bp-refactor');
+    expect(refactorFile!.content).toContain('hide: false');
   });
 });

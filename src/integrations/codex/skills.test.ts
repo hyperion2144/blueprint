@@ -13,10 +13,10 @@ import { generateCodexSkills, CODEX_SKILL_DEFS } from './skills.js';
 import type { ProjectConfig } from '../../types/index.js';
 
 describe('generateCodexSkills', () => {
-  it('returns exactly ten skill files at .agents/skills/bp-<step>/SKILL.md', () => {
+  it('returns exactly eleven skill files at .agents/skills/bp-<step>/SKILL.md', () => {
     const config = {} as ProjectConfig;
     const files = generateCodexSkills(config);
-    expect(files).toHaveLength(10);
+    expect(files).toHaveLength(11);
     for (const file of files) {
       expect(file.path).toMatch(/^\.agents\/skills\/bp-[a-z-]+\/SKILL\.md$/);
     }
@@ -32,8 +32,8 @@ describe('generateCodexSkills', () => {
     }
   });
 
-  it('emits the canonical ten Codex workflow steps', () => {
-    expect(CODEX_SKILL_DEFS).toHaveLength(10);
+  it('emits the canonical eleven Codex workflow steps', () => {
+    expect(CODEX_SKILL_DEFS).toHaveLength(11);
     const steps = CODEX_SKILL_DEFS.map((d) => d.step);
     expect(steps).toEqual([
       'init',
@@ -46,6 +46,7 @@ describe('generateCodexSkills', () => {
       'continue',
       'ff',
       'loop',
+      'refactor',
     ]);
   });
 
@@ -69,6 +70,15 @@ describe('generateCodexSkills', () => {
       snapshot[step] = file.content;
     }
     expect(snapshot).toMatchSnapshot();
+  });
+
+  it('generates bp-refactor skill with Codex colon name', () => {
+    const config = {} as ProjectConfig;
+    const files = generateCodexSkills(config);
+    const refactorFile = files.find((f) => f.path === '.agents/skills/bp-refactor/SKILL.md');
+    expect(refactorFile).toBeDefined();
+    expect(refactorFile!.content).toMatch(/^---\nname: bp:refactor\n/);
+    expect(refactorFile!.content).toContain('Run deterministic refactor analyzer and dispatch refactorer sub-agents per module');
   });
 
   it('is deterministic — two invocations produce byte-identical output', () => {
