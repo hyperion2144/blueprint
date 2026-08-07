@@ -1,0 +1,68 @@
+{"file": "bp/changes/workflow-reform/proposal.md", "reason": "Change intent, scope, and the six PR-N deliverables the design must satisfy", "phase": "all", "tag": "artifact", "read": "full"}
+{"file": "bp/specs/templates/spec.md", "reason": "Global behavioral contract for workflow templates, agent prompts, and lifecycle command naming — refactor/reviewer requirements get MODIFIED by this change", "phase": "all", "tag": "spec", "read": "full"}
+{"file": "bp/specs/context/spec.md", "reason": "Global context-injection contract — change-steps list renamed review to check; context.jsonl phase enum uses check", "phase": "all", "tag": "spec", "read": "full"}
+{"file": "bp/specs/state/spec.md", "reason": "State derivation contract — verification step named check, artifact stays review.md, fix loopback owned by check step", "phase": "all", "tag": "spec", "read": "full"}
+{"file": "bp/specs/archive/spec.md", "reason": "Stale archive spec naming blueprint archive — repaired to bp finish / bp check surface", "phase": "all", "tag": "spec", "read": "full"}
+{"file": "bp/specs/plan-review/spec.md", "reason": "Plan Step-4 design-quality contract — DS-N Requirements/Constraints/Acceptance-Criteria verification added", "phase": "all", "tag": "spec", "read": "full"}
+{"file": "bp/specs/platform-gen/spec.md", "reason": "Platform generation contract — fixer agent files + OMP fixer discrimination + dispatch isolation", "phase": "all", "tag": "spec", "read": "full"}
+{"file": "bp/conventions/coding.md", "reason": "TS strict, ESM .js imports, kebab-case files, lowercase markdown, conventional commits", "phase": "all", "tag": "convention", "read": "full"}
+{"file": "bp/config.yaml", "reason": "Profile (standard), platforms, schema (spec-driven), tech stack context", "phase": "all", "tag": "config", "read": "full"}
+{"file": "bp/changes/workflow-reform/specs/templates/spec.md", "reason": "Delta contract for the check/fixer/finish/grilling/simplification behavior tasks", "phase": "apply", "tag": "spec", "read": "full"}
+{"file": "bp/changes/workflow-reform/specs/context/spec.md", "reason": "Delta contract for the context phase rename and check step classification", "phase": "apply", "tag": "spec", "read": "full"}
+{"file": "bp/changes/workflow-reform/specs/state/spec.md", "reason": "Delta contract for the change-verification step naming and fix-loopback ownership", "phase": "apply", "tag": "spec", "read": "full"}
+{"file": "bp/changes/workflow-reform/specs/archive/spec.md", "reason": "Delta contract for bp finish + archive-check step + stale spec repair", "phase": "apply", "tag": "spec", "read": "full"}
+{"file": "bp/changes/workflow-reform/specs/plan-review/spec.md", "reason": "Delta contract for DS-N contract fields in the plan quality gate", "phase": "apply", "tag": "spec", "read": "full"}
+{"file": "bp/changes/workflow-reform/specs/platform-gen/spec.md", "reason": "Delta contract for fixer platform generation and OMP discrimination", "phase": "apply", "tag": "spec", "read": "full"}
+{"file": "bp/changes/workflow-reform/design.md", "reason": "This change's design — DS-N/DS-1..DS-18 detailed designs and file manifest", "phase": "apply", "tag": "artifact", "read": "full"}
+{"file": "bp/changes/workflow-reform/tasks.md", "reason": "Task checklist with RED tests, spec_refs, and wave decomposition", "phase": "apply", "tag": "artifact", "read": "full"}
+{"file": "src/templates/workflows/registry.ts", "reason": "WORKFLOW_REGISTRY key review→check rename (DS-2)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/templates/workflows/review.ts", "reason": "Template module renamed to check.ts with fixer loopback + full re-review (DS-1)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/templates/workflows/check.ts", "reason": "Target file for the renamed check template (created from review.ts)", "phase": "apply", "tag": "source", "read": "full"}
+{"file": "src/core/schema.ts", "reason": "DEFAULT_SCHEMA step review→check, archive requires check (DS-2)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/core/continue.ts", "reason": "Routing to check, fix-routing relocation, FUSE branch (DS-3)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/commands/bp-review.ts", "reason": "CLI command renamed to bp-check.ts, --fix removed (DS-4)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/commands/bp-check.ts", "reason": "Target file for the renamed check command", "phase": "apply", "tag": "source", "read": "full"}
+{"file": "src/commands/bp-finalize.ts", "reason": "CLI command renamed to bp-finish.ts (DS-12)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/commands/bp-finish.ts", "reason": "Target file for the renamed finish command", "phase": "apply", "tag": "source", "read": "full"}
+{"file": "src/cli.ts", "reason": "Command registration for check and finish (DS-4, DS-12)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/commands/_utils.ts", "reason": "gateContextJsonl phase union review→check (DS-4)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/core/artifact-validator.ts", "reason": "currentPhase union review→check; artifact 'review' case stays (DS-4)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/core/context-jsonl-io.ts", "reason": "CONTEXT_PHASES + currentPhase check (DS-4)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/types/context-jsonl-io.ts", "reason": "CONTEXT_PHASES check (DS-4)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/commands/bp-state.ts", "reason": "nextAction bp review → bp check (DS-3)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/commands/bp-template.ts", "reason": "STEP_TO_WORKFLOW review→check, FILENAMES review.md stays (DS-6)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/commands/bp-apply.ts", "reason": "--fix option removed (DS-11)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/commands/bp-plan.ts", "reason": "--fix option removed (DS-11)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/commands/bp-dispatch.ts", "reason": "fixer role in isExecutorLike + ROLE_TEMPLATES (DS-10)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/templates/workflows/apply.ts", "reason": "--fix removed, Next: bp check (DS-11)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/templates/workflows/plan.ts", "reason": "--fix removed + DS-N contract dimension Step-4 (DS-11, DS-16)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/templates/workflows/archive.ts", "reason": "Archive-check step + bp finish rename (DS-13)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/templates/workflows/propose.ts", "reason": "Grilling-first propose (DS-15)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/templates/workflows/roadmap.ts", "reason": "Lightweight grilling Step 1 (DS-17)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/templates/workflows/shared.ts", "reason": "Shared constants — dedupe in simplification pass (DS-18)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/templates/workflows/refactor.ts", "reason": "Guardrail review→check + simplification (DS-18)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/templates/workflows/ff.ts", "reason": "Gate review→check + simplification (DS-18)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/templates/workflows/loop.ts", "reason": "Gate review→check + simplification (DS-18)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/templates/workflows/init.ts", "reason": "Simplification pass target (DS-18)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/templates/workflows/continue.ts", "reason": "Simplification pass target (DS-18)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/templates/agents/index.ts", "reason": "FIXER_PROMPT + AGENT_PROMPTS['fixer'], reviewer fix-mode removal, --fix removal, simplification (DS-7, DS-8, DS-11, DS-18)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/templates/artifacts/index.ts", "reason": "DESIGN_TEMPLATE DS-N fields + REVIEW_TEMPLATE routing (DS-16, DS-11)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/integrations/omp/commands.ts", "reason": "Platform step rename review→check (DS-5)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/integrations/omp/skills.ts", "reason": "Platform step rename review→check (DS-5)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/integrations/omp/agents.ts", "reason": "Add fixer AGENT_DEF (DS-9)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/integrations/omp/extension-runtime.ts", "reason": "AgentType + detectAgentType + render fixer branch (DS-9)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/templates/omp/extension.tmpl.ts", "reason": "Mirror fixer branch in bundled ES5 (DS-9)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/integrations/claude-code/commands.ts", "reason": "Platform step rename review→check (DS-5)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/integrations/claude-code/agents.ts", "reason": "Add fixer AGENT_DEF (DS-9)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/integrations/agent/skills.ts", "reason": "Platform step rename review→check (DS-5)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/integrations/agent/agents.ts", "reason": "Add fixer AGENT_DEF (DS-9)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/integrations/opencode/commands.ts", "reason": "Platform step rename review→check (DS-5)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/integrations/opencode/agents.ts", "reason": "Add fixer AGENT_DEF (DS-9)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/integrations/codex/skills.ts", "reason": "Platform step rename review→check (DS-5)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "bp/specs/archive/spec.md", "reason": "Stale global archive spec to repair to bp finish / bp check surface (DS-14)", "phase": "apply", "tag": "source", "read": "full"}
+{"file": ".claude/agents/bp-reviewer.md", "reason": "Generated reviewer agent file — fix mode removed, regenerated", "phase": "apply", "tag": "source", "read": "full"}
+{"file": ".claude/agents/bp-refactorer.md", "reason": "Precedent for sub-agent-only role file format (fixer mirrors this)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "tests/core/continue.test.ts", "reason": "Verdict-routing assertions change from plan/apply --fix to check", "phase": "apply", "tag": "test", "read": "full"}
+{"file": "tests/templates/workflow-apply-review.test.ts", "reason": "Imports check.js; asserts no bp context check self-call", "phase": "apply", "tag": "test", "read": "full"}
+{"file": "tests/commands/bp-dispatch.test.ts", "reason": "Add fixer dispatch assertions", "phase": "apply", "tag": "test", "read": "full"}
+{"file": "tests/integration/lifecycle.test.ts", "reason": "Uses bp finalize and bp review commands — updated to finish/check", "phase": "apply", "tag": "test", "read": "full"}
