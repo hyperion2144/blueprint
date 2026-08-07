@@ -98,3 +98,48 @@ describe('bp dispatch Codex platform (T-7)', () => {
     expect(output).toContain('bp-executor');
   });
 });
+
+describe('bp dispatch refactorer (T-3)', () => {
+  const refactorerTestDir = join(tmpdir(), `bp-dispatch-refactorer-${Date.now()}`);
+  const refactorerBpDir = join(refactorerTestDir, 'bp');
+
+  beforeAll(() => {
+    mkdirSync(refactorerTestDir, { recursive: true });
+    execSync(`node ${cliPath} init --dir ${refactorerTestDir} --yes`, {
+      encoding: 'utf-8',
+      cwd: refactorerTestDir,
+    });
+    // Replace platform: [omp] with platform: [omp, agent]
+    const cfg = readFileSync(join(refactorerBpDir, 'config.yaml'), 'utf-8');
+    const updated = cfg.replace(/platform:\n  - omp\n/, 'platform:\n  - omp\n  - agent\n');
+    writeFileSync(join(refactorerBpDir, 'config.yaml'), updated, 'utf-8');
+  });
+
+  afterAll(() => {
+    rmSync(refactorerTestDir, { recursive: true, force: true });
+  });
+
+  it('refactorer output mirrors executor isolation per platform', () => {
+    const output = execSync(`node ${cliPath} dispatch refactorer --target src/core`, {
+      encoding: 'utf-8',
+      cwd: refactorerTestDir,
+    });
+    expect(output).toContain('### Isolation');
+    // omp: Type: param
+    expect(output).toContain('- Type: param');
+    expect(output).toContain('- Support: yes');
+    // agent: Type: none with worktree instructions
+    expect(output).toContain('- Type: none');
+    expect(output).toContain('git worktree add');
+    // Single-module target is passed through
+    expect(output).toContain('target: src/core');
+  });
+
+  it('refactorer does not crash on missing template list', () => {
+    const output = execSync(`node ${cliPath} dispatch refactorer --target src/core`, {
+      encoding: 'utf-8',
+      cwd: refactorerTestDir,
+    });
+    expect(output).not.toContain('Cannot read property');
+  });
+});
