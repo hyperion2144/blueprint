@@ -109,8 +109,8 @@ export const DEFAULT_SCHEMA: SchemaDef = {
   ],
   steps: [
     { id: 'apply', requires: ['tasks'], command: 'apply', completion: 'tasks_all_checked', tracks: 'tasks.md', dispatch: 'executor' },
-    { id: 'review', requires: ['apply'], command: 'review', completion: 'review_exists', dispatch: 'reviewer' },
-    { id: 'archive', requires: ['review'], command: 'archive', completion: 'review_pass' },
+    { id: 'check', requires: ['apply'], command: 'check', completion: 'review_exists', dispatch: 'reviewer' },
+    { id: 'archive', requires: ['check'], command: 'archive', completion: 'review_pass' },
   ],
 };
 

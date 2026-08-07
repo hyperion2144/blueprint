@@ -1,7 +1,7 @@
 /**
  * Workflow step registry — maps step names to template getters.
  *
- * v2: 8-step spec-driven workflow: init, roadmap, propose, plan, apply, review, archive, continue.
+ * v2: 8-step spec-driven workflow: init, roadmap, propose, plan, apply, check, archive, continue.
  */
 
 import { getInitSkillTemplate, getInitCommandTemplate } from './init.js';
@@ -9,7 +9,7 @@ import { getRoadmapSkillTemplate, getRoadmapCommandTemplate } from './roadmap.js
 import { getProposeSkillTemplate, getProposeCommandTemplate } from './propose.js';
 import { getPlanSkillTemplate, getPlanCommandTemplate } from './plan.js';
 import { getApplySkillTemplate, getApplyCommandTemplate } from './apply.js';
-import { getReviewSkillTemplate, getReviewCommandTemplate } from './review.js';
+import { getCheckSkillTemplate, getCheckCommandTemplate } from './check.js';
 import { getArchiveSkillTemplate, getArchiveCommandTemplate } from './archive.js';
 import { getContinueSkillTemplate, getContinueCommandTemplate } from './continue.js';
 import { getFfSkillTemplate, getFfCommandTemplate } from './ff.js';
@@ -30,7 +30,7 @@ export const WORKFLOW_REGISTRY = {
   propose:  { skill: getProposeSkillTemplate,  command: getProposeCommandTemplate },
   plan:     { skill: getPlanSkillTemplate,     command: getPlanCommandTemplate },
   apply:    { skill: getApplySkillTemplate,    command: getApplyCommandTemplate },
-  review:   { skill: getReviewSkillTemplate,   command: getReviewCommandTemplate },
+  check:    { skill: getCheckSkillTemplate,    command: getCheckCommandTemplate },
   archive:  { skill: getArchiveSkillTemplate,  command: getArchiveCommandTemplate },
   continue: { skill: getContinueSkillTemplate, command: getContinueCommandTemplate },
   ff:       { skill: getFfSkillTemplate,       command: getFfCommandTemplate },

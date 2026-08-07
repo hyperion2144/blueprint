@@ -63,7 +63,7 @@ function reviewHandler(name: string | undefined, options: { fix?: boolean; ci?: 
   }
 
   // Output workflow instructions from registry
-  const reviewTemplate = WORKFLOW_REGISTRY.review.command();
+  const reviewTemplate = WORKFLOW_REGISTRY.check.command();
 
   console.log(`\nChange: ${changeName}`);
   if (options.fix) {

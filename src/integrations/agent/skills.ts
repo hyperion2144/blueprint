@@ -22,7 +22,7 @@ function skillDescription(step: string): string {
     propose: 'Create a change folder with proposal.md',
     plan: 'Change design',
     apply: 'Code implementation',
-    review: 'Triple review',
+    check: 'Triple check',
     archive: 'Verify and archive',
     continue: 'Check progress and suggest next step',
     ff: 'Fast-forward: auto-advance through all steps',
@@ -35,7 +35,7 @@ function skillDescription(step: string): string {
 // Type as readonly WorkflowStep[] so a typo (e.g. 'continu') is caught at
 // compile time — previously inferred as string[] and would silently produce
 // a skill with no body.
-const STEPS: readonly WorkflowStep[] = ['init', 'roadmap', 'propose', 'plan', 'apply', 'review', 'archive', 'continue', 'ff', 'loop', 'refactor'];
+const STEPS: readonly WorkflowStep[] = ['init', 'roadmap', 'propose', 'plan', 'apply', 'check', 'archive', 'continue', 'ff', 'loop', 'refactor'];
 
 export function generateAgentSkills(_config: ProjectConfig): { path: string; content: string }[] {
   return STEPS.map((step) => {

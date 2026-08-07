@@ -21,7 +21,7 @@ const STEP_TO_WORKFLOW: Record<string, WorkflowStep> = {
   propose: 'propose',
   plan: 'plan',
   apply: 'apply',
-  review: 'review',
+  check: 'check',
   archive: 'archive',
   continue: 'continue',
 };

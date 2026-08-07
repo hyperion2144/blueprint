@@ -19,7 +19,7 @@
 
 The structural rename layer: check template + registry + schema + routing + CLI + context phase + platform step generators must land together so the lifecycle stays internally consistent.
 
-- [ ] T-1: [type:behavior] Check workflow template (rename `review.ts` → `check.ts`; keep `review.md` artifact) <!-- commit: -->
+- [x] T-1: [type:behavior] Check workflow template (rename `review.ts` → `check.ts`; keep `review.md` artifact) <!-- commit: 8810471 -->
   - **refs**: DS-1
   - **spec_ref**: specs/templates/spec.md#Check-Step-Rename
   - **files**: src/templates/workflows/check.ts, src/templates/workflows/review.ts (delete), tests/templates/workflow-apply-review.test.ts
