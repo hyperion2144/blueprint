@@ -69,4 +69,14 @@ describe('bp refactor analyze <target> (T-10)', () => {
     expect(report).toContain('# Refactor Report');
     expect(report).toContain('## Summary');
   });
+
+  it('exits 1 with a clear stderr message for a target that resolves to no module (Q3)', () => {
+    const res = spawnSync(process.execPath, [cliPath, 'refactor', 'analyze', 'src/nope'], {
+      cwd: testDir,
+      encoding: 'utf-8',
+    });
+    expect(res.status).toBe(1);
+    expect(res.stderr).toContain('src/nope');
+    expect(res.stderr).toMatch(/no module|does not match/i);
+  });
 });

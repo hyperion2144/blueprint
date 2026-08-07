@@ -20,7 +20,7 @@ import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 
 import { generateCodebaseMap } from './codebase-map.js';
-import { runRefactorAnalyzer, writeRefactorReport, readRefactorReport } from './refactor-analyzer.js';
+import { MiNotFoundError, runRefactorAnalyzer, writeRefactorReport, readRefactorReport } from './refactor-analyzer.js';
 import { DEFAULT_REFACTOR_THRESHOLDS } from './config.js';
 
 /** 24 distinct words per line, plus a unique per-line token — 15-gram windows stay unique. */
@@ -221,6 +221,24 @@ describe('runRefactorAnalyzer (T-7)', () => {
       });
       writeRefactorReport(bpDir, result.report);
       expect(readRefactorReport(bpDir)).toBe(result.report);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('throws MiNotFoundError when a non-"." target resolves to no module (Q3)', () => {
+    const root = join(tmpdir(), `refactor-missing-${Date.now()}`);
+    buildFixture(root);
+    try {
+      const map = generateCodebaseMap(root);
+      expect(() =>
+        runRefactorAnalyzer({
+          rootDir: root,
+          target: 'src/nope',
+          thresholds: DEFAULT_REFACTOR_THRESHOLDS,
+          map,
+        }),
+      ).toThrow(MiNotFoundError);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
