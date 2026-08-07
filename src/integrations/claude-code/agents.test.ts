@@ -6,7 +6,7 @@ describe('generateClaudeAgents', () => {
   it('generates all agent files with correct frontmatter', () => {
     const config = {} as ProjectConfig;
     const files = generateClaudeAgents(config);
-    expect(files).toHaveLength(4);
+    expect(files).toHaveLength(5);
     for (const file of files) {
       expect(file.path).toMatch(/^\.claude\/agents\/bp-[a-z-]+\.md$/);
       expect(file.content).toContain('---');
@@ -23,5 +23,14 @@ describe('generateClaudeAgents', () => {
       snapshot[role] = file.content;
     }
     expect(snapshot).toMatchSnapshot();
+  });
+
+  it('generates bp-refactorer agent embedding the shared refactorer prompt', () => {
+    const config = {} as ProjectConfig;
+    const files = generateClaudeAgents(config);
+    const refactorer = files.find((f) => f.path === '.claude/agents/bp-refactorer.md');
+    expect(refactorer).toBeDefined();
+    expect(refactorer!.content).toContain('name: bp-refactorer');
+    expect(refactorer!.content).toContain('behavior preservation is mandatory');
   });
 });

@@ -70,6 +70,23 @@ describe('multi-platform generation', () => {
     expect(content['.agents/skills/bp-refactor/SKILL.md']).toContain('name: bp:refactor');
   });
 
+  it('refactorer agent generates across all four agent platforms', () => {
+    const files = generateAll(config(['omp', 'claude-code', 'opencode', 'agent']));
+    const content: Record<string, string> = {};
+    for (const f of files) content[f.path] = f.content;
+
+    for (const path of [
+      '.omp/agents/bp-refactorer.md',
+      '.claude/agents/bp-refactorer.md',
+      '.opencode/agents/bp-refactorer.md',
+      '.agent/agents/bp-refactorer.md',
+    ]) {
+      expect(content[path]).toBeDefined();
+      expect(content[path]).toContain('Behavior-preserving consolidation + spec sync per assigned module');
+      expect(content[path]).toContain('behavior preservation is mandatory');
+    }
+  });
+
   it('all-platform golden-file snapshot', () => {
     const files = generateAll(config(['omp', 'claude-code', 'agent']));
     const snapshot: Record<string, string> = {};

@@ -65,4 +65,15 @@ describe('generateOpenCodeAgents', () => {
     }
     expect(snapshot).toMatchSnapshot();
   });
+
+  it('generates bp-refactorer agent with write/edit/bash tools', () => {
+    const config = {} as ProjectConfig;
+    const files = generateOpenCodeAgents(config);
+    const refactorer = files.find((f) => f.path === '.opencode/agents/bp-refactorer.md');
+    expect(refactorer).toBeDefined();
+    expect(refactorer!.content).toContain('write: true');
+    expect(refactorer!.content).toContain('edit: true');
+    expect(refactorer!.content).toContain('bash: true');
+    expect(refactorer!.content).toContain('behavior preservation is mandatory');
+  });
 });
