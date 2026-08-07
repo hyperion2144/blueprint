@@ -11,9 +11,9 @@
  *  - src/xdupb       — one file sharing a duplicated block with src/xdupa (cross-module)
  *
  * Every module except src/flat carries a non-source `misc/` subdirectory so
- * the flatness metric only fires for src/flat. src/flat and src/wellshaped
- * each have fanIn 2 (two modules import them), so low-reuse only fires for
- * src/lowreuse.
+ * the flatness metric only fires for src/flat. src/flat has fanIn 2 (imported
+ * by frag and lowreuse) and src/wellshaped has fanIn 4 (imported by frag, dup,
+ * xdupa, and xdupb), so low-reuse only fires for src/lowreuse.
  */
 
 import { describe, expect, it } from 'vitest';
