@@ -7,6 +7,7 @@ export type {
   ModelMap,
   Rules,
   ProjectConfig,
+  RefactorThresholds,
 } from './config.js';
 
 export { PROFILE_MODEL_MAP } from './config.js';

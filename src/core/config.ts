@@ -8,10 +8,42 @@ import { existsSync } from 'node:fs';
 import { z } from 'zod';
 import { readYamlDoc, writeYamlDoc } from '../parser/yaml.js';
 import { PROFILE_MODEL_MAP } from '../types/config.js';
-import type { ProjectConfig, Profile, ModelMap } from '../types/index.js';
+import type { ProjectConfig, Profile, ModelMap, RefactorThresholds } from '../types/index.js';
 import { Document } from 'yaml';
 
 const CONFIG_FILE = 'config.yaml';
+
+/** Default refactor thresholds — single source of truth for schema defaults and init/migration literals. */
+export const DEFAULT_REFACTOR_THRESHOLDS: RefactorThresholds = {
+  fragmentation: { exportsMax: 2, fileLinesMax: 50 },
+  duplication: { similarityMin: 0.8, gramSize: 15 },
+  flatness: { maxDepth: 1, subdirMin: 2 },
+  lowReuse: { fanInMax: 1, exportsMin: 3 },
+};
+
+/** Fresh copy of the defaults — zod applies default values without re-parsing
+ *  or cloning, so object defaults MUST NOT be a shared mutable reference. */
+const freshRefactorThresholds = (): RefactorThresholds => structuredClone(DEFAULT_REFACTOR_THRESHOLDS);
+
+/** Zod schema for the refactor.thresholds block (bp/config.yaml `refactor:`). */
+const RefactorThresholdsSchema = z.object({
+  fragmentation: z.object({
+    exportsMax: z.number().int().positive().default(2),
+    fileLinesMax: z.number().int().positive().default(50),
+  }).default(() => structuredClone(DEFAULT_REFACTOR_THRESHOLDS.fragmentation)),
+  duplication: z.object({
+    similarityMin: z.number().min(0).max(1).default(0.8),
+    gramSize: z.number().int().positive().default(15),
+  }).default(() => structuredClone(DEFAULT_REFACTOR_THRESHOLDS.duplication)),
+  flatness: z.object({
+    maxDepth: z.number().int().nonnegative().default(1),
+    subdirMin: z.number().int().nonnegative().default(2),
+  }).default(() => structuredClone(DEFAULT_REFACTOR_THRESHOLDS.flatness)),
+  lowReuse: z.object({
+    fanInMax: z.number().int().nonnegative().default(1),
+    exportsMin: z.number().int().positive().default(3),
+  }).default(() => structuredClone(DEFAULT_REFACTOR_THRESHOLDS.lowReuse)),
+}).default(freshRefactorThresholds);
 
 /** Zod schema for config.yaml */
 export const ProjectConfigSchema = z.object({
@@ -42,6 +74,7 @@ export const ProjectConfigSchema = z.object({
     estimated_token_cap: 500000,
     no_progress_fuse_rounds: 2,
   }),
+  refactor: z.object({ thresholds: RefactorThresholdsSchema }).default(() => ({ thresholds: freshRefactorThresholds() })),
 });
 
 /** Get config file path */
@@ -107,6 +140,11 @@ export function resolveModelsForLevel(config: ProjectConfig, level: Profile, rou
   return base;
 }
 
+/** Refactor analyzer thresholds — the schema defaults guarantee a populated value. */
+export function getRefactorThresholds(config: ProjectConfig): RefactorThresholds {
+  return config.refactor.thresholds;
+}
+
 /** Loose Zod schema for v1 project.yml — accepts the v1 shape, then we map
  *  fields explicitly. Prevents unvalidated casts from propagating malformed
  *  values into the v2 config. */
@@ -157,6 +195,7 @@ function migrateConfig(bpDir: string): ProjectConfig {
     prompt_profile: 'standard',
     approvers: [],
     budget: { max_subagent_runs: 5, max_review_rounds: 3, max_wall_time_min: 60, estimated_token_cap: 500000, no_progress_fuse_rounds: 2 },
+    refactor: { thresholds: DEFAULT_REFACTOR_THRESHOLDS },
   };
   // Validate the migrated shape before persisting
   const validated = ProjectConfigSchema.parse(draft) as ProjectConfig;

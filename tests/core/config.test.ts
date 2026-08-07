@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdirSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { loadConfig, saveConfig, updateConfig, resolveModels, configPath } from '../../src/core/config.js';
+import { loadConfig, saveConfig, updateConfig, resolveModels, configPath, getRefactorThresholds } from '../../src/core/config.js';
 
 const tmpDir = join(process.cwd(), 'tests/tmp-config');
 
@@ -46,6 +46,41 @@ describe('loadConfig', () => {
     expect(config.rules).toEqual({});
     expect(config.models).toEqual({});
     expect(config.context).toBe('Test project\n');
+  });
+
+  it('refactor thresholds default when the refactor section is absent', () => {
+    const config = loadConfig(tmpDir);
+    expect(config.refactor.thresholds.fragmentation.exportsMax).toBe(2);
+    expect(config.refactor.thresholds.fragmentation.fileLinesMax).toBe(50);
+    expect(config.refactor.thresholds.duplication.similarityMin).toBe(0.8);
+    expect(config.refactor.thresholds.duplication.gramSize).toBe(15);
+    expect(config.refactor.thresholds.flatness.maxDepth).toBe(1);
+    expect(config.refactor.thresholds.flatness.subdirMin).toBe(2);
+    expect(config.refactor.thresholds.lowReuse.fanInMax).toBe(1);
+    expect(config.refactor.thresholds.lowReuse.exportsMin).toBe(3);
+  });
+});
+
+describe('refactor thresholds round-trip', () => {
+  it('custom thresholds round-trip through loadConfig + saveConfig', () => {
+    const config = loadConfig(tmpDir);
+    config.refactor.thresholds.fragmentation.exportsMax = 5;
+    config.refactor.thresholds.duplication.similarityMin = 0.9;
+    saveConfig(tmpDir, config);
+    const reloaded = loadConfig(tmpDir);
+    expect(reloaded.refactor.thresholds.fragmentation.exportsMax).toBe(5);
+    expect(reloaded.refactor.thresholds.duplication.similarityMin).toBe(0.9);
+    // Untouched defaults survive the round-trip
+    expect(reloaded.refactor.thresholds.lowReuse.fanInMax).toBe(1);
+    expect(reloaded.refactor.thresholds.lowReuse.exportsMin).toBe(3);
+  });
+
+  it('getRefactorThresholds returns the (defaulted) thresholds object', () => {
+    const config = loadConfig(tmpDir);
+    const thresholds = getRefactorThresholds(config);
+    expect(thresholds.fragmentation.exportsMax).toBe(2);
+    expect(thresholds.flatness.maxDepth).toBe(1);
+    expect(thresholds.lowReuse.exportsMin).toBe(3);
   });
 });
 

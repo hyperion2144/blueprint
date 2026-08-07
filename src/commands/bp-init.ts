@@ -14,6 +14,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import type { Command } from 'commander';
 import type { Profile, ProjectConfig } from '../types/index.js';
 import { createBlueprintStructure, isInitialized } from '../core/file-tree.js';
+import { DEFAULT_REFACTOR_THRESHOLDS } from '../core/config.js';
 import { runInitWizard } from '../prompts/init-wizard.js';
 import { detectProjectInfo, runBrownfieldInit } from '../core/brownfield.js';
 import { generateCodebaseMap, writeCodebaseMap } from '../core/codebase-map.js';
@@ -142,6 +143,7 @@ async function initHandler(options: {
       prompt_profile: 'standard',
       approvers: [],
       budget: { max_subagent_runs: 5, max_review_rounds: 3, max_wall_time_min: 60, estimated_token_cap: 500000, no_progress_fuse_rounds: 2 },
+      refactor: { thresholds: DEFAULT_REFACTOR_THRESHOLDS },
     };
     const files = generateAll(config);
     writeGeneratedFiles(files);

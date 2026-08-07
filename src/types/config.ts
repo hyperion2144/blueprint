@@ -42,6 +42,30 @@ export interface ProjectConfig {
     estimated_token_cap: number;
     no_progress_fuse_rounds: number;
   };
+  /** Refactor analyzer thresholds (bp/config.yaml `refactor.thresholds`) */
+  refactor: {
+    thresholds: RefactorThresholds;
+  };
+}
+
+/** Refactor analyzer thresholds — documented defaults applied by the Zod schema. */
+export interface RefactorThresholds {
+  fragmentation: {
+    exportsMax: number;
+    fileLinesMax: number;
+  };
+  duplication: {
+    similarityMin: number;
+    gramSize: number;
+  };
+  flatness: {
+    maxDepth: number;
+    subdirMin: number;
+  };
+  lowReuse: {
+    fanInMax: number;
+    exportsMin: number;
+  };
 }
 
 /** Profile -> default model mapping */
