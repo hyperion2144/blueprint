@@ -14,6 +14,7 @@ import { getArchiveSkillTemplate, getArchiveCommandTemplate } from './archive.js
 import { getContinueSkillTemplate, getContinueCommandTemplate } from './continue.js';
 import { getFfSkillTemplate, getFfCommandTemplate } from './ff.js';
 import { getLoopSkillTemplate, getLoopCommandTemplate } from './loop.js';
+import { getRefactorSkillTemplate, getRefactorCommandTemplate } from './refactor.js';
 
 import type { SkillTemplate, CommandTemplate } from '../types.js';
 
@@ -34,6 +35,7 @@ export const WORKFLOW_REGISTRY = {
   continue: { skill: getContinueSkillTemplate, command: getContinueCommandTemplate },
   ff:       { skill: getFfSkillTemplate,       command: getFfCommandTemplate },
   loop:     { skill: getLoopSkillTemplate,     command: getLoopCommandTemplate },
+  refactor: { skill: getRefactorSkillTemplate, command: getRefactorCommandTemplate },
 } as const satisfies Record<string, WorkflowEntry>;
 
 export type WorkflowStep = keyof typeof WORKFLOW_REGISTRY;
