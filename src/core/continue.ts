@@ -173,7 +173,7 @@ function determineChangeNextStep(
   schema: SchemaDef,
 ): NextStep | null {
   const dir = changeDir(bpDir, changeName);
-  const { artifacts, reviewVerdict, unresolvedIssues, hasDesignIssues } = progress;
+  const { artifacts, reviewVerdict, unresolvedIssues } = progress;
 
   // Build artifact existence set from schema
   const existingArtifacts = new Set<string>();
@@ -281,27 +281,19 @@ function determineChangeNextStep(
         if (allLowProgress && recentNewIssues.length >= fuseRounds) {
           return {
             stage: progress.stage,
-            command: `bp review ${changeName}`,
+            command: `bp check ${changeName}`,
             description: `[FUSE] Diminishing returns detected: last ${fuseRounds} review rounds added <= 2 issues each. Recommend human verification before another fix cycle.`,
-            instructions: getWorkflowInstructions('review', bpDir),
+            instructions: getWorkflowInstructions('check', bpDir),
           };
         }
       }
     } catch { /* review.md unreadable — skip fuse */ }
 
-    if (hasDesignIssues) {
-      return {
-        stage: progress.stage,
-        command: `plan --fix ${changeName}`,
-        description: `Fix design issues — ${reviewVerdict}, ${unresolvedIssues} unresolved (D-prefixed design issue detected, replan needed)`,
-        instructions: getWorkflowInstructions('plan', bpDir),
-      };
-    }
     return {
       stage: progress.stage,
-      command: `apply --fix ${changeName}`,
-      description: `Fix code issues — ${reviewVerdict}, ${unresolvedIssues} unresolved`,
-      instructions: getWorkflowInstructions('apply', bpDir),
+      command: `bp check ${changeName}`,
+      description: `Fix issues and re-review — ${reviewVerdict}, ${unresolvedIssues} unresolved`,
+      instructions: getWorkflowInstructions('check', bpDir),
     };
   }
 
@@ -313,7 +305,7 @@ function determineChangeNextStep(
       // 'apply' requires tasks -> check artifacts.allTasksDone or tasks exist
       if (req === 'tasks') return existingArtifacts.has('tasks');
       if (req === 'apply') return stepCompletion.get('apply') ?? false;
-      if (req === 'review') return stepCompletion.get('review') ?? false;
+      if (req === 'check') return stepCompletion.get('check') ?? false;
       return existingArtifacts.has(req);
     });
 
@@ -331,8 +323,8 @@ function determineChangeNextStep(
         } else {
           description = `Dispatch executor sub-agents (${artifacts.tasksCompleted}/${artifacts.tasksTotal} tasks done)`;
         }
-      } else if (step.id === 'review') {
-        description = 'Verify build and tests pass (per project config), then dispatch reviewer for triple review';
+      } else if (step.id === 'check') {
+        description = 'Verify build and tests pass, then dispatch reviewer for a full triple review';
       } else if (step.id === 'archive') {
         description = 'Merge delta specs, archive change, update roadmap';
       }

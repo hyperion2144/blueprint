@@ -168,7 +168,7 @@ export function deriveState(bpDir: string): StateResult {
   if (activeChange) {
     if (activeChange.status === 'proposed') nextAction = `bp plan ${activeChange.name}`;
     else if (activeChange.status === 'planned') nextAction = `bp apply ${activeChange.name}`;
-    else if (activeChange.status === 'applied') nextAction = `bp review ${activeChange.name}`;
+    else if (activeChange.status === 'applied') nextAction = `bp check ${activeChange.name}`;
     else if (activeChange.status === 'reviewed') nextAction = `bp archive ${activeChange.name}`;
   } else if (pendingChanges.length > 0) {
     const candidate = pendingChanges[0];
