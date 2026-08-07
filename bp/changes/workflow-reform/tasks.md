@@ -292,8 +292,8 @@ Runs last over the final structure — every template and agent prompt simplifie
   These are the gates before review can run.
 -->
 
-- [ ] type-check/build passes with no errors
-- [ ] test suite passes (per project test command)
-- [ ] Every task in every wave is marked `[x]` with a commit hash
-- [ ] No `{{` template placeholders remaining in any artifact
-- [ ] All wave acceptance criteria confirmed
+- [x] type-check/build passes with no errors
+- [x] test suite passes (per project test command)
+- [x] Every task in every wave is marked `[x]` with a commit hash
+- [x] No `{{` template placeholders remaining in any artifact
+- [x] All wave acceptance criteria confirmed
