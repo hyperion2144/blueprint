@@ -19,10 +19,10 @@
 {"file": "src/commands/bp-propose.ts", "reason": "CLI step-command pattern — bp-refactor mirrors getWorkflowInstructions surface", "phase": "apply", "tag": "pattern", "read": "full"}
 {"file": "src/commands/bp-dispatch.ts", "reason": "EXECUTOR_ISOLATION + FORMATS — refactorer dispatch reuses this machinery", "phase": "apply", "tag": "invariant", "read": "full"}
 {"file": "src/core/continue.ts", "reason": "getWorkflowInstructions fallback to WORKFLOW_REGISTRY — refactor CLI resolves through here", "phase": "apply", "tag": "invariant", "read": "full"}
-{"file": "src/core/codebase-map.ts", "reason": "Per-module exports/files/imports data and loadMap() — analyzer reuses fingerprints", "phase": "apply", "tag": "data-source", "read": "range:1-220"}
-{"file": "src/core/config.ts", "reason": "ProjectConfigSchema — extends with refactor.thresholds", "phase": "apply", "tag": "invariant", "read": "range:16-110"}
+{"file": "src/core/codebase-map.ts", "reason": "Per-module exports/files/imports data and loadMap() — analyzer reuses fingerprints", "phase": "apply", "tag": "data-source", "read": "range", "range": [1, 220]}
+{"file": "src/core/config.ts", "reason": "ProjectConfigSchema — extends with refactor.thresholds", "phase": "apply", "tag": "invariant", "read": "range", "range": [16, 110]}
 {"file": "src/templates/agents/index.ts", "reason": "AGENT_CONSTRAINTS and AGENT_PROMPTS — new REFACTORER_PROMPT reuses shared constraints", "phase": "apply", "tag": "invariant", "read": "full"}
-{"file": "src/integrations/omp/extension-runtime.ts", "reason": "detectAgentType('refactorer') branch — extension must recognize new agent type", "phase": "apply", "tag": "invariant", "read": "range:76-152"}
+{"file": "src/integrations/omp/extension-runtime.ts", "reason": "detectAgentType('refactorer') branch — extension must recognize new agent type", "phase": "apply", "tag": "invariant", "read": "range", "range": [76, 152]}
 {"file": "src/cli.ts", "reason": "registerBpRefactor() call site to register new CLI command", "phase": "apply", "tag": "invariant", "read": "full"}
 {"file": "bp/changes/archive/2026-07-24-add-claude-code-hooks/design.md", "reason": "Style reference for DS-N layout, architecture decisions, file manifest, impact analysis", "phase": "plan", "tag": "style-ref", "read": "full"}
 {"file": "bp/changes/archive/2026-07-24-add-claude-code-hooks/tasks.md", "reason": "Style reference for T-N numbering, waves, TDD annotations, RED GIVEN/WHEN/THEN", "phase": "plan", "tag": "style-ref", "read": "full"}

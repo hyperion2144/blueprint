@@ -54,7 +54,7 @@
   - **Deliverables**: 10 core modules under src/core/
   - **Outcomes**: `bp continue` works without state.md; all 13 commands resolve via artifact presence
   - **Depends on**: none
-- [-] refactor-command (planned 2026-08-06)
+- [-] refactor-command (implemented 2026-08-06)
   - **Goal**: Dedicated refactor workflow step (bp-refactor command/skill) with deterministic analyzer + refactorer sub-agent to consolidate fragmented/duplicated/flat/low-reuse code into deep modules and keep specs in sync
   - **What**: New `refactor` step in WORKFLOW_REGISTRY/STEP_DEFS + platform generators; `bp refactor <target>` outputs step content; `bp refactor analyze <target>` computes four anti-pattern metrics + depth ratio to bp/.refactor-report.md; refactorer sub-agent performs behavior-preserving consolidation + affected-spec sync
   - **Deliverables**: src/commands/bp-refactor.ts, src/core/refactor-analyzer.ts, src/templates/workflows/refactor.ts, src/templates/agents refactorer prompt, platform generators
