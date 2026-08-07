@@ -3,7 +3,7 @@
  *
  * T-1 RED: GIVEN a valid ProjectConfig and shared workflow registry
  *          WHEN generateCodexSkills(config) runs
- *          THEN ten deterministic Skill descriptors are returned with
+ *          THEN eleven deterministic Skill descriptors are returned with
  *               Codex frontmatter (name: bp:<step>, no argument-hint) and
  *               workflow bodies.
  */

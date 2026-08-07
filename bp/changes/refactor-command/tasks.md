@@ -69,7 +69,7 @@
   refactor step and (where applicable) the refactorer agent.
 -->
 
-- [ ] T-4: [type:behavior] Append `refactor` to omp/claude-code/opencode/agent/codex STEP_DEFS / STEPS <!-- commit: -->
+- [x] T-4: [type:behavior] Append `refactor` to omp/claude-code/opencode/agent/codex STEP_DEFS / STEPS <!-- commit: 3ce0bfcc3e9f56cf3226fe368f5399031c8bf02e -->
   - **refs**: DS-3
   - **spec_ref**: bp/changes/refactor-command/specs/platform-gen/spec.md#Refactor-Step-Generation
   - **files**: `src/integrations/omp/commands.ts`, `src/integrations/claude-code/commands.ts`, `src/integrations/opencode/commands.ts`, `src/integrations/agent/skills.ts`, `src/integrations/codex/skills.ts`
@@ -83,7 +83,7 @@
     - **AND** `.agent/skills/bp-refactor/SKILL.md` is present
     - **AND** `.agents/skills/bp-refactor/SKILL.md` is present with `name: bp:refactor`.
 
-- [ ] T-5: [type:behavior] Append `refactorer` agent role to every platform agent generator <!-- commit: -->
+- [x] T-5: [type:behavior] Append `refactorer` agent role to every platform agent generator <!-- commit: 77c1eb275d7367f3f7b210ab9946bed7d8e078ce -->
   - **refs**: DS-3
   - **spec_ref**: bp/changes/refactor-command/specs/platform-gen/spec.md#Refactor-Step-Generation
   - **files**: `src/integrations/omp/agents.ts`, `src/integrations/claude-code/agents.ts`, `src/integrations/opencode/agents.ts`, `src/integrations/agent/agents.ts`
@@ -93,7 +93,7 @@
     - **WHEN** `generateClaudeAgent({ role: 'refactorer', description: '...' })` runs
     - **THEN** the returned string contains `name: bp-refactorer` and embeds `AGENT_PROMPTS['refactorer']` as its body.
 
-- [ ] T-6: [type:refactor] Regenerate golden-file snapshots for the new platform files <!-- commit: -->
+- [x] T-6: [type:refactor] Regenerate golden-file snapshots for the new platform files <!-- commit: e35d0ae687ef0fd87eb9ea2a4219d0c888db2f0e -->
   - **refs**: DS-3
   - **files**: `src/integrations/claude-code/__snapshots__/commands.test.ts.snap`, `src/integrations/claude-code/__snapshots__/agents.test.ts.snap`, `src/generators/multi-platform.test.ts`, `src/integrations/opencode/__snapshots__/commands.test.ts.snap` (if present), `tests/integration/lifecycle.test.ts`
   - **acceptance**: `npx vitest run --update` produces snapshots that include `bp-refactor.md` (and `bp-refactorer.md`) entries for every configured platform; an unaltered snapshot for files outside the new entries — verified by inspecting the `git diff` of the snapshot files.
