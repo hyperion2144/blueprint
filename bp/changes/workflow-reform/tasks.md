@@ -233,7 +233,7 @@ The fixer role, reviewer full-review reform, platform agents/OMP discrimination,
     - **AND** the template notes grilling may be skipped for trivial/light changes
   - **depends_on**: T-12
 
-- [ ] T-18: [type:behavior] Design template DS-N contract fields + planner prompt + plan Step-4 dimension <!-- commit: -->
+- [x] T-18: [type:behavior] Design template DS-N contract fields + planner prompt + plan Step-4 dimension <!-- commit: e4f0815 -->
   - **refs**: DS-16
   - **spec_ref**: specs/plan-review/spec.md#DS-N-Contract-Fields
   - **files**: src/templates/artifacts/index.ts, src/templates/agents/index.ts, src/templates/workflows/plan.ts
