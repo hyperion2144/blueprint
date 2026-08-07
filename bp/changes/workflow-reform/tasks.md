@@ -246,7 +246,7 @@ The fixer role, reviewer full-review reform, platform agents/OMP discrimination,
     - **AND** the plan template Step-4 Dimension 1 lists the DS-N contract fields check
   - **depends_on**: T-12
 
-- [ ] T-19: [type:behavior] Roadmap template — lightweight grilling (direction + milestone agreement, defer requirements) <!-- commit: -->
+- [x] T-19: [type:behavior] Roadmap template — lightweight grilling (direction + milestone agreement, defer requirements) <!-- commit: 265bca2 -->
   - **refs**: DS-17
   - **spec_ref**: specs/templates/spec.md#Roadmap-Lightweight-Grilling
   - **files**: src/templates/workflows/roadmap.ts
