@@ -4,6 +4,8 @@
 
 Inject spec, convention, and artifact context into agent sessions. Generate platform integration files (commands, agents, skills, hooks) from TypeScript templates. Enable agents to access relevant project state without reading the full file tree.
 
+## Requirements
+
 ### Requirement: Context Output Structure
 
 The system SHALL produce a `ContextResult` containing: step name, scope (type+ref), specs array, conventions array, change artifacts array, and requirements array.

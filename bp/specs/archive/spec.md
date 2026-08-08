@@ -4,6 +4,8 @@
 
 Archive completed changes — merge delta specs into the global specs, move change directories to the archive, and update the roadmap. The archive is executed by `bp finish <change-name>` after the `bp check` review gate passes.
 
+## Requirements
+
 ### Requirement: Archive Command Input
 
 The system SHALL accept `bp finish <change-name>` where `change-name` is the name of an active change under `bp/changes/`.

@@ -4,6 +4,8 @@
 
 Manage the blueprint state machine — state reading/writing, transition validation, exit-condition checking, and auto-advance routing. State is stored in `blueprint/state.md` with YAML frontmatter.
 
+## Requirements
+
 ### Requirement: State File Schema
 
 The system SHALL validate `state.md` frontmatter against a Zod schema.
