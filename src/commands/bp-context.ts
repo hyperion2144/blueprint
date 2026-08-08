@@ -2,7 +2,7 @@
  * bp context <step> — generate the AI context prompt for a given workflow step.
  *
  * Produces a structured context prompt containing specs, conventions, rules,
- * and active change info for the given workflow step (plan / apply / review / archive).
+ * and active change info for the given workflow step (plan / apply / check / archive).
  *
  * Formats: full (terminal-friendly), compact (tagged XML block), json (structured data).
  */
