@@ -844,34 +844,48 @@ description: View or modify roadmap.md
 
 ## Steps
 
-### Step 1: Lightweight grilling — direction and milestone agreement
+### Step 1: Grill the project's feature scope (complete)
 
-Before defining milestones, agree project direction and the milestone/phase skeleton. This is a LIGHTWEIGHT grilling — NOT a full requirements interview. Ask ONE question at a time with a recommended answer.
+Before defining milestones, reach full shared understanding of what this project must DO. This is a COMPLETE feature-scope discussion — but it stays at the feature level: do NOT dive into implementation detail (edge cases, failure modes, exact requirements), which is captured per-change in each \`bp propose\` step. Ask ONE question at a time with a recommended answer.
 
-Resolve:
-1. **Direction** — what is this project for? What problem does it solve?
-2. **Milestone/phase skeleton** — what structure does the user want?
+Resolve (walk every branch of the feature scope):
+1. **Main capabilities** — what are the primary features/capabilities this project must deliver? Enumerate them; each becomes candidate work.
+2. **Scope boundaries** — what is explicitly NOT in scope? where does this project stop?
+3. **Target users** — who is this for? what do they need?
+4. **Constraints** — technical, timeline, or resource constraints? existing tech stack?
+5. **Priorities** — what matters most? what is committed vs a future intention?
+
+**Hard rules:** ask ONE question at a time, wait for the answer, always provide a recommended answer, and do NOT proceed until you can enumerate the full feature scope without guessing. Do NOT use assumptions — if you are about to assume, STOP and ask instead.
+
+> Implementation detail (edge cases, failure modes, exact requirements) is deferred to each change's propose step (\`bp propose\`) — do NOT grill those here.
+
+### Step 2: User confirmation — scope discussion complete
+
+After the feature-scope grilling, present a concise summary of the agreed scope (capabilities, boundaries, priorities) and ASK the user explicitly to confirm the discussion is complete:
+
+- Present the summary.
+- Ask: "Is the feature scope discussion complete? Anything missing or to adjust?"
+- Do NOT proceed to milestone planning until the user confirms. If the user adds or changes items, return to Step 1 and resolve them before continuing.
+
+### Step 3: Agree the milestone/phase structure with the user
+
+Only after the user confirms the scope is complete, discuss HOW to plan the roadmap (one question at a time, recommended answer):
+
+1. **Planning mode** — MVP mode (each phase delivers user-facing value) vs technical-layer mode (infrastructure/CLI; each phase produces a runnable/testable artifact). Ask the user; use \`ask\`.
+2. **Milestone/phase skeleton** — how should the confirmed scope be cut into milestones (product releases) and phases (runnable end-to-end slices)? Which features go in which phase? What is the build order? Propose a skeleton and refine it with the user.
 3. **Future intentions** — which discussed items are future intentions (M2+ placeholders) vs committed scope?
 
-**Hard rules:** ask ONE question at a time, wait for the answer, always provide a recommended answer, and do NOT proceed until direction and the milestone skeleton are agreed without guessing.
+Agree the skeleton with the user before writing the roadmap.
 
-> **Detailed feature/edge-case/failure-mode requirements are deferred to each change's propose step (\`bp propose\`) — do NOT grill them here.**
-
-### Step 2: Get context
+### Step 4: Get context
 
 Read \`bp/config.yaml\` and \`bp/specs/\` to understand project scope, tech stack, and existing behavioral contracts.
 
-### Step 3: Detect roadmap state
+### Step 5: Detect roadmap state
 
-Read \`bp/roadmap.md\`. If no milestones are defined (no real \`## Milestone:\` content), continue to Step 4. Otherwise (roadmap exists), append new milestone(s) BELOW existing ones separated by \`---\`, keeping existing milestones' status unchanged.
+Read \`bp/roadmap.md\`. If no milestones are defined (no real \`## Milestone:\` content), continue to Step 6. Otherwise (roadmap exists), append new milestone(s) BELOW existing ones separated by \`---\`, keeping existing milestones' status unchanged.
 
-### Step 4: Choose planning mode (first time only)
-
-Use \`ask\` to choose the planning mode:
-- **MVP mode** (product-facing): each phase delivers user-facing value.
-- **Technical-layer mode** (infrastructure/CLI): each phase produces a runnable/testable artifact.
-
-### Step 5: Define Milestones
+### Step 6: Define Milestones
 
 **HARD RULE: run \`bp template roadmap --stdout\` BEFORE writing \`bp/roadmap.md\`** — it defines milestone/phase section structure, status tags, and the progress summary format. Writing from memory produces an unparsable roadmap.
 
@@ -904,7 +918,7 @@ Phase and Change fill \`Depends on\` (no dependency → \`none\`). Cross-phase c
 
 **Future Considerations** — record discussed items that fit no milestone in \`## Future Considerations\`; promote them when scope solidifies.
 
-### Step 6: Validate
+### Step 7: Validate
 
 Check before finishing:
 - All Step-1 requirements are covered by a milestone (full-structure phase, placeholder goal, or Future Considerations).
