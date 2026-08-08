@@ -29,7 +29,7 @@
 **Goal**: Refactor Blueprint from v1 (state machine, 25 commands, PEG grammars) to v2 (artifact-based, 8 commands, YAML schema) while preserving engineering rigor.
 **What**: Three phases — core engine rewrite; commands & templates; platform integration & testing.
 **Deliverables**: v2 CLI with 8 core commands, YAML schema validation, 3 sub-agent prompts, 4 platform generators (OMP, Claude Code, .agent, Codex).
-**Outcomes**: User can run `bp init` → `bp propose` → `bp plan` → `bp apply` → `bp review` → `bp archive` end-to-end with artifact-based progress detection.
+**Outcomes**: User can run `bp init` → `bp propose` → `bp plan` → `bp apply` → `bp check` → `bp archive` end-to-end with artifact-based progress detection.
 **Status**: ACTIVE
 
 ### Phase: P1.1 - Core Engine [COMPLETED]

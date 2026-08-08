@@ -42,7 +42,7 @@ src/cli.ts (Commander entry)
 Progress is derived from file existence in the change directory — no state machine, no `state.md`:
 
 ```
-proposal.md  →  design.md + tasks.md  →  code  →  review.md  →  archive
+proposal.md  →  design.md + tasks.md  →  code  →  review.md  →  finish
 ```
 
 Each artifact becomes available when all its prerequisites exist. The schema defines the artifact dependency graph:
@@ -56,10 +56,10 @@ Each artifact becomes available when all its prerequisites exist. The schema def
 `bp continue` checks which artifacts exist, calculates the next step, and outputs the appropriate workflow instructions.
 
 ```
-Change loop: propose → plan → apply → review → archive
+Change loop: propose → plan → apply → check → finish
 ```
 
-Feedback loop: `review` with `--fix` flag re-runs the affected step (plan or apply) with review findings injected.
+Non-PASS review verdicts route through `bp check`: the fixer (`bp dispatch fixer --change <name>`) repairs the change, then the reviewer runs a full re-review of the entire change (spec + quality + goal gates).
 
 ---
 
@@ -68,10 +68,10 @@ Feedback loop: `review` with `--fix` flag re-runs the affected step (plan or app
 | Directory | Contents |
 |-----------|---------|
 | `src/core/` | Schema, artifact validation, config, file operations |
-| `src/commands/` | 13 CLI subcommand implementations (8 core: init, roadmap, propose, plan, apply, review, archive, continue) |
+| `src/commands/` | 13 CLI subcommand implementations (8 core: init, roadmap, propose, plan, apply, check, archive, continue) |
 | `src/types/` | TypeScript interfaces (`config.ts`, `spec.ts`, `project.ts`) |
 | `src/templates/artifacts/` | 7 output document templates (proposal, design, tasks, spec, review, roadmap, config) |
-| `src/templates/workflows/` | Step instruction templates (8 steps: init, roadmap, propose, plan, apply, review, archive, continue) |
+| `src/templates/workflows/` | Step instruction templates (8 steps: init, roadmap, propose, plan, apply, check, archive, continue) |
 | `src/templates/agents/` | Sub-agent system prompts (planner, executor, reviewer) |
 | `src/templates/spec-stacks/` | Tech-stack-specific spec templates (typescript-cli, react-web, python-api, etc.) |
 | `src/integrations/omp/` | OMP platform generator (commands, skills, agents, hooks) |
@@ -152,7 +152,7 @@ node bin/cli.js     # Run CLI in dev mode (no install needed)
 - File existence in `bp/changes/<name>/` is the source of truth — no `state.md`, no state machine
 - `bp continue` reads change directory, checks artifact presence, determines next step
 - No concurrent-process locking (single-user CLI)
-- Fix loops use `--fix` flag — `bp plan --fix` or `bp apply --fix` injects review findings
+- Non-PASS reviews route through `bp check` — `bp dispatch fixer --change <name>` repairs the change, then a full re-review is dispatched (all three gates)
 
 ---
 
@@ -166,7 +166,7 @@ node bin/cli.js     # Run CLI in dev mode (no install needed)
 | `src/core/continue.ts` | Auto-advance engine — artifact-based progress detection |
 | `src/core/config.ts` | Config management (`config.yaml`) |
 | `src/templates/agents/index.ts` | All 3 sub-agent system prompts (planner, executor, reviewer) |
-| `src/templates/workflows/registry.ts` | 8-step workflow registry (init, roadmap, propose, plan, apply, review, archive, continue) |
+| `src/templates/workflows/registry.ts` | 8-step workflow registry (init, roadmap, propose, plan, apply, check, archive, continue) |
 | `src/templates/artifacts/index.ts` | All 7 output document templates (proposal, design, tasks, spec, review, roadmap, config) |
 | `src/commands/bp-continue.ts` | Artifact-based continue — determines next step without state machine |
 | `src/commands/bp-archive.ts` | Change archiving + delta-merge + code backfill |
