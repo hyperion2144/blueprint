@@ -10,3 +10,5 @@ bin/
 .agents/
 .codebase-map.json
 .codebase-map.md
+# Added by code-review-graph
+.code-review-graph/
