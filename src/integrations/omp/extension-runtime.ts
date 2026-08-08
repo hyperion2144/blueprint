@@ -169,7 +169,7 @@ function appendContextRows(extra: string[], bpDir: string, changeName: string | 
 
 
 /**
- * Render the augmented body for sub-agent variants (planner / executor / reviewer).
+ * Render the augmented body for sub-agent variants (planner / executor / reviewer / refactorer / fixer).
  * Returns the paths-only block when `agentType === 'default'`.
  */
 function renderAugmentedBody(
@@ -243,8 +243,8 @@ function extractSummaryBlock(report: string): string | null {
 /**
  * `session_start` handler. Emits a single `bp-context` custom message
  * whose body is the paths-only compact block for `default` sub-agents and
- * the augmented body (Roadmap State / inline rows / Invariants + tasks) for
- * planner / executor / reviewer.
+ * the augmented body (Roadmap State / inline rows / Invariants + tasks /
+ * Refactor Targets) for planner / executor / reviewer / refactorer / fixer.
  */
 export async function handleSessionStart(
   _event: unknown,
