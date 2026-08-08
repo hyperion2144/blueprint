@@ -25,7 +25,7 @@ Roadmap (living document) → Change (spec-driven unit)
 | Entity | Description |
 |--------|-------------|
 | **Roadmap** | Living document (`bp/roadmap.md`) defining milestones, phases, and planned changes |
-| **Change** | Implementation unit with structured artifacts — goes through propose → plan → apply → review → archive |
+| **Change** | Implementation unit with structured artifacts — goes through propose → plan → apply → check → finish |
 | **Spec** | Behavioral contracts stored in `bp/specs/<domain>/spec.md` — source of truth maintained via delta merges |
 
 ### Architecture
@@ -52,8 +52,8 @@ bp init
 bp propose my-change
 bp plan my-change
 bp apply my-change
-bp review my-change
-bp archive my-change
+bp check my-change
+bp finish my-change
 
 # Auto-advance through the next step
 bp continue
@@ -71,8 +71,9 @@ bp roadmap
 | `bp propose <name>` | Create a change proposal — define intent, scope, deliverables |
 | `bp plan <name>` | Dispatch the planner sub-agent — produce design, tasks, delta specs |
 | `bp apply <name>` | Dispatch executor sub-agents — TDD wave-based implementation |
-| `bp review <name>` | Dispatch reviewer sub-agent — triple review (spec + quality + goal) |
-| `bp archive <name>` | Archive a completed change — delta-spec merge + code backfill |
+| `bp check <name>` | Dispatch reviewer sub-agent — full triple review (spec + quality + goal), then route non-PASS verdicts to the fixer for a full re-review |
+| `bp archive <name>` | Output the archive workflow steps (verify review PASS, then `bp finish` executes) |
+| `bp finish <name>` | Execute archive — merge delta specs, move change to archive, update roadmap |
 | `bp continue` | Auto-advance — detect current state from artifacts, suggest next step |
 
 
@@ -124,14 +125,14 @@ bp update    # regenerates all platform files
 ### Change Loop
 
 ```
-propose → plan → apply → review → archive
+propose → plan → apply → check → finish
 ```
 
 - **propose**: Write `proposal.md` — intent, scope (in/out), approach, deliverables (PR-N)
 - **plan**: Dispatch planner agent → `design.md` (DS-N items, D-N decisions), `tasks.md` (T-N tasks, waves), `specs/` (delta specs)
 - **apply**: Wave-based execution with parallel executor sub-agents, TDD for behavior tasks
-- **review**: Triple review — spec review + quality review + goal review
-- **archive**: Delta-spec merge into global specs + code backfill + cleanup
+- **check**: Triple review — spec review + quality review + goal review; non-PASS verdicts route to the fixer, then a full re-review
+- **finish**: Execute archive — merge delta specs into global specs, move the change to the archive, update roadmap
 
 ### Loop Diagram
 
@@ -141,14 +142,14 @@ flowchart TD
     B --> C[/bp propose/]
     C --> D[/bp plan/]
     D --> E[/bp apply/]
-    E --> F[/bp review/]
-    F --> G[/bp archive/]
+    E --> F[/bp check/]
+    F --> G[/bp finish/]
     G --> H{More changes?}
     H -->|Yes| C
     H -->|No| I[Done]
 ```
 
-Fix loops use `--fix` flag: `bp plan --fix` or `bp apply --fix` re-runs the step with review findings injected.
+Non-PASS reviews route through `bp check`: after the reviewer's verdict, `bp dispatch fixer --change <name>` repairs the change, then a full re-review is dispatched (all three gates — spec, quality, goal).
 
 ## Configuration
 
