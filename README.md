@@ -4,7 +4,7 @@
 
 Write behavioral specs once, let agents implement against them. Lightweight artifact-based progress — no state machine, no formal grammars. Delta specs capture behavioral contracts at the change level and merge into a global spec on archive.
 
-Inspired by OpenSpec-style structured specifications, adapted for AI-agent-driven development with 4 specialized sub-agents (planner, executor, reviewer, codebase-scanner).
+Inspired by OpenSpec-style structured specifications, adapted for AI-agent-driven development with 6 specialized sub-agents (planner, executor, reviewer, codebase-scanner, refactorer, fixer).
 
 ## Why
 
@@ -32,10 +32,12 @@ Roadmap (living document) → Change (spec-driven unit)
 
 ```
 2-layer: Roadmap (what's planned) + Change (what's being built)
-4 sub-agents: planner (design + tasks + delta specs + context.jsonl)
+6 sub-agents: planner (design + tasks + delta specs + context.jsonl)
               executor (TDD waves, isolated)
               reviewer (triple review gate)
               codebase-scanner (brownfield spec bootstrap)
+              refactorer (behavior-preserving consolidation + spec sync)
+              fixer (repair proposal/design/implementation per review)
 8 artifact templates: proposal, design, tasks, spec, review, roadmap, config, global-spec
 ```
 
@@ -112,7 +114,7 @@ Validation runs when the CLI advances to the next step. Errors block progression
 | **Change** | proposal, design, tasks, spec, review |
 | **Project** | roadmap, config, global-spec |
 
-4 sub-agent system prompts (planner, executor, reviewer, codebase-scanner).
+6 sub-agent system prompts (planner, executor, reviewer, codebase-scanner, refactorer, fixer).
 
 Platform files (agents, commands, hooks) are generated from TypeScript source:
 
