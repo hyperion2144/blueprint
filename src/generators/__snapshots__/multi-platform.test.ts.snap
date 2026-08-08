@@ -255,10 +255,6 @@ When all items pass: type:behavior tasks have RED->GREEN->REFACTOR commits; all 
   ".agent/agents/bp-fixer.md": "---
 name: bp-fixer
 description: Fix proposal/design/implementation per reviewer report
-tools:
-  - edit
-  - write
-  - bash
 ---
 
 ## Role
@@ -509,10 +505,6 @@ Check before finishing:
   ".agent/agents/bp-refactorer.md": "---
 name: bp-refactorer
 description: Behavior-preserving consolidation + spec sync per assigned module
-tools:
-  - edit
-  - write
-  - bash
 ---
 
 ## Role
@@ -1938,10 +1930,6 @@ When all items pass: type:behavior tasks have RED->GREEN->REFACTOR commits; all 
   ".claude/agents/bp-fixer.md": "---
 name: bp-fixer
 description: Fix proposal/design/implementation per reviewer report
-tools:
-  - edit
-  - write
-  - bash
 effort: high
 ---
 
@@ -2194,10 +2182,6 @@ Check before finishing:
   ".claude/agents/bp-refactorer.md": "---
 name: bp-refactorer
 description: Behavior-preserving consolidation + spec sync per assigned module
-tools:
-  - edit
-  - write
-  - bash
 effort: high
 ---
 
@@ -3799,10 +3783,6 @@ When all items pass: type:behavior tasks have RED->GREEN->REFACTOR commits; all 
   ".omp/agents/bp-fixer.md": "---
 name: bp-fixer
 description: Fix proposal/design/implementation per reviewer report
-tools:
-  - edit
-  - write
-  - bash
 model: pi/default
 thinkingLevel: high
 spawns: "*"
@@ -4067,10 +4047,6 @@ Check before finishing:
   ".omp/agents/bp-refactorer.md": "---
 name: bp-refactorer
 description: Behavior-preserving consolidation + spec sync per assigned module
-tools:
-  - edit
-  - write
-  - bash
 model: pi/default
 thinkingLevel: high
 spawns: "*"

@@ -55,13 +55,13 @@ export const AGENT_DEFS: AgentDef[] = [
   {
     role: 'refactorer',
     description: 'Behavior-preserving consolidation + spec sync per assigned module',
-    tools: ['edit', 'write', 'bash'],
+    tools: [],
     spawns: '*',
   },
   {
     role: 'fixer',
     description: 'Fix proposal/design/implementation per reviewer report',
-    tools: ['edit', 'write', 'bash'],
+    tools: [],
     spawns: '*',
   },
 ];

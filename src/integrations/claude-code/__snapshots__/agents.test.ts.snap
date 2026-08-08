@@ -256,10 +256,6 @@ When all items pass: type:behavior tasks have RED->GREEN->REFACTOR commits; all 
   "fixer": "---
 name: bp-fixer
 description: Fix proposal/design/implementation per reviewer report
-tools:
-  - edit
-  - write
-  - bash
 effort: high
 ---
 
@@ -512,10 +508,6 @@ Check before finishing:
   "refactorer": "---
 name: bp-refactorer
 description: Behavior-preserving consolidation + spec sync per assigned module
-tools:
-  - edit
-  - write
-  - bash
 effort: high
 ---
 
