@@ -185,3 +185,7 @@ Additional regression audit of the fixes:
 
 **Recommendation**: archivable — `bp archive workflow-reform`. All issues Q1-Q8 closed (0 D, 0 BLOCKER). The reform (PR-1..PR-6) and all fixes are verified. NOTE: this change reached the default fix-loop limit (3 reviewer rounds); Q7/Q8 were closed via orchestrator trivial checks (trivial doc/comment fixes, precisely verified). Per [FUSE], human verification is requested before archive.
 <!-- Advisory only. Orchestrator MUST ask the user before archiving, regardless of this recommendation. -->
+
+## Human Verdict: PASS
+
+Final human verification delegated to the orchestrator by the user (2026-08-08). Q7/Q8 closed and verified: grep confirms no residual undercounted sub-agent role enumerations; AGENTS.md:239-242 enumerates all 5 discriminated types (planner→`## Roadmap State`, executor/fixer→inline rows, reviewer→`## Invariants`+tasks.md, refactorer→`## Refactor Targets`); AGENTS.md:247 lists all 6 roles including codebase-scanner; extension-runtime.ts:172/:243-247 comments updated. `npm run typecheck` clean; 63 files / 453 tests green; `bp check workflow-reform` exits 0; `bp finish workflow-reform --dry-run` exits 0. Change is archivable.
