@@ -23,24 +23,32 @@ Assess risk and assign a level:
 
 Auto-assess from the user's described scope (or use \`--level <X>\` if provided) and write it to proposal.md's \`## Level\` section. Trivial/light may skip Step 1; standard/critical proceed to grill; critical is flagged for a security audit in design.md.
 
-### Step 1: Grill the user (grilling method — one question at a time, recommended answer, resolve every branch)
+### Step 1: Grill the user (grilling skill — design tree, frontier, rounds)
 
 > **Skip for trivial/light changes** (Step 0): go directly to Step 2 and fill the template from the user's one-line description — no interview.
 
-Follow the **grilling method**: ask ONE question at a time, always provide a recommended answer, and resolve every decision-tree branch before proceeding. Map the decision tree in your mind (choices, dependencies, edge cases, scope boundaries, unknowns), then walk each branch: pick the first unresolved branch, ask ONE focused question with your recommended answer, and check whether the answer opens new branches. If a question is answerable by exploring the codebase, explore it yourself — do NOT ask the user. Repeat until every branch is resolved.
+Follow the **grilling skill**: map the change as a **design tree** — every decision branches into the decisions that hang off it (problem, scope in/out, deliverables, approach + alternatives, research needed, edge cases, dependencies, constraints, roadmap context). Work the tree in **rounds**:
 
-Grill on: problem, scope (in/out), deliverables (observable behaviors, inputs/outputs, error conditions), approach + alternatives, research needed, edge cases, dependencies, constraints, and roadmap context (if \`--phase\` given).
+1. **Compute the frontier** — every decision whose prerequisites are already settled: the questions you can ask now without guessing at answers you haven't heard yet.
+2. **Ask the whole frontier in one round** — number each question and give your recommended answer, formatted:
+   \`\`\`
+   ❓ **Q1** - **<question title>**: <question body, including the choices>
+
+   ➡️ <your recommended answer>
+   \`\`\`
+3. **Wait for the user's answers** before the next round. Each answer reshapes the tree — settled decisions push the frontier outward and unblock questions that depended on them. Recompute the frontier and ask the next round. A question whose answer depends on another question still open this round belongs to a LATER round.
+4. **Facts are your job** — when a frontier question needs a fact from the environment (filesystem, codebase, libraries), dispatch a sub-agent to find it; do NOT ask the user for anything you can look up. Don't block on it: only the questions downstream of the lookup wait — ask the rest of the frontier now.
+5. **Done when the frontier is empty** — every branch visited, nothing left silently assumed. Do NOT proceed to Step 2 until the user confirms you have reached a shared understanding.
 
 **Hard rules:**
-- Ask ONE question at a time. Wait for the answer. Do not batch.
-- Always provide a recommended answer when one exists.
-- Resolve every branch before proceeding — do NOT proceed until you can describe every deliverable without guessing.
+- Ask the WHOLE frontier each round — do NOT trickle questions one-by-one.
+- Always provide a recommended answer for each question.
 - Do NOT use [ASSUMPTION] tags — if you are about to assume, STOP and ask.
-- If the user says "use your best judgment", you may proceed without asking.
+- If the user says "use your best judgment" on a point, you may proceed without asking.
 
 ### Step 1b: Technical research
 
-For standard/critical changes, research before writing so findings are captured in the proposal. Skip for trivial/light. Read relevant source files, external references mentioned in discussion, callers of code to be changed, and web_search anything unresolved. Document findings as you go (per-PR research goes in the PR's Research field; cross-cutting findings in \`## Research Landscape\`). If information is missing, return to the user with specific questions.
+For standard/critical changes, research before writing so findings are captured in the proposal. Skip for trivial/light. Fact-finding sub-agents dispatched during Step 1's grilling continue in the background; finish the remaining research here — read relevant source files, external references mentioned in discussion, callers of code to be changed, and web_search anything unresolved. Document findings as you go (per-PR research goes in the PR's Research field; cross-cutting findings in \`## Research Landscape\`). If information is missing, return to the user with specific questions.
 
 ### Step 2: Create change directory
 

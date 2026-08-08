@@ -8,7 +8,20 @@ const instructions = `## Input
 
 ### Step 1: Grill the project's feature scope (complete)
 
-Before defining milestones, reach full shared understanding of what this project must DO. This is a COMPLETE feature-scope discussion — but it stays at the feature level: do NOT dive into implementation detail (edge cases, failure modes, exact requirements), which is captured per-change in each \`bp propose\` step. Ask ONE question at a time with a recommended answer.
+Before defining milestones, reach full shared understanding of what this project must DO. This is a COMPLETE feature-scope discussion — but it stays at the feature level: do NOT dive into implementation detail (edge cases, failure modes, exact requirements), which is captured per-change in each \`bp propose\` step.
+
+Follow the **grilling skill**: map the feature scope as a **design tree** and work it in **rounds**:
+
+1. **Compute the frontier** — every feature-scope decision whose prerequisites are settled: the questions you can ask now without guessing at answers you haven't heard.
+2. **Ask the whole frontier in one round** — number each question and give your recommended answer, formatted:
+   \`\`\`
+   ❓ **Q1** - **<question title>**: <question body, including the choices>
+
+   ➡️ <your recommended answer>
+   \`\`\`
+3. **Wait for the user's answers** before the next round; recompute the frontier and ask the next round. A question whose answer depends on another still open this round belongs to a LATER round.
+4. **Facts are your job** — when a question needs a fact from the environment (codebase, config, specs), dispatch a sub-agent to find it; do NOT ask the user for anything you can look up.
+5. **Done when the frontier is empty** — every branch visited, nothing left silently assumed.
 
 Resolve (walk every branch of the feature scope):
 1. **Main capabilities** — what are the primary features/capabilities this project must deliver? Enumerate them; each becomes candidate work.
@@ -17,7 +30,7 @@ Resolve (walk every branch of the feature scope):
 4. **Constraints** — technical, timeline, or resource constraints? existing tech stack?
 5. **Priorities** — what matters most? what is committed vs a future intention?
 
-**Hard rules:** ask ONE question at a time, wait for the answer, always provide a recommended answer, and do NOT proceed until you can enumerate the full feature scope without guessing. Do NOT use assumptions — if you are about to assume, STOP and ask instead.
+**Hard rules:** ask the WHOLE frontier each round (do NOT trickle questions one-by-one), always provide a recommended answer, and do NOT proceed until you can enumerate the full feature scope without guessing. Do NOT use assumptions — if you are about to assume, STOP and ask instead.
 
 > Implementation detail (edge cases, failure modes, exact requirements) is deferred to each change's propose step (\`bp propose\`) — do NOT grill those here.
 
@@ -31,8 +44,9 @@ After the feature-scope grilling, present a concise summary of the agreed scope 
 
 ### Step 3: Agree the milestone/phase structure with the user
 
-Only after the user confirms the scope is complete, discuss HOW to plan the roadmap (one question at a time, recommended answer):
+Only after the user confirms the scope is complete, discuss HOW to plan the roadmap — use the same grilling method (design tree + frontier + rounds): ask the whole frontier in one round with numbered questions and recommended answers, then refine in later rounds until the skeleton is agreed.
 
+Resolve:
 1. **Planning mode** — MVP mode (each phase delivers user-facing value) vs technical-layer mode (infrastructure/CLI; each phase produces a runnable/testable artifact). Ask the user; use \`ask\`.
 2. **Milestone/phase skeleton** — how should the confirmed scope be cut into milestones (product releases) and phases (runnable end-to-end slices)? Which features go in which phase? What is the build order? Propose a skeleton and refine it with the user.
 3. **Future intentions** — which discussed items are future intentions (M2+ placeholders) vs committed scope?

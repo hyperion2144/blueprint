@@ -30,6 +30,15 @@ describe('roadmap scope grilling + user confirmation (T-19 correction)', () => {
     expect(step1).toMatch(/priorities/i);
   });
 
+  it('grilling follows the grilling skill (frontier + rounds, whole frontier per round)', () => {
+    const content = getRoadmapCommandTemplate().content;
+    expect(content).toMatch(/grilling skill/i);
+    expect(content).toMatch(/design tree/i);
+    expect(content).toMatch(/frontier/i);
+    expect(content).toMatch(/whole frontier/i);
+    expect(content).not.toMatch(/one question at a time/i);
+  });
+
   it('Step 2 is an explicit user-confirmation gate that the scope discussion is complete', () => {
     const content = getRoadmapCommandTemplate().content;
     const step2Start = content.indexOf('### Step 2:');
