@@ -759,10 +759,12 @@ export const REVIEW_TEMPLATE = `# Review: {{name}}
 
 ### Goal Checklist
 
-| # | Deliverable | Status | Evidence |
-|---|-------------|--------|----------|
-| G1 | PR-1: {{deliverable-title}} | {{ACHIEVED/PARTIAL/NOT_ACHIEVED}} | {{evidence}} |
-| G2 | PR-2: {{deliverable-title}} | {{ACHIEVED/PARTIAL/NOT_ACHIEVED}} | {{evidence}} |
+| # | Deliverable | Verify / Acceptance met | Status | Evidence |
+|---|-------------|--------------------------|--------|----------|
+| G1 | PR-1: {{deliverable-title}} | {{all / partial / none}} | {{ACHIEVED/PARTIAL/NOT_ACHIEVED}} | {{evidence tracing to the Verify method + DS-N acceptance criteria}} |
+| G2 | PR-2: {{deliverable-title}} | {{all / partial / none}} | {{ACHIEVED/PARTIAL/NOT_ACHIEVED}} | {{evidence tracing to the Verify method + DS-N acceptance criteria}} |
+
+Status rule: ACHIEVED requires every DS-N Acceptance Criteria (binary pass/fail) AND the PR-N Verify method to pass; PARTIAL if only some pass; NOT_ACHIEVED (a G issue) if the observable behavior or any acceptance criterion fails.
 
 ### Goal Verdict: {{PASS | FAIL | NEEDS_REVISION}}
 

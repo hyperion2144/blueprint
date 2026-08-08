@@ -18,3 +18,17 @@ describe('REVIEWER_PROMPT full-review reform (T-9)', () => {
     expect(REVIEWER_PROMPT).toMatch(/full triple review/i);
   });
 });
+
+describe('REVIEWER_PROMPT goal review verifies the design verification items', () => {
+  it('goal review verifies the DS-N Acceptance Criteria (binary pass/fail)', () => {
+    expect(REVIEWER_PROMPT).toMatch(/Acceptance Criteria/i);
+    expect(REVIEWER_PROMPT).toMatch(/DS-N/i);
+    expect(REVIEWER_PROMPT).toMatch(/binary pass\/fail/i);
+  });
+
+  it('goal review verifies the PR-N Verify method, behavior-based not presence-based', () => {
+    expect(REVIEWER_PROMPT).toMatch(/\*\*Verify\*\*:/i);
+    expect(REVIEWER_PROMPT).toMatch(/behavior-based/i);
+    expect(REVIEWER_PROMPT).toMatch(/not just "the code exists"/i);
+  });
+});

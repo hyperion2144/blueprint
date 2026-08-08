@@ -656,9 +656,19 @@ Severity calibration:
 | INFO | Suggestion, not a problem | JSDoc improvement |
 
 ### Step 4: Goal Review (Goal Gate)
-<!-- ENGINEERING-CONSTRAINT: goal review — PR-N deliverable verification structure -->
+<!-- ENGINEERING-CONSTRAINT: goal review — PR-N deliverable + design acceptance verification structure -->
 
-**Goal:** verify the change achieves what the proposal promised. For each deliverable (PR-N), verify the implementation delivers that observable behavior; mark ACHIEVED, PARTIAL, or NOT_ACHIEVED.
+**Goal:** verify the change achieves what the proposal promised AND that the design's verification items are actually met — not just that the behavior exists.
+
+For each deliverable (PR-N):
+- Verify the implementation delivers the PR-N's observable behavior (its SHALL statement); mark ACHIEVED / PARTIAL / NOT_ACHIEVED.
+- Read the PR-N's \`**Verify**:\` method (command, test, or manual step) and confirm the implementation satisfies it — the Goal Checklist Evidence must trace to that verification method, not just "the code exists".
+
+For each design item (DS-N):
+- Read the DS-N's \`**Acceptance Criteria**:\` (binary pass/fail, "X happens when Y"). Verify the implementation actually satisfies each criterion — run the test/command or inspect the observable behavior.
+- An unmet acceptance criterion is a G issue even if the PR-N's SHALL statement is nominally present — the acceptance bar is the pass/fail gate.
+
+Verification is behavior-based, not presence-based: "the file exists" is not evidence; "running the Verify method passes" or "the acceptance criterion's observable outcome holds" is.
 
 ### Step 4b: Level verification
 <!-- ENGINEERING-CONSTRAINT: level assessment — escalation and calibration protocol -->
@@ -2371,9 +2381,19 @@ Severity calibration:
 | INFO | Suggestion, not a problem | JSDoc improvement |
 
 ### Step 4: Goal Review (Goal Gate)
-<!-- ENGINEERING-CONSTRAINT: goal review — PR-N deliverable verification structure -->
+<!-- ENGINEERING-CONSTRAINT: goal review — PR-N deliverable + design acceptance verification structure -->
 
-**Goal:** verify the change achieves what the proposal promised. For each deliverable (PR-N), verify the implementation delivers that observable behavior; mark ACHIEVED, PARTIAL, or NOT_ACHIEVED.
+**Goal:** verify the change achieves what the proposal promised AND that the design's verification items are actually met — not just that the behavior exists.
+
+For each deliverable (PR-N):
+- Verify the implementation delivers the PR-N's observable behavior (its SHALL statement); mark ACHIEVED / PARTIAL / NOT_ACHIEVED.
+- Read the PR-N's \`**Verify**:\` method (command, test, or manual step) and confirm the implementation satisfies it — the Goal Checklist Evidence must trace to that verification method, not just "the code exists".
+
+For each design item (DS-N):
+- Read the DS-N's \`**Acceptance Criteria**:\` (binary pass/fail, "X happens when Y"). Verify the implementation actually satisfies each criterion — run the test/command or inspect the observable behavior.
+- An unmet acceptance criterion is a G issue even if the PR-N's SHALL statement is nominally present — the acceptance bar is the pass/fail gate.
+
+Verification is behavior-based, not presence-based: "the file exists" is not evidence; "running the Verify method passes" or "the acceptance criterion's observable outcome holds" is.
 
 ### Step 4b: Level verification
 <!-- ENGINEERING-CONSTRAINT: level assessment — escalation and calibration protocol -->
@@ -4283,9 +4303,19 @@ Severity calibration:
 | INFO | Suggestion, not a problem | JSDoc improvement |
 
 ### Step 4: Goal Review (Goal Gate)
-<!-- ENGINEERING-CONSTRAINT: goal review — PR-N deliverable verification structure -->
+<!-- ENGINEERING-CONSTRAINT: goal review — PR-N deliverable + design acceptance verification structure -->
 
-**Goal:** verify the change achieves what the proposal promised. For each deliverable (PR-N), verify the implementation delivers that observable behavior; mark ACHIEVED, PARTIAL, or NOT_ACHIEVED.
+**Goal:** verify the change achieves what the proposal promised AND that the design's verification items are actually met — not just that the behavior exists.
+
+For each deliverable (PR-N):
+- Verify the implementation delivers the PR-N's observable behavior (its SHALL statement); mark ACHIEVED / PARTIAL / NOT_ACHIEVED.
+- Read the PR-N's \`**Verify**:\` method (command, test, or manual step) and confirm the implementation satisfies it — the Goal Checklist Evidence must trace to that verification method, not just "the code exists".
+
+For each design item (DS-N):
+- Read the DS-N's \`**Acceptance Criteria**:\` (binary pass/fail, "X happens when Y"). Verify the implementation actually satisfies each criterion — run the test/command or inspect the observable behavior.
+- An unmet acceptance criterion is a G issue even if the PR-N's SHALL statement is nominally present — the acceptance bar is the pass/fail gate.
+
+Verification is behavior-based, not presence-based: "the file exists" is not evidence; "running the Verify method passes" or "the acceptance criterion's observable outcome holds" is.
 
 ### Step 4b: Level verification
 <!-- ENGINEERING-CONSTRAINT: level assessment — escalation and calibration protocol -->
