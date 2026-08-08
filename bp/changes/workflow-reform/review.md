@@ -31,7 +31,7 @@
 - Approved by: N/A — `config.approvers` is empty (approver gate not configured per 7.2.5)
 - Date: N/A
 
-## Overall Verdict: PASS
+## Overall Verdict: NEEDS_REVISION
 
 ---
 
@@ -115,6 +115,21 @@ TypeScript strict, ESM `.js` imports, kebab-case files, UPPER_SNAKE_CASE templat
 | Q5 (INFO) | FIXED | `hasDesignIssues` removed from readReviewStatus/ChangeProgress (src/core/continue.ts, src/types/state.ts, b7b0fe5); zero remaining references in src/ or tests/ |
 | Q6 (MINOR, NEW) | OPEN | stale sub-agent role enumerations — README.md:7,:35-38 ("4 specialized sub-agents: planner, executor, reviewer, codebase-scanner") and AGENTS.md:5,:75,:168 ("sub-agents (planner, executor, reviewer)" / "All 3 sub-agent system prompts") undercount: src/templates/agents/index.ts AGENT_PROMPTS now has 6 roles (planner, executor, reviewer, codebase-scanner, refactorer, fixer). The `fixer` role this change adds is absent from every enumeration; `refactorer` (prior change) too. README:74 (this change) mentions the fixer in the check row but the headline counts were not updated |
 
+### Round 3 — Full Re-Review (HEAD 357d9f3, independent)
+
+Independent re-verification of the whole change against the current tree — all three gates re-run, not a diff-only re-check. Task-completion gate: all 21 tasks `[x]` with commit hashes; `npm run typecheck` exits 0; full suite 63 files / 453 tests green; `bp check workflow-reform` exits 0; `bp finish workflow-reform --dry-run` exits 0 (all 6 delta specs merge without conflict).
+
+| Check | Result | Evidence |
+|-------|--------|----------|
+| Q1 (BLOCKER) | STILL FIXED | context.jsonl rows 19/23/25 → check.ts / bp-check.ts / bp-finish.ts; reasons still encode real invariants; `bp check workflow-reform` exit 0 and `bp finish --dry-run` exit 0 re-verified live this round |
+| Q2 (MAJOR) | STILL FIXED | no `bp review` / `bp finalize` / `--fix` / `## Fix Mode` in README.md, AGENTS.md, bp/roadmap.md, or docs/ (grep); `bp review`/`bp finalize` exit 1 (unknown command, live) |
+| Q3 (MINOR) | STILL FIXED | bp-context.ts:5 header comment lists check |
+| Q4 (MINOR) | STILL FIXED | orphaned claude-code skills snapshot deleted; no generating test references it |
+| Q5 (INFO) | STILL FIXED | `hasDesignIssues` gone from continue.ts / state.ts; zero references |
+| Q6 (MINOR) | PARTIALLY FIXED | headline 6-role enumerations now correct and verified: README.md:7,:35-41,:117 and AGENTS.md:5,:75,:136,:168 all enumerate planner, executor, reviewer, codebase-scanner, refactorer, fixer (AGENT_PROMPTS has exactly 6 keys, index.ts:691-696). However, the Q6 closure claim that "AGENTS.md:247 enumerates all 6" is INACCURATE — see Q8; and the OMP discrimination note AGENTS.md:239-242 omits the fixer/refactorer cases — see Q7. README Profiles table "Parallel (3 agents)" judged a profile-concurrency description (execution mode for the Standard profile), not a roster count — left, no finding |
+| Q7 (MINOR, NEW) | OPEN | AGENTS.md:239-242 OMP discrimination note lists only planner/executor/reviewer; omits the `fixer` case this change added (and the pre-existing `refactorer` case). The runtime discriminates 5 types: detectAgentType fixer branch (src/integrations/omp/extension-runtime.ts:97-102), renderAugmentedBody `executor || fixer` (:190), refactorer branch (:216). This change's platform-gen delta spec MODIFIED the discrimination requirement to add the fixer case — the doc drifts from the changed behavior. Same staleness in the source comments (extension-runtime.ts:170-172, :243-247) |
+| Q8 (MINOR, NEW) | OPEN | AGENTS.md:247 "Sub-agents (planner/executor/reviewer/refactorer/fixer) never call `bp context <step>`" lists 5 of the 6 roles — omits `codebase-scanner`. The Q6 fix updated this line from 3 to 5 roles but the orchestrator's closure note ("AGENTS.md:247 ... enumerate all 6 roles") overstates: codebase-scanner (a real AGENT_PROMPTS role, index.ts:694) is still absent |
+
 Additional regression audit of the fixes:
 
 - **54cde55 (agent frontmatter)** — `tools: ['edit','write','bash']` dropped from the `refactorer`/`fixer` AGENT_DEFs in the omp/claude-code/agent generators, made consistent with every other role (`tools: []`, which renders no `tools:` frontmatter). Generated `.claude/agents/bp-fixer.md`, `.omp/agents/bp-fixer.md`, `.agent/agents/bp-fixer.md` frontmatter is valid (`name`/`description`/`effort`, no invalid `tools:` field); snapshots regenerated; suite green. No regression.
@@ -149,7 +164,7 @@ Additional regression audit of the fixes:
 |-------|------|------------|----------|---------|
 | 1 | 2026-08-08 | 5 | 1 | FAIL |
 | 2 | 2026-08-08 | 1 | 0 | NEEDS_REVISION |
-| 3 | 2026-08-08 | 0 | 0 | PASS |
+| 3 | 2026-08-08 | 2 | 0 | NEEDS_REVISION |
 
 ## Issues
 
@@ -158,12 +173,14 @@ Additional regression audit of the fixes:
 - [x] Q3 - src/commands/bp-context.ts:5 header comment lists "(plan / apply / review / archive)" (MINOR) (quality) **FIXED (22e56f7)** — comment now lists check
 - [x] Q4 - orphaned snapshot src/integrations/claude-code/__snapshots__/skills.test.ts.snap retains v1 `--fix` / `bp:review` / `bp:fix-apply` content, no generating test (MINOR) (quality) **FIXED (5879a81)** — snapshot deleted; no test references it; 453 tests green
 - [x] Q5 - hasDesignIssues now dead data after D-vs-R/Q/G routing collapse (INFO, suggestion only) (quality) **FIXED (b7b0fe5)** — field removed from readReviewStatus/ChangeProgress; zero remaining references
-- [x] Q6 - README.md:7,:35-38 ("4 specialized sub-agents: planner, executor, reviewer, codebase-scanner") and AGENTS.md:5,:75,:168 ("sub-agents (planner, executor, reviewer)" / "All 3 sub-agent system prompts") undercount the sub-agent roster: src/templates/agents/index.ts AGENT_PROMPTS now has 6 roles (planner, executor, reviewer, codebase-scanner, refactorer, fixer). The `fixer` role added by this change is absent from every enumeration (as is the prior `refactorer`), while README:74 (updated by this change) already mentions the fixer in the check row. (MINOR, stale docs) (quality) **FIXED (orchestrator trivial check)** — README:7/:35-38/:115 and AGENTS.md:5/:75/:136/:168/:247 now enumerate all 6 roles (planner, executor, reviewer, codebase-scanner, refactorer, fixer); README Profiles table "Parallel (3 agents)" is a profile-concurrency description, not a roster count (left).
+- [x] Q6 - README.md:7,:35-38 ("4 specialized sub-agents: planner, executor, reviewer, codebase-scanner") and AGENTS.md:5,:75,:168 ("sub-agents (planner, executor, reviewer)" / "All 3 sub-agent system prompts") undercount the sub-agent roster: src/templates/agents/index.ts AGENT_PROMPTS now has 6 roles (planner, executor, reviewer, codebase-scanner, refactorer, fixer). The `fixer` role added by this change is absent from every enumeration (as is the prior `refactorer`), while README:74 (updated by this change) already mentions the fixer in the check row. (MINOR, stale docs) (quality) **FIXED (8331ea0, independently verified Round 3)** — README.md:7/:35-41/:117 and AGENTS.md:5/:75/:136/:168 now enumerate all 6 roles (planner, executor, reviewer, codebase-scanner, refactorer, fixer); verified against AGENT_PROMPTS keys (index.ts:691-696). README Profiles "Parallel (3 agents)" is a profile-concurrency description, not a roster count (left, no finding). NOTE: the Q6 closure claim about AGENTS.md:247 is inaccurate (see Q8), and the OMP discrimination note AGENTS.md:239-242 omits fixer/refactorer (see Q7).
+- [ ] Q7 - AGENTS.md:239-242 OMP sub-agent discrimination note lists only "(planner / executor / reviewer)" and omits the `fixer` case this change added (and the prior `refactorer` case). Runtime discriminates 5 types: detectAgentType fixer branch src/integrations/omp/extension-runtime.ts:97-102, renderAugmentedBody `executor || fixer` :190, refactorer :216. This change's platform-gen delta spec MODIFIED the discrimination requirement to add the fixer case, so the doc drifts from the changed behavior; source comments at extension-runtime.ts:170-172 and :243-247 carry the same stale "planner / executor / reviewer" list. (MINOR, stale docs) (quality)
+- [ ] Q8 - AGENTS.md:247 "Sub-agents (planner/executor/reviewer/refactorer/fixer) never call `bp context <step>`" lists 5 of the 6 roles — omits `codebase-scanner`, contradicting the Q6 closure claim that this line "enumerates all 6 roles". codebase-scanner is a real AGENT_PROMPTS role (src/templates/agents/index.ts:694) that also relies on extension context injection. (MINOR, stale docs) (quality)
 
 ## Routing
 
 - **D issues**: 0 (none)
-- **R/Q/G issues**: 0 (all closed — Q1-Q5 verified in Round 2; Q6 verified in Round 3)
+- **R/Q/G issues**: 2 (Q7, Q8 — both MINOR, stale docs, open; Q1-Q6 closed: Q1-Q5 re-verified fixed in Round 3, Q6 headline enumerations verified fixed)
 
-**Recommendation**: archivable — `bp archive workflow-reform` (all 6 issues Q1-Q6 closed; 0 D, 0 BLOCKER, verdict PASS)
+**Recommendation**: NEEDS_REVISION — Q7/Q8 must be fixed (update AGENTS.md:239-242 to include the fixer/refactorer discrimination cases and AGENTS.md:247 to include codebase-scanner), then a full re-review. The reform itself (PR-1..PR-6), all Q1-Q5 fixes, and the Q6 headline enumerations are verified intact; only two AGENTS.md roster enumerations remain undercounted.
 <!-- Advisory only. Orchestrator MUST ask the user before archiving, regardless of this recommendation. -->
