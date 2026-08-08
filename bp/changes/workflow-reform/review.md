@@ -31,7 +31,7 @@
 - Approved by: N/A — `config.approvers` is empty (approver gate not configured per 7.2.5)
 - Date: N/A
 
-## Overall Verdict: FAIL
+## Overall Verdict: NEEDS_REVISION
 
 ---
 
@@ -102,7 +102,26 @@
 
 ### Convention Compliance
 
-TypeScript strict, ESM `.js` imports, kebab-case files, UPPER_SNAKE_CASE template constants, lowercase markdown, conventional commits — all confirmed in the changed files. The 3 stale-doc references (Q2/Q3/Q4) are the convention drift.
+TypeScript strict, ESM `.js` imports, kebab-case files, UPPER_SNAKE_CASE template constants, lowercase markdown, conventional commits — all confirmed in the changed files. The stale-doc drift (Q2/Q3/Q4) is resolved in Round 2.
+
+### Round 2 — Fix Verification (dd8779b..HEAD)
+
+| Issue | Status | Evidence |
+|-------|--------|----------|
+| Q1 (BLOCKER) | FIXED | context.jsonl rows 19/23/25 repointed to `src/templates/workflows/check.ts` / `src/commands/bp-check.ts` / `src/commands/bp-finish.ts` (d6c0ed4); reasons still encode real invariants (check.ts:52-55 fixer loopback + full re-review; bp-check.ts/bp-finish.ts exist as CLI commands). `bp check workflow-reform` exits 0; `bp finish workflow-reform --dry-run` exits 0 with all 6 delta specs merging without conflict |
+| Q2 (MAJOR) | FIXED | README.md (Quick Start, CLI table, Change Loop, mermaid diagram, `--fix` note → fixer loopback, `bp finish` added), AGENTS.md (change loop, feedback loop, directory/code-map tables), bp/roadmap.md:32 Outcomes line — all updated to `bp check`/`bp finish` + fixer loopback (e81e30c, cd84723) |
+| Q3 (MINOR) | FIXED | src/commands/bp-context.ts:5 comment now "(plan / apply / check / archive)" (22e56f7) |
+| Q4 (MINOR) | FIXED | orphaned src/integrations/claude-code/__snapshots__/skills.test.ts.snap (2087 lines) deleted (5879a81); no generating test references it; 453 tests green |
+| Q5 (INFO) | FIXED | `hasDesignIssues` removed from readReviewStatus/ChangeProgress (src/core/continue.ts, src/types/state.ts, b7b0fe5); zero remaining references in src/ or tests/ |
+| Q6 (MINOR, NEW) | OPEN | stale sub-agent role enumerations — README.md:7,:35-38 ("4 specialized sub-agents: planner, executor, reviewer, codebase-scanner") and AGENTS.md:5,:75,:168 ("sub-agents (planner, executor, reviewer)" / "All 3 sub-agent system prompts") undercount: src/templates/agents/index.ts AGENT_PROMPTS now has 6 roles (planner, executor, reviewer, codebase-scanner, refactorer, fixer). The `fixer` role this change adds is absent from every enumeration; `refactorer` (prior change) too. README:74 (this change) mentions the fixer in the check row but the headline counts were not updated |
+
+Additional regression audit of the fixes:
+
+- **54cde55 (agent frontmatter)** — `tools: ['edit','write','bash']` dropped from the `refactorer`/`fixer` AGENT_DEFs in the omp/claude-code/agent generators, made consistent with every other role (`tools: []`, which renders no `tools:` frontmatter). Generated `.claude/agents/bp-fixer.md`, `.omp/agents/bp-fixer.md`, `.agent/agents/bp-fixer.md` frontmatter is valid (`name`/`description`/`effort`, no invalid `tools:` field); snapshots regenerated; suite green. No regression.
+- **2c93b02 (global-spec restructure)** — ASSESSMENT: acceptable. Content-preserving (2 insertions / 0 deletions per file; only `## Requirements` heading inserted before the existing `### Requirement:` blocks in bp/specs/{archive,context,state}/spec.md). It was a necessary pre-archive sync: `semanticMerge` (src/core/delta-merge.ts:122-126) only indexes requirements under a `## Requirements` section, so this change's MODIFIED delta specs could never merge otherwise (the exact Q1 self-gate failure). Verified by `bp finish --dry-run` exit 0. It does not violate the archive-check "never edit bp/specs/ directly" scenario — that scenario governs the archive *workflow step's* write scope, not a structural repair of a broken merge substrate. Pre-existing structural note (out of scope): 5 other global specs (config, file-tree, init, specs-engine, update-conventions) still nest requirements under `## Purpose` with no `## Requirements` section — a latent merge-conflict hazard for any future change that MODIFIEDs requirements in those domains.
+- **Stale `bp review` (as a step/command)**: no live doc or code reference remains. The only hits are (a) `src/templates/workflows/refactor.test.ts:61` (positive `not.toContain('bp review')` assertion) and (b) `DESIGN-v3.md:54` — a historical v3-telemetry design proposal for roadmap M2/M3 work that is explicitly OUT of scope for this change; treated as archival, not a finding.
+- **Dead-code removal side effects**: none. `hasDesignIssues` removal is clean; snapshot deletion removes no live test fixture.
+- **Docs wording regressions**: none found. README/AGENTS wording is accurate (bp archive remains a real step command printing archive steps; bp finish executes).
 
 ---
 
@@ -129,19 +148,21 @@ TypeScript strict, ESM `.js` imports, kebab-case files, UPPER_SNAKE_CASE templat
 | Round | Date | New Issues | Blockers | Verdict |
 |-------|------|------------|----------|---------|
 | 1 | 2026-08-08 | 5 | 1 | FAIL |
+| 2 | 2026-08-08 | 1 | 0 | NEEDS_REVISION |
 
 ## Issues
 
-- [ ] Q1 - context.jsonl rows 19/23/25 cite deleted files (review.ts, bp-review.ts, bp-finalize.ts) — `bp check` and `bp finish` on this change both exit 2, blocking review and archive (BLOCKER, context re-validation) (quality)
-- [ ] Q2 - README.md:55,74,144,154 / AGENTS.md:62,155 / bp/roadmap.md:32 still document removed commands `bp review` + `bp plan --fix`/`bp apply --fix` and omit `bp check`/`bp finish` (MAJOR, stale docs) (quality)
-- [ ] Q3 - src/commands/bp-context.ts:5 header comment lists "(plan / apply / review / archive)" (MINOR) (quality)
-- [ ] Q4 - orphaned snapshot src/integrations/claude-code/__snapshots__/skills.test.ts.snap retains v1 `--fix` / `bp:review` / `bp:fix-apply` content, no generating test (MINOR) (quality)
-- [x] Q5 - hasDesignIssues now dead data after D-vs-R/Q/G routing collapse (INFO, suggestion only) (quality)
+- [x] Q1 - context.jsonl rows 19/23/25 cite deleted files (review.ts, bp-review.ts, bp-finalize.ts) — `bp check` and `bp finish` on this change both exit 2, blocking review and archive (BLOCKER, context re-validation) (quality) **FIXED (d6c0ed4)** — rows repointed to check.ts / bp-check.ts / bp-finish.ts; `bp check workflow-reform` exits 0 and `bp finish workflow-reform --dry-run` exits 0 (all 6 delta specs merge without conflict)
+- [x] Q2 - README.md:55,74,144,154 / AGENTS.md:62,155 / bp/roadmap.md:32 still document removed commands `bp review` + `bp plan --fix`/`bp apply --fix` and omit `bp check`/`bp finish` (MAJOR, stale docs) (quality) **FIXED (e81e30c, cd84723)** — README Quick Start/CLI table/change-loop/mermaid and fix-loop note, AGENTS.md change-loop/feedback-loop/tables, roadmap Outcomes line all updated to bp check / bp finish + fixer loopback
+- [x] Q3 - src/commands/bp-context.ts:5 header comment lists "(plan / apply / review / archive)" (MINOR) (quality) **FIXED (22e56f7)** — comment now lists check
+- [x] Q4 - orphaned snapshot src/integrations/claude-code/__snapshots__/skills.test.ts.snap retains v1 `--fix` / `bp:review` / `bp:fix-apply` content, no generating test (MINOR) (quality) **FIXED (5879a81)** — snapshot deleted; no test references it; 453 tests green
+- [x] Q5 - hasDesignIssues now dead data after D-vs-R/Q/G routing collapse (INFO, suggestion only) (quality) **FIXED (b7b0fe5)** — field removed from readReviewStatus/ChangeProgress; zero remaining references
+- [ ] Q6 - README.md:7,:35-38 ("4 specialized sub-agents: planner, executor, reviewer, codebase-scanner") and AGENTS.md:5,:75,:168 ("sub-agents (planner, executor, reviewer)" / "All 3 sub-agent system prompts") undercount the sub-agent roster: src/templates/agents/index.ts AGENT_PROMPTS now has 6 roles (planner, executor, reviewer, codebase-scanner, refactorer, fixer). The `fixer` role added by this change is absent from every enumeration (as is the prior `refactorer`), while README:74 (updated by this change) already mentions the fixer in the check row. (MINOR, stale docs) (quality)
 
 ## Routing
 
 - **D issues**: 0 (none)
-- **R/Q/G issues**: 4 open (Q1-Q4)
+- **R/Q/G issues**: 1 open (Q6, MINOR)
 
-**Recommendation**: `bp check workflow-reform`
+**Recommendation**: `bp check workflow-reform` — reapply: the check step dispatches `bp dispatch fixer --change workflow-reform` to update the two stale sub-agent enumerations, then a full re-review.
 <!-- Advisory only. Orchestrator MUST ask the user before archiving, regardless of this recommendation. -->
