@@ -32,8 +32,6 @@ export interface ChangeProgress {
   reviewVerdict?: 'PASS' | 'FAIL' | 'NEEDS_REVISION';
   /** Unresolved issue count from review.md */
   unresolvedIssues: number;
-  /** Whether review has D-prefixed issues (needs replan) */
-  hasDesignIssues: boolean;
 }
 
 /** Next step recommendation */

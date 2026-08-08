@@ -131,10 +131,10 @@ function checkStepCompletion(
 }
 
 /** Read review verdict and issue count from review.md */
-function readReviewStatus(dir: string): { verdict?: 'PASS' | 'FAIL' | 'NEEDS_REVISION'; unresolved: number; hasDesignIssues: boolean } {
+function readReviewStatus(dir: string): { verdict?: 'PASS' | 'FAIL' | 'NEEDS_REVISION'; unresolved: number } {
   const reviewPath = join(dir, 'review.md');
   if (!existsSync(reviewPath)) {
-    return { unresolved: 0, hasDesignIssues: false };
+    return { unresolved: 0 };
   }
 
   const content = readFileSync(reviewPath, 'utf-8');
@@ -146,10 +146,8 @@ function readReviewStatus(dir: string): { verdict?: 'PASS' | 'FAIL' | 'NEEDS_REV
 
   const unresolvedMatches = content.match(/^- \[ \] [RQGD]\d+/gm);
   const unresolved = unresolvedMatches?.length ?? 0;
-  const dIssues = content.match(/^- \[ \] D\d+/gm);
-  const hasDesignIssues = (dIssues?.length ?? 0) > 0;
 
-  return { verdict, unresolved, hasDesignIssues };
+  return { verdict, unresolved };
 }
 
 /** Determine change stage from schema + artifacts */
@@ -376,7 +374,6 @@ export function getChangeProgress(bpDir: string, changeName: string): ChangeProg
     artifacts,
     reviewVerdict: reviewStatus.verdict,
     unresolvedIssues: reviewStatus.unresolved,
-    hasDesignIssues: reviewStatus.hasDesignIssues,
   };
 }
 
