@@ -16,13 +16,13 @@
 {"file": "bp/changes/workflow-reform/design.md", "reason": "This change's design — DS-N/DS-1..DS-18 detailed designs and file manifest", "phase": "apply", "tag": "artifact", "read": "full"}
 {"file": "bp/changes/workflow-reform/tasks.md", "reason": "Task checklist with RED tests, spec_refs, and wave decomposition", "phase": "apply", "tag": "artifact", "read": "full"}
 {"file": "src/templates/workflows/registry.ts", "reason": "WORKFLOW_REGISTRY key review→check rename (DS-2)", "phase": "all", "tag": "source", "read": "full"}
-{"file": "src/templates/workflows/review.ts", "reason": "Template module renamed to check.ts with fixer loopback + full re-review (DS-1)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/templates/workflows/check.ts", "reason": "Check template module with fixer loopback + full re-review (renamed from review.ts, DS-1)", "phase": "all", "tag": "source", "read": "full"}
 {"file": "src/templates/workflows/check.ts", "reason": "Target file for the renamed check template (created from review.ts)", "phase": "apply", "tag": "source", "read": "full"}
 {"file": "src/core/schema.ts", "reason": "DEFAULT_SCHEMA step review→check, archive requires check (DS-2)", "phase": "all", "tag": "source", "read": "full"}
 {"file": "src/core/continue.ts", "reason": "Routing to check, fix-routing relocation, FUSE branch (DS-3)", "phase": "all", "tag": "source", "read": "full"}
-{"file": "src/commands/bp-review.ts", "reason": "CLI command renamed to bp-check.ts, --fix removed (DS-4)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/commands/bp-check.ts", "reason": "CLI command for the check step, --fix removed (renamed from bp-review.ts, DS-4)", "phase": "all", "tag": "source", "read": "full"}
 {"file": "src/commands/bp-check.ts", "reason": "Target file for the renamed check command", "phase": "apply", "tag": "source", "read": "full"}
-{"file": "src/commands/bp-finalize.ts", "reason": "CLI command renamed to bp-finish.ts (DS-12)", "phase": "all", "tag": "source", "read": "full"}
+{"file": "src/commands/bp-finish.ts", "reason": "CLI command for archive execution (renamed from bp-finalize.ts, DS-12)", "phase": "all", "tag": "source", "read": "full"}
 {"file": "src/commands/bp-finish.ts", "reason": "Target file for the renamed finish command", "phase": "apply", "tag": "source", "read": "full"}
 {"file": "src/cli.ts", "reason": "Command registration for check and finish (DS-4, DS-12)", "phase": "all", "tag": "source", "read": "full"}
 {"file": "src/commands/_utils.ts", "reason": "gateContextJsonl phase union review→check (DS-4)", "phase": "all", "tag": "source", "read": "full"}
