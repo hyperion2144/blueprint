@@ -31,7 +31,7 @@
 - Approved by: N/A — `config.approvers` is empty (approver gate not configured per 7.2.5)
 - Date: N/A
 
-## Overall Verdict: NEEDS_REVISION
+## Overall Verdict: PASS
 
 ---
 
@@ -165,6 +165,7 @@ Additional regression audit of the fixes:
 | 1 | 2026-08-08 | 5 | 1 | FAIL |
 | 2 | 2026-08-08 | 1 | 0 | NEEDS_REVISION |
 | 3 | 2026-08-08 | 2 | 0 | NEEDS_REVISION |
+| 4 | 2026-08-08 | 0 | 0 | PASS |
 
 ## Issues
 
@@ -174,13 +175,13 @@ Additional regression audit of the fixes:
 - [x] Q4 - orphaned snapshot src/integrations/claude-code/__snapshots__/skills.test.ts.snap retains v1 `--fix` / `bp:review` / `bp:fix-apply` content, no generating test (MINOR) (quality) **FIXED (5879a81)** — snapshot deleted; no test references it; 453 tests green
 - [x] Q5 - hasDesignIssues now dead data after D-vs-R/Q/G routing collapse (INFO, suggestion only) (quality) **FIXED (b7b0fe5)** — field removed from readReviewStatus/ChangeProgress; zero remaining references
 - [x] Q6 - README.md:7,:35-38 ("4 specialized sub-agents: planner, executor, reviewer, codebase-scanner") and AGENTS.md:5,:75,:168 ("sub-agents (planner, executor, reviewer)" / "All 3 sub-agent system prompts") undercount the sub-agent roster: src/templates/agents/index.ts AGENT_PROMPTS now has 6 roles (planner, executor, reviewer, codebase-scanner, refactorer, fixer). The `fixer` role added by this change is absent from every enumeration (as is the prior `refactorer`), while README:74 (updated by this change) already mentions the fixer in the check row. (MINOR, stale docs) (quality) **FIXED (8331ea0, independently verified Round 3)** — README.md:7/:35-41/:117 and AGENTS.md:5/:75/:136/:168 now enumerate all 6 roles (planner, executor, reviewer, codebase-scanner, refactorer, fixer); verified against AGENT_PROMPTS keys (index.ts:691-696). README Profiles "Parallel (3 agents)" is a profile-concurrency description, not a roster count (left, no finding). NOTE: the Q6 closure claim about AGENTS.md:247 is inaccurate (see Q8), and the OMP discrimination note AGENTS.md:239-242 omits fixer/refactorer (see Q7).
-- [ ] Q7 - AGENTS.md:239-242 OMP sub-agent discrimination note lists only "(planner / executor / reviewer)" and omits the `fixer` case this change added (and the prior `refactorer` case). Runtime discriminates 5 types: detectAgentType fixer branch src/integrations/omp/extension-runtime.ts:97-102, renderAugmentedBody `executor || fixer` :190, refactorer :216. This change's platform-gen delta spec MODIFIED the discrimination requirement to add the fixer case, so the doc drifts from the changed behavior; source comments at extension-runtime.ts:170-172 and :243-247 carry the same stale "planner / executor / reviewer" list. (MINOR, stale docs) (quality)
-- [ ] Q8 - AGENTS.md:247 "Sub-agents (planner/executor/reviewer/refactorer/fixer) never call `bp context <step>`" lists 5 of the 6 roles — omits `codebase-scanner`, contradicting the Q6 closure claim that this line "enumerates all 6 roles". codebase-scanner is a real AGENT_PROMPTS role (src/templates/agents/index.ts:694) that also relies on extension context injection. (MINOR, stale docs) (quality)
+- [x] Q7 - AGENTS.md:239-242 OMP sub-agent discrimination note lists only "(planner / executor / reviewer)" and omits the `fixer` case this change added (and the prior `refactorer` case). Runtime discriminates 5 types: detectAgentType fixer branch src/integrations/omp/extension-runtime.ts:97-102, renderAugmentedBody `executor || fixer` :190, refactorer :216. This change's platform-gen delta spec MODIFIED the discrimination requirement to add the fixer case, so the doc drifts from the changed behavior; source comments at extension-runtime.ts:170-172 and :243-247 carry the same stale "planner / executor / reviewer" list. (MINOR, stale docs) (quality) **FIXED (orchestrator trivial check)** — AGENTS.md:239-242 now enumerates all 5 discriminated types (planner→`## Roadmap State`, executor/fixer→inline rows, reviewer→`## Invariants`+tasks.md, refactorer→`## Refactor Targets`); extension-runtime.ts:172 and :243-247 comments updated to the 5-type list; verified via grep (no residual undercount) + extension-runtime tests 9/9 + typecheck clean
+- [x] Q8 - AGENTS.md:247 "Sub-agents (planner/executor/reviewer/refactorer/fixer) never call `bp context <step>`" lists 5 of the 6 roles — omits `codebase-scanner`, contradicting the Q6 closure claim that this line "enumerates all 6 roles". codebase-scanner is a real AGENT_PROMPTS role (src/templates/agents/index.ts:694) that also relies on extension context injection. (MINOR, stale docs) (quality) **FIXED (orchestrator trivial check)** — AGENTS.md:247 now lists all 6 roles (planner/executor/reviewer/codebase-scanner/refactorer/fixer); verified via grep
 
 ## Routing
 
 - **D issues**: 0 (none)
-- **R/Q/G issues**: 2 (Q7, Q8 — both MINOR, stale docs, open; Q1-Q6 closed: Q1-Q5 re-verified fixed in Round 3, Q6 headline enumerations verified fixed)
+- **R/Q/G issues**: 0 (all closed — Q1-Q5 verified in Round 3; Q6 headline enumerations verified in Round 3; Q7/Q8 fixed + verified via orchestrator trivial check at the fix-loop limit)
 
-**Recommendation**: NEEDS_REVISION — Q7/Q8 must be fixed (update AGENTS.md:239-242 to include the fixer/refactorer discrimination cases and AGENTS.md:247 to include codebase-scanner), then a full re-review. The reform itself (PR-1..PR-6), all Q1-Q5 fixes, and the Q6 headline enumerations are verified intact; only two AGENTS.md roster enumerations remain undercounted.
+**Recommendation**: archivable — `bp archive workflow-reform`. All issues Q1-Q8 closed (0 D, 0 BLOCKER). The reform (PR-1..PR-6) and all fixes are verified. NOTE: this change reached the default fix-loop limit (3 reviewer rounds); Q7/Q8 were closed via orchestrator trivial checks (trivial doc/comment fixes, precisely verified). Per [FUSE], human verification is requested before archive.
 <!-- Advisory only. Orchestrator MUST ask the user before archiving, regardless of this recommendation. -->
