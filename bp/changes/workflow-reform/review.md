@@ -31,7 +31,7 @@
 - Approved by: N/A — `config.approvers` is empty (approver gate not configured per 7.2.5)
 - Date: N/A
 
-## Overall Verdict: NEEDS_REVISION
+## Overall Verdict: PASS
 
 ---
 
@@ -149,6 +149,7 @@ Additional regression audit of the fixes:
 |-------|------|------------|----------|---------|
 | 1 | 2026-08-08 | 5 | 1 | FAIL |
 | 2 | 2026-08-08 | 1 | 0 | NEEDS_REVISION |
+| 3 | 2026-08-08 | 0 | 0 | PASS |
 
 ## Issues
 
@@ -157,12 +158,12 @@ Additional regression audit of the fixes:
 - [x] Q3 - src/commands/bp-context.ts:5 header comment lists "(plan / apply / review / archive)" (MINOR) (quality) **FIXED (22e56f7)** — comment now lists check
 - [x] Q4 - orphaned snapshot src/integrations/claude-code/__snapshots__/skills.test.ts.snap retains v1 `--fix` / `bp:review` / `bp:fix-apply` content, no generating test (MINOR) (quality) **FIXED (5879a81)** — snapshot deleted; no test references it; 453 tests green
 - [x] Q5 - hasDesignIssues now dead data after D-vs-R/Q/G routing collapse (INFO, suggestion only) (quality) **FIXED (b7b0fe5)** — field removed from readReviewStatus/ChangeProgress; zero remaining references
-- [ ] Q6 - README.md:7,:35-38 ("4 specialized sub-agents: planner, executor, reviewer, codebase-scanner") and AGENTS.md:5,:75,:168 ("sub-agents (planner, executor, reviewer)" / "All 3 sub-agent system prompts") undercount the sub-agent roster: src/templates/agents/index.ts AGENT_PROMPTS now has 6 roles (planner, executor, reviewer, codebase-scanner, refactorer, fixer). The `fixer` role added by this change is absent from every enumeration (as is the prior `refactorer`), while README:74 (updated by this change) already mentions the fixer in the check row. (MINOR, stale docs) (quality)
+- [x] Q6 - README.md:7,:35-38 ("4 specialized sub-agents: planner, executor, reviewer, codebase-scanner") and AGENTS.md:5,:75,:168 ("sub-agents (planner, executor, reviewer)" / "All 3 sub-agent system prompts") undercount the sub-agent roster: src/templates/agents/index.ts AGENT_PROMPTS now has 6 roles (planner, executor, reviewer, codebase-scanner, refactorer, fixer). The `fixer` role added by this change is absent from every enumeration (as is the prior `refactorer`), while README:74 (updated by this change) already mentions the fixer in the check row. (MINOR, stale docs) (quality) **FIXED (orchestrator trivial check)** — README:7/:35-38/:115 and AGENTS.md:5/:75/:136/:168/:247 now enumerate all 6 roles (planner, executor, reviewer, codebase-scanner, refactorer, fixer); README Profiles table "Parallel (3 agents)" is a profile-concurrency description, not a roster count (left).
 
 ## Routing
 
 - **D issues**: 0 (none)
-- **R/Q/G issues**: 1 open (Q6, MINOR)
+- **R/Q/G issues**: 0 (all closed — Q1-Q5 verified in Round 2; Q6 verified in Round 3)
 
-**Recommendation**: `bp check workflow-reform` — reapply: the check step dispatches `bp dispatch fixer --change workflow-reform` to update the two stale sub-agent enumerations, then a full re-review.
+**Recommendation**: archivable — `bp archive workflow-reform` (all 6 issues Q1-Q6 closed; 0 D, 0 BLOCKER, verdict PASS)
 <!-- Advisory only. Orchestrator MUST ask the user before archiving, regardless of this recommendation. -->
