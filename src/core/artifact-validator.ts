@@ -91,6 +91,46 @@ export function validateProposal(content: string): ValidationResult {
   return { valid: errors.length === 0, errors, warnings };
 }
 
+// ── Helpers for design quality checks ────────────────
+
+/** Extract the content of a named ## section from markdown. */
+function getSectionBody(content: string, sectionName: string): string | undefined {
+  const escaped = sectionName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`^## ${escaped}\\n([\\s\\S]*?)(?=\\n## |\\n*$)`, 'm');
+  const match = content.match(regex);
+  return match?.[1]?.trim();
+}
+
+/** Extract individual DS-N blocks from a section body. */
+function extractDSBlocks(section: string): string[] {
+  const parts = section.split(/(?=### DS-\d+:)/);
+  return parts.filter((p) => /^### DS-\d+:/.test(p.trim())).map((p) => p.trim());
+}
+
+/** Extract individual D-N blocks from a section body. */
+function extractDNBlocks(section: string): string[] {
+  const parts = section.split(/(?=### D-\d+:)/);
+  return parts.filter((p) => /^### D-\d+:/.test(p.trim())).map((p) => p.trim());
+}
+
+/** Check whether a DS-N field has been filled (not template placeholder). */
+function fieldHasContent(block: string, fieldName: string): boolean {
+  const regex = new RegExp(`- \\*\\*${fieldName}\\*\\*:\\s*(\\S.*)`);
+  const match = block.match(regex);
+  if (!match) return false;
+  return !/^\{\{.*\}\}\s*$/.test(match[1].trim());
+}
+
+/** Extract the DS-N name from a block heading. */
+function dsName(block: string): string {
+  return block.match(/^### (DS-\d+):\s*(.*)/)?.[1] ?? '(unknown)';
+}
+
+/** Extract the D-N name from a block heading. */
+function dName(block: string): string {
+  return block.match(/^### (D-\d+):\s*(.*)/)?.[1] ?? '(unknown)';
+}
+
 /** Validate design.md */
 export function validateDesign(content: string): ValidationResult {
   const errors: string[] = [];
@@ -112,9 +152,134 @@ export function validateDesign(content: string): ValidationResult {
     errors.push('Missing ## File Manifest section');
   }
 
-  // Check for DS-N items
-  if (!/###\s+DS-\d+/.test(content)) {
+  // ── DS-N quality checks ──────────────────────────────
+  const designItemsSection = getSectionBody(content, 'Design Items');
+  const dsBlocks = designItemsSection ? extractDSBlocks(designItemsSection) : [];
+
+  if (dsBlocks.length === 0) {
     warnings.push('No DS-N design items found');
+  }
+
+  for (const block of dsBlocks) {
+    const name = dsName(block);
+
+    // Requirements field
+    if (!fieldHasContent(block, 'Requirements')) {
+      if (/- \*\*Requirements\*\*:\s*$/.test(block) || /- \*\*Requirements\*\*:\s*\{\{/.test(block)) {
+        errors.push(`DS-N ${name}: Requirements field is empty or still a template placeholder — must specify observable behaviors`);
+      } else {
+        errors.push(`DS-N ${name}: Requirements field is missing — every DS-N must have Requirements`);
+      }
+    }
+
+    // Constraints field
+    if (!fieldHasContent(block, 'Constraints')) {
+      warnings.push(`DS-N ${name}: Constraints field is empty or still a template placeholder — should specify hard limits`);
+    }
+
+    // Acceptance Criteria field
+    if (!fieldHasContent(block, 'Acceptance Criteria')) {
+      if (/- \*\*Acceptance Criteria\*\*:\s*$/.test(block) || /- \*\*Acceptance Criteria\*\*:\s*\{\{/.test(block)) {
+        errors.push(`DS-N ${name}: Acceptance Criteria is empty or still a template placeholder — must define binary pass/fail criteria`);
+      } else {
+        errors.push(`DS-N ${name}: Acceptance Criteria field is missing — every DS-N must have Acceptance Criteria`);
+      }
+    }
+
+    // Key Interfaces field
+    if (!fieldHasContent(block, 'Key Interfaces')) {
+      warnings.push(`DS-N ${name}: Key Interfaces field is empty or still a template placeholder — should describe public interface`);
+    }
+
+    // Source traceability: must reference PR-N
+    if (!/Source:\s*PR-\d+/i.test(block)) {
+      warnings.push(`DS-N ${name}: missing Source: PR-N traceability back to proposal`);
+    }
+
+    // Detailed Design quality
+    if (!/^#### Detailed Design$/m.test(block)) {
+      errors.push(`DS-N ${name}: missing #### Detailed Design section — this is REQUIRED for executor guidance`);
+    } else {
+      const ddMatch = block.match(/^#### Detailed Design\n([\s\S]*)$/m);
+      if (ddMatch) {
+        const ddContent = ddMatch[1].replace(/<!--[\s\S]*?-->/g, '').trim();
+        if (!ddContent || ddContent === '{{detailed-design}}') {
+          errors.push(`DS-N ${name}: Detailed Design section is empty — must provide implementation-level detail`);
+        } else if (ddContent.length < 50) {
+          warnings.push(`DS-N ${name}: Detailed Design section is very short (${ddContent.length} chars) — may lack sufficient implementation detail`);
+        }
+      }
+    }
+  }
+
+  // ── D-N decision quality checks ──────────────────────
+  const decisionsSection = getSectionBody(content, 'Architecture Decisions');
+  const dnBlocks = decisionsSection ? extractDNBlocks(decisionsSection) : [];
+
+  for (const block of dnBlocks) {
+    const name = dName(block);
+
+    // Check alternatives are genuinely considered
+    const altMatch = block.match(/- \*\*Alternatives\*\*:\s*(.*)/);
+    if (altMatch) {
+      const altValue = altMatch[1].trim();
+      if (/^\{\{.*\}\}$/.test(altValue)) {
+        warnings.push(`D-N ${name}: Alternatives field is still a template placeholder — should list genuinely considered alternatives`);
+      } else if (/^(N\/A|n\/a|None|none|TBD|tbd|Not applicable|No alternatives considered)$/i.test(altValue)) {
+        warnings.push(`D-N ${name}: Alternatives is "${altValue}" — if no real alternatives exist, consider whether this decision is worth recording`);
+      }
+    } else {
+      warnings.push(`D-N ${name}: missing Alternatives field — each decision should document what else was considered`);
+    }
+
+    // Check Decision has content
+    if (!fieldHasContent(block, 'Decision')) {
+      warnings.push(`D-N ${name}: Decision field is empty or template placeholder`);
+    }
+
+    // Check Reason has content
+    if (!fieldHasContent(block, 'Reason')) {
+      warnings.push(`D-N ${name}: Reason field is empty or template placeholder — must include the driving constraint or tradeoff`);
+    }
+  }
+
+  // ── Architecture Diagram quality ─────────────────────
+  const techSection = getSectionBody(content, 'Technical Approach');
+  if (techSection) {
+    if (techSection.includes('{{architecture-diagram}}')) {
+      warnings.push('Architecture Diagram is still a template placeholder — should show component relationships and data flow');
+    }
+
+    // ── Interface Design quality ─────────────────--------
+    // Check if Interface Design subsections exist and include error responses
+    const interfaceSection = techSection.match(/^### Interface Design\n([\s\S]*?)(?=\n## |\n$)/m);
+    if (interfaceSection) {
+      const ifaceContent = interfaceSection[1].trim();
+      if (ifaceContent && ifaceContent !== 'No external interfaces.') {
+        // Has interface definitions — check for error responses
+        const hasErrorResponses = /\*\*Response\s+4\d\d\*\*/.test(ifaceContent) || /error/i.test(ifaceContent);
+        if (!hasErrorResponses) {
+          warnings.push('Interface Design defines endpoints but no error responses (4xx/5xx) found — interfaces should include error handling');
+        }
+      }
+    }
+  }
+
+  // ── File Manifest quality ────────────────────────────
+  const manifestSection = getSectionBody(content, 'File Manifest');
+  if (manifestSection) {
+    const manifestLines = manifestSection.split('\n').filter((l) => l.trim().startsWith('|') && l.includes('|'));
+    // Count actual entries (skip header/separator rows)
+    const entryRows = manifestLines.filter(
+      (l) => !/^\| File Path \|/.test(l) && !/^\|[- ]+\|/.test(l),
+    );
+    if (entryRows.length === 0) {
+      warnings.push('File Manifest has no file entries — must list every file to be created or modified');
+    }
+
+    if (/\b(e\.?t\.?c\.?|and\s+other\s+files)\b/i.test(manifestSection)) {
+      warnings.push('File Manifest contains "etc." or "and other files" — manifest must be complete, no implicit entries');
+    }
   }
 
   return { valid: errors.length === 0, errors, warnings };
