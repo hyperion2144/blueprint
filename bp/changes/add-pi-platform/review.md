@@ -11,7 +11,7 @@
 - Approved by: n/a (approvers not configured)
 - Date: n/a
 
-## Overall Verdict: NEEDS_REVISION
+## Overall Verdict: PASS
 
 ---
 
@@ -88,7 +88,7 @@
 - Note: one vitest run (run concurrently with `npm run build`) showed 1 failure in 2 files; two subsequent serial runs are clean (68 files / 508 tests pass) — treated as a build-race flake, not a code defect.
 - Note: dogfood `.pi/extensions/bp/index.ts` was stale (still carried the pre-fix substring detection + guard-order bug) — regenerated during this review via `node bin/cli.js update`; now byte-identical to EXTENSION_SOURCE. Recommend the fix loop re-runs `bp update` after template edits (`.pi/` is gitignored so the fixer commits never refreshed it).
 
-### Quality Verdict: NEEDS_REVISION
+### Quality Verdict: PASS
 
 ---
 
@@ -111,24 +111,27 @@
 ## Review History
 
 | Round | Date | New Issues | Blockers | Verdict |
-|-------|------|------------|----------|---------|
+| ------- | ------ | ------------ | ---------- | --------- |
 | 1 | 2026-08-14 | 3 | 0 | NEEDS_REVISION |
 | 2 | 2026-08-14 | 3 (Q2, Q3, Q4) | 0 | NEEDS_REVISION |
+| 3 | 2026-08-14 | 1 (Q5 INFO, non-blocking) | 0 | PASS |
 
 ## Issues
 
 - [x] R1 - pi-extension-context-contract: agent-type detection misfires on real generated agent prompts. RESOLVED by d9f2f5d (RED) + 130871e (GREEN): both runtime (extension-runtime.ts:110-134) and template (extension.tmpl.ts:87-105) now match on the real AGENT_PROMPTS role-title phrases (Change Design Specialist / Code Implementation Specialist / Triple Review Specialist / Codebase Scanner / **refactorer** sub-agent / **bp-fixer** sub-agent); verified disjoint (each marker occurs exactly once, in its own prompt body, src/templates/agents/index.ts); regression test pins detection against the real AGENT_PROMPTS values (extension-runtime.test.ts:114-129) and the template's inline markers (extension.test.ts:32-43). (spec)
 - [x] Q1 - Lockstep divergence between template and runtime: `before_agent_start` sets bpStateInjected before the hasBpConfig guard in the template but after in the runtime; symlink acceptance differs. RESOLVED by 130871e — guard order aligned (tmpl 492-494, runtime 345-347), symlink accepted in both (tmpl 241, runtime 427). (quality)
 - [x] G1 - PR-3 partial: the per-agent-type context augmentation (core deliverable) is not delivered for planner/executor/reviewer/fixer with the shipped agent prompts. RESOLVED — same root cause as R1; all 6 roles now classify correctly against real prompts (extension-runtime.test.ts:114-129) and the augmentation branches are verified with real title phrases (158-228). (goal)
-- [ ] Q2 - Lockstep divergence introduced by the R1 fix: runtime `discoverPiAgents` dropped the `.md` suffix filter that template `loadPiAgents` keeps (extension-runtime.ts:424-427 vs extension.tmpl.ts:240); `codebase-scanner` also falls through with trailing `\n\n` in the runtime (248,296) vs clean block in the template (170-208). (quality)
-- [ ] Q3 - design.md stale after the R1 fix: D-2 Reason still states the false premise "each prompt contains its role name in the ## Role heading" (design.md:412); DS-4 §3 + DS-5 still describe bare substring markers (160,192,278); DS-5 AgentType union omits codebase-scanner (267). (quality)
-- [ ] Q4 - Uncommitted format-only drift on the 3 fixer-touched files (double quotes + tabs, mtime 21:35:24, 39s after 130871e), inconsistent with the repo's single-quote/2-space style and leaving the working tree dirty. (quality)
+- [x] Q2 - Lockstep divergence introduced by the R1 fix: runtime `discoverPiAgents` dropped the `.md` suffix filter that template `loadPiAgents` keeps (extension-runtime.ts:424-427 vs extension.tmpl.ts:240); `codebase-scanner` also falls through with trailing `\n\n` in the runtime (248,296) vs clean block in the template (170-208). RESOLVED by 6fed3d7 (RED) + 4e5401f (GREEN): `.md` filter restored (extension-runtime.ts:371), symlink accepted (372), `renderAugmentedBody` returns the clean block with no trailing newline when no branch augments (264); template side verified aligned (extension.tmpl.ts:240/241/172/207). Lockstep pinned: runtime txt-skip test (extension-runtime.test.ts:358-370), codebase-scanner == default byte-identity + no trailing `\n\n` (196-222), EXTENSION_SOURCE re-export identity (318-322), template marker assertions (extension.test.ts:44-51). (quality)
+- [x] Q3 - design.md stale after the R1 fix: D-2 Reason still states the false premise "each prompt contains its role name in the ## Role heading" (design.md:412); DS-4 §3 + DS-5 still describe bare substring markers (160,192,278); DS-5 AgentType union omits codebase-scanner (267). RESOLVED by 70c5bf5: D-2 Reason now describes the role-title phrase markers (design.md:411-412); DS-4 §3 (160) and DS-5 `detectAgentTypeFromPrompt` (278) list the title phrases; DS-5 AgentType union includes `codebase-scanner` (267, 536). (quality)
+- [x] Q4 - Uncommitted format-only drift on the 3 fixer-touched files (double quotes + tabs, mtime 21:35:24, 39s after 130871e), inconsistent with the repo's single-quote/2-space style and leaving the working tree dirty. RESOLVED — fixer kept new edits in repo style (committed in 6fed3d7/4e5401f/70c5bf5); round-3 verification: `git status` clean (only untracked `.pi-glla/`, not part of this change), `git diff` empty, `git ls-files -m` empty, working tree matches HEAD at 70c5bf5. (quality)
+- [x] Q5 - INFO (non-blocking, doc drift): design.md DS-5 Key Interfaces lists `formatStateSummary` among the exported helpers (design.md:260), but the implementation keeps it private (extension-runtime.ts:137) — identical to the OMP mirror runtime (omp/extension-runtime.ts:123, also private). No external consumer, behavior tested via handler assertions (extension-runtime.test.ts:257, 293); no action required beyond optionally aligning the design.md wording with "helpers (incl. formatStateSummary, internal)". (quality)
 <!-- Remove placeholder lines above. Add as many - [ ] lines as there are findings. -->
 
 ## Routing
 
 - **D issues**: 0 (none)
-- **R/Q/G issues**: 3 open (Q2, Q3, Q4) — R1/Q1/G1 resolved and marked [x]
+- **R/Q/G issues**: 0 open — R1/Q1/Q2/Q3/Q4 resolved and marked [x]; Q5 recorded as INFO non-blocking [x]
 
-**Recommendation**: `bp fix add-pi-platform` then re-review
+**Recommendation**: archive-ready — `bp archive add-pi-platform`
+
 <!-- Advisory only. Orchestrator MUST ask the user before archiving, regardless of this recommendation. -->
