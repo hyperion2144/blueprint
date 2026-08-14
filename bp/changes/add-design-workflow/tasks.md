@@ -77,7 +77,7 @@
     - **AND** after setting `models.designer: <model>` in bp/config.yaml, the printed Model line shows `<model>`
   - **notes**: FORMATS and EXECUTOR_ISOLATION are UNCHANGED (verified role-placeholder design — D-4); designer stays non-executor-like (read-only on source, like planner/reviewer). PROFILE_MODEL_MAP gains `designer` mirroring each profile's `planner` value: trivial/light `pi/task`, standard/critical `pi/plan`. `resolveModelsForLevel` needs no change.
 
-- [ ] T-4: [type:behavior] Five design CLI commands + cli.ts registration <!-- commit: -->
+- [x] T-4: [type:behavior] Five design CLI commands + cli.ts registration <!-- commit: 8f48466 -->
   - **refs**: DS-4
   - **spec_ref**: specs/design/spec.md#design-cli-commands
   - **files**: src/commands/bp-design.ts, bp-design-html.ts, bp-design-review.ts, bp-design-shotgun.ts, bp-plan-design-review.ts, src/cli.ts, tests/commands/bp-design-commands.test.ts
