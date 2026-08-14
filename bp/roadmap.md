@@ -48,6 +48,7 @@
 - [P1.1-KD] Progress detection — file existence over state machine (reason: eliminates state drift; alt: persisted state.md)
 
 **Changes**:
+
 - [x] v2-core-refactor (archived 2026-07-16)
   - **Goal**: Rewrite core engine modules for v2 artifact-based workflow
   - **What**: New schema loader, artifact validator, continue engine, config with Zod, file-tree ops, delta-merge, spec-injector, code-extract, brownfield, platform-registry
@@ -79,12 +80,14 @@
 - [P1.2-KD] TDD protocol — 3 commits per behavior task (reason: enforces test-first; alt: single commit)
 
 **Changes**:
+
 - [x] v2-commands-templates (archived 2026-07-16)
   - **Goal**: Ship all v2 commands, artifact templates, and agent prompts
   - **What**: 13 command files, 7 artifact templates, 3 agent prompts, 8 workflow instructions
   - **Deliverables**: src/commands/, src/templates/
   - **Outcomes**: `bp template <name> --stdout` returns every artifact template; `bp validate` accepts all v2 artifacts
   - **Depends on**: v2-core-refactor
+- [ ] add-design-workflow (planned 2026-08-14)
 
 **Next**: Phase P1.3
 
@@ -104,6 +107,7 @@
 - [P1.3-KD] Codex generator — added as 4th platform (reason: OpenAI Codex CLI adoption; alt: skip Codex)
 
 **Changes**:
+
 - [x] v2-platform-tests (archived 2026-07-16)
   - **Goal**: Migrate platform generators to v2 platform-registry and fix test suite
   - **What**: OMP, Claude Code, .agent generators + test suite migration
@@ -171,6 +175,7 @@
 - [P3.1-KD] Storage format — JSON per run under .meta/ (reason: append-only, diffable; alt: single sqlite db)
 
 **Changes**:
+
 - [ ] telemetry (proposed 2026-07-22)
   - **Goal**: Auto-collect runtime telemetry in command handlers and provide export + opt-in auto-report capabilities
   - **What**: Write .meta/ run data in plan/apply/review/archive handlers; add failure-mode marks and step-usage stats; anonymize (hash code snippets, strip paths); implement bp telemetry status/export commands; config.telemetry field; async non-blocking auto-report when telemetry.enabled
@@ -196,6 +201,7 @@
 - [P3.2-KD] Confidence levels — three-tier high/medium/low (reason: matches review intensity tiers; alt: continuous 0-1 score)
 
 **Changes**:
+
 - [ ] spec-confidence (proposed 2026-07-22)
   - **Goal**: Auto-infer spec confidence so maintainers know which specs have code/test backing
   - **What**: Infer confidence from codebase-map exports and test files (high=test+code, medium=code no test, low=spec only); add since-version tags to requirements
@@ -227,6 +233,7 @@
 - [P3.3-KD] DAG representation — adjacency list in codebase-map (reason: queryable; alt: graph DB)
 
 **Changes**:
+
 - [ ] deps-graph (proposed 2026-07-22)
   - **Goal**: Visualize cross-change dependencies as a DAG with cycle detection
   - **What**: Implement bp deps graph command; output DAG; implement cycle detection
@@ -258,6 +265,7 @@
 - [P3.4-KD] Verification tiers — three-tier matching confidence levels (reason: symmetric with spec confidence; alt: continuous score)
 
 **Changes**:
+
 - [ ] tiered-verification (proposed 2026-07-22)
   - **Goal**: Let planners annotate per-component confidence at design time and tier verification by confidence — high-confidence gets lightweight checks, low-confidence gets strict gates
   - **What**: Add Confidence field to DESIGN_TEMPLATE DS-N; update PLANNER_PROMPT to annotate confidence (high/medium/low); update review workflow to tier verification (high=auto test, medium=sub-agent review, low=triple review + human gate)
@@ -283,6 +291,7 @@
 - [P3.5-KD] Complexity budget — token/step/config thresholds (reason: prevents framework bloat; alt: no budget)
 
 **Changes**:
+
 - [ ] telemetry-analysis (proposed 2026-07-22)
   - **Goal**: Aggregate user-side telemetry into failure-mode frequency and step-usage-rate reports
   - **What**: Build telemetry aggregation tool; failure-mode frequency stats; step-usage-rate report
@@ -309,7 +318,7 @@
 ## Progress Summary
 
 | Milestone | Phases | Changes | Status |
-|-----------|--------|---------|--------|
+| ----------- | -------- | --------- | -------- |
 | M1 - v2 Architecture Refactoring | 1/3 | 3/3 | ACTIVE |
 | M2 - Polish & Extensions | -/- | -/- | PLANNED |
 | M3 - Telemetry-Driven Evolution | 0/5 | 0/8 | PLANNED |
