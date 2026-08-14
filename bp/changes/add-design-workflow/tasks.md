@@ -136,7 +136,7 @@
     - **AND** `bp continue` on the change returns the same next-step command whether or not `design-review.md` is present (tolerance — absence must not block)
   - **notes**: DESIGN_SYSTEM_TEMPLATE lives in the new design-system.ts module, re-exported and registered in index.ts (`ARTIFACT_TEMPLATES['design-system']` — TEMPLATE_IDS auto-widens); bp-template.ts gains `FILENAMES['design-system'] = 'DESIGN.md'` (root-file exception per user decision). artifact-validator.ts: add the `design-review` entry to validateChange's known-files array (validateArtifact's default case already pass-through-validates it). continue.ts needs NO code change — verified it only reads schema-declared artifacts; the tolerance is locked by the regression test (D-8).
 
-- [ ] T-8: [type:behavior] Core-loop advisory hooks (plan + check templates) <!-- commit: -->
+- [x] T-8: [type:behavior] Core-loop advisory hooks (plan + check templates) <!-- commit: a9b68ab -->
   - **refs**: DS-8
   - **spec_ref**: specs/design/spec.md#core-loop-advisory-hooks
   - **files**: src/templates/workflows/plan.ts, src/templates/workflows/check.ts, tests/templates/workflow-plan.test.ts (or new assertions in tests/templates/)
