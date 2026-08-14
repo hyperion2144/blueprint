@@ -106,7 +106,7 @@
     - **AND** every new generated description contains no `': '`
   - **notes**: Append the five steps after `refactor` in each STEPS list (pi order is canonical); description strings come from DS-1's table. omp/skills.ts grows 10 → 15 — its list lacks `refactor` (pre-existing gap, do NOT add it — D-9). omp/commands.ts + claude-code/commands.ts gain command defs with `usesAgent: true, agents: ['designer']` (argumentHint `[change-name]` for design-review and plan-design-review). GREEN includes updating the count-pin tests (pi index 18→24, skills 11→16, agents 6→7, codex 11→16, agent skills 11→16, agent agents 6→7, claude-code commands 11→16, claude-code agents 6→7) and regenerating snapshots with `npx vitest run --update`. Do NOT touch src/integrations/opencode/* (D-6).
 
-- [ ] T-6: [type:behavior] Pi extension designer agent-type detection (runtime + template lockstep) <!-- commit: -->
+- [x] T-6: [type:behavior] Pi extension designer agent-type detection (runtime + template lockstep) <!-- commit: 2a6da62 -->
   - **refs**: DS-6
   - **spec_ref**: specs/design/spec.md#designer-agent-type-detection
   - **files**: src/integrations/pi/extension-runtime.ts, src/templates/pi/extension.tmpl.ts, src/integrations/pi/extension-runtime.test.ts
