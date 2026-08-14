@@ -54,8 +54,6 @@ function stripStaleHookConfig(baseDir: string, relPath: string, marker: string):
 function cleanupStaleFiles(baseDir: string, generatedPaths: string[]): void {
   const generatedSet = new Set(generatedPaths.map(p => p.replace(/^\.\//, '')));
 
-  // V2 step names for directory-based check (.agent/skills/ entries don't match generatedSet directly)
-  const v2Steps: Record<string, true> = { init: true, roadmap: true, propose: true, plan: true, apply: true, check: true, archive: true, continue: true, ff: true, loop: true, refactor: true };
 
   // Helper: remove a single file if it isn't in the generated set
   function checkRemove(dir: string, relPrefix: string, file: string): void {
@@ -108,13 +106,16 @@ function cleanupStaleFiles(baseDir: string, generatedPaths: string[]): void {
     }
   }
 
-  // .agent/skills/ — entries are directories like bp-<step>/
+  // .agent/skills/ — entries are directories like bp-<step>/; non-bp skill
+  // directories must remain untouched.
   const agentSkillsDir = join(baseDir, '.agent', 'skills');
   if (existsSync(agentSkillsDir)) {
     for (const entry of readdirSync(agentSkillsDir)) {
-      // Extract step name from "bp-<step>" directory name
       const match = /^bp-(.+)$/.exec(entry);
-      if (match && !v2Steps[match[1]]) {
+      if (!match) continue; // skip non-bp skills
+      // Stale = bp- directory not part of current generation set
+      const isCurrent = generatedSet.has(`.agent/skills/${entry}/SKILL.md`);
+      if (!isCurrent) {
         rmSync(join(agentSkillsDir, entry), { recursive: true, force: true });
         console.log(`  ✓ Removed stale: .agent/skills/${entry}/`);
       }
