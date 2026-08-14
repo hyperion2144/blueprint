@@ -51,7 +51,7 @@
     - **AND** every new skill/command `description` matches the regex `/:\s/` zero times (no colon-space — pi parseFrontmatter throws on it, see commit 02dd037)
   - **notes**: Instructions are bp-style orchestrator text (120-250 lines each), adapted from gstack phase structure with a provenance comment; `plan-design-review` is UI-audit-only (no platform gates, no codex design voice, no plan-mode EXIT machinery). Descriptions use the hyphen style from DS-1's table. Registry additions only — no transition-graph or continue changes (design steps are auxiliary like ff/loop/refactor).
 
-- [ ] T-2: [type:behavior] Designer sub-agent prompt (DESIGNER_PROMPT + AGENT_PROMPTS registration) <!-- commit: -->
+- [x] T-2: [type:behavior] Designer sub-agent prompt (DESIGNER_PROMPT + AGENT_PROMPTS registration) <!-- commit: 3c00ec2 -->
   - **refs**: DS-2
   - **spec_ref**: specs/design/spec.md#designer-sub-agent
   - **files**: src/templates/agents/index.ts, tests/templates/agents-designer.test.ts
