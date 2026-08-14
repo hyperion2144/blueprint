@@ -101,12 +101,26 @@ afterAll(() => {
 });
 
 describe('detectAgentTypeFromPrompt', () => {
-  it('detects each role marker and defaults otherwise', () => {
-    expect(detectAgentTypeFromPrompt('You are the bp planner sub-agent')).toBe('planner');
-    expect(detectAgentTypeFromPrompt('## Role\nexecutor prompt')).toBe('executor');
-    expect(detectAgentTypeFromPrompt('## Role\nreviewer prompt')).toBe('reviewer');
-    expect(detectAgentTypeFromPrompt('## Role\nrefactorer prompt')).toBe('refactorer');
-    expect(detectAgentTypeFromPrompt('## Role\nfixer prompt')).toBe('fixer');
+  it('detects every role from its REAL generated prompt body (AGENT_PROMPTS lockstep)', async () => {
+    // R1 regression: substring markers ('planner', 'executor', ...) do not
+    // exist in the real bodies — only the role TITLE phrases do. Detection
+    // must classify the shipped prompts exactly.
+    const { AGENT_PROMPTS } = await import('../../templates/agents/index.js');
+    expect(detectAgentTypeFromPrompt(AGENT_PROMPTS.planner)).toBe('planner');
+    expect(detectAgentTypeFromPrompt(AGENT_PROMPTS.executor)).toBe('executor');
+    expect(detectAgentTypeFromPrompt(AGENT_PROMPTS.reviewer)).toBe('reviewer');
+    expect(detectAgentTypeFromPrompt(AGENT_PROMPTS['codebase-scanner'])).toBe('codebase-scanner');
+    expect(detectAgentTypeFromPrompt(AGENT_PROMPTS.refactorer)).toBe('refactorer');
+    expect(detectAgentTypeFromPrompt(AGENT_PROMPTS.fixer)).toBe('fixer');
+  });
+
+  it('detects each role from its title phrase and defaults otherwise', () => {
+    expect(detectAgentTypeFromPrompt('You are a **Change Design Specialist**.')).toBe('planner');
+    expect(detectAgentTypeFromPrompt('You are a **Code Implementation Specialist**.')).toBe('executor');
+    expect(detectAgentTypeFromPrompt('You are a **Triple Review Specialist**.')).toBe('reviewer');
+    expect(detectAgentTypeFromPrompt('You are a **Codebase Scanner** for bp.')).toBe('codebase-scanner');
+    expect(detectAgentTypeFromPrompt('You are the **refactorer** sub-agent.')).toBe('refactorer');
+    expect(detectAgentTypeFromPrompt('You are the **bp-fixer** sub-agent.')).toBe('fixer');
     expect(detectAgentTypeFromPrompt('unrelated prompt')).toBe('default');
     expect(detectAgentTypeFromPrompt(undefined)).toBe('default');
   });
@@ -115,7 +129,7 @@ describe('detectAgentTypeFromPrompt', () => {
 describe('handleSessionStart (T-4)', () => {
   it('emits one bp-context message augmented with ## Roadmap State for planner prompts', async () => {
     const { api, sent } = makeApi();
-    const ctx: PiExtensionContext = { cwd: testDir, getSystemPrompt: () => 'You are the bp planner agent' };
+    const ctx: PiExtensionContext = { cwd: testDir, getSystemPrompt: () => 'You are a **Change Design Specialist**.' };
     const ext = createPiExtension();
     await ext.handleSessionStart({}, ctx, api);
     expect(sent).toHaveLength(1);
@@ -130,7 +144,8 @@ describe('handleSessionStart (T-4)', () => {
   it('inlines context.jsonl rows with > GUARD-RAIL: prefixes for executor and fixer prompts', async () => {
     for (const role of ['executor', 'fixer']) {
       const { api, sent } = makeApi();
-      const ctx: PiExtensionContext = { cwd: testDir, getSystemPrompt: () => `## Role\n${role} prompt` };
+      const title = role === 'executor' ? 'You are a **Code Implementation Specialist**.' : 'You are the **bp-fixer** sub-agent.';
+      const ctx: PiExtensionContext = { cwd: testDir, getSystemPrompt: () => title };
       const ext = createPiExtension();
       await ext.handleSessionStart({}, ctx, api);
       expect(sent).toHaveLength(1);
@@ -142,7 +157,7 @@ describe('handleSessionStart (T-4)', () => {
 
   it('renders ## Invariants and ## tasks.md acceptance for reviewer prompts', async () => {
     const { api, sent } = makeApi();
-    const ctx: PiExtensionContext = { cwd: testDir, getSystemPrompt: () => '## Role\nreviewer prompt' };
+    const ctx: PiExtensionContext = { cwd: testDir, getSystemPrompt: () => 'You are a **Triple Review Specialist**.' };
     const ext = createPiExtension();
     await ext.handleSessionStart({}, ctx, api);
     expect(sent).toHaveLength(1);
@@ -155,7 +170,7 @@ describe('handleSessionStart (T-4)', () => {
 
   it('renders ## Refactor Targets from the report summary for refactorer prompts', async () => {
     const { api, sent } = makeApi();
-    const ctx: PiExtensionContext = { cwd: testDir, getSystemPrompt: () => '## Role\nrefactorer prompt' };
+    const ctx: PiExtensionContext = { cwd: testDir, getSystemPrompt: () => 'You are the **refactorer** sub-agent.' };
     const ext = createPiExtension();
     await ext.handleSessionStart({}, ctx, api);
     expect(sent).toHaveLength(1);

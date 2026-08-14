@@ -29,6 +29,18 @@ describe('pi extension template source (T-3)', () => {
     expect(EXTENSION_SOURCE).toContain('@earendil-works/pi-coding-agent');
   });
 
+  it('contains the role TITLE phrases used for agent-type detection (R1 lockstep)', () => {
+    // The inline detectAgentType must key on the real AGENT_PROMPTS title
+    // phrases, not bare role-name substrings (which do not exist in the
+    // shipped bodies and false-positive across roles).
+    expect(EXTENSION_SOURCE).toContain('Change Design Specialist');
+    expect(EXTENSION_SOURCE).toContain('Code Implementation Specialist');
+    expect(EXTENSION_SOURCE).toContain('Triple Review Specialist');
+    expect(EXTENSION_SOURCE).toContain('Codebase Scanner');
+    expect(EXTENSION_SOURCE).toContain('**refactorer** sub-agent');
+    expect(EXTENSION_SOURCE).toContain('**bp-fixer** sub-agent');
+  });
+
   it('is byte-identical across two imports', async () => {
     const second = await import('../../templates/pi/extension.tmpl.js');
     expect(second.EXTENSION_SOURCE).toBe(EXTENSION_SOURCE);
