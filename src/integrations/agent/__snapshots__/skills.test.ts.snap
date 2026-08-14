@@ -350,7 +350,7 @@ bp continue $ARGUMENTS
 ",
   "ff": "---
 name: bp-ff
-description: Fast-forward: auto-advance through all steps
+description: Fast-forward - auto-advance through all steps
 hide: false
 ---
 
@@ -449,7 +449,7 @@ Project initialized. Run \`bp continue\` to check project status and discover ne
 ",
   "loop": "---
 name: bp-loop
-description: Autonomous loop: auto-advance with no user interaction
+description: Autonomous loop - auto-advance with no user interaction
 hide: false
 ---
 

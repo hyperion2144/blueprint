@@ -341,7 +341,7 @@ bp continue $ARGUMENTS
 - If the CLI says \`Next: bp <step> <name>\`, run the workflow instructions it outputs.
 ",
   "ff": "---
-description: Fast-forward: auto-advance through all steps by calling bp continue after each
+description: Fast-forward - auto-advance through all steps by calling bp continue after each
 ---
 
 ## Input
@@ -436,7 +436,7 @@ Project initialized. Run \`bp continue\` to check project status and discover ne
 - ALWAYS suggest \`bp continue\`.
 ",
   "loop": "---
-description: Autonomous loop: same as ff but skip all user interaction until roadmap complete
+description: Autonomous loop - same as ff but skip all user interaction until roadmap complete
 ---
 
 ## Input

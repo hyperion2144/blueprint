@@ -37,14 +37,14 @@ bp continue $ARGUMENTS
 export function getLoopSkillTemplate(): SkillTemplate {
   return {
     name: 'bp-loop',
-    description: 'Autonomous loop: auto-advance with no user interaction until roadmap complete',
+    description: 'Autonomous loop - auto-advance with no user interaction until roadmap complete',
     instructions,
   };
 }
 
 export function getLoopCommandTemplate(): CommandTemplate {
   return {
-    description: 'Autonomous loop: auto-advance with no user interaction until roadmap complete',
+    description: 'Autonomous loop - auto-advance with no user interaction until roadmap complete',
     category: 'Workflow',
     tags: ['bp', 'loop', 'autonomous', 'auto-advance'],
     content: instructions,

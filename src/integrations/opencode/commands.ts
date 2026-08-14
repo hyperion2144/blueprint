@@ -27,8 +27,8 @@ const STEPS: OpenCodeCommandDef[] = [
   { step: 'check', description: 'Triple check of a change - full verify + fixer loopback + full re-review', argumentHint: '[change-name]' },
   { step: 'archive', description: 'Archive a change (merge delta specs, archive dir, update roadmap)', argumentHint: '[change-name]' },
   { step: 'continue', description: 'Check progress and suggest next step', argumentHint: '[change-name]' },
-  { step: 'ff', description: 'Fast-forward: auto-advance through all steps by calling bp continue after each' },
-  { step: 'loop', description: 'Autonomous loop: same as ff but skip all user interaction until roadmap complete' },
+  { step: 'ff', description: 'Fast-forward - auto-advance through all steps by calling bp continue after each' },
+  { step: 'loop', description: 'Autonomous loop - same as ff but skip all user interaction until roadmap complete' },
   { step: 'refactor', description: 'Run deterministic refactor analyzer and dispatch refactorer sub-agents per module', argumentHint: '<target>' },
 ];
 

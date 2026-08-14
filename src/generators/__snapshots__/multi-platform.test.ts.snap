@@ -1077,7 +1077,7 @@ bp continue $ARGUMENTS
 ",
   ".agent/skills/bp-ff/SKILL.md": "---
 name: bp-ff
-description: Fast-forward: auto-advance through all steps
+description: Fast-forward - auto-advance through all steps
 hide: false
 ---
 
@@ -1176,7 +1176,7 @@ Project initialized. Run \`bp continue\` to check project status and discover ne
 ",
   ".agent/skills/bp-loop/SKILL.md": "---
 name: bp-loop
-description: Autonomous loop: auto-advance with no user interaction
+description: Autonomous loop - auto-advance with no user interaction
 hide: false
 ---
 
@@ -2802,7 +2802,7 @@ bp continue $ARGUMENTS
 ",
   ".claude/commands/bp-ff.md": "---
 name: bp:ff
-description: Fast-forward: auto-advance through all steps by calling bp continue after each
+description: Fast-forward - auto-advance through all steps by calling bp continue after each
 ---
 
 ## Input
@@ -2899,7 +2899,7 @@ Project initialized. Run \`bp continue\` to check project status and discover ne
 ",
   ".claude/commands/bp-loop.md": "---
 name: bp:loop
-description: Autonomous loop: same as ff but skip all user interaction until roadmap complete
+description: Autonomous loop - same as ff but skip all user interaction until roadmap complete
 ---
 
 ## Input
@@ -4725,7 +4725,7 @@ bp continue $ARGUMENTS
 ",
   ".omp/commands/bp-ff.md": "---
 name: bp:ff
-description: Fast-forward: auto-advance through all steps by running bp continue after each
+description: Fast-forward - auto-advance through all steps by running bp continue after each
 ---
 
 ## Input
@@ -4822,7 +4822,7 @@ Project initialized. Run \`bp continue\` to check project status and discover ne
 ",
   ".omp/commands/bp-loop.md": "---
 name: bp:loop
-description: Autonomous loop: same as ff but skip all user interaction until roadmap complete
+description: Autonomous loop - same as ff but skip all user interaction until roadmap complete
 ---
 
 ## Input

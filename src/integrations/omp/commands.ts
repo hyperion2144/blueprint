@@ -28,8 +28,8 @@ export const STEP_DEFS: CommandDef[] = [
   { step: 'check', name: 'bp:check', description: 'Triple check of a change - full verify + fixer loopback + full re-review', usesAgent: true, agents: ['reviewer', 'fixer'], argumentHint: '[change-name]' },
   { step: 'archive', name: 'bp:archive', description: 'Archive a change (merge delta specs, archive dir, update roadmap)', usesAgent: false, agents: [], argumentHint: '[change-name]' },
   { step: 'continue', name: 'bp:continue', description: 'Check progress and suggest next step', usesAgent: false, agents: [], argumentHint: '[change-name]' },
-  { step: 'ff', name: 'bp:ff', description: 'Fast-forward: auto-advance through all steps by running bp continue after each', usesAgent: false, agents: [] },
-  { step: 'loop', name: 'bp:loop', description: 'Autonomous loop: same as ff but skip all user interaction until roadmap complete', usesAgent: false, agents: [] },
+  { step: 'ff', name: 'bp:ff', description: 'Fast-forward - auto-advance through all steps by running bp continue after each', usesAgent: false, agents: [] },
+  { step: 'loop', name: 'bp:loop', description: 'Autonomous loop - same as ff but skip all user interaction until roadmap complete', usesAgent: false, agents: [] },
   { step: 'refactor', name: 'bp:refactor', description: 'Run deterministic refactor analyzer and dispatch refactorer sub-agents per module', usesAgent: false, agents: [], argumentHint: '<target>' },
 ];
 

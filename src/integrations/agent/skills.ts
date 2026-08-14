@@ -25,8 +25,8 @@ function skillDescription(step: string): string {
     check: 'Triple check',
     archive: 'Verify and archive',
     continue: 'Check progress and suggest next step',
-    ff: 'Fast-forward: auto-advance through all steps',
-    loop: 'Autonomous loop: auto-advance with no user interaction',
+    ff: 'Fast-forward - auto-advance through all steps',
+    loop: 'Autonomous loop - auto-advance with no user interaction',
     refactor: 'Run deterministic refactor analyzer and dispatch refactorer sub-agents per module',
   };
   return map[step] ?? '';

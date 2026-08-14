@@ -36,14 +36,14 @@ bp continue $ARGUMENTS
 export function getFfSkillTemplate(): SkillTemplate {
   return {
     name: 'bp-ff',
-    description: 'Fast-forward: auto-advance through all next steps by calling bp continue after each',
+    description: 'Fast-forward - auto-advance through all next steps by calling bp continue after each',
     instructions,
   };
 }
 
 export function getFfCommandTemplate(): CommandTemplate {
   return {
-    description: 'Fast-forward: auto-advance through all next steps by calling bp continue after each',
+    description: 'Fast-forward - auto-advance through all next steps by calling bp continue after each',
     category: 'Workflow',
     tags: ['bp', 'ff', 'fast-forward', 'auto-advance'],
     content: instructions,

@@ -350,7 +350,7 @@ bp continue $ARGUMENTS
 ",
   "ff": "---
 name: bp:ff
-description: Fast-forward: auto-advance through all steps by calling bp continue after each
+description: Fast-forward - auto-advance through all steps by calling bp continue after each
 ---
 
 ## Input
@@ -447,7 +447,7 @@ Project initialized. Run \`bp continue\` to check project status and discover ne
 ",
   "loop": "---
 name: bp:loop
-description: Autonomous loop: same as ff but skip all user interaction until roadmap complete
+description: Autonomous loop - same as ff but skip all user interaction until roadmap complete
 ---
 
 ## Input

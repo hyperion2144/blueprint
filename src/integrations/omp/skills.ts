@@ -32,8 +32,8 @@ function skillDescription(step: string): string {
     check: 'Triple check of a change - full verify + fixer loopback + full re-review',
     archive: 'Archive a change (merge delta specs, archive dir, update roadmap)',
     continue: 'Check progress and suggest next step',
-    ff: 'Fast-forward: auto-advance through all steps by running bp continue after each',
-    loop: 'Autonomous loop: same as ff but skip all user interaction until roadmap complete',
+    ff: 'Fast-forward - auto-advance through all steps by running bp continue after each',
+    loop: 'Autonomous loop - same as ff but skip all user interaction until roadmap complete',
   };
   return map[step] ?? '';
 }
