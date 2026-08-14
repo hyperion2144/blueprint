@@ -4,7 +4,7 @@
 
 import { join } from 'node:path';
 import { rmSync, readdirSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { Command } from 'commander';
+import type { Command } from 'commander';
 import { loadConfig } from '../core/config.js';
 import { generateAll } from '../generators/index.js';
 import { writeGeneratedFiles } from './_utils.js';
@@ -150,6 +150,37 @@ function cleanupStaleFiles(baseDir: string, generatedPaths: string[]): void {
         console.log(`  ✓ Removed stale: .agents/skills/${entry}/`);
       }
     }
+  }
+  // .pi/skills/bp-* — directory-based cleanup; non-bp skill directories
+  // must remain untouched (mirror of the .agents/skills/ block).
+  const piSkillsDir = join(baseDir, '.pi', 'skills');
+  if (existsSync(piSkillsDir)) {
+    for (const entry of readdirSync(piSkillsDir)) {
+      const match = /^bp-(.+)$/.exec(entry);
+      if (!match) continue; // skip non-bp skills
+      // Stale = bp- directory not part of current generation set
+      const isCurrent = generatedSet.has(`.pi/skills/${entry}/SKILL.md`);
+      if (!isCurrent) {
+        rmSync(join(piSkillsDir, entry), { recursive: true, force: true });
+        console.log(`  ✓ Removed stale: .pi/skills/${entry}/`);
+      }
+    }
+  }
+
+  // .pi/agents/ — file-based, bp- prefix guard (only bp-generated agents)
+  const piAgentsDir = join(baseDir, '.pi', 'agents');
+  if (existsSync(piAgentsDir)) {
+    for (const file of readdirSync(piAgentsDir)) {
+      checkRemove(piAgentsDir, '.pi/agents', file);
+    }
+  }
+
+  // .pi/extensions/bp/ — only the bp-generated extension dir is removed;
+  // arbitrary files under .pi/extensions/ are user-owned and preserved.
+  const piExtensionDir = join(baseDir, '.pi', 'extensions', 'bp');
+  if (existsSync(piExtensionDir) && !generatedSet.has('.pi/extensions/bp/index.ts')) {
+    rmSync(piExtensionDir, { recursive: true, force: true });
+    console.log('  ✓ Removed stale: .pi/extensions/bp/');
   }
 
   // .claude/settings.json — when claude-code is no longer configured, strip
