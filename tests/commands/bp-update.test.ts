@@ -11,7 +11,7 @@
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { execSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -54,7 +54,7 @@ describe('bp update — Codex safe stale cleanup (T-6)', () => {
     // Drop codex from config so generateAll won't regenerate hooks.json
     const configPath = join(bpDir, 'config.yaml');
     let config = readFileSync(configPath, 'utf-8');
-    config = config.replace(/platform:\n(?:  - [^\n]+\n)+/, 'platform:\n  - omp\n');
+    config = config.replace(/platform:\n(?: {2}- [^\n]+\n)+/, 'platform:\n  - omp\n');
     writeFileSync(configPath, config, 'utf-8');
 
     execSync(`node ${cliPath} update --dir bp`, { encoding: 'utf-8', cwd: testDir });
@@ -71,7 +71,7 @@ describe('bp update — Codex safe stale cleanup (T-6)', () => {
     // Drop codex from config so generateAll won't regenerate it
     const configPath = join(bpDir, 'config.yaml');
     let config = readFileSync(configPath, 'utf-8');
-    config = config.replace(/platform:\n(?:  - [^\n]+\n)+/, 'platform:\n  - omp\n');
+    config = config.replace(/platform:\n(?: {2}- [^\n]+\n)+/, 'platform:\n  - omp\n');
     writeFileSync(configPath, config, 'utf-8');
 
     execSync(`node ${cliPath} update --dir bp`, { encoding: 'utf-8', cwd: testDir });
@@ -84,7 +84,7 @@ describe('bp update — Codex safe stale cleanup (T-6)', () => {
     const configPath = join(bpDir, 'config.yaml');
     const original = readFileSync(configPath, 'utf-8');
     try {
-      const config = original.replace(/platform:\n(?:  - [^\n]+\n)+/, 'platform:\n  - agent\n');
+      const config = original.replace(/platform:\n(?: {2}- [^\n]+\n)+/, 'platform:\n  - agent\n');
       writeFileSync(configPath, config, 'utf-8');
 
       execSync(`node ${cliPath} update --dir bp`, { encoding: 'utf-8', cwd: testDir });
@@ -127,7 +127,7 @@ describe('bp update — Codex safe stale cleanup (T-6)', () => {
     const configPath = join(bpDir, 'config.yaml');
     let config = readFileSync(configPath, 'utf-8');
     if (!config.includes('- codex')) {
-      config = config.replace(/platform:\n  - omp\n/, 'platform:\n  - omp\n  - codex\n');
+      config = config.replace(/platform:\n {2}- omp\n/, 'platform:\n  - omp\n  - codex\n');
       writeFileSync(configPath, config, 'utf-8');
     }
     execSync(`node ${cliPath} update --dir bp`, { encoding: 'utf-8', cwd: testDir });
@@ -142,7 +142,7 @@ describe('bp update — Codex safe stale cleanup (T-6)', () => {
     const configPath = join(bpDir, 'config.yaml');
     let config = readFileSync(configPath, 'utf-8');
     if (!config.includes('- codex')) {
-      config = config.replace(/platform:\n  - omp\n/, 'platform:\n  - omp\n  - codex\n');
+      config = config.replace(/platform:\n {2}- omp\n/, 'platform:\n  - omp\n  - codex\n');
       writeFileSync(configPath, config, 'utf-8');
     }
 
@@ -176,7 +176,7 @@ describe('bp update — Codex safe stale cleanup (T-6)', () => {
     // Drop codex from config so hooks.json is stale
     const configPath = join(bpDir, 'config.yaml');
     let config = readFileSync(configPath, 'utf-8');
-    config = config.replace(/platform:\n(?:  - [^\n]+\n)+/, 'platform:\n  - omp\n');
+    config = config.replace(/platform:\n(?: {2}- [^\n]+\n)+/, 'platform:\n  - omp\n');
     writeFileSync(configPath, config, 'utf-8');
 
     const codexDir = join(testDir, '.codex');
@@ -240,7 +240,7 @@ describe('bp update — Claude Code safe stale cleanup (T-4)', () => {
     // Drop claude-code from config so generateAll won't regenerate it
     const configPath = join(bpDir, 'config.yaml');
     let config = readFileSync(configPath, 'utf-8');
-    config = config.replace(/platform:\n(?:  - [^\n]+\n)+/, 'platform:\n  - omp\n');
+    config = config.replace(/platform:\n(?: {2}- [^\n]+\n)+/, 'platform:\n  - omp\n');
     writeFileSync(configPath, config, 'utf-8');
 
     execSync(`node ${cliPath} update --dir bp`, { encoding: 'utf-8', cwd: testDir });
@@ -255,7 +255,7 @@ describe('bp update — Claude Code safe stale cleanup (T-4)', () => {
 
     const configPath = join(bpDir, 'config.yaml');
     let config = readFileSync(configPath, 'utf-8');
-    config = config.replace(/platform:\n(?:  - [^\n]+\n)+/, 'platform:\n  - omp\n');
+    config = config.replace(/platform:\n(?: {2}- [^\n]+\n)+/, 'platform:\n  - omp\n');
     writeFileSync(configPath, config, 'utf-8');
 
     execSync(`node ${cliPath} update --dir bp`, { encoding: 'utf-8', cwd: testDir });
@@ -278,7 +278,7 @@ describe('bp update — Claude Code safe stale cleanup (T-4)', () => {
     const configPath = join(bpDir, 'config.yaml');
     let config = readFileSync(configPath, 'utf-8');
     if (!config.includes('- claude-code')) {
-      config = config.replace(/platform:\n  - omp\n/, 'platform:\n  - omp\n  - claude-code\n');
+      config = config.replace(/platform:\n {2}- omp\n/, 'platform:\n  - omp\n  - claude-code\n');
       writeFileSync(configPath, config, 'utf-8');
     }
     execSync(`node ${cliPath} update --dir bp`, { encoding: 'utf-8', cwd: testDir });
@@ -291,7 +291,7 @@ describe('bp update — Claude Code safe stale cleanup (T-4)', () => {
     const configPath = join(bpDir, 'config.yaml');
     let config = readFileSync(configPath, 'utf-8');
     if (!config.includes('- claude-code')) {
-      config = config.replace(/platform:\n  - omp\n/, 'platform:\n  - omp\n  - claude-code\n');
+      config = config.replace(/platform:\n {2}- omp\n/, 'platform:\n  - omp\n  - claude-code\n');
       writeFileSync(configPath, config, 'utf-8');
     }
 
@@ -330,7 +330,7 @@ describe('bp update — Claude Code safe stale cleanup (T-4)', () => {
   it('strips bp hooks from `.claude/settings.json` and keeps user settings when claude-code is dropped', () => {
     const configPath = join(bpDir, 'config.yaml');
     let config = readFileSync(configPath, 'utf-8');
-    config = config.replace(/platform:\n(?:  - [^\n]+\n)+/, 'platform:\n  - omp\n');
+    config = config.replace(/platform:\n(?: {2}- [^\n]+\n)+/, 'platform:\n  - omp\n');
     writeFileSync(configPath, config, 'utf-8');
 
     const claudeDir = join(testDir, '.claude');
@@ -357,5 +357,98 @@ describe('bp update — Claude Code safe stale cleanup (T-4)', () => {
     expect(merged.hooks.Stop[0].hooks[0].command).toBe('echo turn ended');
     expect(merged.hooks.SessionStart).toBeUndefined();
     expect(readFileSync(join(claudeDir, 'settings.json.bak'), 'utf-8')).toBe(original);
+  });
+});
+
+describe('bp update — pi safe stale cleanup (T-8)', () => {
+  let testDir: string;
+  let bpDir: string;
+
+  beforeAll(() => {
+    testDir = join(tmpdir(), `bp-update-pi-${Date.now()}`);
+    mkdirSync(testDir, { recursive: true });
+    bpDir = join(testDir, 'bp');
+    execSync(`node ${cliPath} init --dir ${testDir} --yes`, {
+      encoding: 'utf-8',
+      cwd: testDir,
+    });
+  });
+
+  afterAll(() => {
+    rmSync(testDir, { recursive: true, force: true });
+  });
+
+  beforeEach(() => {
+    // Start each test from a clean state
+    rmSync(join(testDir, '.pi'), { recursive: true, force: true });
+  });
+
+  it('removes stale bp-owned .pi/ artifacts while preserving user-owned files', () => {
+    // Seed stale bp artifacts
+    const staleSkillDir = join(testDir, '.pi', 'skills', 'bp-plan');
+    mkdirSync(staleSkillDir, { recursive: true });
+    writeFileSync(join(staleSkillDir, 'SKILL.md'), '# stale', 'utf-8');
+    const agentsDir = join(testDir, '.pi', 'agents');
+    mkdirSync(agentsDir, { recursive: true });
+    writeFileSync(join(agentsDir, 'bp-fixer.md'), '# stale', 'utf-8');
+    const extDir = join(testDir, '.pi', 'extensions', 'bp');
+    mkdirSync(extDir, { recursive: true });
+    writeFileSync(join(extDir, 'index.ts'), '# stale', 'utf-8');
+    // Seed user-owned files
+    writeFileSync(join(testDir, '.pi', 'settings.json'), '{"user": true}', 'utf-8');
+    const userSkillDir = join(testDir, '.pi', 'skills', 'user-skill');
+    mkdirSync(userSkillDir, { recursive: true });
+    writeFileSync(join(userSkillDir, 'SKILL.md'), '# user skill', 'utf-8');
+
+    // Config without pi so generateAll won't regenerate .pi/ files
+    const configPath = join(bpDir, 'config.yaml');
+    let config = readFileSync(configPath, 'utf-8');
+    config = config.replace(/platform:\n(?: {2}- [^\n]+\n)+/, 'platform:\n  - omp\n');
+    writeFileSync(configPath, config, 'utf-8');
+
+    const out = execSync(`node ${cliPath} update --dir bp`, { encoding: 'utf-8', cwd: testDir });
+
+    expect(existsSync(staleSkillDir)).toBe(false);
+    expect(existsSync(join(agentsDir, 'bp-fixer.md'))).toBe(false);
+    expect(existsSync(extDir)).toBe(false);
+    // The update logs a ✓ Removed stale: line for each removed artifact
+    expect(out).toContain('✓ Removed stale: .pi/skills/bp-plan/');
+    expect(out).toContain('✓ Removed stale: .pi/agents/bp-fixer.md');
+    expect(out).toContain('✓ Removed stale: .pi/extensions/bp/');
+    // User-owned files are preserved
+    expect(existsSync(join(testDir, '.pi', 'settings.json'))).toBe(true);
+    expect(readFileSync(join(testDir, '.pi', 'settings.json'), 'utf-8')).toBe('{"user": true}');
+    expect(existsSync(join(userSkillDir, 'SKILL.md'))).toBe(true);
+  });
+
+  it('preserves all generated .pi/ files when pi is configured', () => {
+    const configPath = join(bpDir, 'config.yaml');
+    const original = readFileSync(configPath, 'utf-8');
+    try {
+      const config = original.replace(/platform:\n(?: {2}- [^\n]+\n)+/, 'platform:\n  - pi\n');
+      writeFileSync(configPath, config, 'utf-8');
+
+      execSync(`node ${cliPath} update --dir bp`, { encoding: 'utf-8', cwd: testDir });
+
+      const piDir = join(testDir, '.pi');
+      expect(existsSync(join(piDir, 'skills', 'bp-plan', 'SKILL.md'))).toBe(true);
+      expect(existsSync(join(piDir, 'agents', 'bp-planner.md'))).toBe(true);
+      expect(existsSync(join(piDir, 'extensions', 'bp', 'index.ts'))).toBe(true);
+
+      // Count all generated files: 11 skills + 6 agents + 1 extension
+      const files: string[] = [];
+      const walk = (dir: string) => {
+        for (const entry of readdirSync(dir, { withFileTypes: true })) {
+          const full = join(dir, entry.name);
+          if (entry.isDirectory()) walk(full);
+          else files.push(full);
+        }
+      };
+      walk(piDir);
+      expect(files).toHaveLength(18);
+    } finally {
+      // Restore the original platform config so sibling tests are unaffected
+      writeFileSync(configPath, original, 'utf-8');
+    }
   });
 });
