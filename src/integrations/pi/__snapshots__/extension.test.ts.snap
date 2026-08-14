@@ -67,13 +67,23 @@ function readBpState(cwd: string): { summary: string; activeChangeName?: string 
   }
 }
 
+const AGENT_TYPE_MARKERS: Array<[string, string]> = [
+  ["planner", "Change Design Specialist"],
+  ["executor", "Code Implementation Specialist"],
+  ["reviewer", "Triple Review Specialist"],
+  ["codebase-scanner", "Codebase Scanner"],
+  ["refactorer", "You are the **refactorer** sub-agent"],
+  ["fixer", "You are the **bp-fixer** sub-agent"],
+];
+
+// Role-title phrases from the real AGENT_PROMPTS bodies (src/templates/agents/index.ts).
+// Bare role-name substrings do NOT exist in the shipped prompts and cross-contaminate
+// (the reviewer body mentions "executor", the fixer body mentions "reviewer").
 function detectAgentType(prompt: string | undefined): string {
   if (!prompt) return "default";
-  if (prompt.includes("planner")) return "planner";
-  if (prompt.includes("executor")) return "executor";
-  if (prompt.includes("reviewer")) return "reviewer";
-  if (prompt.includes("refactorer")) return "refactorer";
-  if (prompt.includes("fixer")) return "fixer";
+  for (const [agentType, marker] of AGENT_TYPE_MARKERS) {
+    if (prompt.includes(marker)) return agentType;
+  }
   return "default";
 }
 
@@ -461,10 +471,10 @@ export default function bpExtension(api: ExtensionAPI) {
 
   api.on("before_agent_start", (_event, ctx) => {
     if (isDisabled()) return;
+    const cwd = (ctx && ctx.cwd) || process.cwd();
+    if (!hasBpConfig(cwd)) return; // guard BEFORE the once-per-session flag (config-missing must not burn the injection)
     if (bpStateInjected) return; // once per session (context handler re-injects on compaction)
     bpStateInjected = true;
-    const cwd = (ctx && ctx.cwd) || process.cwd();
-    if (!hasBpConfig(cwd)) return;
     const state = readBpState(cwd);
     return { message: buildStateMessage("bp-workflow-state", state.summary) };
   });

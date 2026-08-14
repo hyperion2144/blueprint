@@ -37,7 +37,7 @@ function assertWithinChanges(bpDir: string, changeName: string): void {
 }
 
 /** Detected pi sub-agent type for the current session (from the system prompt text). */
-export type AgentType = 'planner' | 'executor' | 'reviewer' | 'refactorer' | 'fixer' | 'default';
+export type AgentType = 'planner' | 'executor' | 'reviewer' | 'codebase-scanner' | 'refactorer' | 'fixer' | 'default';
 
 /** Shape of a custom pi message (content is a plain string on pi's runtime). */
 export interface PiMessage {
@@ -92,14 +92,27 @@ export function hasBpConfig(cwd: string | undefined): boolean {
   return existsSync(join(cwd, 'bp', 'config.yaml'));
 }
 
-/** Detect sub-agent type from the effective system prompt text (substring markers). */
+/**
+ * Role-title phrases from the real AGENT_PROMPTS bodies (src/templates/agents/index.ts).
+ * These are the only stable, disjoint markers: bare role-name substrings do not exist
+ * in the shipped prompts ('planner'/'executor' never appear) and cross-contaminate
+ * (the reviewer body mentions 'executor', the fixer body mentions 'reviewer').
+ */
+const AGENT_TYPE_MARKERS: ReadonlyArray<readonly [AgentType, string]> = [
+  ['planner', 'Change Design Specialist'],
+  ['executor', 'Code Implementation Specialist'],
+  ['reviewer', 'Triple Review Specialist'],
+  ['codebase-scanner', 'Codebase Scanner'],
+  ['refactorer', 'You are the **refactorer** sub-agent'],
+  ['fixer', 'You are the **bp-fixer** sub-agent'],
+];
+
+/** Detect sub-agent type from the effective system prompt text (role-title markers). */
 export function detectAgentTypeFromPrompt(prompt: string | undefined): AgentType {
   if (!prompt) return 'default';
-  if (prompt.includes('planner')) return 'planner';
-  if (prompt.includes('executor')) return 'executor';
-  if (prompt.includes('reviewer')) return 'reviewer';
-  if (prompt.includes('refactorer')) return 'refactorer';
-  if (prompt.includes('fixer')) return 'fixer';
+  for (const [agentType, marker] of AGENT_TYPE_MARKERS) {
+    if (prompt.includes(marker)) return agentType;
+  }
   return 'default';
 }
 
@@ -350,8 +363,9 @@ export function discoverPiAgents(cwd: string): PiAgentConfig[] {
 
   const agents: PiAgentConfig[] = [];
   for (const entry of entries) {
-    if (!entry.name.endsWith('.md')) continue;
-    if (!entry.isFile()) continue;
+    // Lockstep with the extension template's loadPiAgents: accept symlinked
+    // agent files too, not only regular files.
+    if (!entry.isFile() && !entry.isSymbolicLink()) continue;
 
     const filePath = join(agentsDir, entry.name);
     let content: string;
