@@ -113,6 +113,16 @@ describe('detectAgentTypeFromPrompt', () => {
     expect(detectAgentTypeFromPrompt(AGENT_PROMPTS['codebase-scanner'])).toBe('codebase-scanner');
     expect(detectAgentTypeFromPrompt(AGENT_PROMPTS.refactorer)).toBe('refactorer');
     expect(detectAgentTypeFromPrompt(AGENT_PROMPTS.fixer)).toBe('fixer');
+    expect(detectAgentTypeFromPrompt(AGENT_PROMPTS.designer)).toBe('designer');
+  });
+
+  it('detects every shipped role prompt as its own type (disjointness across all AGENT_PROMPTS)', async () => {
+    // A marker for role X that is a substring of role Y's prompt would
+    // misclassify Y — iterate EVERY shipped prompt, not just the expected ones.
+    const { AGENT_PROMPTS } = await import('../../templates/agents/index.js');
+    for (const [role, prompt] of Object.entries(AGENT_PROMPTS)) {
+      expect(detectAgentTypeFromPrompt(prompt)).toBe(role);
+    }
   });
 
   it('detects each role from its title phrase and defaults otherwise', () => {
@@ -122,6 +132,7 @@ describe('detectAgentTypeFromPrompt', () => {
     expect(detectAgentTypeFromPrompt('You are a **Codebase Scanner** for bp.')).toBe('codebase-scanner');
     expect(detectAgentTypeFromPrompt('You are the **refactorer** sub-agent.')).toBe('refactorer');
     expect(detectAgentTypeFromPrompt('You are the **bp-fixer** sub-agent.')).toBe('fixer');
+    expect(detectAgentTypeFromPrompt('You are a **Design Consultant**.')).toBe('designer');
     expect(detectAgentTypeFromPrompt('unrelated prompt')).toBe('default');
     expect(detectAgentTypeFromPrompt(undefined)).toBe('default');
   });
@@ -193,6 +204,19 @@ describe('handleSessionStart (T-4)', () => {
     expect(sent[0].content).not.toContain('## Invariants');
   });
 
+  it('emits the paths-only block for designer prompts (read-only design role)', async () => {
+    const { api, sent } = makeApi();
+    const ctx: PiExtensionContext = { cwd: testDir, getSystemPrompt: () => 'You are a **Design Consultant**.' };
+    const ext = createPiExtension();
+    await ext.handleSessionStart({}, ctx, api);
+    expect(sent).toHaveLength(1);
+    expect(sent[0].customType).toBe('bp-context');
+    expect(sent[0].content).toContain('<bp-context>');
+    expect(sent[0].content).not.toContain('## Roadmap State');
+    expect(sent[0].content).not.toContain('## Invariants');
+    expect(sent[0].content).not.toContain('GUARD-RAIL');
+  });
+
   it('emits the identical clean paths-only block for codebase-scanner prompts as for default (Q2 lockstep)', async () => {
     // codebase-scanner must NOT fall through with a trailing \n\n — the template
     // augmentBody returns the compact block unchanged for it, so the runtime must
@@ -204,9 +228,12 @@ describe('handleSessionStart (T-4)', () => {
       return sent[0].content;
     };
     const scannerBody = await bodyFor('You are a **Codebase Scanner** for bp.');
+    const designerBody = await bodyFor('You are a **Design Consultant**.');
     const defaultBody = await bodyFor('some unrelated prompt');
     expect(scannerBody).toBe(defaultBody);
+    expect(designerBody).toBe(defaultBody);
     expect(scannerBody.endsWith('\n\n')).toBe(false);
+    expect(designerBody.endsWith('\n\n')).toBe(false);
   });
 
   it('renderAugmentedBody returns the clean block when no branch augments (Q2)', () => {
@@ -214,7 +241,7 @@ describe('handleSessionStart (T-4)', () => {
     // must emit the bare compact block, not block + trailing newline.
     const bareDir = join(testDir, 'bare4');
     mkdirSync(bareDir, { recursive: true });
-    for (const agentType of ['codebase-scanner', 'refactorer'] as const) {
+    for (const agentType of ['codebase-scanner', 'refactorer', 'designer'] as const) {
       const body = renderAugmentedBody(bareDir, agentType, undefined);
       expect(body).toBe('<bp-context>\n</bp-context>');
       expect(body.endsWith('\n\n')).toBe(false);
@@ -318,6 +345,14 @@ describe('handleContext (T-4)', () => {
 describe('runtime ↔ template lockstep (T-4)', () => {
   it('re-exports EXTENSION_SOURCE byte-identical to the template', () => {
     expect(RUNTIME_SOURCE).toBe(EXTENSION_SOURCE);
+  });
+
+  it('ships the designer marker inside the generated extension source (template lockstep)', () => {
+    // RUNTIME_SOURCE IS the template's EXTENSION_SOURCE (byte-identical
+    // re-export) — the marker string must be present in the shipped template
+    // so the generated extension detects the designer role the same way.
+    expect(RUNTIME_SOURCE).toContain('Design Consultant');
+    expect(RUNTIME_SOURCE).toContain('"designer"');
   });
 });
 
