@@ -31,6 +31,8 @@ Same as plan workflow Step 1.
 
 Run the project's build and test suite (per bp/config.yaml stack). If build or tests fail, do NOT dispatch the reviewer — report the failures and stop.
 
+If the change touches UI surfaces (components, pages, styling), consider \`bp design-review $1\` — it audits the UI against the design language and supplements review.md. Advisory only; it does not gate the verdict.
+
 ### Step 3: Classify change (lightweight vs full)
 
 - **Lightweight** (all non-behavior tasks, no delta specs): orchestrator quick check — verify all tasks \`[x]\`, tests pass, no obvious issues, then write a simplified review.md.

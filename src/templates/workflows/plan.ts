@@ -24,6 +24,7 @@ If \`$ARGUMENTS\` is empty: list \`bp/changes/\` (exclude \`archive/\`) for acti
 
 - **Lightweight**: all proposal deliverables are config/docs/refactor/scaffolding (no new behavior).
 - **Full**: any deliverable introduces new behavior.
+- **UI-scoped advisory**: if any deliverable touches UI surfaces (components, pages, styling), consider running \`bp plan-design-review $1\` during the design phase — it produces a DESIGN.md design-language reference plus a 0-10 UI plan rating. Advisory only; it does not gate planning.
 
 ### Step 3: Dispatch planner (Full mode)
 
