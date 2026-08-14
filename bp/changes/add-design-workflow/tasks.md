@@ -149,7 +149,7 @@
     - **AND** neither content contains a MUST/SHALL sentence requiring the design command before proceeding (advisory-only — core 8-step semantics unchanged)
   - **notes**: plan.ts — one advisory bullet in the Step 2 classify block (UI-scoped changes → suggest `bp plan-design-review $1`, advisory, does not gate); check.ts — one advisory sentence in Step 2 pre-check (UI-scoped changes → consider `bp design-review $1`, supplements review.md, does not gate the verdict). Text-only edits; existing template structure and content untouched.
 
-- [ ] T-9: [type:scaffolding] Dogfood: regenerate platform files and commit repo-root outputs <!-- commit: -->
+- [x] T-9: [type:scaffolding] Dogfood: regenerate platform files and commit repo-root outputs <!-- commit: 8f0d7c1 -->
   - **refs**: DS-5, DS-6
   - **files**: .pi/skills/bp-design/SKILL.md, .pi/skills/bp-design-html/SKILL.md, .pi/skills/bp-design-review/SKILL.md, .pi/skills/bp-design-shotgun/SKILL.md, .pi/skills/bp-plan-design-review/SKILL.md, .pi/agents/bp-designer.md, .omp/skills/bp-design*/SKILL.md, .omp/commands/bp:design*.md, .omp/agents/bp-designer.md, .claude/commands/bp:design*.md, .claude/agents/bp-designer.md, .agents/skills/bp-design*/SKILL.md, .agents/agents/bp-designer.md, .codex regenerated sets
   - **acceptance**: after `bp update`, exactly 16 `.pi/skills/` dirs exist including the five `bp-design*` skills; `.pi/agents/bp-designer.md` exists; `.claude/commands/` contains five `bp:design*` files; a diff review shows only new-step/new-role additions (no unrelated churn); all generated files committed
