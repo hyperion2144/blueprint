@@ -6,7 +6,9 @@
  * - claude-code: Claude Code (commands, agents)
  * - agent: Generic .agent (skills, agents)
  * - codex: OpenAI Codex CLI (skills, hooks) — added in add-codex-support
+ * - pi: Pi Coding Agent (skills, agents, extension) — added in add-pi-platform
  */
 
 export * as omp from './omp/index.js';
 export * as codex from './codex/index.js';
+export * as pi from './pi/index.js';

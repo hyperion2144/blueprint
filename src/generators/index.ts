@@ -12,6 +12,7 @@ import { registerClaudeCodeProvider } from '../integrations/claude-code/index.js
 import { registerAgentProvider } from '../integrations/agent/index.js';
 import { registerCodexProvider } from '../integrations/codex/index.js';
 import { registerOpenCodeProvider } from '../integrations/opencode/index.js';
+import { registerPiProvider } from '../integrations/pi/index.js';
 import type { ProjectConfig } from '../types/index.js';
 export type { GeneratedFile };
 
@@ -25,6 +26,8 @@ registerAgentProvider();
 registerCodexProvider();
 // Register opencode provider (OpenCode; commands + agents)
 registerOpenCodeProvider();
+// Register pi provider (Pi Coding Agent; skills + agents + extension)
+registerPiProvider();
 export function generateAll(config: ProjectConfig): GeneratedFile[] {
   const platforms = config.platform?.length ? config.platform : ['omp'];
   const files: GeneratedFile[] = [];
