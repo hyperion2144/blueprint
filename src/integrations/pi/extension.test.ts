@@ -13,6 +13,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { EXTENSION_SOURCE } from '../../templates/pi/extension.tmpl.js';
+import type { ProjectConfig } from '../../types/index.js';
 
 describe('pi extension template source (T-3)', () => {
   it('registers the three context handlers and the bp_subagent tool', () => {
@@ -44,3 +45,25 @@ describe('pi extension template source (T-3)', () => {
     expect(EXTENSION_SOURCE).toMatchSnapshot();
   });
 });
+
+describe('pi extension generator (T-6)', () => {
+  it('returns the single .pi/extensions/bp/index.ts descriptor sourced from EXTENSION_SOURCE', async () => {
+    const { generatePiExtension, PI_EXTENSION_PATH } = await import('./extension.js');
+    const config = {} as ProjectConfig;
+    const files = generatePiExtension(config);
+    expect(files).toHaveLength(1);
+    expect(files[0].path).toBe('.pi/extensions/bp/index.ts');
+    expect(PI_EXTENSION_PATH).toBe('.pi/extensions/bp/index.ts');
+    expect(files[0].content).toBe(EXTENSION_SOURCE);
+  });
+
+  it('is deterministic — two invocations are byte-identical', async () => {
+    const { generatePiExtension } = await import('./extension.js');
+    const config = {} as ProjectConfig;
+    const first = generatePiExtension(config);
+    const second = generatePiExtension(config);
+    expect(first).toEqual(second);
+    expect(first[0].content).toBe(second[0].content);
+  });
+});
+
