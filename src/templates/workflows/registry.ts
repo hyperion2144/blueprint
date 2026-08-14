@@ -15,6 +15,11 @@ import { getContinueSkillTemplate, getContinueCommandTemplate } from './continue
 import { getFfSkillTemplate, getFfCommandTemplate } from './ff.js';
 import { getLoopSkillTemplate, getLoopCommandTemplate } from './loop.js';
 import { getRefactorSkillTemplate, getRefactorCommandTemplate } from './refactor.js';
+import { getDesignSkillTemplate, getDesignCommandTemplate } from './design.js';
+import { getDesignHtmlSkillTemplate, getDesignHtmlCommandTemplate } from './design-html.js';
+import { getDesignReviewSkillTemplate, getDesignReviewCommandTemplate } from './design-review.js';
+import { getDesignShotgunSkillTemplate, getDesignShotgunCommandTemplate } from './design-shotgun.js';
+import { getPlanDesignReviewSkillTemplate, getPlanDesignReviewCommandTemplate } from './plan-design-review.js';
 
 import type { SkillTemplate, CommandTemplate } from '../types.js';
 
@@ -36,6 +41,11 @@ export const WORKFLOW_REGISTRY = {
   ff:       { skill: getFfSkillTemplate,       command: getFfCommandTemplate },
   loop:     { skill: getLoopSkillTemplate,     command: getLoopCommandTemplate },
   refactor: { skill: getRefactorSkillTemplate, command: getRefactorCommandTemplate },
+  design: { skill: getDesignSkillTemplate, command: getDesignCommandTemplate },
+  'design-html': { skill: getDesignHtmlSkillTemplate, command: getDesignHtmlCommandTemplate },
+  'design-review': { skill: getDesignReviewSkillTemplate, command: getDesignReviewCommandTemplate },
+  'design-shotgun': { skill: getDesignShotgunSkillTemplate, command: getDesignShotgunCommandTemplate },
+  'plan-design-review': { skill: getPlanDesignReviewSkillTemplate, command: getPlanDesignReviewCommandTemplate },
 } as const satisfies Record<string, WorkflowEntry>;
 
 export type WorkflowStep = keyof typeof WORKFLOW_REGISTRY;
