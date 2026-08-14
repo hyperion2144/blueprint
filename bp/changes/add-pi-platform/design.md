@@ -157,7 +157,7 @@ Tests (`src/integrations/pi/agents.test.ts`, mirror of `src/integrations/agent/a
 - **Requirements**:
   - `src/templates/pi/extension.tmpl.ts` exports `EXTENSION_SOURCE: string`; the exported string is static (no `Date.now()`, no `Math.random()`, no env lookups at module load).
   - The generated source implements, on pi's extension API:
-    1. `session_start` — guard `isDisabled()` + `hasBpConfig(cwd)`; detect agent type from `ctx.getSystemPrompt()` text (substring markers `planner`/`executor`/`reviewer`/`refactorer`/`fixer`, else `default`); send custom message `{ customType: "bp-context", content: <augmented body>, display: false }` via `api.sendMessage`.
+    1. `session_start` — guard `isDisabled()` + `hasBpConfig(cwd)`; detect agent type from `ctx.getSystemPrompt()` text (role-title phrase markers from the real `AGENT_PROMPTS` bodies: `Change Design Specialist` → planner, `Code Implementation Specialist` → executor, `Triple Review Specialist` → reviewer, `Codebase Scanner` → codebase-scanner, `You are the **refactorer** sub-agent` → refactorer, `You are the **bp-fixer** sub-agent` → fixer, else `default`); send custom message `{ customType: "bp-context", content: <augmented body>, display: false }` via `api.sendMessage`.
     2. `before_agent_start` — guard; once-per-session flag `_bpStateInjected`; return `{ message: { customType: "bp-workflow-state", content: <state summary>, display: false } }`.
     3. `context` — guard; scan `event.messages` for an existing `custom` message with `customType === "bp-workflow-state"`; when absent, push a `{ role: "custom", customType: "bp-workflow-state", content: <state summary>, display: false, timestamp }` message and return `{ messages: event.messages }`; when present, return `{ messages: event.messages }` unchanged.
     4. `bp_subagent` tool — `defineTool` with `parameters: Type.Object({ agent?, task?, tasks?, cwd? })`; exactly one mode (single `agent`+`task` XOR parallel `tasks` array) required; discovers agents from `<cwd>/.pi/agents/*.md` (frontmatter name/description/tools + body = system prompt, invalid files skipped); spawns isolated `pi --mode json -p --no-session` subprocesses with `--model`/`--tools`/`--append-system-prompt <temp file>` inheritance and returns assistant output text.
@@ -189,7 +189,7 @@ Tests (`src/integrations/pi/agents.test.ts`, mirror of `src/integrations/agent/a
    - `assertWithinChanges(bpDir, changeName)` — resolved-path prefix guard under `bp/changes/`, throws on traversal (ported from the OMP template).
    - `readBpState(cwd)` → `execSync("bp state --json", { cwd, encoding: "utf-8", timeout: 3000 })`, JSON.parse, builds the 4-line summary (milestone / phase / activeChange / nextAction), fallback `"_no state available_"` on any failure; also returns `activeChangeName` (see `readBpStateWithChange`).
    - `generateCompactBlock(cwd)` → `execSync("bp context plan --format=compact", { cwd, encoding: "utf-8", timeout: 5000 })`, `.trim()`, fallback `"<bp-context>\n</bp-context>"` on failure or missing config.
-   - `detectAgentType(prompt)` → substring markers `planner` → `"planner"`, `executor` → `"executor"`, `reviewer` → `"reviewer"`, `refactorer` → `"refactorer"`, `fixer` → `"fixer"`, else `"default"` (marker order matters: `refactorer` check before `executor`/`reviewer` is not needed since markers are disjoint, but keep the OMP ordering).
+   - `detectAgentType(prompt)` → role-title phrase markers on the prompt text: `Change Design Specialist` → `"planner"`, `Code Implementation Specialist` → `"executor"`, `Triple Review Specialist` → `"reviewer"`, `Codebase Scanner` → `"codebase-scanner"`, `You are the **refactorer** sub-agent` → `"refactorer"`, `You are the **bp-fixer** sub-agent` → `"fixer"`, else `"default"` (the phrases are disjoint — each occurs exactly once across the shipped `AGENT_PROMPTS` bodies — so detection is order-independent with no fall-through hazards).
    - `readContextRows(bpDir, changeName)` → JSON-parse each non-empty line of `bp/changes/<name>/context.jsonl` (guard via `assertWithinChanges`), filter parse failures, `[]` on any error.
    - `readTasksContent(bpDir, changeName)` → `readFileSync` of `tasks.md` (guarded), `""` on error/missing.
    - `extractSummaryBlock(report)` → `## Summary` section up to next `##` heading, else `null`.
@@ -198,7 +198,7 @@ Tests (`src/integrations/pi/agents.test.ts`, mirror of `src/integrations/agent/a
      - `executor` / `fixer`: append `\n\n` + rows rendered as `[> GUARD-RAIL: ]file: <path>[ <phase>] | reason: <reason>` (guard-rail rows prefixed `> GUARD-RAIL:`); `_no context.jsonl rows_` when empty;
      - `reviewer`: append `\n\n## Invariants\n` + `- <reason>` bullets (or `_no context.jsonl rows_`) and, when `tasks.md` exists, `\n\n## tasks.md acceptance\n` + tasks content verbatim;
      - `refactorer`: when `bp/.refactor-report.md` exists and has a `## Summary`, append `\n\n## Refactor Targets\n` + summary block;
-     - `default`: no augmentation.
+     - `default` / `codebase-scanner`: no augmentation — the clean compact block is returned unchanged (no trailing newline; refactorer without a report likewise falls through clean).
    - `buildStateMessage(customType, content)` → `{ role: "custom", customType, content, display: false, timestamp: Date.now() }`.
 4. **Agent discovery helpers for the tool** (ported from pi's `examples/extensions/subagent/agents.ts`, project scope only):
    - `loadPiAgents(agentsDir)` → for each `*.md` file: `parseFrontmatter(content)`; require `typeof data.name === "string"` and `typeof data.description === "string"`, else skip; `tools` from string (comma-split) or array; body = `systemPrompt`; return `{ name, description, tools, model, systemPrompt, filePath }`.
@@ -264,7 +264,7 @@ The inline source's logic mirrors `src/integrations/pi/extension-runtime.ts` (DS
 - **Constraints**: Lockstep with DS-4 (WARNING header in both files, mirrored by `extension.test.ts` content-marker assertions). No side effects at import time. The runtime must compile inside bp's own tree (its imports are bp-internal only — it never imports the pi package).
 - **Acceptance Criteria**: With a temp fixture project, `handleSessionStart` emits a `bp-context` message whose body contains `## Roadmap State` for planner prompts, `> GUARD-RAIL:`-prefixed rows for executor/fixer prompts, `## Invariants` + `## tasks.md acceptance` for reviewer prompts, `## Refactor Targets` for refactorer prompts, and no augmentation for `default`; `handleBeforeAgentStart` returns a message on first call and `undefined` on second; `handleContext` pushes a workflow-state message only when absent; `discoverPiAgents` returns configs for valid `.pi/agents/*.md` files and skips invalid ones; `buildSubagentArgs` returns the expected argv for a given model/tools/prompt-file combo.
 - **Key Interfaces**:
-  - `export type AgentType = 'planner' | 'executor' | 'reviewer' | 'refactorer' | 'fixer' | 'default'`
+  - `export type AgentType = 'planner' | 'executor' | 'reviewer' | 'codebase-scanner' | 'refactorer' | 'fixer' | 'default'`
   - `export interface PiExtensionContext { cwd?: string; getSystemPrompt?: () => string | undefined; activeChangeName?: string; recentMessages?: Array<{ role?: string; customType?: string }> }`
   - `export interface PiMessage { role: 'custom'; customType: string; content: string; display: boolean; timestamp: number }`
   - `export interface PiAPI { on(event: string, handler: (event: unknown, ctx: PiExtensionContext) => unknown): void; sendMessage(msg: PiMessage, opts?: unknown): void }`
@@ -275,12 +275,12 @@ The inline source's logic mirrors `src/integrations/pi/extension-runtime.ts` (DS
 Structure mirrors `src/integrations/omp/extension-runtime.ts`:
 
 - **Predicates**: `isDisabled()` (env check) and `hasBpConfig(cwd)` (existsSync on `join(cwd, 'bp', 'config.yaml')`) — ported verbatim from the OMP runtime.
-- **`detectAgentTypeFromPrompt(prompt: string | undefined): AgentType`** — substring markers on the prompt text (this replaces OMP's `detectAgentType(ctx)` which used `agentTemplate`; pi has no agentTemplate). Marker order: planner → executor → reviewer → refactorer → fixer → default (markers are disjoint substrings, order-safe, keep OMP order for parity).
+  - **`detectAgentTypeFromPrompt(prompt: string | undefined): AgentType`** — role-title phrase markers on the prompt text (this replaces OMP's `detectAgentType(ctx)` which used `agentTemplate`; pi has no agentTemplate). Markers: `Change Design Specialist` → planner, `Code Implementation Specialist` → executor, `Triple Review Specialist` → reviewer, `Codebase Scanner` → codebase-scanner, `You are the **refactorer** sub-agent` → refactorer, `You are the **bp-fixer** sub-agent` → fixer, else `default`. The phrases are disjoint (each occurs exactly once across the real `AGENT_PROMPTS` bodies), so order is irrelevant; bare role-name substrings are NOT used — they do not exist in the shipped prompts and cross-contaminate (the reviewer body mentions 'executor', the fixer body mentions 'reviewer').
 - **`generateCompactBlock(cwd)`** — same as OMP runtime: missing config or error → `'<bp-context>\n</bp-context>'`; else `formatContextCompact(generateCompactContext(join(cwd, 'bp')))`.
 - **`formatStateSummary(bpDir)`** — same 4-line deriveState summary as OMP runtime, `'_no state available_'` on failure.
 - **`resolveActiveChangeName(cwd)`** — `deriveState(join(cwd, 'bp')).activeChange?.name ?? undefined` (no execSync — the template derives it from `bp state --json` instead).
 - **`readContextRows(bpDir, changeName)`** — `assertWithinChanges` guard + `parseContextJsonl` (copy the OMP runtime helpers `assertWithinChanges` and `readContextRows`).
-- **`renderAugmentedBody(cwd, agentType, activeChangeName)`** — identical augmentation branches to the OMP runtime (planner Roadmap State / executor+fixer inline rows / reviewer Invariants+tasks.md / refactorer Refactor Targets / default paths-only).
+  - **`renderAugmentedBody(cwd, agentType, activeChangeName)`** — augmentation branches: planner Roadmap State / executor+fixer inline rows / reviewer Invariants+tasks.md / refactorer Refactor Targets; `default` and `codebase-scanner` (and refactorer without a report) return the clean compact block unchanged — never `block + '\n\n'`.
 - **`createPiExtension()`** — returns `{ handleSessionStart, handleBeforeAgentStart, handleContext }` sharing a closure `let bpStateInjected = false`:
   - `handleSessionStart(event, ctx, api): Promise<void>` — bypass/config guards; `detectAgentTypeFromPrompt(ctx.getSystemPrompt?.());` body = `renderAugmentedBody(cwd, agentType, ctx.activeChangeName ?? resolveActiveChangeName(cwd));` `api.sendMessage({ role: 'custom', customType: 'bp-context', content: body, display: false, timestamp: Date.now() })`.
   - `handleBeforeAgentStart(event, ctx, api): Promise<HandlerResult | undefined>` — guards; `if (bpStateInjected) return undefined; bpStateInjected = true;` return `{ message: buildStateMessage('bp-workflow-state', formatStateSummary(bpDir)) }`.
@@ -408,8 +408,8 @@ if (existsSync(piExtensionDir) && !generatedSet.has('.pi/extensions/bp/index.ts'
 ### D-2: Agent type detection from system-prompt text, not an agentTemplate field
 
 - **Status**: ACCEPTED
-- **Decision**: The pi extension detects the sub-agent type by substring markers (`planner`/`executor`/`reviewer`/`refactorer`/`fixer`) in the effective system prompt (`ctx.getSystemPrompt()` at `session_start`, `event.systemPrompt` at `before_agent_start`), replacing OMP's `ctx.agentTemplate`.
-- **Reason**: pi's extension API has no `agentTemplate` on context; the system prompt is the only reliably available discriminator, and the generated bp agent prompts (`AGENT_PROMPTS[role]`) each contain their role name in the `## Role` heading.
+  - **Decision**: The pi extension detects the sub-agent type by role-title phrase markers (`Change Design Specialist` / `Code Implementation Specialist` / `Triple Review Specialist` / `Codebase Scanner` / `You are the **refactorer** sub-agent` / `You are the **bp-fixer** sub-agent`) in the effective system prompt (`ctx.getSystemPrompt()` at `session_start`, `event.systemPrompt` at `before_agent_start`), replacing OMP's `ctx.agentTemplate`.
+  - **Reason**: pi's extension API has no `agentTemplate` on context; the system prompt is the only reliably available discriminator. The generated bp agent prompts do NOT contain their bare role names in a `## Role` heading, so detection keys on the role TITLE phrases that occur exactly once in each shipped `AGENT_PROMPTS` body; the phrases are disjoint, making detection order-independent, with a safe `default` fallback.
 - **Alternatives**:
   - Derive the agent from session file name / user prompt: rejected — unreliable; subagent sessions are ordinary sessions.
   - Always emit the paths-only block (no augmentation): rejected — loses the whole role-augmentation value of the OMP contract port.
@@ -533,7 +533,7 @@ export interface PiAgentDef {
 }
 
 // src/integrations/pi/extension-runtime.ts
-export type AgentType = 'planner' | 'executor' | 'reviewer' | 'refactorer' | 'fixer' | 'default';
+export type AgentType = 'planner' | 'executor' | 'reviewer' | 'codebase-scanner' | 'refactorer' | 'fixer' | 'default';
 export interface PiExtensionContext {
   cwd?: string;
   getSystemPrompt?: () => string | undefined;
