@@ -261,6 +261,8 @@ export function renderAugmentedBody(
     }
   }
 
+  if (extra.length === 0) return block; // no branch augmented (codebase-scanner / refactorer w/o report) — clean block, no trailing newline
+
   return block + '\n\n' + extra.join('\n');
 }
 
@@ -363,8 +365,10 @@ export function discoverPiAgents(cwd: string): PiAgentConfig[] {
 
   const agents: PiAgentConfig[] = [];
   for (const entry of entries) {
-    // Lockstep with the extension template's loadPiAgents: accept symlinked
-    // agent files too, not only regular files.
+    // Lockstep with the extension template's loadPiAgents: only .md agent
+    // files are discovered, and symlinked agent files are accepted too (not
+    // only regular files).
+    if (!entry.name.endsWith('.md')) continue;
     if (!entry.isFile() && !entry.isSymbolicLink()) continue;
 
     const filePath = join(agentsDir, entry.name);
