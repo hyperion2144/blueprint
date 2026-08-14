@@ -37,7 +37,7 @@ function assertWithinChanges(bpDir: string, changeName: string): void {
 }
 
 /** Detected pi sub-agent type for the current session (from the system prompt text). */
-export type AgentType = 'planner' | 'executor' | 'reviewer' | 'codebase-scanner' | 'refactorer' | 'fixer' | 'default';
+export type AgentType = 'planner' | 'executor' | 'reviewer' | 'codebase-scanner' | 'refactorer' | 'fixer' | 'designer' | 'default';
 
 /** Shape of a custom pi message (content is a plain string on pi's runtime). */
 export interface PiMessage {
@@ -105,6 +105,7 @@ const AGENT_TYPE_MARKERS: ReadonlyArray<readonly [AgentType, string]> = [
   ['codebase-scanner', 'Codebase Scanner'],
   ['refactorer', 'You are the **refactorer** sub-agent'],
   ['fixer', 'You are the **bp-fixer** sub-agent'],
+  ['designer', 'Design Consultant'],
 ];
 
 /** Detect sub-agent type from the effective system prompt text (role-title markers). */
@@ -221,6 +222,9 @@ export function renderAugmentedBody(
   if (agentType === 'planner') {
     extra.push('## Roadmap State');
     extra.push(formatStateSummary(bpDir));
+  } else if (agentType === 'designer') {
+    // Read-only design role: paths-only context, no augmentation. Explicit
+    // branch is the future hook for design-specific state.
   } else if (agentType === 'executor' || agentType === 'fixer') {
     appendContextRows(extra, bpDir, activeChangeName);
   } else if (agentType === 'reviewer') {

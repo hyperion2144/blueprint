@@ -74,6 +74,7 @@ const AGENT_TYPE_MARKERS: Array<[string, string]> = [
   ["codebase-scanner", "Codebase Scanner"],
   ["refactorer", "You are the **refactorer** sub-agent"],
   ["fixer", "You are the **bp-fixer** sub-agent"],
+  ["designer", "Design Consultant"],
 ];
 
 // Role-title phrases from the real AGENT_PROMPTS bodies (src/templates/agents/index.ts).
@@ -157,6 +158,9 @@ function augmentBody(agentType: string, cwd: string, activeChangeName: string | 
 
   if (agentType === "planner") {
     body = body + "\\n\\n## Roadmap State\\n" + readBpState(cwd).summary;
+  } else if (agentType === "designer") {
+    // Read-only design role: paths-only context, no augmentation. Explicit
+    // branch is the future hook for design-specific state.
   } else if (agentType === "executor" || agentType === "fixer") {
     const rows = readContextRows(bpDir, activeChangeName);
     const lines = rows.length === 0
