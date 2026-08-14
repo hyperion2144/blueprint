@@ -37,7 +37,7 @@
   - T-9 dogfood regenerates from the finished generators → depends_on T-5.
 -->
 
-- [ ] T-1: [type:behavior] Design-track workflow step templates + registry (design, design-html, design-review, design-shotgun, plan-design-review) <!-- commit: -->
+- [x] T-1: [type:behavior] Design-track workflow step templates + registry (design, design-html, design-review, design-shotgun, plan-design-review) <!-- commit: d7decb1 -->
   - **refs**: DS-1
   - **spec_ref**: specs/design/spec.md#design-step-templates
   - **files**: src/templates/workflows/design.ts, design-html.ts, design-review.ts, design-shotgun.ts, plan-design-review.ts, src/templates/workflows/registry.ts, tests/templates/workflow-design-steps.test.ts
