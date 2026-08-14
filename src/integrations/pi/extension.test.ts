@@ -41,6 +41,15 @@ describe('pi extension template source (T-3)', () => {
     expect(EXTENSION_SOURCE).toContain('**bp-fixer** sub-agent');
   });
 
+  it('keeps loadPiAgents filtered to .md files and augmentBody clean for unhandled roles (Q2 lockstep)', () => {
+    // Template must ignore non-.md agent files (mirrored by runtime discoverPiAgents)
+    // and return the compact block unchanged when no agentType branch matches
+    // (codebase-scanner / refactorer-without-report — no trailing newline appended).
+    expect(EXTENSION_SOURCE).toContain('entry.name.endsWith(".md")');
+    expect(EXTENSION_SOURCE).toContain('if (agentType === "default") return body;');
+    expect(EXTENSION_SOURCE).toContain('return body;');
+  });
+
   it('is byte-identical across two imports', async () => {
     const second = await import('../../templates/pi/extension.tmpl.js');
     expect(second.EXTENSION_SOURCE).toBe(EXTENSION_SOURCE);

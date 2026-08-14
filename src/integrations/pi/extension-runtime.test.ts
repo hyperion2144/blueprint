@@ -23,6 +23,7 @@ import {
   createPiExtension,
   detectAgentTypeFromPrompt,
   discoverPiAgents,
+  renderAugmentedBody,
   buildSubagentArgs,
   parseJsonLine,
   EXTENSION_SOURCE as RUNTIME_SOURCE,
@@ -192,6 +193,34 @@ describe('handleSessionStart (T-4)', () => {
     expect(sent[0].content).not.toContain('## Invariants');
   });
 
+  it('emits the identical clean paths-only block for codebase-scanner prompts as for default (Q2 lockstep)', async () => {
+    // codebase-scanner must NOT fall through with a trailing \n\n — the template
+    // augmentBody returns the compact block unchanged for it, so the runtime must
+    // produce byte-identical output for the two agent types.
+    const bodyFor = async (prompt: string): Promise<string> => {
+      const { api, sent } = makeApi();
+      const ext = createPiExtension();
+      await ext.handleSessionStart({}, { cwd: testDir, getSystemPrompt: () => prompt }, api);
+      return sent[0].content;
+    };
+    const scannerBody = await bodyFor('You are a **Codebase Scanner** for bp.');
+    const defaultBody = await bodyFor('some unrelated prompt');
+    expect(scannerBody).toBe(defaultBody);
+    expect(scannerBody.endsWith('\n\n')).toBe(false);
+  });
+
+  it('renderAugmentedBody returns the clean block when no branch augments (Q2)', () => {
+    // Covers codebase-scanner (no branch) and refactorer without a report — both
+    // must emit the bare compact block, not block + trailing newline.
+    const bareDir = join(testDir, 'bare4');
+    mkdirSync(bareDir, { recursive: true });
+    for (const agentType of ['codebase-scanner', 'refactorer'] as const) {
+      const body = renderAugmentedBody(bareDir, agentType, undefined);
+      expect(body).toBe('<bp-context>\n</bp-context>');
+      expect(body.endsWith('\n\n')).toBe(false);
+    }
+  });
+
   it('sends nothing under BP_HOOKS=0', async () => {
     const prev = process.env.BP_HOOKS;
     process.env.BP_HOOKS = '0';
@@ -324,6 +353,20 @@ describe('bp_subagent runtime helpers (T-5)', () => {
     expect(agents[0].description).toBe('Change design');
     expect(agents[0].tools).toEqual(['read', 'bash']);
     expect(agents[0].systemPrompt).toContain('# Planner system prompt');
+  });
+
+  it('skips non-.md files even with valid frontmatter (Q2 lockstep with template loadPiAgents)', () => {
+    // The template's loadPiAgents filters entry.name.endsWith('.md') BEFORE the
+    // name/description checks — a .txt with valid frontmatter must be invisible
+    // to discovery in both counterparts.
+    const sub = join(testDir, 'txt-skip-case');
+    mkdirSync(join(sub, '.pi', 'agents'), { recursive: true });
+    writeFileSync(
+      join(sub, '.pi', 'agents', 'bp-planner.txt'),
+      ['---', 'name: bp-planner', 'description: Change design', '---', '', '# Planner'].join('\n'),
+      'utf-8',
+    );
+    expect(discoverPiAgents(sub)).toEqual([]);
   });
 
   it('parses tools from array form and tolerates missing dir', () => {
