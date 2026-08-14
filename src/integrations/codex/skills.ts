@@ -20,7 +20,7 @@ export interface CodexSkillDef {
   description: string;
 }
 
-/** Canonical eleven Codex Skill steps, mirrored from WORKFLOW_REGISTRY keys. */
+/** Canonical sixteen Codex Skill steps, mirrored from WORKFLOW_REGISTRY keys. */
 const STEPS: readonly WorkflowStep[] = [
   'init',
   'roadmap',
@@ -33,6 +33,11 @@ const STEPS: readonly WorkflowStep[] = [
   'ff',
   'loop',
   'refactor',
+  'design',
+  'design-html',
+  'design-review',
+  'design-shotgun',
+  'plan-design-review',
 ];
 
 /** Description per step (Codex-tuned wording; differs from OMP/Claude variants). */
@@ -49,11 +54,16 @@ function codexSkillDescription(step: WorkflowStep): string {
     ff: 'Fast-forward - auto-advance through all steps by calling bp continue after each',
     loop: 'Autonomous loop - same as ff but skip all user interaction until roadmap complete',
     refactor: 'Run deterministic refactor analyzer and dispatch refactorer sub-agents per module',
+    design: 'Design system consultation - complete design proposal written to root DESIGN.md',
+    'design-html': 'Design to production HTML/CSS - implement DESIGN.md against the detected project framework',
+    'design-review': "Designer's-eye QA audit - full visual and UX audit against DESIGN.md",
+    'design-shotgun': 'Multi-variant design exploration - generate, compare, and approve design variants',
+    'plan-design-review': 'Plan-phase UI audit - UI scope detection and 0-10 rating before implementation',
   };
   return map[step];
 }
 
-/** Canonical eleven Codex Skill definitions (immutable order). */
+/** Canonical sixteen Codex Skill definitions (immutable order). */
 export const CODEX_SKILL_DEFS: CodexSkillDef[] = STEPS.map((step) => ({
   step,
   name: `bp:${step}`,

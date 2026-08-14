@@ -14,10 +14,10 @@ import { parseFrontmatter } from '../../parser/frontmatter.js';
 import type { ProjectConfig } from '../../types/index.js';
 
 describe('generatePiAgents', () => {
-  it('generates 6 agent files with generic frontmatter', () => {
+  it('generates 7 agent files with generic frontmatter', () => {
     const config = {} as ProjectConfig;
     const files = generatePiAgents(config);
-    expect(files).toHaveLength(6);
+    expect(files).toHaveLength(7);
     for (const file of files) {
       expect(file.path).toMatch(/^\.pi\/agents\/bp-[a-z-]+\.md$/);
       expect(file.content).toContain('---');
@@ -26,8 +26,8 @@ describe('generatePiAgents', () => {
     }
   });
 
-  it('emits the canonical six roles in order', () => {
-    expect(PI_AGENT_DEFS).toHaveLength(6);
+  it('emits the canonical seven roles in order', () => {
+    expect(PI_AGENT_DEFS).toHaveLength(7);
     const roles = PI_AGENT_DEFS.map((d) => d.role);
     expect(roles).toEqual([
       'planner',
@@ -36,6 +36,7 @@ describe('generatePiAgents', () => {
       'codebase-scanner',
       'refactorer',
       'fixer',
+      'designer',
     ]);
   });
 

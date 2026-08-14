@@ -26,6 +26,7 @@ export const PI_AGENT_DEFS: PiAgentDef[] = [
   { role: 'codebase-scanner', description: 'Brownfield codebase scan - extract behavioral contracts into specs', tools: [] },
   { role: 'refactorer', description: 'Behavior-preserving consolidation + spec sync per assigned module', tools: [] },
   { role: 'fixer', description: 'Fix proposal/design/implementation per reviewer report', tools: [] },
+  { role: 'designer', description: 'Design consultation, HTML generation, visual audit, and variant exploration', tools: [] },
 ];
 
 export function generatePiAgent(def: PiAgentDef, profile?: PromptProfile): string {

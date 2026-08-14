@@ -34,10 +34,16 @@ function skillDescription(step: string): string {
     continue: 'Check progress and suggest next step',
     ff: 'Fast-forward - auto-advance through all steps by running bp continue after each',
     loop: 'Autonomous loop - same as ff but skip all user interaction until roadmap complete',
+    design: 'Design system consultation - complete design proposal written to root DESIGN.md',
+    'design-html': 'Design to production HTML/CSS - implement DESIGN.md against the detected project framework',
+    'design-review': "Designer's-eye QA audit - full visual and UX audit against DESIGN.md",
+    'design-shotgun': 'Multi-variant design exploration - generate, compare, and approve design variants',
+    'plan-design-review': 'Plan-phase UI audit - UI scope detection and 0-10 rating before implementation',
   };
   return map[step] ?? '';
 }
-const STEPS = ['init', 'roadmap', 'propose', 'plan', 'apply', 'check', 'archive', 'continue', 'ff', 'loop'] as const;
+const STEPS = ['init', 'roadmap', 'propose', 'plan', 'apply', 'check', 'archive', 'continue', 'ff', 'loop',
+  'design', 'design-html', 'design-review', 'design-shotgun', 'plan-design-review'] as const;
 
 export const SKILL_DEFS: SkillDef[] = STEPS.map((step) => ({
   step,

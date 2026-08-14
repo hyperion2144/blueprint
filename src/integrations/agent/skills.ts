@@ -28,6 +28,11 @@ function skillDescription(step: string): string {
     ff: 'Fast-forward - auto-advance through all steps',
     loop: 'Autonomous loop - auto-advance with no user interaction',
     refactor: 'Run deterministic refactor analyzer and dispatch refactorer sub-agents per module',
+    design: 'Design system consultation - complete design proposal written to root DESIGN.md',
+    'design-html': 'Design to production HTML/CSS - implement DESIGN.md against the detected project framework',
+    'design-review': "Designer's-eye QA audit - full visual and UX audit against DESIGN.md",
+    'design-shotgun': 'Multi-variant design exploration - generate, compare, and approve design variants',
+    'plan-design-review': 'Plan-phase UI audit - UI scope detection and 0-10 rating before implementation',
   };
   return map[step] ?? '';
 }
@@ -35,7 +40,8 @@ function skillDescription(step: string): string {
 // Type as readonly WorkflowStep[] so a typo (e.g. 'continu') is caught at
 // compile time — previously inferred as string[] and would silently produce
 // a skill with no body.
-const STEPS: readonly WorkflowStep[] = ['init', 'roadmap', 'propose', 'plan', 'apply', 'check', 'archive', 'continue', 'ff', 'loop', 'refactor'];
+const STEPS: readonly WorkflowStep[] = ['init', 'roadmap', 'propose', 'plan', 'apply', 'check', 'archive', 'continue', 'ff', 'loop', 'refactor',
+  'design', 'design-html', 'design-review', 'design-shotgun', 'plan-design-review'];
 
 export function generateAgentSkills(_config: ProjectConfig): { path: string; content: string }[] {
   return STEPS.map((step) => {

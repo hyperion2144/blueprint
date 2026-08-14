@@ -28,6 +28,11 @@ const STEPS: ClaudeCommandDef[] = [
   { step: 'ff', name: 'bp:ff', description: 'Fast-forward - auto-advance through all steps by calling bp continue after each' },
   { step: 'loop', name: 'bp:loop', description: 'Autonomous loop - same as ff but skip all user interaction until roadmap complete' },
   { step: 'refactor', name: 'bp:refactor', description: 'Run deterministic refactor analyzer and dispatch refactorer sub-agents per module', argumentHint: '<target>' },
+  { step: 'design', name: 'bp:design', description: 'Design system consultation - complete design proposal written to root DESIGN.md' },
+  { step: 'design-html', name: 'bp:design-html', description: 'Design to production HTML/CSS - implement DESIGN.md against the detected project framework' },
+  { step: 'design-review', name: 'bp:design-review', description: "Designer's-eye QA audit - full visual and UX audit against DESIGN.md", argumentHint: '[change-name]' },
+  { step: 'design-shotgun', name: 'bp:design-shotgun', description: 'Multi-variant design exploration - generate, compare, and approve design variants' },
+  { step: 'plan-design-review', name: 'bp:plan-design-review', description: 'Plan-phase UI audit - UI scope detection and 0-10 rating before implementation', argumentHint: '[change-name]' },
 ];
 
 export function generateClaudeCommand(def: ClaudeCommandDef): string {

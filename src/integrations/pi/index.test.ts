@@ -42,14 +42,14 @@ describe('pi platform generation', () => {
     expect(() => generateAll(config(['pi']))).not.toThrow();
   });
 
-  it('emits exactly 18 files under .pi/ (11 skills + 6 agents + 1 extension)', () => {
+  it('emits exactly 24 files under .pi/ (16 skills + 7 agents + 1 extension)', () => {
     const files = generateAll(config(['pi']));
-    expect(files).toHaveLength(18);
+    expect(files).toHaveLength(24);
     for (const f of files) {
       expect(f.path.startsWith('.pi/')).toBe(true);
     }
-    expect(files.filter((f) => f.path.startsWith('.pi/skills/'))).toHaveLength(11);
-    expect(files.filter((f) => f.path.startsWith('.pi/agents/'))).toHaveLength(6);
+    expect(files.filter((f) => f.path.startsWith('.pi/skills/'))).toHaveLength(16);
+    expect(files.filter((f) => f.path.startsWith('.pi/agents/'))).toHaveLength(7);
     expect(files.filter((f) => f.path === '.pi/extensions/bp/index.ts')).toHaveLength(1);
     // No command files — pi uses Agent Skills, not slash commands
     expect(files.some((f) => f.path.startsWith('.pi/commands/'))).toBe(false);

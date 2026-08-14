@@ -64,6 +64,12 @@ export const AGENT_DEFS: AgentDef[] = [
     tools: [],
     spawns: '*',
   },
+  {
+    role: 'designer',
+    description: 'Design consultation, HTML generation, visual audit, and variant exploration',
+    tools: [],
+    spawns: '*',
+  },
 ];
 /* ================================================================
  * Agent file generation

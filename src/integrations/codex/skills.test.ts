@@ -3,7 +3,7 @@
  *
  * T-1 RED: GIVEN a valid ProjectConfig and shared workflow registry
  *          WHEN generateCodexSkills(config) runs
- *          THEN eleven deterministic Skill descriptors are returned with
+ *          THEN sixteen deterministic Skill descriptors are returned with
  *               Codex frontmatter (name: bp:<step>, no argument-hint) and
  *               workflow bodies.
  */
@@ -13,10 +13,10 @@ import { generateCodexSkills, CODEX_SKILL_DEFS } from './skills.js';
 import type { ProjectConfig } from '../../types/index.js';
 
 describe('generateCodexSkills', () => {
-  it('returns exactly eleven skill files at .agents/skills/bp-<step>/SKILL.md', () => {
+  it('returns exactly sixteen skill files at .agents/skills/bp-<step>/SKILL.md', () => {
     const config = {} as ProjectConfig;
     const files = generateCodexSkills(config);
-    expect(files).toHaveLength(11);
+    expect(files).toHaveLength(16);
     for (const file of files) {
       expect(file.path).toMatch(/^\.agents\/skills\/bp-[a-z-]+\/SKILL\.md$/);
     }
@@ -32,8 +32,8 @@ describe('generateCodexSkills', () => {
     }
   });
 
-  it('emits the canonical eleven Codex workflow steps', () => {
-    expect(CODEX_SKILL_DEFS).toHaveLength(11);
+  it('emits the canonical sixteen Codex workflow steps', () => {
+    expect(CODEX_SKILL_DEFS).toHaveLength(16);
     const steps = CODEX_SKILL_DEFS.map((d) => d.step);
     expect(steps).toEqual([
       'init',
@@ -47,6 +47,11 @@ describe('generateCodexSkills', () => {
       'ff',
       'loop',
       'refactor',
+      'design',
+      'design-html',
+      'design-review',
+      'design-shotgun',
+      'plan-design-review',
     ]);
   });
 

@@ -6,7 +6,7 @@ describe('generateAgentSkills', () => {
   it('generates all skill files with correct paths', () => {
     const config = {} as ProjectConfig;
     const files = generateAgentSkills(config);
-    expect(files.length).toBe(11);
+    expect(files.length).toBe(16);
     for (const file of files) {
       expect(file.path).toMatch(/^\.agent\/skills\/bp-[a-z-]+\/SKILL\.md$/);
       expect(file.content).toContain('---');

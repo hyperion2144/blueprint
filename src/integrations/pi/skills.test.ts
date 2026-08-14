@@ -3,7 +3,7 @@
  *
  * T-1 RED: GIVEN a valid ProjectConfig and the shared workflow registry
  *          WHEN generatePiSkills(config) runs
- *          THEN eleven deterministic skill descriptors are returned at
+ *          THEN sixteen deterministic skill descriptors are returned at
  *               .pi/skills/bp-<step>/SKILL.md with name: bp:<step>
  *               frontmatter (no argument-hint) and workflow bodies.
  */
@@ -13,10 +13,10 @@ import { generatePiSkills, PI_SKILL_DEFS } from './skills.js';
 import type { ProjectConfig } from '../../types/index.js';
 
 describe('generatePiSkills', () => {
-  it('returns exactly eleven skill files at .pi/skills/bp-<step>/SKILL.md', () => {
+  it('returns exactly sixteen skill files at .pi/skills/bp-<step>/SKILL.md', () => {
     const config = {} as ProjectConfig;
     const files = generatePiSkills(config);
-    expect(files).toHaveLength(11);
+    expect(files).toHaveLength(16);
     for (const file of files) {
       expect(file.path).toMatch(/^\.pi\/skills\/bp-[a-z-]+\/SKILL\.md$/);
     }
@@ -32,8 +32,8 @@ describe('generatePiSkills', () => {
     }
   });
 
-  it('emits the canonical eleven workflow steps in immutable order', () => {
-    expect(PI_SKILL_DEFS).toHaveLength(11);
+  it('emits the canonical sixteen workflow steps in immutable order', () => {
+    expect(PI_SKILL_DEFS).toHaveLength(16);
     const steps = PI_SKILL_DEFS.map((d) => d.step);
     expect(steps).toEqual([
       'init',
@@ -47,6 +47,11 @@ describe('generatePiSkills', () => {
       'ff',
       'loop',
       'refactor',
+      'design',
+      'design-html',
+      'design-review',
+      'design-shotgun',
+      'plan-design-review',
     ]);
   });
 

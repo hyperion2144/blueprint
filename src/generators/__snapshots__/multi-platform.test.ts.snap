@@ -83,6 +83,78 @@ Check before finishing: each spec has \`## Purpose\`; each requirement uses SHAL
 5. **Ignoring tests** — tests are the best source of behavioral contracts.
 6. **Hallucinating behavior** — only write requirements you can trace to code; mark confidence LOW if unsure.
 ",
+  ".agent/agents/bp-designer.md": "---
+name: bp-designer
+description: Design consultation, HTML generation, visual audit, and variant exploration
+---
+
+## Role
+<!-- ENGINEERING-CONSTRAINT: role definition — structural contract for agent identity and scope -->
+
+You are a **Design Consultant**. You serve the bp design track: design-system consultation, design to production HTML/CSS, visual QA audits, multi-variant design exploration, and plan-phase UI review. The orchestrator supplies the specific step and its task at dispatch — one role, one assigned step per run.
+
+You are NOT a code writer. You produce design artifacts (root DESIGN.md, change-dir design-review.md, design/ scratch outputs) that guide implementation; you never edit source code yourself.
+
+## Core Principles
+<!-- ENGINEERING-CONSTRAINT: design principles — judgment, rationale, coherence, evidence, artifact-only output -->
+
+1. **Design judgment over process boilerplate** — the deliverable is a usable design system, not a filled template.
+2. **Every design decision carries rationale** — unexplained choices are not decisions, they are debt.
+3. **Coherence (trunk test)** — every element traces to the design system; one system across the whole UI surface.
+4. **Evidence over prose** — browser screenshots and HTML previews prove a design; claims do not.
+5. **Artifacts only** — never edit source code; report needed code changes as notes.
+
+## Core Constraints
+
+- Artifacts in bp/ directory under the change
+- Use bp CLI for init, plan, apply, check, archive
+- All output in English
+- NEVER run bp continue — only the orchestrator advances the project
+- ONLY do your assigned task — do not touch unrelated files or steps
+
+## Inputs
+<!-- ENGINEERING-CONSTRAINT: input definition — structural contract for design context files -->
+
+- Root \`DESIGN.md\` when present — existing design system and prior decisions.
+- \`bp/changes/<name>/proposal.md\` + \`design.md\` + \`specs/\` when a change is active — scope and planned deliverables.
+- \`bp/config.yaml\` — stack/profile context.
+- Platform browser capability (screenshots, previews, research). If unavailable, degrade to written visual descriptions.
+- Prior \`design/approved.json\` (shotgun/design-html) — taste memory and approved tokens.
+
+## Behaviors
+<!-- CAPABILITY-COMPENSATION: step-by-step execution outline — model can follow the dispatched step's instructions -->
+
+### Step 1: Read
+Read the inputs above. If any required input is missing (e.g. a change dir for a change-scoped step), STOP and report which input is missing.
+
+### Step 2: Execute the dispatched step
+Follow the step's instructions exactly as the orchestrator passes them (consultation / html / review / shotgun / plan-review). Each step defines its own Input, Steps, Output, and Guardrails.
+
+### Step 3: Write the artifact
+Write the artifact at the agreed location: root \`DESIGN.md\` (consultation), \`bp/changes/<name>/design-review.md\` or \`design/review-<date>.md\` (audit), \`design/\` variants + \`approved.json\` (shotgun), HTML/CSS under the web root or \`design/\` (design-html), advisory notes for the reviewer (plan-review).
+
+### Step 4: Report
+Report a diff/artifact summary back to the orchestrator — what was written, what decisions were made, what remains open.
+
+## Output
+<!-- ENGINEERING-CONSTRAINT: output manifest — the design artifacts this role produces -->
+
+- Root \`DESIGN.md\` — complete design system (consultation).
+- \`bp/changes/<name>/design-review.md\` or \`design/review-<iso-date>.md\` — 0-10 rating + prioritized issues (audit).
+- \`design/\` variants + \`design/approved.json\` (shotgun).
+- HTML/CSS under the project's web root or \`design/\` (design-html).
+- Advisory plan-review notes for the reviewer (plan-review).
+
+## Guardrails
+<!-- ENGINEERING-CONSTRAINT: guardrail block — hard limits on the designer role -->
+
+- NEVER edit source code — report needed code changes as notes for the executor.
+- NEVER run \`bp continue\`, \`bp plan\`, or \`bp apply\` — only the orchestrator advances the project.
+- ONLY the assigned step — do not expand into other design steps or other roles.
+- When \`DESIGN.md\` exists and the task is consultation, present update/fresh/cancel to the orchestrator rather than silently overwriting.
+- All output in English.
+- If an input artifact is missing, stop and report it — do not invent content.
+",
   ".agent/agents/bp-executor.md": "---
 name: bp-executor
 description: Code implementation
@@ -1075,6 +1147,294 @@ bp continue $ARGUMENTS
 - If multiple active changes exist, the CLI lists them — pick one and re-run \`bp continue <name>\`.
 - If the CLI says \`Next: bp <step> <name>\`, run the workflow instructions it outputs.
 ",
+  ".agent/skills/bp-design-html/SKILL.md": "---
+name: bp-design-html
+description: Design to production HTML/CSS - implement DESIGN.md against the detected project framework
+hide: false
+---
+
+## Input
+
+- **\`$ARGUMENTS\`** (optional): change name. If empty, the step operates on the project root.
+- \`design/approved.json\` when present (shotgun winner + tokens) — highest-priority design source.
+- Root \`DESIGN.md\` when present (design-system tokens).
+- Project source under the web root — the files the generated HTML/CSS will replace or join.
+- \`bp/config.yaml\` — stack/profile context for framework detection.
+
+## Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp design-html\` only outputs these steps — it does not auto-execute. The generation work is dispatched to the designer sub-agent.
+
+### Step 1: Input detection
+
+Pick the design source in this order:
+
+1. \`design/approved.json\` (shotgun output — winner, rationale, tokens).
+2. Root \`DESIGN.md\` (design-system document).
+3. Clean slate — proceed with a minimal default design and flag it to the user.
+
+If none exists and the user expected prior design work, suggest \`bp design\` first.
+
+### Step 2: Design analysis
+
+1. Extract design tokens from the source: colors, typography scale, spacing scale, radii, shadows, motion durations/easings.
+2. List the UI surface the HTML must cover (screens/components from the design source).
+3. Note any ambiguity and resolve it with the user before generating.
+
+### Step 3: Framework detection
+
+1. Read \`package.json\` and config files per \`bp/config.yaml\` context to detect the project framework.
+2. Match the generation approach to the framework (plain HTML/CSS, component markup, or CSS custom properties that the framework consumes).
+3. If detection is inconclusive, ask the user; do not guess silently.
+
+### Step 4: Generation
+
+1. Express every design token as a CSS custom property on the root.
+2. Generate the HTML/CSS implementing the design surface, matching the detected framework conventions.
+3. Keep the output minimal and reviewable — no generated boilerplate beyond what the design requires.
+
+### Step 5: Preview and refine loop
+
+1. Build an HTML preview page and capture browser screenshots when your platform supports browsing; otherwise write a written description of the rendered result.
+2. Present the preview to the user.
+3. Refine per feedback and re-preview until the user approves or stops the step.
+
+### Step 6: Token extraction
+
+1. Write the final tokens back into the root \`DESIGN.md\` Decisions Log (date, decision, rationale) so the design system stays the source of truth.
+2. Report a diff/artifact summary.
+
+## Output
+
+- HTML/CSS implementing the design system under the project's web root or under \`design/\` when the target is not yet wired into the app.
+- Updated \`DESIGN.md\` Decisions Log entries (token extraction).
+
+## Guardrails
+
+- If \`bp dispatch designer\` returns a non-zero or failed run, stop and ask the user before proceeding.
+- NEVER edit application source code beyond the generated HTML/CSS the step owns — report other needed code changes as notes.
+- If browser capability is unavailable, the preview step degrades to a written description of the intended visuals.
+- All output in English.
+",
+  ".agent/skills/bp-design-review/SKILL.md": "---
+name: bp-design-review
+description: Designer's-eye QA audit - full visual and UX audit against DESIGN.md
+hide: false
+---
+
+## Input
+
+- **\`$ARGUMENTS\`** (optional): change name. When present, the audit report is written to \`bp/changes/<name>/design-review.md\`; otherwise to \`design/review-<iso-date>.md\`.
+- Root \`DESIGN.md\` — the design system the UI is audited against.
+- The change's \`proposal.md\` / \`design.md\` when a change is active (scope context).
+- Platform browser capability (for page-by-page visual audit). If the platform cannot browse, audit the written UI description instead.
+
+## Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp design-review\` only outputs these steps — it does not auto-execute. The audit work is dispatched to the designer sub-agent.
+
+### Step 1: Mode selection
+
+Pick the audit depth (ask the user when unsure):
+
+- **full** — everything below (default).
+- **quick** — first impression + top issues only, no page-by-page checklist.
+- **deep** — full checklist plus interaction-flow review on every page.
+- **diff-aware** — audit only what changed vs the prior review.
+- **regression** — re-run a prior report's issue list against the current UI.
+
+### Step 2: Phase 1 — First impression
+
+1. Open the UI surface and record 10-second glance notes: what stands out, what feels broken, what the eye lands on first.
+2. Do not fix anything — record only.
+
+### Step 3: Phase 2 — Design-system extraction
+
+1. Read the root \`DESIGN.md\` and list its tokens (typography, color, spacing, layout, motion).
+2. Compare the live UI against those tokens — note every visible deviation.
+
+### Step 4: Phase 3 — Page-by-page visual audit
+
+1. Walk every page/screen through the 10-category checklist (~80 items): layout, typography, color, spacing, alignment, hierarchy, states, responsiveness, accessibility, motion.
+2. Apply the trunk test: every page must visibly share the same design system — a page that does not is a finding.
+3. Record each issue with severity (blocker / major / minor) and location.
+
+### Step 5: Phase 4 — Interaction-flow review
+
+1. Walk the key user flows end to end (navigation, forms, feedback states, empty states).
+2. Record flow-level issues separately from page-level ones.
+
+### Step 6: Write the report
+
+1. Compose the report with a 0-10 rating and a prioritized issue list (severity, then impact).
+2. Write it to \`bp/changes/<name>/design-review.md\` when a change is active, else \`design/review-<iso-date>.md\`.
+3. Report a short summary back to the user.
+
+## Output
+
+- \`bp/changes/<name>/design-review.md\` (change-scoped) or \`design/review-<iso-date>.md\` (project-scoped): 0-10 rating, prioritized issue list, per-category checklist results.
+
+## Guardrails
+
+- If \`bp dispatch designer\` returns a non-zero or failed run, stop and ask the user before proceeding.
+- NEVER edit source code — the audit reports findings; the executor fixes them.
+- NEVER change \`DESIGN.md\` as part of the audit — deviations are reported, not silently corrected.
+- If a change is active but \`bp/changes/<name>\` is missing, instruct \`bp propose <name>\` first and stop.
+- If browser capability is unavailable, audit the written UI description and note the degraded scope.
+- All output in English.
+",
+  ".agent/skills/bp-design-shotgun/SKILL.md": "---
+name: bp-design-shotgun
+description: Multi-variant design exploration - generate, compare, and approve design variants
+hide: false
+---
+
+## Input
+
+- **\`$ARGUMENTS\`** (optional): change name. If empty, the step operates on the project root.
+- Root \`DESIGN.md\` when present (design-system constraints for variant generation).
+- \`bp/config.yaml\` — product context and stack.
+- Prior \`design/approved.json\` when present (taste memory — previously approved variants).
+- Platform browser capability (for browser mockups / HTML previews). If the platform cannot browse, generate HTML previews or written mockup descriptions instead.
+
+## Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp design-shotgun\` only outputs these steps — it does not auto-execute. The exploration work is dispatched to the designer sub-agent.
+
+### Step 1: Session detection
+
+Reuse the \`design/\` scratch directory when it exists (prior variants, notes, partial mockups). Start fresh when empty.
+
+### Step 2: Context gathering
+
+1. Read root \`DESIGN.md\` (when present) and \`bp/config.yaml\` for constraints.
+2. Read the change's proposal when a change is active.
+3. List what the variants must cover (screens, components, style questions to settle).
+
+### Step 3: Taste memory
+
+Read prior \`design/approved.json\` (when present) for the user's taste: which directions were approved, which were rejected, and why. Do not repeat rejected directions.
+
+### Step 4: Variant generation
+
+1. Propose 2-3 distinct concepts and confirm the direction with the user BEFORE generating.
+2. Generate variants in parallel: browser mockups or HTML previews.
+3. Keep each variant internally coherent — a variant is a complete direction, not a mix.
+
+### Step 5: Comparison board
+
+1. Lay the variants side by side (screenshots or previews).
+2. For each variant, list strengths and weaknesses against the design-system constraints and the user's stated goals.
+
+### Step 6: Feedback loop
+
+1. Collect user feedback per variant.
+2. Refine the promising variants per feedback and re-board them.
+3. Repeat until the user is ready to pick, or the user stops the step.
+
+### Step 7: Approval
+
+The user picks the winner. Record the decision explicitly — never assume.
+
+### Step 8: Save
+
+Write \`design/approved.json\`: winner, rationale, and the extracted tokens (colors, typography, spacing) so \`bp design-html\` can consume them.
+
+## Output
+
+- \`design/\` scratch: variants (browser mockups / HTML previews / written mockup descriptions).
+- \`design/approved.json\`: winner + rationale + tokens.
+
+## Guardrails
+
+- If \`bp dispatch designer\` returns a non-zero or failed run, stop and ask the user before proceeding.
+- NEVER pick the winner yourself — approval is always the user's call.
+- NEVER edit source code — variants live in the \`design/\` scratch directory.
+- If browser capability is unavailable, generate HTML previews or written mockup descriptions instead.
+- All output in English.
+",
+  ".agent/skills/bp-design/SKILL.md": "---
+name: bp-design
+description: Design system consultation - complete design proposal written to root DESIGN.md
+hide: false
+---
+
+## Input
+
+- **\`$ARGUMENTS\`** (optional): change name. If empty, the design step operates on the project root.
+- Root \`DESIGN.md\` when present (prior design decisions — see Step 0).
+- \`bp/config.yaml\` — stack/profile context.
+- Platform browser capability (for research and preview screenshots). If the platform cannot browse, degrade to written visual descriptions.
+
+## Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp design\` only outputs these steps — it does not auto-execute. The consultation work is dispatched to the designer sub-agent.
+
+### Step 0: Pre-check
+
+If a root \`DESIGN.md\` already exists, present the user three options and wait for a decision:
+
+- **update** — reuse prior decisions as the base and revise only what changed.
+- **fresh** — start over; the new proposal replaces the file.
+- **cancel** — abort the step; write nothing and stop.
+
+If the user cancels, report \`Design step cancelled — no artifact written.\` and stop.
+
+### Step 1: Product context
+
+1. Read \`bp/config.yaml\` for the project context (product description, tech stack).
+2. Enumerate the user-facing UI surface: screens, components, and styling entry points the design must cover.
+3. Record product goals and users — the design system must serve them, not aesthetics alone.
+
+### Step 2: Research
+
+1. Use your platform's browser capability to collect competitor and reference patterns (visual style, typography, color usage, layout conventions).
+2. Note what works and what does not for each reference — the rationale matters more than the source.
+3. Keep research scoped: 3-5 references are enough unless the user asks for more.
+
+### Step 3: Complete design-system proposal
+
+Produce a full proposal covering every block of the \`## Design System\` shape (fetch \`bp template design-system --stdout\` for the exact shape):
+
+- **Aesthetic direction** — one sentence plus supporting notes.
+- **Typography** — scale, families, weights.
+- **Color** — palette roles (primary, surface, text, accent, feedback) and contrast rules.
+- **Spacing** — scale and density.
+- **Layout** — grid, breakpoints, component layout rules.
+- **Motion** — durations, easings, and usage guidance.
+
+Every decision carries a one-line rationale. No unexplained choices.
+
+### Step 4: Drill-downs
+
+For any area that remains ambiguous after Step 3 (unusual components, edge states, dark mode, accessibility constraints), expand that block with concrete guidance. If nothing is ambiguous, skip this step.
+
+### Step 5: Preview
+
+1. Build an HTML preview page expressing the design system (tokens as CSS custom properties).
+2. Capture browser screenshots when your platform supports browsing; otherwise write a precise written description of the intended visuals.
+3. Present the preview to the user and collect feedback. Iterate on the proposal until the user approves or the user stops the step.
+
+### Step 6: Write root \`DESIGN.md\`
+
+1. Fetch the design-system shape: \`bp template design-system --stdout\`.
+2. Write the root \`DESIGN.md\` with every block filled from the approved proposal, including the Decisions Log entries (date, decision, rationale).
+3. Report a short diff/artifact summary back to the user.
+
+## Output
+
+- Root \`DESIGN.md\` — the complete design system document (\`## Design System\` shape: Product Context / Aesthetic Direction / Typography / Color / Spacing / Layout / Motion / Decisions Log).
+- Optional \`design/preview.html\` + screenshots when the platform supports browsing.
+
+## Guardrails
+
+- If \`bp dispatch designer\` returns a non-zero or failed run, stop and ask the user before proceeding.
+- If \`DESIGN.md\` exists and the user cancels, abort with no artifact written.
+- NEVER overwrite an existing \`DESIGN.md\` without the user choosing update or fresh in Step 0.
+- NEVER edit source code — the designer writes design artifacts only; report needed code changes as notes.
+- If browser capability is unavailable, the preview step degrades to a written description of intended visuals.
+- All output in English.
+",
   ".agent/skills/bp-ff/SKILL.md": "---
 name: bp-ff
 description: Fast-forward - auto-advance through all steps
@@ -1212,6 +1572,72 @@ bp continue $ARGUMENTS
 - Do NOT skip the check step.
 - Do NOT auto-archive if the review verdict is FAIL or NEEDS_REVISION.
 - Only stop on hard errors (test failures that cannot be fixed in 1 attempt, unrecoverable build errors).
+",
+  ".agent/skills/bp-plan-design-review/SKILL.md": "---
+name: bp-plan-design-review
+description: Plan-phase UI audit - UI scope detection and 0-10 rating before implementation
+hide: false
+---
+
+## Input
+
+- **\`$ARGUMENTS\`** (required in practice): change name. The audit runs against the change's planned UI work.
+- \`bp/changes/<name>/proposal.md\` and \`design.md\` — the planned deliverables and design.
+- Root \`DESIGN.md\` when present — the existing design system the plan is checked against.
+- \`bp/config.yaml\` — stack/profile context.
+
+## Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp plan-design-review\` only outputs these steps — it does not auto-execute. The audit work is dispatched to the designer sub-agent. The verdict attaches to the plan review as advisory input — it does not gate \`bp plan\`.
+
+### Step 0: UI scope detection
+
+1. Read the change's proposal deliverables.
+2. Do any deliverables touch user-facing screens, components, or styling? If none, write the verdict \`No UI scope — plan-design-review not applicable.\` and stop.
+
+### Step 1: DESIGN.md status
+
+1. Does a root \`DESIGN.md\` exist?
+2. Is it current relative to the change's scope?
+3. If missing, recommend \`bp design\` before implementation and note it in the verdict.
+
+### Step 2: Initial rating
+
+Rate the planned UI approach 0-10 (10 = fully coherent with the design system, no open questions). Record the rating and a one-line justification.
+
+### Step 3: Focus areas
+
+List the 2-4 highest-leverage design risks in the plan (ambiguous screens, missing states, styling drift, interaction complexity). For each, state what the implementer must decide before or during implementation.
+
+### Step 4: Conformance checklist
+
+Walk the planned changes against the existing design system (when DESIGN.md exists):
+
+- **Typography** — planned text styles match the scale.
+- **Color** — planned palette roles match.
+- **Spacing** — planned spacing fits the scale.
+- **Layout** — planned layout respects the grid/breakpoints.
+- **Motion** — planned motion matches durations/easings.
+
+For each item: conforming / deviation (with note) / no evidence yet.
+
+### Step 5: Verdict routing
+
+1. Compose the verdict: the 0-10 rating, focus areas, and conformance findings.
+2. Attach it to the plan review cycle as advisory input — present it to the user alongside \`bp plan\` output.
+3. The verdict does NOT gate \`bp plan\` — implementation proceeds regardless; the audit raises awareness, not blockers.
+
+## Output
+
+- Advisory audit notes for the plan review: UI scope verdict, DESIGN.md status, 0-10 rating, focus areas, conformance checklist, and routed verdict.
+
+## Guardrails
+
+- If \`bp dispatch designer\` returns a non-zero or failed run, stop and ask the user before proceeding.
+- If the change directory is missing, instruct \`bp propose <name>\` first and stop.
+- NEVER gate \`bp plan\` on this audit — it is advisory by design.
+- NEVER edit source code or \`DESIGN.md\` — the audit produces notes only.
+- All output in English.
 ",
   ".agent/skills/bp-plan/SKILL.md": "---
 name: bp-plan
@@ -1802,6 +2228,79 @@ Check before finishing: each spec has \`## Purpose\`; each requirement uses SHAL
 4. **Too few requirements** — a domain with 1 requirement should be merged.
 5. **Ignoring tests** — tests are the best source of behavioral contracts.
 6. **Hallucinating behavior** — only write requirements you can trace to code; mark confidence LOW if unsure.
+",
+  ".claude/agents/bp-designer.md": "---
+name: bp-designer
+description: Design consultation, HTML generation, visual audit, and variant exploration
+effort: high
+---
+
+## Role
+<!-- ENGINEERING-CONSTRAINT: role definition — structural contract for agent identity and scope -->
+
+You are a **Design Consultant**. You serve the bp design track: design-system consultation, design to production HTML/CSS, visual QA audits, multi-variant design exploration, and plan-phase UI review. The orchestrator supplies the specific step and its task at dispatch — one role, one assigned step per run.
+
+You are NOT a code writer. You produce design artifacts (root DESIGN.md, change-dir design-review.md, design/ scratch outputs) that guide implementation; you never edit source code yourself.
+
+## Core Principles
+<!-- ENGINEERING-CONSTRAINT: design principles — judgment, rationale, coherence, evidence, artifact-only output -->
+
+1. **Design judgment over process boilerplate** — the deliverable is a usable design system, not a filled template.
+2. **Every design decision carries rationale** — unexplained choices are not decisions, they are debt.
+3. **Coherence (trunk test)** — every element traces to the design system; one system across the whole UI surface.
+4. **Evidence over prose** — browser screenshots and HTML previews prove a design; claims do not.
+5. **Artifacts only** — never edit source code; report needed code changes as notes.
+
+## Core Constraints
+
+- Artifacts in bp/ directory under the change
+- Use bp CLI for init, plan, apply, check, archive
+- All output in English
+- NEVER run bp continue — only the orchestrator advances the project
+- ONLY do your assigned task — do not touch unrelated files or steps
+
+## Inputs
+<!-- ENGINEERING-CONSTRAINT: input definition — structural contract for design context files -->
+
+- Root \`DESIGN.md\` when present — existing design system and prior decisions.
+- \`bp/changes/<name>/proposal.md\` + \`design.md\` + \`specs/\` when a change is active — scope and planned deliverables.
+- \`bp/config.yaml\` — stack/profile context.
+- Platform browser capability (screenshots, previews, research). If unavailable, degrade to written visual descriptions.
+- Prior \`design/approved.json\` (shotgun/design-html) — taste memory and approved tokens.
+
+## Behaviors
+<!-- CAPABILITY-COMPENSATION: step-by-step execution outline — model can follow the dispatched step's instructions -->
+
+### Step 1: Read
+Read the inputs above. If any required input is missing (e.g. a change dir for a change-scoped step), STOP and report which input is missing.
+
+### Step 2: Execute the dispatched step
+Follow the step's instructions exactly as the orchestrator passes them (consultation / html / review / shotgun / plan-review). Each step defines its own Input, Steps, Output, and Guardrails.
+
+### Step 3: Write the artifact
+Write the artifact at the agreed location: root \`DESIGN.md\` (consultation), \`bp/changes/<name>/design-review.md\` or \`design/review-<date>.md\` (audit), \`design/\` variants + \`approved.json\` (shotgun), HTML/CSS under the web root or \`design/\` (design-html), advisory notes for the reviewer (plan-review).
+
+### Step 4: Report
+Report a diff/artifact summary back to the orchestrator — what was written, what decisions were made, what remains open.
+
+## Output
+<!-- ENGINEERING-CONSTRAINT: output manifest — the design artifacts this role produces -->
+
+- Root \`DESIGN.md\` — complete design system (consultation).
+- \`bp/changes/<name>/design-review.md\` or \`design/review-<iso-date>.md\` — 0-10 rating + prioritized issues (audit).
+- \`design/\` variants + \`design/approved.json\` (shotgun).
+- HTML/CSS under the project's web root or \`design/\` (design-html).
+- Advisory plan-review notes for the reviewer (plan-review).
+
+## Guardrails
+<!-- ENGINEERING-CONSTRAINT: guardrail block — hard limits on the designer role -->
+
+- NEVER edit source code — report needed code changes as notes for the executor.
+- NEVER run \`bp continue\`, \`bp plan\`, or \`bp apply\` — only the orchestrator advances the project.
+- ONLY the assigned step — do not expand into other design steps or other roles.
+- When \`DESIGN.md\` exists and the task is consultation, present update/fresh/cancel to the orchestrator rather than silently overwriting.
+- All output in English.
+- If an input artifact is missing, stop and report it — do not invent content.
 ",
   ".claude/agents/bp-executor.md": "---
 name: bp-executor
@@ -2800,6 +3299,291 @@ bp continue $ARGUMENTS
 - If multiple active changes exist, the CLI lists them — pick one and re-run \`bp continue <name>\`.
 - If the CLI says \`Next: bp <step> <name>\`, run the workflow instructions it outputs.
 ",
+  ".claude/commands/bp-design-html.md": "---
+name: bp:design-html
+description: Design to production HTML/CSS - implement DESIGN.md against the detected project framework
+---
+
+## Input
+
+- **\`$ARGUMENTS\`** (optional): change name. If empty, the step operates on the project root.
+- \`design/approved.json\` when present (shotgun winner + tokens) — highest-priority design source.
+- Root \`DESIGN.md\` when present (design-system tokens).
+- Project source under the web root — the files the generated HTML/CSS will replace or join.
+- \`bp/config.yaml\` — stack/profile context for framework detection.
+
+## Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp design-html\` only outputs these steps — it does not auto-execute. The generation work is dispatched to the designer sub-agent.
+
+### Step 1: Input detection
+
+Pick the design source in this order:
+
+1. \`design/approved.json\` (shotgun output — winner, rationale, tokens).
+2. Root \`DESIGN.md\` (design-system document).
+3. Clean slate — proceed with a minimal default design and flag it to the user.
+
+If none exists and the user expected prior design work, suggest \`bp design\` first.
+
+### Step 2: Design analysis
+
+1. Extract design tokens from the source: colors, typography scale, spacing scale, radii, shadows, motion durations/easings.
+2. List the UI surface the HTML must cover (screens/components from the design source).
+3. Note any ambiguity and resolve it with the user before generating.
+
+### Step 3: Framework detection
+
+1. Read \`package.json\` and config files per \`bp/config.yaml\` context to detect the project framework.
+2. Match the generation approach to the framework (plain HTML/CSS, component markup, or CSS custom properties that the framework consumes).
+3. If detection is inconclusive, ask the user; do not guess silently.
+
+### Step 4: Generation
+
+1. Express every design token as a CSS custom property on the root.
+2. Generate the HTML/CSS implementing the design surface, matching the detected framework conventions.
+3. Keep the output minimal and reviewable — no generated boilerplate beyond what the design requires.
+
+### Step 5: Preview and refine loop
+
+1. Build an HTML preview page and capture browser screenshots when your platform supports browsing; otherwise write a written description of the rendered result.
+2. Present the preview to the user.
+3. Refine per feedback and re-preview until the user approves or stops the step.
+
+### Step 6: Token extraction
+
+1. Write the final tokens back into the root \`DESIGN.md\` Decisions Log (date, decision, rationale) so the design system stays the source of truth.
+2. Report a diff/artifact summary.
+
+## Output
+
+- HTML/CSS implementing the design system under the project's web root or under \`design/\` when the target is not yet wired into the app.
+- Updated \`DESIGN.md\` Decisions Log entries (token extraction).
+
+## Guardrails
+
+- If \`bp dispatch designer\` returns a non-zero or failed run, stop and ask the user before proceeding.
+- NEVER edit application source code beyond the generated HTML/CSS the step owns — report other needed code changes as notes.
+- If browser capability is unavailable, the preview step degrades to a written description of the intended visuals.
+- All output in English.
+",
+  ".claude/commands/bp-design-review.md": "---
+name: bp:design-review
+description: Designer's-eye QA audit - full visual and UX audit against DESIGN.md
+argument-hint: "[change-name]"
+---
+
+## Input
+
+- **\`$ARGUMENTS\`** (optional): change name. When present, the audit report is written to \`bp/changes/<name>/design-review.md\`; otherwise to \`design/review-<iso-date>.md\`.
+- Root \`DESIGN.md\` — the design system the UI is audited against.
+- The change's \`proposal.md\` / \`design.md\` when a change is active (scope context).
+- Platform browser capability (for page-by-page visual audit). If the platform cannot browse, audit the written UI description instead.
+
+## Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp design-review\` only outputs these steps — it does not auto-execute. The audit work is dispatched to the designer sub-agent.
+
+### Step 1: Mode selection
+
+Pick the audit depth (ask the user when unsure):
+
+- **full** — everything below (default).
+- **quick** — first impression + top issues only, no page-by-page checklist.
+- **deep** — full checklist plus interaction-flow review on every page.
+- **diff-aware** — audit only what changed vs the prior review.
+- **regression** — re-run a prior report's issue list against the current UI.
+
+### Step 2: Phase 1 — First impression
+
+1. Open the UI surface and record 10-second glance notes: what stands out, what feels broken, what the eye lands on first.
+2. Do not fix anything — record only.
+
+### Step 3: Phase 2 — Design-system extraction
+
+1. Read the root \`DESIGN.md\` and list its tokens (typography, color, spacing, layout, motion).
+2. Compare the live UI against those tokens — note every visible deviation.
+
+### Step 4: Phase 3 — Page-by-page visual audit
+
+1. Walk every page/screen through the 10-category checklist (~80 items): layout, typography, color, spacing, alignment, hierarchy, states, responsiveness, accessibility, motion.
+2. Apply the trunk test: every page must visibly share the same design system — a page that does not is a finding.
+3. Record each issue with severity (blocker / major / minor) and location.
+
+### Step 5: Phase 4 — Interaction-flow review
+
+1. Walk the key user flows end to end (navigation, forms, feedback states, empty states).
+2. Record flow-level issues separately from page-level ones.
+
+### Step 6: Write the report
+
+1. Compose the report with a 0-10 rating and a prioritized issue list (severity, then impact).
+2. Write it to \`bp/changes/<name>/design-review.md\` when a change is active, else \`design/review-<iso-date>.md\`.
+3. Report a short summary back to the user.
+
+## Output
+
+- \`bp/changes/<name>/design-review.md\` (change-scoped) or \`design/review-<iso-date>.md\` (project-scoped): 0-10 rating, prioritized issue list, per-category checklist results.
+
+## Guardrails
+
+- If \`bp dispatch designer\` returns a non-zero or failed run, stop and ask the user before proceeding.
+- NEVER edit source code — the audit reports findings; the executor fixes them.
+- NEVER change \`DESIGN.md\` as part of the audit — deviations are reported, not silently corrected.
+- If a change is active but \`bp/changes/<name>\` is missing, instruct \`bp propose <name>\` first and stop.
+- If browser capability is unavailable, audit the written UI description and note the degraded scope.
+- All output in English.
+",
+  ".claude/commands/bp-design-shotgun.md": "---
+name: bp:design-shotgun
+description: Multi-variant design exploration - generate, compare, and approve design variants
+---
+
+## Input
+
+- **\`$ARGUMENTS\`** (optional): change name. If empty, the step operates on the project root.
+- Root \`DESIGN.md\` when present (design-system constraints for variant generation).
+- \`bp/config.yaml\` — product context and stack.
+- Prior \`design/approved.json\` when present (taste memory — previously approved variants).
+- Platform browser capability (for browser mockups / HTML previews). If the platform cannot browse, generate HTML previews or written mockup descriptions instead.
+
+## Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp design-shotgun\` only outputs these steps — it does not auto-execute. The exploration work is dispatched to the designer sub-agent.
+
+### Step 1: Session detection
+
+Reuse the \`design/\` scratch directory when it exists (prior variants, notes, partial mockups). Start fresh when empty.
+
+### Step 2: Context gathering
+
+1. Read root \`DESIGN.md\` (when present) and \`bp/config.yaml\` for constraints.
+2. Read the change's proposal when a change is active.
+3. List what the variants must cover (screens, components, style questions to settle).
+
+### Step 3: Taste memory
+
+Read prior \`design/approved.json\` (when present) for the user's taste: which directions were approved, which were rejected, and why. Do not repeat rejected directions.
+
+### Step 4: Variant generation
+
+1. Propose 2-3 distinct concepts and confirm the direction with the user BEFORE generating.
+2. Generate variants in parallel: browser mockups or HTML previews.
+3. Keep each variant internally coherent — a variant is a complete direction, not a mix.
+
+### Step 5: Comparison board
+
+1. Lay the variants side by side (screenshots or previews).
+2. For each variant, list strengths and weaknesses against the design-system constraints and the user's stated goals.
+
+### Step 6: Feedback loop
+
+1. Collect user feedback per variant.
+2. Refine the promising variants per feedback and re-board them.
+3. Repeat until the user is ready to pick, or the user stops the step.
+
+### Step 7: Approval
+
+The user picks the winner. Record the decision explicitly — never assume.
+
+### Step 8: Save
+
+Write \`design/approved.json\`: winner, rationale, and the extracted tokens (colors, typography, spacing) so \`bp design-html\` can consume them.
+
+## Output
+
+- \`design/\` scratch: variants (browser mockups / HTML previews / written mockup descriptions).
+- \`design/approved.json\`: winner + rationale + tokens.
+
+## Guardrails
+
+- If \`bp dispatch designer\` returns a non-zero or failed run, stop and ask the user before proceeding.
+- NEVER pick the winner yourself — approval is always the user's call.
+- NEVER edit source code — variants live in the \`design/\` scratch directory.
+- If browser capability is unavailable, generate HTML previews or written mockup descriptions instead.
+- All output in English.
+",
+  ".claude/commands/bp-design.md": "---
+name: bp:design
+description: Design system consultation - complete design proposal written to root DESIGN.md
+---
+
+## Input
+
+- **\`$ARGUMENTS\`** (optional): change name. If empty, the design step operates on the project root.
+- Root \`DESIGN.md\` when present (prior design decisions — see Step 0).
+- \`bp/config.yaml\` — stack/profile context.
+- Platform browser capability (for research and preview screenshots). If the platform cannot browse, degrade to written visual descriptions.
+
+## Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp design\` only outputs these steps — it does not auto-execute. The consultation work is dispatched to the designer sub-agent.
+
+### Step 0: Pre-check
+
+If a root \`DESIGN.md\` already exists, present the user three options and wait for a decision:
+
+- **update** — reuse prior decisions as the base and revise only what changed.
+- **fresh** — start over; the new proposal replaces the file.
+- **cancel** — abort the step; write nothing and stop.
+
+If the user cancels, report \`Design step cancelled — no artifact written.\` and stop.
+
+### Step 1: Product context
+
+1. Read \`bp/config.yaml\` for the project context (product description, tech stack).
+2. Enumerate the user-facing UI surface: screens, components, and styling entry points the design must cover.
+3. Record product goals and users — the design system must serve them, not aesthetics alone.
+
+### Step 2: Research
+
+1. Use your platform's browser capability to collect competitor and reference patterns (visual style, typography, color usage, layout conventions).
+2. Note what works and what does not for each reference — the rationale matters more than the source.
+3. Keep research scoped: 3-5 references are enough unless the user asks for more.
+
+### Step 3: Complete design-system proposal
+
+Produce a full proposal covering every block of the \`## Design System\` shape (fetch \`bp template design-system --stdout\` for the exact shape):
+
+- **Aesthetic direction** — one sentence plus supporting notes.
+- **Typography** — scale, families, weights.
+- **Color** — palette roles (primary, surface, text, accent, feedback) and contrast rules.
+- **Spacing** — scale and density.
+- **Layout** — grid, breakpoints, component layout rules.
+- **Motion** — durations, easings, and usage guidance.
+
+Every decision carries a one-line rationale. No unexplained choices.
+
+### Step 4: Drill-downs
+
+For any area that remains ambiguous after Step 3 (unusual components, edge states, dark mode, accessibility constraints), expand that block with concrete guidance. If nothing is ambiguous, skip this step.
+
+### Step 5: Preview
+
+1. Build an HTML preview page expressing the design system (tokens as CSS custom properties).
+2. Capture browser screenshots when your platform supports browsing; otherwise write a precise written description of the intended visuals.
+3. Present the preview to the user and collect feedback. Iterate on the proposal until the user approves or the user stops the step.
+
+### Step 6: Write root \`DESIGN.md\`
+
+1. Fetch the design-system shape: \`bp template design-system --stdout\`.
+2. Write the root \`DESIGN.md\` with every block filled from the approved proposal, including the Decisions Log entries (date, decision, rationale).
+3. Report a short diff/artifact summary back to the user.
+
+## Output
+
+- Root \`DESIGN.md\` — the complete design system document (\`## Design System\` shape: Product Context / Aesthetic Direction / Typography / Color / Spacing / Layout / Motion / Decisions Log).
+- Optional \`design/preview.html\` + screenshots when the platform supports browsing.
+
+## Guardrails
+
+- If \`bp dispatch designer\` returns a non-zero or failed run, stop and ask the user before proceeding.
+- If \`DESIGN.md\` exists and the user cancels, abort with no artifact written.
+- NEVER overwrite an existing \`DESIGN.md\` without the user choosing update or fresh in Step 0.
+- NEVER edit source code — the designer writes design artifacts only; report needed code changes as notes.
+- If browser capability is unavailable, the preview step degrades to a written description of intended visuals.
+- All output in English.
+",
   ".claude/commands/bp-ff.md": "---
 name: bp:ff
 description: Fast-forward - auto-advance through all steps by calling bp continue after each
@@ -2934,6 +3718,72 @@ bp continue $ARGUMENTS
 - Do NOT skip the check step.
 - Do NOT auto-archive if the review verdict is FAIL or NEEDS_REVISION.
 - Only stop on hard errors (test failures that cannot be fixed in 1 attempt, unrecoverable build errors).
+",
+  ".claude/commands/bp-plan-design-review.md": "---
+name: bp:plan-design-review
+description: Plan-phase UI audit - UI scope detection and 0-10 rating before implementation
+argument-hint: "[change-name]"
+---
+
+## Input
+
+- **\`$ARGUMENTS\`** (required in practice): change name. The audit runs against the change's planned UI work.
+- \`bp/changes/<name>/proposal.md\` and \`design.md\` — the planned deliverables and design.
+- Root \`DESIGN.md\` when present — the existing design system the plan is checked against.
+- \`bp/config.yaml\` — stack/profile context.
+
+## Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp plan-design-review\` only outputs these steps — it does not auto-execute. The audit work is dispatched to the designer sub-agent. The verdict attaches to the plan review as advisory input — it does not gate \`bp plan\`.
+
+### Step 0: UI scope detection
+
+1. Read the change's proposal deliverables.
+2. Do any deliverables touch user-facing screens, components, or styling? If none, write the verdict \`No UI scope — plan-design-review not applicable.\` and stop.
+
+### Step 1: DESIGN.md status
+
+1. Does a root \`DESIGN.md\` exist?
+2. Is it current relative to the change's scope?
+3. If missing, recommend \`bp design\` before implementation and note it in the verdict.
+
+### Step 2: Initial rating
+
+Rate the planned UI approach 0-10 (10 = fully coherent with the design system, no open questions). Record the rating and a one-line justification.
+
+### Step 3: Focus areas
+
+List the 2-4 highest-leverage design risks in the plan (ambiguous screens, missing states, styling drift, interaction complexity). For each, state what the implementer must decide before or during implementation.
+
+### Step 4: Conformance checklist
+
+Walk the planned changes against the existing design system (when DESIGN.md exists):
+
+- **Typography** — planned text styles match the scale.
+- **Color** — planned palette roles match.
+- **Spacing** — planned spacing fits the scale.
+- **Layout** — planned layout respects the grid/breakpoints.
+- **Motion** — planned motion matches durations/easings.
+
+For each item: conforming / deviation (with note) / no evidence yet.
+
+### Step 5: Verdict routing
+
+1. Compose the verdict: the 0-10 rating, focus areas, and conformance findings.
+2. Attach it to the plan review cycle as advisory input — present it to the user alongside \`bp plan\` output.
+3. The verdict does NOT gate \`bp plan\` — implementation proceeds regardless; the audit raises awareness, not blockers.
+
+## Output
+
+- Advisory audit notes for the plan review: UI scope verdict, DESIGN.md status, 0-10 rating, focus areas, conformance checklist, and routed verdict.
+
+## Guardrails
+
+- If \`bp dispatch designer\` returns a non-zero or failed run, stop and ask the user before proceeding.
+- If the change directory is missing, instruct \`bp propose <name>\` first and stop.
+- NEVER gate \`bp plan\` on this audit — it is advisory by design.
+- NEVER edit source code or \`DESIGN.md\` — the audit produces notes only.
+- All output in English.
 ",
   ".claude/commands/bp-plan.md": "---
 name: bp:plan
@@ -3694,6 +4544,85 @@ Check before finishing: each spec has \`## Purpose\`; each requirement uses SHAL
 4. **Too few requirements** — a domain with 1 requirement should be merged.
 5. **Ignoring tests** — tests are the best source of behavioral contracts.
 6. **Hallucinating behavior** — only write requirements you can trace to code; mark confidence LOW if unsure.
+
+",
+  ".omp/agents/bp-designer.md": "---
+name: bp-designer
+description: Design consultation, HTML generation, visual audit, and variant exploration
+model: pi/default
+thinkingLevel: high
+spawns: "*"
+blocking: false
+autoloadSkills: false
+readSummarize: true
+---
+
+## Role
+<!-- ENGINEERING-CONSTRAINT: role definition — structural contract for agent identity and scope -->
+
+You are a **Design Consultant**. You serve the bp design track: design-system consultation, design to production HTML/CSS, visual QA audits, multi-variant design exploration, and plan-phase UI review. The orchestrator supplies the specific step and its task at dispatch — one role, one assigned step per run.
+
+You are NOT a code writer. You produce design artifacts (root DESIGN.md, change-dir design-review.md, design/ scratch outputs) that guide implementation; you never edit source code yourself.
+
+## Core Principles
+<!-- ENGINEERING-CONSTRAINT: design principles — judgment, rationale, coherence, evidence, artifact-only output -->
+
+1. **Design judgment over process boilerplate** — the deliverable is a usable design system, not a filled template.
+2. **Every design decision carries rationale** — unexplained choices are not decisions, they are debt.
+3. **Coherence (trunk test)** — every element traces to the design system; one system across the whole UI surface.
+4. **Evidence over prose** — browser screenshots and HTML previews prove a design; claims do not.
+5. **Artifacts only** — never edit source code; report needed code changes as notes.
+
+## Core Constraints
+
+- Artifacts in bp/ directory under the change
+- Use bp CLI for init, plan, apply, check, archive
+- All output in English
+- NEVER run bp continue — only the orchestrator advances the project
+- ONLY do your assigned task — do not touch unrelated files or steps
+
+## Inputs
+<!-- ENGINEERING-CONSTRAINT: input definition — structural contract for design context files -->
+
+- Root \`DESIGN.md\` when present — existing design system and prior decisions.
+- \`bp/changes/<name>/proposal.md\` + \`design.md\` + \`specs/\` when a change is active — scope and planned deliverables.
+- \`bp/config.yaml\` — stack/profile context.
+- Platform browser capability (screenshots, previews, research). If unavailable, degrade to written visual descriptions.
+- Prior \`design/approved.json\` (shotgun/design-html) — taste memory and approved tokens.
+
+## Behaviors
+<!-- CAPABILITY-COMPENSATION: step-by-step execution outline — model can follow the dispatched step's instructions -->
+
+### Step 1: Read
+Read the inputs above. If any required input is missing (e.g. a change dir for a change-scoped step), STOP and report which input is missing.
+
+### Step 2: Execute the dispatched step
+Follow the step's instructions exactly as the orchestrator passes them (consultation / html / review / shotgun / plan-review). Each step defines its own Input, Steps, Output, and Guardrails.
+
+### Step 3: Write the artifact
+Write the artifact at the agreed location: root \`DESIGN.md\` (consultation), \`bp/changes/<name>/design-review.md\` or \`design/review-<date>.md\` (audit), \`design/\` variants + \`approved.json\` (shotgun), HTML/CSS under the web root or \`design/\` (design-html), advisory notes for the reviewer (plan-review).
+
+### Step 4: Report
+Report a diff/artifact summary back to the orchestrator — what was written, what decisions were made, what remains open.
+
+## Output
+<!-- ENGINEERING-CONSTRAINT: output manifest — the design artifacts this role produces -->
+
+- Root \`DESIGN.md\` — complete design system (consultation).
+- \`bp/changes/<name>/design-review.md\` or \`design/review-<iso-date>.md\` — 0-10 rating + prioritized issues (audit).
+- \`design/\` variants + \`design/approved.json\` (shotgun).
+- HTML/CSS under the project's web root or \`design/\` (design-html).
+- Advisory plan-review notes for the reviewer (plan-review).
+
+## Guardrails
+<!-- ENGINEERING-CONSTRAINT: guardrail block — hard limits on the designer role -->
+
+- NEVER edit source code — report needed code changes as notes for the executor.
+- NEVER run \`bp continue\`, \`bp plan\`, or \`bp apply\` — only the orchestrator advances the project.
+- ONLY the assigned step — do not expand into other design steps or other roles.
+- When \`DESIGN.md\` exists and the task is consultation, present update/fresh/cancel to the orchestrator rather than silently overwriting.
+- All output in English.
+- If an input artifact is missing, stop and report it — do not invent content.
 
 ",
   ".omp/agents/bp-executor.md": "---
@@ -4723,6 +5652,291 @@ bp continue $ARGUMENTS
 - If multiple active changes exist, the CLI lists them — pick one and re-run \`bp continue <name>\`.
 - If the CLI says \`Next: bp <step> <name>\`, run the workflow instructions it outputs.
 ",
+  ".omp/commands/bp-design-html.md": "---
+name: bp:design-html
+description: Design to production HTML/CSS - implement DESIGN.md against the detected project framework
+---
+
+## Input
+
+- **\`$ARGUMENTS\`** (optional): change name. If empty, the step operates on the project root.
+- \`design/approved.json\` when present (shotgun winner + tokens) — highest-priority design source.
+- Root \`DESIGN.md\` when present (design-system tokens).
+- Project source under the web root — the files the generated HTML/CSS will replace or join.
+- \`bp/config.yaml\` — stack/profile context for framework detection.
+
+## Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp design-html\` only outputs these steps — it does not auto-execute. The generation work is dispatched to the designer sub-agent.
+
+### Step 1: Input detection
+
+Pick the design source in this order:
+
+1. \`design/approved.json\` (shotgun output — winner, rationale, tokens).
+2. Root \`DESIGN.md\` (design-system document).
+3. Clean slate — proceed with a minimal default design and flag it to the user.
+
+If none exists and the user expected prior design work, suggest \`bp design\` first.
+
+### Step 2: Design analysis
+
+1. Extract design tokens from the source: colors, typography scale, spacing scale, radii, shadows, motion durations/easings.
+2. List the UI surface the HTML must cover (screens/components from the design source).
+3. Note any ambiguity and resolve it with the user before generating.
+
+### Step 3: Framework detection
+
+1. Read \`package.json\` and config files per \`bp/config.yaml\` context to detect the project framework.
+2. Match the generation approach to the framework (plain HTML/CSS, component markup, or CSS custom properties that the framework consumes).
+3. If detection is inconclusive, ask the user; do not guess silently.
+
+### Step 4: Generation
+
+1. Express every design token as a CSS custom property on the root.
+2. Generate the HTML/CSS implementing the design surface, matching the detected framework conventions.
+3. Keep the output minimal and reviewable — no generated boilerplate beyond what the design requires.
+
+### Step 5: Preview and refine loop
+
+1. Build an HTML preview page and capture browser screenshots when your platform supports browsing; otherwise write a written description of the rendered result.
+2. Present the preview to the user.
+3. Refine per feedback and re-preview until the user approves or stops the step.
+
+### Step 6: Token extraction
+
+1. Write the final tokens back into the root \`DESIGN.md\` Decisions Log (date, decision, rationale) so the design system stays the source of truth.
+2. Report a diff/artifact summary.
+
+## Output
+
+- HTML/CSS implementing the design system under the project's web root or under \`design/\` when the target is not yet wired into the app.
+- Updated \`DESIGN.md\` Decisions Log entries (token extraction).
+
+## Guardrails
+
+- If \`bp dispatch designer\` returns a non-zero or failed run, stop and ask the user before proceeding.
+- NEVER edit application source code beyond the generated HTML/CSS the step owns — report other needed code changes as notes.
+- If browser capability is unavailable, the preview step degrades to a written description of the intended visuals.
+- All output in English.
+",
+  ".omp/commands/bp-design-review.md": "---
+name: bp:design-review
+description: Designer's-eye QA audit - full visual and UX audit against DESIGN.md
+argument-hint: "[change-name]"
+---
+
+## Input
+
+- **\`$ARGUMENTS\`** (optional): change name. When present, the audit report is written to \`bp/changes/<name>/design-review.md\`; otherwise to \`design/review-<iso-date>.md\`.
+- Root \`DESIGN.md\` — the design system the UI is audited against.
+- The change's \`proposal.md\` / \`design.md\` when a change is active (scope context).
+- Platform browser capability (for page-by-page visual audit). If the platform cannot browse, audit the written UI description instead.
+
+## Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp design-review\` only outputs these steps — it does not auto-execute. The audit work is dispatched to the designer sub-agent.
+
+### Step 1: Mode selection
+
+Pick the audit depth (ask the user when unsure):
+
+- **full** — everything below (default).
+- **quick** — first impression + top issues only, no page-by-page checklist.
+- **deep** — full checklist plus interaction-flow review on every page.
+- **diff-aware** — audit only what changed vs the prior review.
+- **regression** — re-run a prior report's issue list against the current UI.
+
+### Step 2: Phase 1 — First impression
+
+1. Open the UI surface and record 10-second glance notes: what stands out, what feels broken, what the eye lands on first.
+2. Do not fix anything — record only.
+
+### Step 3: Phase 2 — Design-system extraction
+
+1. Read the root \`DESIGN.md\` and list its tokens (typography, color, spacing, layout, motion).
+2. Compare the live UI against those tokens — note every visible deviation.
+
+### Step 4: Phase 3 — Page-by-page visual audit
+
+1. Walk every page/screen through the 10-category checklist (~80 items): layout, typography, color, spacing, alignment, hierarchy, states, responsiveness, accessibility, motion.
+2. Apply the trunk test: every page must visibly share the same design system — a page that does not is a finding.
+3. Record each issue with severity (blocker / major / minor) and location.
+
+### Step 5: Phase 4 — Interaction-flow review
+
+1. Walk the key user flows end to end (navigation, forms, feedback states, empty states).
+2. Record flow-level issues separately from page-level ones.
+
+### Step 6: Write the report
+
+1. Compose the report with a 0-10 rating and a prioritized issue list (severity, then impact).
+2. Write it to \`bp/changes/<name>/design-review.md\` when a change is active, else \`design/review-<iso-date>.md\`.
+3. Report a short summary back to the user.
+
+## Output
+
+- \`bp/changes/<name>/design-review.md\` (change-scoped) or \`design/review-<iso-date>.md\` (project-scoped): 0-10 rating, prioritized issue list, per-category checklist results.
+
+## Guardrails
+
+- If \`bp dispatch designer\` returns a non-zero or failed run, stop and ask the user before proceeding.
+- NEVER edit source code — the audit reports findings; the executor fixes them.
+- NEVER change \`DESIGN.md\` as part of the audit — deviations are reported, not silently corrected.
+- If a change is active but \`bp/changes/<name>\` is missing, instruct \`bp propose <name>\` first and stop.
+- If browser capability is unavailable, audit the written UI description and note the degraded scope.
+- All output in English.
+",
+  ".omp/commands/bp-design-shotgun.md": "---
+name: bp:design-shotgun
+description: Multi-variant design exploration - generate, compare, and approve design variants
+---
+
+## Input
+
+- **\`$ARGUMENTS\`** (optional): change name. If empty, the step operates on the project root.
+- Root \`DESIGN.md\` when present (design-system constraints for variant generation).
+- \`bp/config.yaml\` — product context and stack.
+- Prior \`design/approved.json\` when present (taste memory — previously approved variants).
+- Platform browser capability (for browser mockups / HTML previews). If the platform cannot browse, generate HTML previews or written mockup descriptions instead.
+
+## Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp design-shotgun\` only outputs these steps — it does not auto-execute. The exploration work is dispatched to the designer sub-agent.
+
+### Step 1: Session detection
+
+Reuse the \`design/\` scratch directory when it exists (prior variants, notes, partial mockups). Start fresh when empty.
+
+### Step 2: Context gathering
+
+1. Read root \`DESIGN.md\` (when present) and \`bp/config.yaml\` for constraints.
+2. Read the change's proposal when a change is active.
+3. List what the variants must cover (screens, components, style questions to settle).
+
+### Step 3: Taste memory
+
+Read prior \`design/approved.json\` (when present) for the user's taste: which directions were approved, which were rejected, and why. Do not repeat rejected directions.
+
+### Step 4: Variant generation
+
+1. Propose 2-3 distinct concepts and confirm the direction with the user BEFORE generating.
+2. Generate variants in parallel: browser mockups or HTML previews.
+3. Keep each variant internally coherent — a variant is a complete direction, not a mix.
+
+### Step 5: Comparison board
+
+1. Lay the variants side by side (screenshots or previews).
+2. For each variant, list strengths and weaknesses against the design-system constraints and the user's stated goals.
+
+### Step 6: Feedback loop
+
+1. Collect user feedback per variant.
+2. Refine the promising variants per feedback and re-board them.
+3. Repeat until the user is ready to pick, or the user stops the step.
+
+### Step 7: Approval
+
+The user picks the winner. Record the decision explicitly — never assume.
+
+### Step 8: Save
+
+Write \`design/approved.json\`: winner, rationale, and the extracted tokens (colors, typography, spacing) so \`bp design-html\` can consume them.
+
+## Output
+
+- \`design/\` scratch: variants (browser mockups / HTML previews / written mockup descriptions).
+- \`design/approved.json\`: winner + rationale + tokens.
+
+## Guardrails
+
+- If \`bp dispatch designer\` returns a non-zero or failed run, stop and ask the user before proceeding.
+- NEVER pick the winner yourself — approval is always the user's call.
+- NEVER edit source code — variants live in the \`design/\` scratch directory.
+- If browser capability is unavailable, generate HTML previews or written mockup descriptions instead.
+- All output in English.
+",
+  ".omp/commands/bp-design.md": "---
+name: bp:design
+description: Design system consultation - complete design proposal written to root DESIGN.md
+---
+
+## Input
+
+- **\`$ARGUMENTS\`** (optional): change name. If empty, the design step operates on the project root.
+- Root \`DESIGN.md\` when present (prior design decisions — see Step 0).
+- \`bp/config.yaml\` — stack/profile context.
+- Platform browser capability (for research and preview screenshots). If the platform cannot browse, degrade to written visual descriptions.
+
+## Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp design\` only outputs these steps — it does not auto-execute. The consultation work is dispatched to the designer sub-agent.
+
+### Step 0: Pre-check
+
+If a root \`DESIGN.md\` already exists, present the user three options and wait for a decision:
+
+- **update** — reuse prior decisions as the base and revise only what changed.
+- **fresh** — start over; the new proposal replaces the file.
+- **cancel** — abort the step; write nothing and stop.
+
+If the user cancels, report \`Design step cancelled — no artifact written.\` and stop.
+
+### Step 1: Product context
+
+1. Read \`bp/config.yaml\` for the project context (product description, tech stack).
+2. Enumerate the user-facing UI surface: screens, components, and styling entry points the design must cover.
+3. Record product goals and users — the design system must serve them, not aesthetics alone.
+
+### Step 2: Research
+
+1. Use your platform's browser capability to collect competitor and reference patterns (visual style, typography, color usage, layout conventions).
+2. Note what works and what does not for each reference — the rationale matters more than the source.
+3. Keep research scoped: 3-5 references are enough unless the user asks for more.
+
+### Step 3: Complete design-system proposal
+
+Produce a full proposal covering every block of the \`## Design System\` shape (fetch \`bp template design-system --stdout\` for the exact shape):
+
+- **Aesthetic direction** — one sentence plus supporting notes.
+- **Typography** — scale, families, weights.
+- **Color** — palette roles (primary, surface, text, accent, feedback) and contrast rules.
+- **Spacing** — scale and density.
+- **Layout** — grid, breakpoints, component layout rules.
+- **Motion** — durations, easings, and usage guidance.
+
+Every decision carries a one-line rationale. No unexplained choices.
+
+### Step 4: Drill-downs
+
+For any area that remains ambiguous after Step 3 (unusual components, edge states, dark mode, accessibility constraints), expand that block with concrete guidance. If nothing is ambiguous, skip this step.
+
+### Step 5: Preview
+
+1. Build an HTML preview page expressing the design system (tokens as CSS custom properties).
+2. Capture browser screenshots when your platform supports browsing; otherwise write a precise written description of the intended visuals.
+3. Present the preview to the user and collect feedback. Iterate on the proposal until the user approves or the user stops the step.
+
+### Step 6: Write root \`DESIGN.md\`
+
+1. Fetch the design-system shape: \`bp template design-system --stdout\`.
+2. Write the root \`DESIGN.md\` with every block filled from the approved proposal, including the Decisions Log entries (date, decision, rationale).
+3. Report a short diff/artifact summary back to the user.
+
+## Output
+
+- Root \`DESIGN.md\` — the complete design system document (\`## Design System\` shape: Product Context / Aesthetic Direction / Typography / Color / Spacing / Layout / Motion / Decisions Log).
+- Optional \`design/preview.html\` + screenshots when the platform supports browsing.
+
+## Guardrails
+
+- If \`bp dispatch designer\` returns a non-zero or failed run, stop and ask the user before proceeding.
+- If \`DESIGN.md\` exists and the user cancels, abort with no artifact written.
+- NEVER overwrite an existing \`DESIGN.md\` without the user choosing update or fresh in Step 0.
+- NEVER edit source code — the designer writes design artifacts only; report needed code changes as notes.
+- If browser capability is unavailable, the preview step degrades to a written description of intended visuals.
+- All output in English.
+",
   ".omp/commands/bp-ff.md": "---
 name: bp:ff
 description: Fast-forward - auto-advance through all steps by running bp continue after each
@@ -4857,6 +6071,72 @@ bp continue $ARGUMENTS
 - Do NOT skip the check step.
 - Do NOT auto-archive if the review verdict is FAIL or NEEDS_REVISION.
 - Only stop on hard errors (test failures that cannot be fixed in 1 attempt, unrecoverable build errors).
+",
+  ".omp/commands/bp-plan-design-review.md": "---
+name: bp:plan-design-review
+description: Plan-phase UI audit - UI scope detection and 0-10 rating before implementation
+argument-hint: "[change-name]"
+---
+
+## Input
+
+- **\`$ARGUMENTS\`** (required in practice): change name. The audit runs against the change's planned UI work.
+- \`bp/changes/<name>/proposal.md\` and \`design.md\` — the planned deliverables and design.
+- Root \`DESIGN.md\` when present — the existing design system the plan is checked against.
+- \`bp/config.yaml\` — stack/profile context.
+
+## Steps
+
+> These are the steps you (orchestrator) execute in order. \`bp plan-design-review\` only outputs these steps — it does not auto-execute. The audit work is dispatched to the designer sub-agent. The verdict attaches to the plan review as advisory input — it does not gate \`bp plan\`.
+
+### Step 0: UI scope detection
+
+1. Read the change's proposal deliverables.
+2. Do any deliverables touch user-facing screens, components, or styling? If none, write the verdict \`No UI scope — plan-design-review not applicable.\` and stop.
+
+### Step 1: DESIGN.md status
+
+1. Does a root \`DESIGN.md\` exist?
+2. Is it current relative to the change's scope?
+3. If missing, recommend \`bp design\` before implementation and note it in the verdict.
+
+### Step 2: Initial rating
+
+Rate the planned UI approach 0-10 (10 = fully coherent with the design system, no open questions). Record the rating and a one-line justification.
+
+### Step 3: Focus areas
+
+List the 2-4 highest-leverage design risks in the plan (ambiguous screens, missing states, styling drift, interaction complexity). For each, state what the implementer must decide before or during implementation.
+
+### Step 4: Conformance checklist
+
+Walk the planned changes against the existing design system (when DESIGN.md exists):
+
+- **Typography** — planned text styles match the scale.
+- **Color** — planned palette roles match.
+- **Spacing** — planned spacing fits the scale.
+- **Layout** — planned layout respects the grid/breakpoints.
+- **Motion** — planned motion matches durations/easings.
+
+For each item: conforming / deviation (with note) / no evidence yet.
+
+### Step 5: Verdict routing
+
+1. Compose the verdict: the 0-10 rating, focus areas, and conformance findings.
+2. Attach it to the plan review cycle as advisory input — present it to the user alongside \`bp plan\` output.
+3. The verdict does NOT gate \`bp plan\` — implementation proceeds regardless; the audit raises awareness, not blockers.
+
+## Output
+
+- Advisory audit notes for the plan review: UI scope verdict, DESIGN.md status, 0-10 rating, focus areas, conformance checklist, and routed verdict.
+
+## Guardrails
+
+- If \`bp dispatch designer\` returns a non-zero or failed run, stop and ask the user before proceeding.
+- If the change directory is missing, instruct \`bp propose <name>\` first and stop.
+- NEVER gate \`bp plan\` on this audit — it is advisory by design.
+- NEVER edit source code or \`DESIGN.md\` — the audit produces notes only.
+- All output in English.
 ",
   ".omp/commands/bp-plan.md": "---
 name: bp:plan
