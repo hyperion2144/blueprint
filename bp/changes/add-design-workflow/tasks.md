@@ -92,7 +92,7 @@
     - **THEN** stderr contains `Not in a blueprint project. Run "bp init" first.` and the exit code is 1
   - **notes**: Mirror bp-refactor.ts's handler pattern (findBpDir gate → `getWorkflowInstructions('<step>', bpDir)` → print). Optional `[change-name]` positional is advisory (surfaces as `$ARGUMENTS` in the printed instructions; no change-dir validation at command level). cli.ts gains 5 register imports + calls.
 
-- [ ] T-5: [type:behavior] Platform generator STEPS growth + designer agent files + snapshot regeneration <!-- commit: -->
+- [x] T-5: [type:behavior] Platform generator STEPS growth + designer agent files + snapshot regeneration <!-- commit: f5db395 -->
   - **refs**: DS-5
   - **spec_ref**: specs/design/spec.md#platform-design-step-generation, specs/platform-gen/spec.md#pi-skills-generation, specs/platform-gen/spec.md#pi-agents-generation, specs/platform-gen/spec.md#codex-platform-support, specs/platform-gen/spec.md#pi-platform-support
   - **files**: src/integrations/pi/skills.ts, omp/skills.ts, omp/commands.ts, claude-code/commands.ts, codex/skills.ts, agent/skills.ts, pi/agents.ts, agent/agents.ts, claude-code/agents.ts, omp/agents.ts, and the count-pin tests + snapshots listed in design.md Test Impacts
