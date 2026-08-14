@@ -272,3 +272,126 @@ describe('runtime ↔ template lockstep (T-4)', () => {
     expect(RUNTIME_SOURCE).toBe(EXTENSION_SOURCE);
   });
 });
+
+describe('bp_subagent runtime helpers (T-5)', () => {
+  const agentsDir = join(testDir, '.pi', 'agents');
+
+  it('discovers valid .pi/agents/*.md files and skips invalid ones', () => {
+    mkdirSync(agentsDir, { recursive: true });
+    writeFileSync(
+      join(agentsDir, 'bp-planner.md'),
+      [
+        '---',
+        'name: bp-planner',
+        'description: Change design',
+        'tools: read, bash',
+        '---',
+        '',
+        '# Planner system prompt',
+        '',
+        'Plan changes.',
+      ].join('\n'),
+      'utf-8',
+    );
+    writeFileSync(
+      join(agentsDir, 'broken.md'),
+      ['---', 'description: no name here', '---', '', 'body'].join('\n'),
+      'utf-8',
+    );
+
+    const agents = discoverPiAgents(testDir);
+    expect(agents).toHaveLength(1);
+    expect(agents[0].name).toBe('bp-planner');
+    expect(agents[0].description).toBe('Change design');
+    expect(agents[0].tools).toEqual(['read', 'bash']);
+    expect(agents[0].systemPrompt).toContain('# Planner system prompt');
+  });
+
+  it('parses tools from array form and tolerates missing dir', () => {
+    writeFileSync(
+      join(agentsDir, 'bp-executor.md'),
+      [
+        '---',
+        'name: bp-executor',
+        'description: Code implementation',
+        'tools:',
+        '  - read',
+        '  - edit',
+        'model: m/x',
+        '---',
+        '',
+        '# Executor prompt',
+      ].join('\n'),
+      'utf-8',
+    );
+    const agents = discoverPiAgents(testDir);
+    const executor = agents.find((a) => a.name === 'bp-executor');
+    expect(executor).toBeDefined();
+    expect(executor!.tools).toEqual(['read', 'edit']);
+    expect(executor!.model).toBe('m/x');
+
+    const bare = join(testDir, 'no-pi-dir');
+    mkdirSync(bare, { recursive: true });
+    expect(discoverPiAgents(bare)).toEqual([]);
+  });
+
+  it('builds the exact subagent argv for a given model/tools/prompt-file combo', () => {
+    const agent: PiAgentConfig = {
+      name: 'bp-planner',
+      description: 'Change design',
+      tools: ['read', 'bash'],
+      systemPrompt: '# Planner',
+      filePath: join(agentsDir, 'bp-planner.md'),
+    };
+    const args = buildSubagentArgs(agent, 'plan change', {
+      model: 'm/x',
+      thinkingLevel: 'high',
+      systemPromptFile: '/tmp/p.md',
+    });
+    expect(args).toEqual([
+      '--mode',
+      'json',
+      '-p',
+      '--no-session',
+      '--model',
+      'm/x',
+      '--thinking',
+      'high',
+      '--tools',
+      'read,bash',
+      '--append-system-prompt',
+      '/tmp/p.md',
+      'Task: plan change',
+    ]);
+  });
+
+  it('omits optional flags when absent and inherits the agent model', () => {
+    const agent: PiAgentConfig = {
+      name: 'bp-fixer',
+      description: 'Fix',
+      model: 'agent-model',
+      systemPrompt: '# Fixer',
+      filePath: join(agentsDir, 'bp-fixer.md'),
+    };
+    const args = buildSubagentArgs(agent, 'fix it', {});
+    expect(args).toEqual([
+      '--mode',
+      'json',
+      '-p',
+      '--no-session',
+      '--model',
+      'agent-model',
+      'Task: fix it',
+    ]);
+  });
+
+  it('parseJsonLine extracts message_end assistant messages and yields null on malformed lines', () => {
+    const parsed = parseJsonLine('{"type":"message_end","message":{"role":"assistant","content":"done"}}');
+    expect(parsed).not.toBeNull();
+    const msg = (parsed as { message: { role: string; content: string } }).message;
+    expect(msg.role).toBe('assistant');
+    expect(msg.content).toBe('done');
+    expect(parseJsonLine('not json')).toBeNull();
+    expect(parseJsonLine('')).toBeNull();
+  });
+});
