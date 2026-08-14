@@ -25,7 +25,7 @@
 | R2 | pi-skills-generation | ADDED | PASS | src/integrations/pi/skills.ts:25-92 (11 steps, colon name, no argument-hint, registry body); skills.test.ts:16-91 |
 | R3 | pi-agents-generation | ADDED | PASS | src/integrations/pi/agents.ts:22-53 (6 roles, generic frontmatter, model from config); agents.test.ts:17-91 |
 | R4 | pi-extension-generation | ADDED | PASS | src/integrations/pi/extension.ts:11-16 (single descriptor, byte-deterministic, EXTENSION_SOURCE re-export); extension.test.ts:49-68; dogfood `.pi/extensions/bp/index.ts` byte-equals EXTENSION_SOURCE (verified) |
-| R5 | pi-extension-context-contract | ADDED | FAIL | src/integrations/pi/extension-runtime.ts:96-104 — agent-type detection misfires on the real generated agent prompts; 4 of 6 roles mis-detect (see Issues R1). Template src/templates/pi/extension.tmpl.ts:87-95 shares the bug |
+| R5 | pi-extension-context-contract | ADDED | PASS | detection keys on the real AGENT_PROMPTS role-title phrases, not bare role-name substrings — runtime src/integrations/pi/extension-runtime.ts:110-134 (AGENT_TYPE_MARKERS), template src/templates/pi/extension.tmpl.ts:87-105; detection pinned against the REAL prompt bodies (extension-runtime.test.ts:114-129: all 6 roles incl. codebase-scanner classify correctly) and the template's inline markers pinned (extension.test.ts:32-43); handler scenarios re-verified with real title phrases (extension-runtime.test.ts:158-228) |
 | R6 | pi-extension-subagent-tool | ADDED | PASS | extension-runtime.ts:340-402 (discoverPiAgents/buildSubagentArgs/parseJsonLine tested); template tool registration extension.tmpl.ts:392-463 matches pi example args (--mode json -p --no-session) |
 | R7 | pi-extension-bypass-and-config-skip | ADDED | PASS | extension-runtime.ts:271-317 (isDisabled + hasBpConfig guards on all three handlers); extension-runtime.test.ts:180-203, 218-237, 256-271 |
 | R8 | pi-update-cleanup | ADDED | PASS | src/commands/bp-update.ts:154-185 (3 .pi/ blocks); tests/commands/bp-update.test.ts:363-435 (stale removed, user files preserved, configured pi never pruned) |
@@ -44,9 +44,9 @@
 | Agent frontmatter is generic | agents.test.ts:24-26 (no modelRoles/thinkingLevel), 42-53 | PASS |
 | Agent body embeds the role prompt + model from config | agents.test.ts:65-81 | PASS |
 | Extension file is emitted + deterministic | extension.test.ts:50-67 | PASS |
-| Planner session receives roadmap augmentation | extension-runtime.test.ts:116-128 (synthetic prompt only) | **FAIL in prod** — real PLANNER_PROMPT detected as `executor` (see R1) |
-| Executor and fixer sessions receive context rows | extension-runtime.test.ts:130-141 (synthetic prompt only) | **FAIL in prod** — real EXECUTOR_PROMPT detected as `default`; real FIXER_PROMPT detected as `reviewer` (see R1) |
-| Reviewer session receives invariants and acceptance text | extension-runtime.test.ts:143-154 (synthetic prompt only) | **FAIL in prod** — real REVIEWER_PROMPT detected as `executor` (see R1) |
+| Planner session receives roadmap augmentation | extension-runtime.test.ts:158-173 (real title phrase); all-role detection pinned to real AGENT_PROMPTS at 114-129 | PASS |
+| Executor and fixer sessions receive context rows | extension-runtime.test.ts:175-197 (real title phrases) + 114-129 | PASS |
+| Reviewer session receives invariants and acceptance text | extension-runtime.test.ts:199-213 (real title phrase) + 114-129 | PASS |
 | Refactorer session receives refactor targets | extension-runtime.test.ts:156-166 | PASS |
 | Unknown agent type receives paths-only block | extension-runtime.test.ts:168-178 | PASS |
 | Workflow state is injected once per session | extension-runtime.test.ts:206-216 | PASS |
@@ -61,7 +61,7 @@
 | Preserve user-owned pi files | bp-update.test.ts:398-421 | PASS |
 | Configured pi output is never pruned | bp-update.test.ts:424-435 | PASS |
 
-### Spec Verdict: NEEDS_REVISION
+### Spec Verdict: PASS
 
 ---
 
@@ -70,17 +70,23 @@
 ### Issues
 
 | # | Severity | Category | Location | Description | Fix |
-|---|----------|----------|----------|-------------|-----|
-| Q1 | MINOR | Bug | src/templates/pi/extension.tmpl.ts:479-487 vs src/integrations/pi/extension-runtime.ts:282-294 | Lockstep divergence in `before_agent_start`: template sets `bpStateInjected = true` BEFORE the `hasBpConfig` guard; runtime checks config first. With `bp/config.yaml` missing on first invocation, the template burns the once-per-session injection, the runtime does not. DS-5 requires handler semantics equal to the template's. Second divergence: template `loadPiAgents` accepts `isFile() \|\| isSymbolicLink()`, runtime `discoverPiAgents` accepts `isFile()` only. | Reorder the template guard to check `hasBpConfig` before setting the flag; align symlink handling in both files. Add a lockstep test that compares handler behavior (or at least the guard ordering) between runtime and template. |
+| --- | ---------- | ---------- | ---------- | ------------- | ----- |
+| Q1 | MINOR — RESOLVED r2 (130871e) | Bug | extension.tmpl.ts:489-497 vs extension-runtime.ts:343-355 | before_agent_start guard ordering + symlink acceptance lockstep — fixed: template checks hasBpConfig BEFORE setting bpStateInjected (tmpl 492-494, runtime 345-347); symlinked agent files accepted in BOTH (tmpl 241, runtime 427) | verified fixed, no action |
+| Q2 | MINOR | Bug (lockstep) | extension-runtime.ts:424-427 vs extension.tmpl.ts:240 | Fixer aligned symlink handling but dropped the `.md` suffix filter from runtime `discoverPiAgents` that template `loadPiAgents` keeps — runtime would accept a non-`.md` file with valid name/description frontmatter, template ignores it. Also `codebase-scanner` falls through differently: runtime returns `block + "\n\n"` (extension-runtime.ts:248,296), template returns the clean block (extension.tmpl.ts:170-208). | Restore `entry.name.endsWith('.md')` in runtime discoverPiAgents; add a codebase-scanner branch (or explicit fall-through) so both emit identical bytes; add a lockstep assertion on loadPiAgents/discoverPiAgents behavior. |
+| Q3 | MINOR | Convention (artifact drift) | design.md:412, 160, 192, 278, 267 | Design artifact not updated by the fixer: D-2 Reason still asserts the false premise "each prompt contains its role name in the ## Role heading" (design.md:412 — the exact root cause of R1); DS-4 §3 and DS-5 detectAgentTypeFromPrompt still describe bare substring markers (`planner`/`executor`/...); DS-5 AgentType union (design.md:267) omits `codebase-scanner` which the implementation added. | Update design.md: D-2 reason → title-phrase markers; DS-4/DS-5 marker descriptions → AGENT_TYPE_MARKERS phrases; add codebase-scanner to the DS-5 AgentType union. |
+| Q4 | MINOR | Convention (working-tree hygiene) | extension-runtime.ts, extension-runtime.test.ts, extension.test.ts (uncommitted, mtime 21:35:24 = 39s after 130871e) | Format-only uncommitted drift on the 3 fixer-touched files: double quotes + tabs + rewrapped imports, inconsistent with the repo's single-quote/2-space style (siblings skills.ts, agents.ts, index.ts, extension.ts, extension.tmpl.ts, and the omp counterparts). Verified quote/indent/wrap only — zero logic change. Leaves the change's working tree dirty at review time. | Revert the reformat (restore committed state) or commit it consistently; align with the module's single-quote/2-space convention. |
 
 ### Convention Compliance
 
 - ESM `.js` import suffixes: PASS (all pi files).
 - kebab-case filenames: PASS.
 - UPPER_SNAKE constants (PI_SKILL_DEFS, PI_AGENT_DEFS, EXTENSION_SOURCE, PI_EXTENSION_PATH): PASS.
-- Snapshot discipline: PASS (3 snapshot files present, tests run with --update flow).
+- Snapshot discipline: PASS (3 snapshot files present; extension snapshot updated in 130871e with the new markers).
 - Commit scopes (integrations/generators/config/test): PASS (see git log).
-- TDD RED→GREEN: PASS (every behavior task has a test-first commit immediately followed by its feat commit; T-1..T-9 all `[x]` with `<!-- commit: -->` hashes; pre-archive checklist complete).
+- TDD RED→GREEN: PASS (R1 fix shipped as d9f2f5d RED → 130871e GREEN; T-1..T-9 all `[x]` with hashes).
+- Working-tree state: FAIL — Q4 (uncommitted format drift on 3 files).
+- Note: one vitest run (run concurrently with `npm run build`) showed 1 failure in 2 files; two subsequent serial runs are clean (68 files / 508 tests pass) — treated as a build-race flake, not a code defect.
+- Note: dogfood `.pi/extensions/bp/index.ts` was stale (still carried the pre-fix substring detection + guard-order bug) — regenerated during this review via `node bin/cli.js update`; now byte-identical to EXTENSION_SOURCE. Recommend the fix loop re-runs `bp update` after template edits (`.pi/` is gitignored so the fixer commits never refreshed it).
 
 ### Quality Verdict: NEEDS_REVISION
 
@@ -94,11 +100,11 @@
 | --- | ------------- | -------------------------- | -------- | ---------- |
 | G1 | PR-1: Pi platform provider + skills | all | ACHIEVED | `node bin/cli.js update` with `platform: [pi]` emits exactly 11 `.pi/skills/bp-<step>/SKILL.md` (dogfood `.pi/skills/` present, 11 dirs); snapshot matches; frontmatter name/description + non-empty registry bodies asserted in skills.test.ts; `bp context plan --format=compact` verified working (template execSync target valid) |
 | G2 | PR-2: Sub-agent definitions | all | ACHIEVED | 6 `.pi/agents/bp-<role>.md` emitted (dogfood present); parse via parseFrontmatter with name/description/non-empty body (agents.test.ts:42-53); no OMP fields; model injection from config tested |
-| G3 | PR-3: bp extension (context injection + subagent tool) | partial | PARTIAL | Extension emits and is byte-deterministic; bypass/config-skip/once-per-session/compaction-reinject all tested. BUT the PR-3 SHALL "augmented per detected agent type" is not delivered for 4 of 6 roles: with the real generated agent prompts, planner→executor, executor→default, reviewer→executor, fixer→reviewer (verified by executing detectAgentTypeFromPrompt against AGENT_PROMPTS). Root cause = R1. bp_subagent tool argv/discovery matches the pi example pattern (extension-runtime.test.ts:342-390). |
+| G3 | PR-3: bp extension (context injection + subagent tool) | all | ACHIEVED | detection now classifies all 6 roles against the REAL AGENT_PROMPTS bodies (extension-runtime.test.ts:114-129); planner roadmap / executor+fixer GUARD-RAIL rows / reviewer invariants+tasks / refactorer targets verified with real title phrases (extension-runtime.test.ts:158-228); bypass/config-skip/once-per-session/compaction-reinject tests pass; dogfood `.pi/extensions/bp/index.ts` regenerated and verified byte-equal to EXTENSION_SOURCE; bp_subagent argv/discovery matches the pi example pattern (extension-runtime.test.ts:381-505) |
 | G4 | PR-4: Registration, config, update cleanup | all | ACHIEVED | registerPiProvider() at src/generators/index.ts:30; barrel export src/integrations/index.ts:14; config.yaml platform list has pi after codex; cleanup blocks + tests pass (bp-update.test.ts); `bp update`/`bp context` load config without schema error |
-| G5 | PR-5: Tests | all | ACHIEVED | `npx vitest run` — 68 files / 506 tests pass; pi tests (61) pass; build passes. Gap: detection tests use synthetic prompts (`## Role\nexecutor prompt`) so they never exercise the real AGENT_PROMPTS bodies — this gap let R1 through |
+| G5 | PR-5: Tests | all | ACHIEVED | `npx vitest run` — 68 files / 508 tests pass (serial runs); pi tests (47) pass; build passes. R1 regression gap closed: detection test now exercises the real AGENT_PROMPTS bodies (extension-runtime.test.ts:114-129) + template marker assertions (extension.test.ts:32-43) |
 
-### Goal Verdict: NEEDS_REVISION
+### Goal Verdict: PASS
 
 ---
 
@@ -107,18 +113,22 @@
 | Round | Date | New Issues | Blockers | Verdict |
 |-------|------|------------|----------|---------|
 | 1 | 2026-08-14 | 3 | 0 | NEEDS_REVISION |
+| 2 | 2026-08-14 | 3 (Q2, Q3, Q4) | 0 | NEEDS_REVISION |
 
 ## Issues
 
-- [ ] R1 - pi-extension-context-contract: agent-type detection misfires on real generated agent prompts — 4 of 6 roles mis-detect (planner→executor, executor→default, reviewer→executor, fixer→reviewer). src/integrations/pi/extension-runtime.ts:96-104 and src/templates/pi/extension.tmpl.ts:87-95 use substring markers that do not exist in the actual AGENT_PROMPTS bodies (PLANNER_PROMPT = "Change Design Specialist", EXECUTOR_PROMPT = "Code Implementation Specialist" — no role-name substring; REVIEWER_PROMPT contains "executor"; FIXER_PROMPT contains "reviewer"). Design D-2's premise ("each prompt contains its role name in the ## Role heading") is false. Spec scenarios "Planner session receives roadmap augmentation", "Executor and fixer sessions receive context rows", "Reviewer session receives invariants and acceptance text" fail in production. Fix: detect on markers that exist (e.g. match the actual first-line role titles, or match `bp-<role>` patterns), fix BOTH runtime and template, and add a test that runs detectAgentTypeFromPrompt against the real AGENT_PROMPTS[role] values. (spec)
-- [ ] Q1 - Lockstep divergence between template and runtime: `before_agent_start` sets bpStateInjected before the hasBpConfig guard in the template (extension.tmpl.ts:479-487) but after in the runtime (extension-runtime.ts:282-294); symlink acceptance differs (template loadPiAgents accepts symlinks, runtime discoverPiAgents requires isFile()). Align both. (quality)
-- [ ] G1 - PR-3 partial: the per-agent-type context augmentation (core deliverable) is not delivered for planner/executor/reviewer/fixer with the shipped agent prompts. Same root cause as R1. (goal)
+- [x] R1 - pi-extension-context-contract: agent-type detection misfires on real generated agent prompts. RESOLVED by d9f2f5d (RED) + 130871e (GREEN): both runtime (extension-runtime.ts:110-134) and template (extension.tmpl.ts:87-105) now match on the real AGENT_PROMPTS role-title phrases (Change Design Specialist / Code Implementation Specialist / Triple Review Specialist / Codebase Scanner / **refactorer** sub-agent / **bp-fixer** sub-agent); verified disjoint (each marker occurs exactly once, in its own prompt body, src/templates/agents/index.ts); regression test pins detection against the real AGENT_PROMPTS values (extension-runtime.test.ts:114-129) and the template's inline markers (extension.test.ts:32-43). (spec)
+- [x] Q1 - Lockstep divergence between template and runtime: `before_agent_start` sets bpStateInjected before the hasBpConfig guard in the template but after in the runtime; symlink acceptance differs. RESOLVED by 130871e — guard order aligned (tmpl 492-494, runtime 345-347), symlink accepted in both (tmpl 241, runtime 427). (quality)
+- [x] G1 - PR-3 partial: the per-agent-type context augmentation (core deliverable) is not delivered for planner/executor/reviewer/fixer with the shipped agent prompts. RESOLVED — same root cause as R1; all 6 roles now classify correctly against real prompts (extension-runtime.test.ts:114-129) and the augmentation branches are verified with real title phrases (158-228). (goal)
+- [ ] Q2 - Lockstep divergence introduced by the R1 fix: runtime `discoverPiAgents` dropped the `.md` suffix filter that template `loadPiAgents` keeps (extension-runtime.ts:424-427 vs extension.tmpl.ts:240); `codebase-scanner` also falls through with trailing `\n\n` in the runtime (248,296) vs clean block in the template (170-208). (quality)
+- [ ] Q3 - design.md stale after the R1 fix: D-2 Reason still states the false premise "each prompt contains its role name in the ## Role heading" (design.md:412); DS-4 §3 + DS-5 still describe bare substring markers (160,192,278); DS-5 AgentType union omits codebase-scanner (267). (quality)
+- [ ] Q4 - Uncommitted format-only drift on the 3 fixer-touched files (double quotes + tabs, mtime 21:35:24, 39s after 130871e), inconsistent with the repo's single-quote/2-space style and leaving the working tree dirty. (quality)
 <!-- Remove placeholder lines above. Add as many - [ ] lines as there are findings. -->
 
 ## Routing
 
 - **D issues**: 0 (none)
-- **R/Q/G issues**: 3 (R1, Q1, G1)
+- **R/Q/G issues**: 3 open (Q2, Q3, Q4) — R1/Q1/G1 resolved and marked [x]
 
 **Recommendation**: `bp fix add-pi-platform` then re-review
 <!-- Advisory only. Orchestrator MUST ask the user before archiving, regardless of this recommendation. -->
