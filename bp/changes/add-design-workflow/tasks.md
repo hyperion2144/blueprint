@@ -120,7 +120,7 @@
     - **AND** the same marker string `Design Consultant` appears in both extension-runtime.ts and extension.tmpl.ts (lockstep)
   - **notes**: Extend the `AgentType` union + `AGENT_TYPE_MARKERS` (append `['designer', 'Design Consultant']` after the six existing entries); add an explicit `else if (agentType === 'designer')` branch in renderAugmentedBody returning the un-augmented block (same body as default — no new augmentation section; explicit branch is the future hook). Mirror in extension.tmpl.ts exactly. Depends on T-2 (marker disjointness is asserted against the shipped prompts).
 
-- [ ] T-7: [type:behavior] Design artifacts — design-system template + design-review.md tolerance <!-- commit: -->
+- [x] T-7: [type:behavior] Design artifacts — design-system template + design-review.md tolerance <!-- commit: 8c5ec99 -->
   - **refs**: DS-7
   - **spec_ref**: specs/design/spec.md#design-system-artifact, specs/design/spec.md#design-review-artifact-tolerance
   - **files**: src/templates/artifacts/design-system.ts, src/templates/artifacts/index.ts, src/commands/bp-template.ts, src/core/artifact-validator.ts, tests/core/design-review-tolerance.test.ts, tests/commands/bp-template.test.ts
