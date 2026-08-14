@@ -24,7 +24,7 @@ the provider (T-7) imports the generators (T-1/T-2/T-6), the extension generator
 template (T-3). T-8 and T-9 are independent of the pi module and can be done
 in any order after T-7.
 
-- [ ] T-1: [type:behavior] Pi skills generator (11 skills at `.pi/skills/bp-<step>/SKILL.md`) <!-- commit: -->
+- [x] T-1: [type:behavior] Pi skills generator (11 skills at `.pi/skills/bp-<step>/SKILL.md`) <!-- commit: 651788d -->
   - **refs**: DS-1
   - **spec_ref**: specs/platform-gen/spec.md#pi-skills-generation
   - **files**: src/integrations/pi/skills.ts, src/integrations/pi/skills.test.ts, src/integrations/pi/**snapshots**/skills.test.ts.snap
@@ -36,7 +36,7 @@ in any order after T-7.
     - **AND** two invocations produce byte-identical output, and `bp-plan` content length > 200 chars
   - **depends_on**: (none)
 
-- [ ] T-2: [type:behavior] Pi agents generator (6 agents at `.pi/agents/bp-<role>.md`) <!-- commit: -->
+- [x] T-2: [type:behavior] Pi agents generator (6 agents at `.pi/agents/bp-<role>.md`) <!-- commit: 4bb688d -->
   - **refs**: DS-3
   - **spec_ref**: specs/platform-gen/spec.md#pi-agents-generation
   - **files**: src/integrations/pi/agents.ts, src/integrations/pi/agents.test.ts, src/integrations/pi/**snapshots**/agents.test.ts.snap
@@ -48,7 +48,7 @@ in any order after T-7.
     - **AND** `bp-refactorer.md` contains `name: bp-refactorer`, the consolidation description, and "behavior preservation is mandatory", and each file body is non-empty
   - **depends_on**: (none)
 
-- [ ] T-3: [type:behavior] Pi extension template source (`EXTENSION_SOURCE` in `src/templates/pi/extension.tmpl.ts`) <!-- commit: -->
+- [x] T-3: [type:behavior] Pi extension template source (`EXTENSION_SOURCE` in `src/templates/pi/extension.tmpl.ts`) <!-- commit: 42a4fb5 -->
   - **refs**: DS-4
   - **spec_ref**: specs/platform-gen/spec.md#pi-extension-context-contract, specs/platform-gen/spec.md#pi-extension-generation
   - **files**: src/templates/pi/extension.tmpl.ts, src/integrations/pi/extension.test.ts, src/integrations/pi/**snapshots**/extension.test.ts.snap
@@ -60,7 +60,7 @@ in any order after T-7.
     - **AND** importing the module twice yields identical string content, and the emitted source snapshot matches (run `npx vitest run --update` once to create the snapshot)
   - **depends_on**: (none)
 
-- [ ] T-4: [type:behavior] Pi extension context runtime handlers (`createPiExtension()` in `src/integrations/pi/extension-runtime.ts`) <!-- commit: -->
+- [x] T-4: [type:behavior] Pi extension context runtime handlers (`createPiExtension()` in `src/integrations/pi/extension-runtime.ts`) <!-- commit: d9f9a24 -->
   - **refs**: DS-5
   - **spec_ref**: specs/platform-gen/spec.md#pi-extension-context-contract, specs/platform-gen/spec.md#pi-extension-bypass-and-config-skip
   - **files**: src/integrations/pi/extension-runtime.ts, src/integrations/pi/extension-runtime.test.ts
@@ -73,7 +73,7 @@ in any order after T-7.
     - **AND** `handleBeforeAgentStart` returns `undefined` on the second call (once-per-session gate), and `handleContext` returns messages without a workflow-state push when one exists and with a push when absent
   - **depends_on**: T-3 (runtime re-exports `EXTENSION_SOURCE` from the template)
 
-- [ ] T-5: [type:behavior] Pi bp_subagent runtime helpers (discovery + spawn args + line parsing) <!-- commit: -->
+- [x] T-5: [type:behavior] Pi bp_subagent runtime helpers (discovery + spawn args + line parsing) <!-- commit: f8acea8 -->
   - **refs**: DS-5
   - **spec_ref**: specs/platform-gen/spec.md#pi-extension-subagent-tool
   - **files**: src/integrations/pi/extension-runtime.ts, src/integrations/pi/extension-runtime.test.ts
@@ -86,7 +86,7 @@ in any order after T-7.
     - **AND** `parseJsonLine('{"type":"message_end","message":{"role":"assistant","content":"done"}}')` yields the assistant message and malformed lines yield `null`
   - **depends_on**: T-4 (same file, additive — commit order)
 
-- [ ] T-6: [type:behavior] Pi extension generator (emits `.pi/extensions/bp/index.ts` descriptor) <!-- commit: -->
+- [x] T-6: [type:behavior] Pi extension generator (emits `.pi/extensions/bp/index.ts` descriptor) <!-- commit: 6790dec -->
   - **refs**: DS-6
   - **spec_ref**: specs/platform-gen/spec.md#pi-extension-generation
   - **files**: src/integrations/pi/extension.ts
@@ -97,7 +97,7 @@ in any order after T-7.
     - **THEN** both runs return a single descriptor with `path === '.pi/extensions/bp/index.ts'` and identical `content`, and `content === EXTENSION_SOURCE` (re-exported via `extension-runtime.js`, no inline literal)
   - **depends_on**: T-3, T-4 (generator imports `EXTENSION_SOURCE` from the runtime re-export)
 
-- [ ] T-7: [type:behavior] Pi provider registration + dispatch (registerPiProvider + barrel + generators startup) <!-- commit: -->
+- [x] T-7: [type:behavior] Pi provider registration + dispatch (registerPiProvider + barrel + generators startup) <!-- commit: 5fc5a8a -->
   - **refs**: DS-2
   - **spec_ref**: specs/platform-gen/spec.md#pi-platform-support
   - **files**: src/integrations/pi/index.ts, src/integrations/index.ts, src/generators/index.ts, src/integrations/pi/index.test.ts
@@ -109,7 +109,7 @@ in any order after T-7.
     - **AND** calling `registerPiProvider()` again does not throw, and generating twice yields identical file sets
   - **depends_on**: T-1, T-2, T-6 (provider imports all three generators)
 
-- [ ] T-8: [type:behavior] `bp update` stale cleanup for `.pi/` (bp-update.ts + tests) <!-- commit: -->
+- [x] T-8: [type:behavior] `bp update` stale cleanup for `.pi/` (bp-update.ts + tests) <!-- commit: 84a3368 -->
   - **refs**: DS-7
   - **spec_ref**: specs/platform-gen/spec.md#pi-update-cleanup
   - **files**: src/commands/bp-update.ts, tests/commands/bp-update.test.ts
@@ -121,7 +121,7 @@ in any order after T-7.
     - **AND** with `platform: [pi]` in config the update generates 18 `.pi/` files and removes none of them
   - **depends_on**: T-7 (repo must compile with the registered pi provider before the update flow runs in tests)
 
-- [ ] T-9: [type:config] Add `pi` to repo `bp/config.yaml` platform list <!-- commit: -->
+- [x] T-9: [type:config] Add `pi` to repo `bp/config.yaml` platform list <!-- commit: 2a769e5 -->
   - **refs**: DS-7
   - **spec_ref**: specs/platform-gen/spec.md#pi-platform-support
   - **files**: bp/config.yaml
