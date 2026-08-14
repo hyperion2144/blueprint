@@ -1,0 +1,47 @@
+{"file": "bp/changes/add-design-workflow/proposal.md", "reason": "PR-1..PR-5 contract: 5 design steps, designer role, 5 CLI commands, platform integration, artifacts", "phase": "all", "tag": "spec", "read": "full"}
+{"file": "bp/specs/templates/spec.md", "reason": "Registry dual-export shape, Input/Steps/Output/Guardrails sections, English-only, TS-module template rules for DS-1/DS-8", "phase": "all", "tag": "spec", "read": "full"}
+{"file": "bp/specs/platform-gen/spec.md", "reason": "Platform generation contracts (pi 11 skills/6 agents, codex skills, refactor step generation) for DS-5/DS-6; MODIFIED counts", "phase": "all", "tag": "spec", "read": "full"}
+{"file": "bp/changes/add-design-workflow/specs/design/spec.md", "reason": "Delta spec for design-track ADDED requirements (written by this change)", "phase": "apply", "tag": "spec", "read": "full"}
+{"file": "bp/changes/add-design-workflow/specs/platform-gen/spec.md", "reason": "Delta spec MODIFIED platform-gen counts (11->16 skills, 6->7 agents)", "phase": "apply", "tag": "spec", "read": "full"}
+{"file": "bp/conventions/coding.md", "reason": "Kebab-case files, UPPER_SNAKE_CASE template constants, commit scopes, CLI exit codes 0/1/2", "phase": "all", "tag": "convention", "read": "full"}
+{"file": "bp/conventions/codebase-conventions.md", "reason": "ESM .js imports, named exports only, generator returns file descriptors, no co-located tests", "phase": "all", "tag": "convention", "read": "full"}
+{"file": "bp/config.yaml", "reason": "Profile standard, platforms [omp, claude-code, agent, codex, pi], models override map — platform scope for DS-5", "phase": "all", "tag": "artifact", "read": "full"}
+{"file": "src/templates/workflows/registry.ts", "reason": "WORKFLOW_REGISTRY shape + WorkflowStep keyof type — grows 11 to 16 keys (DS-1)", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/templates/workflows/ff.ts", "reason": "Minimal SkillTemplate/CommandTemplate module shape the 5 new step files mirror", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/templates/workflows/plan.ts", "reason": "Advisory bp plan-design-review hook insertion point (DS-8)", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/templates/workflows/check.ts", "reason": "Advisory bp design-review hook insertion point (DS-8)", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/templates/types.ts", "reason": "SkillTemplate/CommandTemplate/ArtifactTemplate interface contracts", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/templates/agents/index.ts", "reason": "AGENT_PROMPTS map + AGENT_CONSTRAINTS shared block — DESIGNER_PROMPT joins here (DS-2)", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/commands/bp-dispatch.ts", "reason": "FORMATS (role-placeholder, no change), ROLE_TEMPLATES gains designer, isExecutorLike stays false (DS-3)", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/commands/bp-refactor.ts", "reason": "Auxiliary-step CLI command pattern (findBpDir gate, getWorkflowInstructions, exit codes) for DS-4", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/cli.ts", "reason": "Per-file register pattern — 5 new register imports/calls (DS-4)", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/types/config.ts", "reason": "PROFILE_MODEL_MAP ModelMap — designer tier added mirroring planner (DS-3)", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/core/config.ts", "reason": "resolveModelsForLevel spread makes config.models.designer override work — no change needed", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/integrations/pi/skills.ts", "reason": "STEPS 11->16 + piSkillDescription hyphen style (no ': ') — DS-5", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/integrations/omp/skills.ts", "reason": "STEPS 10->15 (refactor absent pre-existing) — DS-5", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/integrations/omp/commands.ts", "reason": "STEPS 11->16, bp:design* command defs with agents ['designer'] — DS-5", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/integrations/claude-code/commands.ts", "reason": "STEPS 11->16 — repo configures claude-code; refactor precedent requires design steps here (D-5)", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/integrations/codex/skills.ts", "reason": "STEPS 11->16 — DS-5", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/integrations/agent/skills.ts", "reason": "STEPS 11->16 — DS-5", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/integrations/pi/agents.ts", "reason": "PI_AGENT_DEFS 6->7 with designer; model via config.models.designer — DS-5", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/integrations/agent/agents.ts", "reason": "Role list gains designer — DS-5", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/integrations/claude-code/agents.ts", "reason": "Role list gains designer — DS-5", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/integrations/omp/agents.ts", "reason": "AGENT_DEFS gains designer role — DS-5", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/integrations/pi/extension-runtime.ts", "reason": "AgentType union + AGENT_TYPE_MARKERS + renderAugmentedBody — designer marker (DS-6)", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/templates/pi/extension.tmpl.ts", "reason": "Lockstep mirror of extension-runtime detection — same designer marker (DS-6)", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/templates/artifacts/index.ts", "reason": "ARTIFACT_TEMPLATES map + TEMPLATE_IDS — design-system registered here (DS-7)", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/commands/bp-template.ts", "reason": "FILENAMES map gains 'design-system': 'DESIGN.md' — DS-7", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/core/artifact-validator.ts", "reason": "validateChange known-artifact list — design-review.md pass-through registration (DS-7)", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/core/continue.ts", "reason": "Schema-artifact-only next-step detection — verified no unknown-file scan; design-review.md tolerance is test-only here (DS-7)", "phase": "check", "tag": "code", "read": "full"}
+{"file": "src/generators/__snapshots__/multi-platform.test.ts.snap", "reason": "Golden-file snapshot regenerated for 5 new steps + designer agent (T-5)", "phase": "apply", "tag": "code", "read": "full"}
+{"file": "src/integrations/pi/index.test.ts", "reason": "Pins 18 .pi files — becomes 24 (16 skills + 7 agents + 1 extension)", "phase": "apply", "tag": "test", "read": "full"}
+{"file": "src/integrations/pi/skills.test.ts", "reason": "Pins PI_SKILL_DEFS 11 — becomes 16", "phase": "apply", "tag": "test", "read": "full"}
+{"file": "src/integrations/pi/agents.test.ts", "reason": "Pins PI_AGENT_DEFS 6 — becomes 7", "phase": "apply", "tag": "test", "read": "full"}
+{"file": "src/integrations/codex/skills.test.ts", "reason": "Pins CODEX_SKILL_DEFS 11 — becomes 16", "phase": "apply", "tag": "test", "read": "full"}
+{"file": "src/integrations/agent/skills.test.ts", "reason": "Pins 11 skills — becomes 16", "phase": "apply", "tag": "test", "read": "full"}
+{"file": "src/integrations/agent/agents.test.ts", "reason": "Pins 6 agents — becomes 7", "phase": "apply", "tag": "test", "read": "full"}
+{"file": "src/integrations/claude-code/commands.test.ts", "reason": "Pins 11 commands — becomes 16", "phase": "apply", "tag": "test", "read": "full"}
+{"file": "src/integrations/claude-code/agents.test.ts", "reason": "Pins 6 agents — becomes 7", "phase": "apply", "tag": "test", "read": "full"}
+{"file": "src/integrations/pi/extension-runtime.test.ts", "reason": "Detection tests extended with designer marker + disjointness", "phase": "apply", "tag": "test", "read": "full"}
+{"file": "tests/commands/bp-dispatch.test.ts", "reason": "Dispatch CLI tests — designer dispatch assertions added", "phase": "apply", "tag": "test", "read": "full"}
+{"file": "src/integrations/opencode/commands.ts", "reason": "Verified exclusion: own STEPS list, proposal says NOT opencode; not in repo config (D-6)", "phase": "check", "tag": "code", "read": "full"}

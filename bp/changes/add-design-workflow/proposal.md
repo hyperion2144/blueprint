@@ -233,9 +233,7 @@ User decision: design-system doc lives at root `DESIGN.md` (cross-change source 
 
 ## Dependencies
 
-- PR-1 (registry + templates) → PR-4 (platform STEPS consume registry keys). PR-2 (designer agent) → PR-3 (commands dispatch the designer) and PR-4 (agent detection). PR-5 (hooks) → PR-1 (plan/check text references design steps). PR-3 independent-ish (commands read registry getters; safe after PR-1).
-- No dependency on the pi platform change (archived 2026-08-14) beyond the existing pi generator it touches.
-- Config `models.designer` tier (PR-2) optional at runtime — falls back to default when unset.
+No external change dependencies: PR-1..PR-5 are internal deliverables of this change, and their execution order is captured by the depends_on graph in tasks.md (PR-1 templates before PR-4 platform STEPS; PR-2 designer before PR-3 commands and PR-4 agent detection; PR-5 hooks after PR-1). The archived pi platform change is not a dependency — this change only modifies existing pi generator files it already shipped. The optional Config `models.designer` tier (PR-2) falls back to the default model when unset.
 
 ## Roadmap Reference
 
