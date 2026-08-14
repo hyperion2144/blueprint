@@ -64,7 +64,7 @@
 
 **Next**: Phase P1.2
 
-### Phase: P1.2 - Commands & Templates [IN_PROGRESS]
+### Phase: P1.2 - Commands & Templates [COMPLETED]
 
 - **Goal**: Rewrite 8 commands, 7 artifact templates, 3 agent prompts, 8 workflow instructions
 - **What**: Migrate 13 v1 commands down to 8 core + 5 aliases; rebuild all artifact templates with structured sections (PR-N, DS-N, T-N, R-N); rewrite planner/executor/reviewer prompts with TDD wave semantics.
@@ -72,8 +72,8 @@
 - **Outcomes**: Every CLI subcommand produces a parseable artifact that passes artifact-validator; every sub-agent prompt enforces TDD (RED→GREEN→REFACTOR) for behavior tasks.
 - **Depends on**: P1.1
 - **Spec domain**: templates
-- **Changes**: 1/1 completed
-- **Status**: IN_PROGRESS
+- **Changes**: 2/1 completed
+- **Status**: COMPLETED
 
 ### Key Decisions
 
@@ -87,7 +87,7 @@
   - **Deliverables**: src/commands/, src/templates/
   - **Outcomes**: `bp template <name> --stdout` returns every artifact template; `bp validate` accepts all v2 artifacts
   - **Depends on**: v2-core-refactor
-- [ ] add-design-workflow (planned 2026-08-14)
+- [x] add-design-workflow (archived 2026-08-14)
 
 **Next**: Phase P1.3
 

@@ -96,13 +96,20 @@ Two consecutive invocations of `generateExtension(config)` and `generateLegacySh
 `src/templates/omp/extension.ts.tmpl` SHALL export `EXTENSION_SOURCE` (the same string as `extension-runtime.ts` re-exports). `src/templates/omp/legacy-shim.ts.tmpl` SHALL export `SHIM_SOURCE`. The generator modules SHALL consume these constants — no inline string literal duplicates the source-of-truth content.
 
 ### Requirement: codex-platform-support
-The system SHALL register `codex` as a first-class platform and, when selected, generate ten project-scoped Skills under `.agents/skills/bp-<step>/SKILL.md` and a `.codex/hooks.json` configuration for the Codex CLI v0.140+ contract.
+The system SHALL register `codex` as a first-class platform and, when selected, generate sixteen project-scoped Skills under `.agents/skills/bp-<step>/SKILL.md` and a `.codex/hooks.json` configuration for the Codex CLI v0.140+ contract.
+(was: the requirement stated ten Skills; the count is aligned with the current registry size including the design track)
 #### Scenario: Generate Codex platform files
 - **GIVEN** a valid project configuration with `platform: [codex]`
 - **WHEN** `bp update` runs
-- **THEN** ten Skill files SHALL be generated for the defined workflow steps
+- **THEN** sixteen Skill files SHALL be generated for the defined workflow steps
 - **AND** each Skill SHALL use `name: bp:<step>` frontmatter without `argument-hint`
 - **AND** `.codex/hooks.json` SHALL be generated
+
+#### Scenario: Design steps are generated for Codex
+- **GIVEN** a valid project configuration with `platform: [codex]`
+- **WHEN** `bp update` runs
+- **THEN** `.agents/skills/bp-design/SKILL.md`, `.agents/skills/bp-design-html/SKILL.md`, `.agents/skills/bp-design-review/SKILL.md`, `.agents/skills/bp-design-shotgun/SKILL.md`, and `.agents/skills/bp-plan-design-review/SKILL.md` SHALL all exist
+- **AND** each body is byte-identical to the corresponding workflow registry instructions
 
 #### Scenario: Preserve deterministic output
 - **GIVEN** the same ProjectConfig and workflow sources
@@ -391,11 +398,12 @@ The `bp dispatch fixer` subcommand SHALL emit executor-style isolation for the c
 
 
 ### Requirement: pi-platform-support
-The system SHALL register `pi` as a first-class platform and, when `platform` contains `pi`, SHALL generate a complete project-local output set under `.pi/` comprising 11 workflow-step skills, 6 sub-agent definitions, and one bp extension file. The `pi` provider SHALL NOT emit slash-command files (pi uses Agent Skills, not commands), and its display name SHALL identify the Pi Coding Agent.
+The system SHALL register `pi` as a first-class platform and, when `platform` contains `pi`, SHALL generate a complete project-local output set under `.pi/` comprising 16 workflow-step skills, 7 sub-agent definitions, and one bp extension file. The `pi` provider SHALL NOT emit slash-command files (pi uses Agent Skills, not commands), and its display name SHALL identify the Pi Coding Agent.
+(was: the requirement stated 11 workflow-step skills and 6 sub-agent definitions; the design track adds five steps and the designer role)
 #### Scenario: Generate pi platform files
 - **GIVEN** a valid project configuration with `platform: [pi]`
 - **WHEN** `bp update` runs
-- **THEN** exactly 11 skill files under `.pi/skills/`, 6 agent definition files under `.pi/agents/`, and 1 extension file at `.pi/extensions/bp/index.ts` SHALL be generated
+- **THEN** exactly 16 skill files under `.pi/skills/`, 7 agent definition files under `.pi/agents/`, and 1 extension file at `.pi/extensions/bp/index.ts` SHALL be generated
 - **AND** no command files (e.g. `.pi/commands/`) SHALL be emitted
 
 #### Scenario: Preserve deterministic output
@@ -411,42 +419,33 @@ The system SHALL register `pi` as a first-class platform and, when `platform` co
 
 
 ### Requirement: pi-skills-generation
-The system SHALL emit 11 skill files at `.pi/skills/bp-<step>/SKILL.md`, one per workflow step (init, roadmap, propose, plan, apply, check, archive, continue, ff, loop, refactor). Each skill SHALL carry Agent-Skills-standard frontmatter with `name: bp:<step>` and a one-line `description`, SHALL NOT include an `argument-hint` field, and SHALL contain a non-empty workflow body sourced from the shared workflow registry.
-#### Scenario: Generate all eleven pi skills
+The system SHALL emit 16 skill files at `.pi/skills/bp-<step>/SKILL.md`, one per workflow step (init, roadmap, propose, plan, apply, check, archive, continue, ff, loop, refactor, design, design-html, design-review, design-shotgun, plan-design-review). Each skill SHALL carry Agent-Skills-standard frontmatter with `name: bp:<step>` and a one-line `description`, SHALL NOT include an `argument-hint` field, SHALL NOT contain the two-character sequence colon+space in its `description`, and SHALL contain a non-empty workflow body sourced from the shared workflow registry.
+(was: the requirement listed eleven steps and did not state the colon+space prohibition)
+#### Scenario: Generate all sixteen pi skills
 - **GIVEN** a project configuration with `platform: [pi]`
 - **WHEN** `bp update` runs
-- **THEN** `.pi/skills/bp-init/SKILL.md`, `.pi/skills/bp-roadmap/SKILL.md`, `.pi/skills/bp-propose/SKILL.md`, `.pi/skills/bp-plan/SKILL.md`, `.pi/skills/bp-apply/SKILL.md`, `.pi/skills/bp-check/SKILL.md`, `.pi/skills/bp-archive/SKILL.md`, `.pi/skills/bp-continue/SKILL.md`, `.pi/skills/bp-ff/SKILL.md`, `.pi/skills/bp-loop/SKILL.md`, and `.pi/skills/bp-refactor/SKILL.md` SHALL all exist
+- **THEN** `.pi/skills/bp-init/SKILL.md`, `.pi/skills/bp-roadmap/SKILL.md`, `.pi/skills/bp-propose/SKILL.md`, `.pi/skills/bp-plan/SKILL.md`, `.pi/skills/bp-apply/SKILL.md`, `.pi/skills/bp-check/SKILL.md`, `.pi/skills/bp-archive/SKILL.md`, `.pi/skills/bp-continue/SKILL.md`, `.pi/skills/bp-ff/SKILL.md`, `.pi/skills/bp-loop/SKILL.md`, `.pi/skills/bp-refactor/SKILL.md`, `.pi/skills/bp-design/SKILL.md`, `.pi/skills/bp-design-html/SKILL.md`, `.pi/skills/bp-design-review/SKILL.md`, `.pi/skills/bp-design-shotgun/SKILL.md`, and `.pi/skills/bp-plan-design-review/SKILL.md` SHALL all exist
 
 #### Scenario: Skill frontmatter and body
-- **GIVEN** a generated `.pi/skills/bp-plan/SKILL.md`
+- **GIVEN** a generated `.pi/skills/bp-design/SKILL.md`
 - **WHEN** the file is parsed
-- **THEN** its frontmatter contains `name: bp:plan` and a non-empty `description` and no `argument-hint` field
-- **AND** its body is non-empty and matches the workflow registry content for the plan step
-
-#### Scenario: Deterministic skill output
-- **GIVEN** the same ProjectConfig and workflow sources
-- **WHEN** pi skill generation runs twice
-- **THEN** every generated `.pi/skills/bp-<step>/SKILL.md` content byte SHALL be identical
+- **THEN** its frontmatter contains `name: bp:design` and a non-empty `description` with no `:` sequence and no `argument-hint` field
+- **AND** its body is non-empty and matches the workflow registry content for the design step
 
 
 ### Requirement: pi-agents-generation
-The system SHALL emit 6 agent definition files at `.pi/agents/bp-<role>.md` for the roles planner, executor, reviewer, codebase-scanner, refactorer, and fixer. Each file SHALL contain YAML frontmatter with `name: bp-<role>` and a one-line `description`, SHALL list tools as a simple YAML array only when the role defines tools, SHALL include a `model` field only when the project configuration assigns a model to that role, SHALL NOT include OMP-specific frontmatter fields, and SHALL have a body equal to the role's system prompt.
-#### Scenario: Generate all six pi agents
+The system SHALL emit 7 agent definition files at `.pi/agents/bp-<role>.md` for the roles planner, executor, reviewer, codebase-scanner, refactorer, fixer, and designer. Each file SHALL contain YAML frontmatter with `name: bp-<role>` and a one-line `description`, SHALL list tools as a simple YAML array only when the role defines tools, SHALL include a `model` field only when the project configuration assigns a model to that role, SHALL NOT include OMP-specific frontmatter fields, and SHALL have a body equal to the role's system prompt.
+(was: the requirement listed six roles without designer)
+#### Scenario: Generate all seven pi agents
 - **GIVEN** a project configuration with `platform: [pi]`
 - **WHEN** `bp update` runs
-- **THEN** `.pi/agents/bp-planner.md`, `.pi/agents/bp-executor.md`, `.pi/agents/bp-reviewer.md`, `.pi/agents/bp-codebase-scanner.md`, `.pi/agents/bp-refactorer.md`, and `.pi/agents/bp-fixer.md` SHALL all exist
+- **THEN** `.pi/agents/bp-planner.md`, `.pi/agents/bp-executor.md`, `.pi/agents/bp-reviewer.md`, `.pi/agents/bp-codebase-scanner.md`, `.pi/agents/bp-refactorer.md`, `.pi/agents/bp-fixer.md`, and `.pi/agents/bp-designer.md` SHALL all exist
 
-#### Scenario: Agent frontmatter is generic
-- **GIVEN** a generated `.pi/agents/bp-refactorer.md`
+#### Scenario: Designer agent model tier flows from config
+- **GIVEN** a generated `.pi/agents/bp-designer.md` and a project configuration with `models.designer` set
 - **WHEN** the file is parsed as frontmatter + body
-- **THEN** the frontmatter contains `name: bp-refactorer` and a string `description`
-- **AND** the frontmatter does NOT contain `modelRoles`, `thinkingLevel`, or other OMP-specific fields
-
-#### Scenario: Agent body embeds the role prompt
-- **GIVEN** a generated `.pi/agents/bp-refactorer.md`
-- **WHEN** the file body is inspected
-- **THEN** the body is non-empty and contains the refactorer role's prompt marker text (behavior-preservation mandate)
-- **AND** a project configuration with `models.refactorer` set causes the emitted frontmatter to include that `model` value
+- **THEN** the frontmatter contains `name: bp-designer` and the configured `model` value
+- **AND** the body is non-empty and contains the designer role's marker text
 
 
 ### Requirement: pi-extension-generation
