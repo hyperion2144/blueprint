@@ -56,7 +56,7 @@ describe('bp dispatch Codex platform (T-7)', () => {
     });
     // Replace platform: [omp] with platform: [codex] in config
     const cfg = readFileSync(join(codexBpDir, 'config.yaml'), 'utf-8');
-    const updated = cfg.replace(/platform:\n  - omp\n/, 'platform:\n  - codex\n');
+    const updated = cfg.replace(/platform:\n {2}- omp\n/, 'platform:\n  - codex\n');
     writeFileSync(join(codexBpDir, 'config.yaml'), updated, 'utf-8');
   });
 
@@ -111,7 +111,7 @@ describe('bp dispatch refactorer (T-3)', () => {
     });
     // Replace platform: [omp] with platform: [omp, agent]
     const cfg = readFileSync(join(refactorerBpDir, 'config.yaml'), 'utf-8');
-    const updated = cfg.replace(/platform:\n  - omp\n/, 'platform:\n  - omp\n  - agent\n');
+    const updated = cfg.replace(/platform:\n {2}- omp\n/, 'platform:\n  - omp\n  - agent\n');
     writeFileSync(join(refactorerBpDir, 'config.yaml'), updated, 'utf-8');
   });
 
@@ -166,7 +166,7 @@ describe('bp dispatch fixer (T-11)', () => {
     });
     // Replace platform: [omp] with platform: [omp, claude-code]
     const cfg = readFileSync(join(fixerBpDir, 'config.yaml'), 'utf-8');
-    const updated = cfg.replace(/platform:\n  - omp\n/, 'platform:\n  - omp\n  - claude-code\n');
+    const updated = cfg.replace(/platform:\n {2}- omp\n/, 'platform:\n  - omp\n  - claude-code\n');
     writeFileSync(join(fixerBpDir, 'config.yaml'), updated, 'utf-8');
   });
 
@@ -205,5 +205,71 @@ describe('bp dispatch fixer (T-11)', () => {
       cwd: fixerTestDir,
     });
     expect(output).not.toContain('bp template');
+  });
+});
+
+describe('bp dispatch designer (T-3)', () => {
+  const designerTestDir = join(tmpdir(), `bp-dispatch-designer-${Date.now()}`);
+  const designerBpDir = join(designerTestDir, 'bp');
+
+  beforeAll(() => {
+    mkdirSync(designerTestDir, { recursive: true });
+    execSync(`node ${cliPath} init --dir ${designerTestDir} --yes`, {
+      encoding: 'utf-8',
+      cwd: designerTestDir,
+    });
+    // Extend the platform set so per-platform dispatch output is observable
+    const cfg = readFileSync(join(designerBpDir, 'config.yaml'), 'utf-8');
+    const updated = cfg.replace(/platform:\n {2}- omp\n/, 'platform:\n  - omp\n  - claude-code\n');
+    writeFileSync(join(designerBpDir, 'config.yaml'), updated, 'utf-8');
+  });
+
+  afterAll(() => {
+    rmSync(designerTestDir, { recursive: true, force: true });
+  });
+
+  it('prints a Dispatch section per configured platform with the bp-designer agent', () => {
+    const output = execSync(`node ${cliPath} dispatch designer`, {
+      encoding: 'utf-8',
+      cwd: designerTestDir,
+    });
+    expect(output).toContain('## Dispatch: bp-designer (omp)');
+    expect(output).toContain('## Dispatch: bp-designer (claude-code)');
+  });
+
+  it('emits a read-only Isolation block', () => {
+    const output = execSync(`node ${cliPath} dispatch designer`, {
+      encoding: 'utf-8',
+      cwd: designerTestDir,
+    });
+    expect(output).toContain('### Isolation');
+    expect(output).toContain('Read-only role — no isolation needed.');
+    expect(output).not.toContain('- Type: param');
+  });
+
+  it('emits Model Selection with Role: designer and lists the design-system template', () => {
+    const output = execSync(`node ${cliPath} dispatch designer`, {
+      encoding: 'utf-8',
+      cwd: designerTestDir,
+    });
+    expect(output).toContain('### Model Selection');
+    expect(output).toContain('- Role: designer');
+    expect(output).toContain('- Model: pi/plan');
+    expect(output).toContain('bp template design-system');
+  });
+
+  it('config.models.designer overrides the printed model', () => {
+    const cfgPath = join(designerBpDir, 'config.yaml');
+    const cfg = readFileSync(cfgPath, 'utf-8');
+    writeFileSync(cfgPath, cfg.replace('models: {}', 'models:\n  designer: pi/slow'), 'utf-8');
+    try {
+      const output = execSync(`node ${cliPath} dispatch designer`, {
+        encoding: 'utf-8',
+        cwd: designerTestDir,
+      });
+      expect(output).toContain('- Model: pi/slow');
+    } finally {
+      writeFileSync(cfgPath, cfg, 'utf-8');
+    }
   });
 });
