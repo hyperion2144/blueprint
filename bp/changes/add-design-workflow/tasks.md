@@ -129,7 +129,7 @@
     - **GIVEN** an initialized bp project
     - **WHEN** `bp template design-system --stdout` runs
     - **THEN** stdout contains `## Design System` and the subsections `### Product Context`, `### Aesthetic Direction`, `### Typography`, `### Color`, `### Spacing`, `### Layout`, `### Motion`, `### Decisions Log`
-    - **AND** after the template handler substitutes `{{name}}`/`{{date}}`, no `{{` remains
+    - **AND** after the template handler substitutes the name/date tokens, no double-brace placeholder remains
     - **GIVEN** a change dir containing `design-review.md`
     - **WHEN** `validateChange` runs on it
     - **THEN** `results['design-review']` exists with `valid: true` and zero errors
