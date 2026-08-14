@@ -58,6 +58,7 @@ const ROLE_TEMPLATES: Record<string, string[]> = {
   refactorer: [],  // produces code, no artifact templates
   fixer: [],  // produces code/artifact edits, no artifact templates
   reviewer: ['review'],
+  designer: ['design-system'],
 };
 
 const FORMATS: Record<string, DispatchFormat> = {

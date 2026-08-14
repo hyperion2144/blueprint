@@ -72,24 +72,28 @@ export interface RefactorThresholds {
 export const PROFILE_MODEL_MAP: Record<Profile, ModelMap> = {
   trivial: {
     planner: 'pi/task',
+    designer: 'pi/task',
     executor: 'pi/task',
     reviewer: 'pi/task',
     'codebase-scanner': 'pi/task',
   },
   light: {
     planner: 'pi/task',
+    designer: 'pi/task',
     executor: 'pi/task',
     reviewer: 'pi/task',
     'codebase-scanner': 'pi/task',
   },
   standard: {
     planner: 'pi/plan',
+    designer: 'pi/plan',
     executor: 'pi/task',
     reviewer: 'pi/task',
     'codebase-scanner': 'pi/task',
   },
   critical: {
     planner: 'pi/plan',
+    designer: 'pi/plan',
     executor: 'pi/slow',
     reviewer: 'pi/plan',
     'codebase-scanner': 'pi/task',
