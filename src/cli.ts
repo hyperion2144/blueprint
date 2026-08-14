@@ -25,6 +25,11 @@ import { register as registerSplit } from './commands/bp-split.js';
 import { register as registerMap } from './commands/bp-map.js';
 import { register as registerStats } from './commands/bp-stats.js';
 import { register as registerRefactor } from './commands/bp-refactor.js';
+import { register as registerDesign } from './commands/bp-design.js';
+import { register as registerDesignHtml } from './commands/bp-design-html.js';
+import { register as registerDesignReview } from './commands/bp-design-review.js';
+import { register as registerDesignShotgun } from './commands/bp-design-shotgun.js';
+import { register as registerPlanDesignReview } from './commands/bp-plan-design-review.js';
 import { register as registerLock } from './commands/bp-lock.js';
 
 import { register as registerUnarchive } from './commands/bp-unarchive.js';
@@ -62,6 +67,11 @@ registerUnarchive(program);
 registerMap(program);
 registerLock(program);
 registerRefactor(program);
+registerDesign(program);
+registerDesignHtml(program);
+registerDesignReview(program);
+registerDesignShotgun(program);
+registerPlanDesignReview(program);
 
 registerStats(program);
 program.parse(process.argv);
