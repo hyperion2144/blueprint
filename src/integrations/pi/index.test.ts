@@ -5,7 +5,7 @@
  *          WHEN registerPiProvider() runs followed by
  *               generateAll(config({ platform: ['pi'] }))
  *          THEN no unknown-platform error is thrown, the provider resolves
- *               with id/name/capabilities as specified, and exactly 18
+ *               with id/name/capabilities as specified, and exactly 24
  *               descriptors are emitted with paths under `.pi/`.
  */
 

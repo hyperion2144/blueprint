@@ -34,6 +34,7 @@ describe('pi extension template source (T-3)', () => {
     // phrases, not bare role-name substrings (which do not exist in the
     // shipped bodies and false-positive across roles).
     expect(EXTENSION_SOURCE).toContain('Change Design Specialist');
+    expect(EXTENSION_SOURCE).toContain('Design Consultant');
     expect(EXTENSION_SOURCE).toContain('Code Implementation Specialist');
     expect(EXTENSION_SOURCE).toContain('Triple Review Specialist');
     expect(EXTENSION_SOURCE).toContain('Codebase Scanner');
