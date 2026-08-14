@@ -261,6 +261,7 @@ export function validateChange(bpDir: string, changeName: string): ChangeValidat
     { name: 'design', type: 'design', path: join(dir, 'design.md') },
     { name: 'tasks', type: 'tasks', path: join(dir, 'tasks.md') },
     { name: 'review', type: 'review', path: join(dir, 'review.md') },
+    { name: 'design-review', type: 'design-review', path: join(dir, 'design-review.md') },
   ];
 
   for (const file of files) {

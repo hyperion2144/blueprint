@@ -5,6 +5,9 @@
  * Each export is a string with {{placeholder}} variables for CLI rendering.
  */
 
+import { DESIGN_SYSTEM_TEMPLATE } from './design-system.js';
+export { DESIGN_SYSTEM_TEMPLATE };
+
 export const PROPOSAL_TEMPLATE = `# Proposal: {{name}}
 
 <!--
@@ -1052,6 +1055,7 @@ export const ARTIFACT_TEMPLATES: Record<string, string> = {
   roadmap: ROADMAP_TEMPLATE,
   config: CONFIG_TEMPLATE,
   'global-spec': GLOBAL_SPEC_TEMPLATE,
+  'design-system': DESIGN_SYSTEM_TEMPLATE,
 };
 
 /** Ordered list of artifact template identifiers. */

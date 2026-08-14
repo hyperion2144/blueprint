@@ -35,6 +35,7 @@ const FILENAMES: Record<string, string> = {
   roadmap: 'roadmap.md',
   config: 'config.yaml',
   'global-spec': 'global-spec.md',
+  'design-system': 'DESIGN.md',
 };
 
 export function register(program: Command): void {

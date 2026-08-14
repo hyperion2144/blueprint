@@ -435,7 +435,7 @@ describe('bp update — pi safe stale cleanup (T-8)', () => {
       expect(existsSync(join(piDir, 'agents', 'bp-planner.md'))).toBe(true);
       expect(existsSync(join(piDir, 'extensions', 'bp', 'index.ts'))).toBe(true);
 
-      // Count all generated files: 11 skills + 6 agents + 1 extension
+      // Count all generated files: 16 skills + 7 agents + 1 extension
       const files: string[] = [];
       const walk = (dir: string) => {
         for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -445,7 +445,7 @@ describe('bp update — pi safe stale cleanup (T-8)', () => {
         }
       };
       walk(piDir);
-      expect(files).toHaveLength(18);
+      expect(files).toHaveLength(24);
     } finally {
       // Restore the original platform config so sibling tests are unaffected
       writeFileSync(configPath, original, 'utf-8');
