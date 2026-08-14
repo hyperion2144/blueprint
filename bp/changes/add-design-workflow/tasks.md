@@ -64,7 +64,7 @@
     - **AND** it includes the shared constraints text `NEVER run bp continue` (AGENT_CONSTRAINTS embedded)
   - **notes**: Marker `Design Consultant` is deliberately disjoint from the planner's `Change Design Specialist` (which contains `Design Specialist` as a substring — D-3). Prompt mirrors PLANNER_PROMPT's ENGINEERING-CONSTRAINT/CAPABILITY-COMPENSATION comment structure; one role serving all five design steps, step-specific task supplied at dispatch; guardrails forbid source-code edits and `bp continue`.
 
-- [ ] T-3: [type:behavior] Designer dispatch output + model tier <!-- commit: -->
+- [x] T-3: [type:behavior] Designer dispatch output + model tier <!-- commit: 012f129 -->
   - **refs**: DS-3
   - **spec_ref**: specs/design/spec.md#designer-dispatch-and-model-tier
   - **files**: src/commands/bp-dispatch.ts, src/types/config.ts, tests/commands/bp-dispatch.test.ts
