@@ -22,7 +22,11 @@ import { tmpdir } from 'node:os';
 import {
   createPiExtension,
   detectAgentTypeFromPrompt,
+  discoverPiAgents,
+  buildSubagentArgs,
+  parseJsonLine,
   EXTENSION_SOURCE as RUNTIME_SOURCE,
+  type PiAgentConfig,
   type PiAPI,
   type PiExtensionContext,
   type PiMessage,
