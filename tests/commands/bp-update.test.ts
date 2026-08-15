@@ -523,3 +523,26 @@ describe('bp update — pi safe stale cleanup (T-8)', () => {
     }
   });
 });
+
+describe('bp update — deleted cwd (ENOENT guard)', () => {
+  it('exits 1 with a friendly message when the cwd was removed', () => {
+    const dir = join(tmpdir(), `bp-update-deleted-cwd-${Date.now()}`);
+    mkdirSync(dir, { recursive: true });
+    try {
+      // One shell command: cd into the dir, delete it, then exec node. The
+      // spawned process inherits the now-deleted cwd and process.cwd() throws
+      // ENOENT — the same failure the user hit in a removed terminal cwd.
+      const out = execSync(`cd ${dir} && rm -rf ${dir} && node ${cliPath} update 2>&1; echo "exit:$?"`, {
+        encoding: 'utf-8',
+        shell: '/bin/sh',
+        cwd: tmpdir(),
+      });
+      expect(out).toMatch(/current working directory no longer exists/i);
+      expect(out).toMatch(/exit:1/);
+      expect(out).not.toMatch(/uv_cwd/);
+      expect(out).not.toMatch(/Error: ENOENT/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});

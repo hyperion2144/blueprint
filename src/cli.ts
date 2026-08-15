@@ -43,6 +43,17 @@ program
   .description('Blueprint — spec-driven development workflow for AI agents')
   .version(version);
 
+// Guard against a deleted cwd: process.cwd() throws ENOENT (uv_cwd) and every
+// subcommand depends on it. Fail fast with a friendly message instead of a
+// raw stack trace when the terminal's working directory was removed.
+try {
+  process.cwd();
+} catch {
+  console.error('error: current working directory no longer exists (was it deleted?); cd to a valid directory and re-run bp');
+  process.exit(1);
+}
+
+
 registerInit(program);
 registerRoadmap(program);
 registerPropose(program);
