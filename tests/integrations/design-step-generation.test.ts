@@ -20,6 +20,7 @@ import { CODEX_SKILL_DEFS, generateCodexSkills } from '../../src/integrations/co
 import { generateAgentSkills } from '../../src/integrations/agent/skills.js';
 import { AGENT_DEFS as AGENT_AGENT_DEFS, generateAgentAgents } from '../../src/integrations/agent/agents.js';
 import { DSH_SKILL_DEFS, generateDshSkills } from '../../src/integrations/dsh/skills.js';
+import { DSH_AGENT_DEFS, generateDshAgents } from '../../src/integrations/dsh/agents.js';
 import { generateClaudeCommands } from '../../src/integrations/claude-code/commands.js';
 import { AGENT_DEFS as CLAUDE_AGENT_DEFS, generateClaudeAgents } from '../../src/integrations/claude-code/agents.js';
 import { SKILL_DEFS as OMP_SKILL_DEFS, generateAllSkills } from '../../src/integrations/omp/skills.js';
@@ -71,9 +72,10 @@ describe('design-step platform generation (T-5)', () => {
   it('emits the designer role from every agent generator (length 7)', () => {
     expect(PI_AGENT_DEFS).toHaveLength(7);
     expect(AGENT_AGENT_DEFS).toHaveLength(7);
+    expect(DSH_AGENT_DEFS).toHaveLength(7);
     expect(CLAUDE_AGENT_DEFS).toHaveLength(7);
     expect(OMP_AGENT_DEFS).toHaveLength(7);
-    for (const defs of [PI_AGENT_DEFS, AGENT_AGENT_DEFS, CLAUDE_AGENT_DEFS, OMP_AGENT_DEFS]) {
+    for (const defs of [PI_AGENT_DEFS, AGENT_AGENT_DEFS, DSH_AGENT_DEFS, CLAUDE_AGENT_DEFS, OMP_AGENT_DEFS]) {
       const designer = defs.find((d) => d.role === 'designer');
       expect(designer).toBeDefined();
       expect(designer!.description).toBe(DESIGNER_DESCRIPTION);
@@ -81,6 +83,8 @@ describe('design-step platform generation (T-5)', () => {
 
     const piAgents = generatePiAgents({} as ProjectConfig);
     expect(piAgents.some((f) => f.path === '.pi/agents/bp-designer.md')).toBe(true);
+    const dshAgents = generateDshAgents({} as ProjectConfig);
+    expect(dshAgents.some((f) => f.path === '.dsh/agents/bp-designer.md')).toBe(true);
   });
 
   it('generates each design-step body byte-identical to the registry instructions', () => {

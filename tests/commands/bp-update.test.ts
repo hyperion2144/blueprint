@@ -79,16 +79,21 @@ describe('bp update — Codex safe stale cleanup (T-6)', () => {
     expect(existsSync(staleSkillDir)).toBe(false);
   });
 
-  it('removes stale `.dsh/skills/bp-*` dirs and preserves non-bp user skills', () => {
-    // Seed a stale bp-* skill dir plus a user-owned (non-bp) skill dir
+  it('removes stale `.dsh/skills/bp-*` dirs and `.dsh/agents/bp-*` files, preserves non-bp user files', () => {
+    // Seed a stale bp-* skill dir, a stale bp-* agent file, a user-owned
+    // (non-bp) skill dir, and a user-owned agent file
     const staleDshDir = join(testDir, '.dsh', 'skills', 'bp-archive-old');
     mkdirSync(staleDshDir, { recursive: true });
     writeFileSync(join(staleDshDir, 'SKILL.md'), '# stale', 'utf-8');
     const userDshDir = join(testDir, '.dsh', 'skills', 'my-custom-skill');
     mkdirSync(userDshDir, { recursive: true });
     writeFileSync(join(userDshDir, 'SKILL.md'), '# user skill', 'utf-8');
+    const dshAgentsDir = join(testDir, '.dsh', 'agents');
+    mkdirSync(dshAgentsDir, { recursive: true });
+    writeFileSync(join(dshAgentsDir, 'bp-old-planner.md'), '# stale', 'utf-8');
+    writeFileSync(join(dshAgentsDir, 'my-custom-agent.md'), '# user agent', 'utf-8');
 
-    // Configure the dsh platform so generateAll regenerates current skills
+    // Configure the dsh platform so generateAll regenerates current outputs
     const configPath = join(bpDir, 'config.yaml');
     const original = readFileSync(configPath, 'utf-8');
     try {
@@ -97,14 +102,20 @@ describe('bp update — Codex safe stale cleanup (T-6)', () => {
 
       const out = execSync(`node ${cliPath} update --dir bp`, { encoding: 'utf-8', cwd: testDir });
 
-      // Stale bp-* dir removed and logged; user-owned skill preserved
+      // Stale bp-* entries removed and logged; user-owned files preserved
       expect(existsSync(staleDshDir)).toBe(false);
       expect(out).toContain('✓ Removed stale: .dsh/skills/bp-archive-old/');
       expect(existsSync(join(userDshDir, 'SKILL.md'))).toBe(true);
-      // Current-generation dsh skills exist with kebab-case names
+      expect(existsSync(join(dshAgentsDir, 'bp-old-planner.md'))).toBe(false);
+      expect(out).toContain('✓ Removed stale: .dsh/agents/bp-old-planner.md');
+      expect(existsSync(join(dshAgentsDir, 'my-custom-agent.md'))).toBe(true);
+      // Current-generation dsh skills + agents exist
       expect(existsSync(join(testDir, '.dsh', 'skills', 'bp-plan', 'SKILL.md'))).toBe(true);
       const plan = readFileSync(join(testDir, '.dsh', 'skills', 'bp-plan', 'SKILL.md'), 'utf-8');
       expect(plan).toMatch(/^---\nname: bp-plan\n/);
+      expect(existsSync(join(dshAgentsDir, 'bp-planner.md'))).toBe(true);
+      const planner = readFileSync(join(dshAgentsDir, 'bp-planner.md'), 'utf-8');
+      expect(planner).toMatch(/^---\nname: bp-planner\n/);
     } finally {
       // Restore the original platform config so sibling tests are unaffected
       writeFileSync(configPath, original, 'utf-8');

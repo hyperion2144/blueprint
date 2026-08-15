@@ -35,13 +35,21 @@ describe('multi-platform generation', () => {
     }
   });
 
-  it('dsh platform generates expected files at .dsh/skills/ with kebab-case names', () => {
+  it('dsh platform generates expected files at .dsh/skills/ and .dsh/agents/', () => {
     const files = generateAll(config(['dsh']));
-    expect(files.length).toBe(16);
-    for (const f of files) {
+    expect(files.length).toBe(23); // 16 skills + 7 agent prompt files
+    const skillFiles = files.filter((f) => f.path.startsWith('.dsh/skills/'));
+    const agentFiles = files.filter((f) => f.path.startsWith('.dsh/agents/'));
+    expect(skillFiles).toHaveLength(16);
+    expect(agentFiles).toHaveLength(7);
+    for (const f of skillFiles) {
       expect(f.path).toMatch(/^\.dsh\/skills\/bp-[a-z-]+\/SKILL\.md$/);
       expect(f.content).toMatch(/^---\nname: bp-[a-z-]+\n/);
       expect(f.content).not.toMatch(/name: bp:/);
+    }
+    for (const f of agentFiles) {
+      expect(f.path).toMatch(/^\.dsh\/agents\/bp-[a-z-]+\.md$/);
+      expect(f.content).toMatch(/^---\nname: bp-[a-z-]+\n/);
     }
   });
 
@@ -54,7 +62,7 @@ describe('multi-platform generation', () => {
     expect(ompFiles.length).toBeGreaterThan(0);
     expect(claudeFiles.length).toBeGreaterThan(0);
     expect(agentFiles.length).toBeGreaterThan(0);
-    expect(dshFiles.length).toBe(16);
+    expect(dshFiles.length).toBe(23);
   });
 
   it('empty platform defaults to omp', () => {
@@ -85,8 +93,8 @@ describe('multi-platform generation', () => {
     expect(content['.dsh/skills/bp-refactor/SKILL.md']).toContain('name: bp-refactor');
   });
 
-  it('refactorer agent generates across all four agent platforms', () => {
-    const files = generateAll(config(['omp', 'claude-code', 'opencode', 'agent']));
+  it('refactorer agent generates across all five agent platforms', () => {
+    const files = generateAll(config(['omp', 'claude-code', 'opencode', 'agent', 'dsh']));
     const content: Record<string, string> = {};
     for (const f of files) content[f.path] = f.content;
 
@@ -95,6 +103,7 @@ describe('multi-platform generation', () => {
       '.claude/agents/bp-refactorer.md',
       '.opencode/agents/bp-refactorer.md',
       '.agents/agents/bp-refactorer.md',
+      '.dsh/agents/bp-refactorer.md',
     ]) {
       expect(content[path]).toBeDefined();
       expect(content[path]).toContain('Behavior-preserving consolidation + spec sync per assigned module');
@@ -102,8 +111,8 @@ describe('multi-platform generation', () => {
     }
   });
 
-  it('fixer agent generates across all four agent platforms embedding the fixer prompt', () => {
-    const files = generateAll(config(['omp', 'claude-code', 'opencode', 'agent']));
+  it('fixer agent generates across all five agent platforms embedding the fixer prompt', () => {
+    const files = generateAll(config(['omp', 'claude-code', 'opencode', 'agent', 'dsh']));
     const content: Record<string, string> = {};
     for (const f of files) content[f.path] = f.content;
 
@@ -112,6 +121,7 @@ describe('multi-platform generation', () => {
       '.claude/agents/bp-fixer.md',
       '.opencode/agents/bp-fixer.md',
       '.agents/agents/bp-fixer.md',
+      '.dsh/agents/bp-fixer.md',
     ]) {
       expect(content[path]).toBeDefined();
       expect(content[path]).toContain('Fix proposal/design/implementation per reviewer report');
