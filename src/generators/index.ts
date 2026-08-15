@@ -2,10 +2,12 @@
  * 生成器入口 — dispatches to PlatformProviders via PlatformRegistry.
  *
  * OMP is registered on first import. Additional providers (claude-code,
- * agent, codex, opencode, pi) register themselves when their integration
- * module is loaded. The `agent` and `codex` platforms share
+ * agent, codex, opencode, pi, dsh) register themselves when their
+ * integration module is loaded. The `agent` and `codex` platforms share
  * `.agents/skills/bp-<step>/SKILL.md` (byte-identical output) via
- * `src/integrations/shared/agents-skills.ts`.
+ * `src/integrations/shared/agents-skills.ts`; the `dsh` platform reuses
+ * the same step/description source with kebab-case frontmatter names at
+ * `.dsh/skills/` (DSH's skill-name grammar rejects colons).
  */
 
 import { PlatformRegistry } from '../core/platform-registry.js';
@@ -16,6 +18,7 @@ import { registerAgentProvider } from '../integrations/agent/index.js';
 import { registerCodexProvider } from '../integrations/codex/index.js';
 import { registerOpenCodeProvider } from '../integrations/opencode/index.js';
 import { registerPiProvider } from '../integrations/pi/index.js';
+import { registerDshProvider } from '../integrations/dsh/index.js';
 import type { ProjectConfig } from '../types/index.js';
 export type { GeneratedFile };
 
@@ -31,6 +34,8 @@ registerCodexProvider();
 registerOpenCodeProvider();
 // Register pi provider (Pi Coding Agent; skills + agents + extension)
 registerPiProvider();
+// Register dsh provider (DeepSeek Harness; project-scoped .dsh/skills)
+registerDshProvider();
 export function generateAll(config: ProjectConfig): GeneratedFile[] {
   const platforms = config.platform?.length ? config.platform : ['omp'];
   const files: GeneratedFile[] = [];

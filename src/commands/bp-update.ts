@@ -177,6 +177,21 @@ function cleanupStaleFiles(baseDir: string, generatedPaths: string[]): void {
       }
     }
   }
+  // .dsh/skills/bp-* — directory-based cleanup (mirror of the
+  // .agents/skills/ block); non-bp skill directories must remain untouched.
+  const dshSkillsDir = join(baseDir, '.dsh', 'skills');
+  if (existsSync(dshSkillsDir)) {
+    for (const entry of readdirSync(dshSkillsDir)) {
+      const match = /^bp-(.+)$/.exec(entry);
+      if (!match) continue; // skip non-bp skills
+      // Stale = bp- directory not part of current generation set
+      const isCurrent = generatedSet.has(`.dsh/skills/${entry}/SKILL.md`);
+      if (!isCurrent) {
+        rmSync(join(dshSkillsDir, entry), { recursive: true, force: true });
+        console.log(`  ✓ Removed stale: .dsh/skills/${entry}/`);
+      }
+    }
+  }
   // .pi/skills/bp-* — directory-based cleanup; non-bp skill directories
   // must remain untouched (mirror of the .agents/skills/ block).
   const piSkillsDir = join(baseDir, '.pi', 'skills');

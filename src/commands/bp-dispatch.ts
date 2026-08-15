@@ -44,6 +44,10 @@ const EXECUTOR_ISOLATION: Record<string, IsolationInfo> = {
     type: 'none',
     description: 'No built-in isolation. Orchestrator must run `git worktree add <path> <branch>` to create an isolated worktree and pass `cd <worktree>` to the sub-agent. Codex MCP adapters may override the dispatch tool name.',
   },
+  dsh: {
+    type: 'none',
+    description: 'No built-in isolation. Orchestrator must run `git worktree add <path> <branch>` to create an isolated worktree, pass `cd <worktree>` in the subagent prompt, and merge back after completion.',
+  },
 };
 
 interface DispatchFormat {
@@ -91,6 +95,13 @@ const FORMATS: Record<string, DispatchFormat> = {
       agent: 'bp-<role>',
       role: '<role>',
       assignment: '<prompt>',
+    },
+  },
+  dsh: {
+    tool: 'subagent',
+    params: {
+      description: 'bp-<role> sub-agent',
+      prompt: '<prompt>',
     },
   },
 };

@@ -17,6 +17,7 @@ export const PLATFORM_OPTIONS: ReadonlyArray<{ value: string; label: string; hin
   { value: 'claude-code', label: 'Claude Code', hint: 'generates .claude/commands/ + .claude/agents/' },
   { value: 'agent', label: 'Agent (generic)', hint: 'generates .agents/skills/ + .agents/agents/ (Agent Skills standard)' },
   { value: 'codex', label: 'Codex CLI', hint: 'generates .codex/hooks.json + .codex/hooks/bp-handler.mjs (skills shared with agent)' },
+  { value: 'dsh', label: 'DeepSeek Harness', hint: 'generates .dsh/skills/ with kebab-case names (DSH skill discovery)' },
   { value: 'pi', label: 'Pi Coding Agent', hint: 'generates .pi/skills/, .pi/agents/, and .pi/extensions/bp/' },
   { value: 'opencode', label: 'OpenCode', hint: 'generates .opencode/commands/ + .opencode/agents/' },
 ];

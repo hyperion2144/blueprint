@@ -9,6 +9,7 @@ platform:
   - agent
   - codex
   - pi
+  - dsh
 # Workflow profile - controls rigor vs speed
 # lite:     no review gate, TDD optional, single agent for lightweight changes
 # standard: review gate (must PASS before archive), TDD for behavior, sub-agent waves
