@@ -26,8 +26,8 @@ export const EXTENSION_SOURCE = `/**
  *
  * Provides pi with:
  *   - session_start: <bp-context> block + role-augmented payload
- *   - before_agent_start: workflow-state custom message (once per session)
- *   - context: re-inject workflow-state when absent (post-compaction)
+ *   - context: refresh workflow-state on fresh user turns only (tool-
+ *              execution turns never re-trigger state)
  *   - bp_subagent: delegate bp workflow tasks to isolated pi subagents
  *
  * Env bypass: BP_HOOKS=0 or BP_DISABLE_HOOKS=1 disables every handler.
@@ -477,7 +477,6 @@ const bpSubagentTool = defineTool({
 });
 
 export default function bpExtension(api: ExtensionAPI) {
-  let bpStateInjected = false;
 
   api.on("session_start", (_event, ctx) => {
     if (isDisabled()) return;
@@ -490,21 +489,15 @@ export default function bpExtension(api: ExtensionAPI) {
     api.sendMessage(buildStateMessage("bp-context", body));
   });
 
-  api.on("before_agent_start", (_event, ctx) => {
-    if (isDisabled()) return;
-    const cwd = (ctx && ctx.cwd) || process.cwd();
-    if (!hasBpConfig(cwd)) return; // guard BEFORE the once-per-session flag (config-missing must not burn the injection)
-    if (bpStateInjected) return; // once per session (context handler re-injects on compaction)
-    bpStateInjected = true;
-    const state = readBpState(cwd);
-    return { message: buildStateMessage("bp-workflow-state", state.summary) };
-  });
-
   api.on("context", (event, ctx) => {
     if (isDisabled()) return;
     const cwd = (ctx && ctx.cwd) || process.cwd();
     if (!hasBpConfig(cwd)) return;
     const msgs = (event && event.messages) || [];
+    // Only a fresh user turn gets the state — tool-execution turns end with
+    // assistant/toolResult messages and must not re-trigger injection.
+    const last = msgs[msgs.length - 1];
+    if (!last || last.role !== "user") return { messages: msgs };
     const hasState = msgs.some((m: any) => m && m.role === "custom" && m.customType === "bp-workflow-state");
     if (hasState) return { messages: msgs };
     const state = readBpState(cwd);

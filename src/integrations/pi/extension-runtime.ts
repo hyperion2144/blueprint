@@ -62,10 +62,6 @@ export interface PiAPI {
   sendMessage(msg: PiMessage, opts?: unknown): void;
 }
 
-/** Returned by the `before_agent_start` and `context` handlers. */
-export interface HandlerResult {
-  message?: PiMessage;
-}
 
 /** Parsed `.pi/agents/*.md` agent definition (frontmatter + body as system prompt). */
 export interface PiAgentConfig {
@@ -276,14 +272,11 @@ function buildStateMessage(customType: string, content: string): PiMessage {
 }
 
 /**
- * Create the pi extension handler set. The three handlers share a closure
- * `bpStateInjected` flag so `before_agent_start` injects the workflow-state
- * message at most once per session (the `context` handler re-injects it
- * after compaction via the absence scan).
+ * Create the pi extension handler set. The `context` handler refreshes the
+ * workflow-state message on fresh user turns only — never on agent
+ * tool-execution turns (those LLM calls must not re-trigger state).
  */
 export function createPiExtension() {
-  let bpStateInjected = false;
-
   return {
     /** `session_start` handler — emits one `bp-context` custom message. */
     async handleSessionStart(_event: unknown, ctx: PiExtensionContext, api: PiAPI): Promise<void> {
@@ -297,37 +290,28 @@ export function createPiExtension() {
       api.sendMessage(buildStateMessage('bp-context', body));
     },
 
-    /** `before_agent_start` handler — injects workflow state once per session. */
-    async handleBeforeAgentStart(
-      _event: unknown,
-      ctx: PiExtensionContext,
-      _api: PiAPI,
-    ): Promise<HandlerResult | undefined> {
-      if (isDisabled()) return undefined;
-      const cwd = ctx.cwd ?? process.cwd();
-      if (!hasBpConfig(cwd)) return undefined;
-      if (bpStateInjected) return undefined;
-      bpStateInjected = true;
-
-      return { message: buildStateMessage('bp-workflow-state', formatStateSummary(join(cwd, 'bp'))) };
-    },
-
     /**
-     * `context` handler — re-injects the workflow state when the message
-     * list contains no `bp-workflow-state` custom message (post-compaction
-     * recovery on pi's API: before_agent_start messages are persistent, so
-     * absence is exactly equivalent to "compacted away").
+     * `context` handler — refreshes workflow state on user turns only.
+     * Fires before every LLM call (including tool-execution continuations);
+     * the last message being a user message is the reliable fresh-turn
+     * boundary, so tool loops never re-trigger injection. Compaction
+     * recovery is implicit: the next user message re-injects after
+     * compaction dropped the previous state message.
      */
     async handleContext(
-      event: { messages?: PiMessage[] },
+      event: { messages?: Array<{ role?: string; customType?: string; content?: string; display?: boolean; timestamp?: number }> },
       ctx: PiExtensionContext,
       _api: PiAPI,
-    ): Promise<{ messages: PiMessage[] } | undefined> {
+    ): Promise<{ messages: Array<{ role?: string; customType?: string; content?: string; display?: boolean; timestamp?: number }> } | undefined> {
       if (isDisabled()) return undefined;
       const cwd = ctx.cwd ?? process.cwd();
       if (!hasBpConfig(cwd)) return undefined;
 
       const msgs = event?.messages ?? [];
+      // Only a fresh user turn gets the state — tool-execution turns end with
+      // assistant/toolResult messages and must not re-trigger injection.
+      const last = msgs[msgs.length - 1];
+      if (last?.role !== 'user') return { messages: msgs };
       const hasState = msgs.some((m) => m.role === 'custom' && m.customType === 'bp-workflow-state');
       if (hasState) return { messages: msgs };
 

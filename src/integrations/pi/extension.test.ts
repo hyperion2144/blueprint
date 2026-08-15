@@ -16,11 +16,16 @@ import { EXTENSION_SOURCE } from '../../templates/pi/extension.tmpl.js';
 import type { ProjectConfig } from '../../types/index.js';
 
 describe('pi extension template source (T-3)', () => {
-  it('registers the three context handlers and the bp_subagent tool', () => {
+  it('registers the context handlers and the bp_subagent tool (no before_agent_start)', () => {
     expect(EXTENSION_SOURCE).toContain('api.on("session_start"');
-    expect(EXTENSION_SOURCE).toContain('api.on("before_agent_start"');
     expect(EXTENSION_SOURCE).toContain('api.on("context"');
+    expect(EXTENSION_SOURCE).not.toContain('before_agent_start');
     expect(EXTENSION_SOURCE).toContain('name: "bp_subagent"');
+  });
+
+  it('injects workflow state only on fresh user turns (never tool-execution turns)', () => {
+    expect(EXTENSION_SOURCE).toContain('last.role !== "user"');
+    expect(EXTENSION_SOURCE).toContain('customType: "bp-workflow-state"');
   });
 
   it('contains the env-bypass check, workflow-state customType, and pi package imports', () => {

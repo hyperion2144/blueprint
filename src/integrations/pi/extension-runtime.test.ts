@@ -10,8 +10,8 @@
  *               <bp-context>, ## Roadmap State, and the fixture
  *               milestone/phase summary — plus the executor/fixer/reviewer/
  *               refactorer/default augmentation branches, the bypass and
- *               config-skip no-ops, the once-per-session before_agent_start
- *               gate, and the context re-injection behavior.
+ *               config-skip no-ops, and the context injection gated to
+ *               fresh user turns (never on tool-execution turns).
  */
 
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
@@ -274,54 +274,43 @@ describe('handleSessionStart (T-4)', () => {
   });
 });
 
-describe('handleBeforeAgentStart (T-4)', () => {
-  it('returns a bp-workflow-state message once then undefined', async () => {
-    const ctx: PiExtensionContext = { cwd: testDir };
+describe('handleContext (T-4)', () => {
+  it('injects bp-workflow-state on a fresh user turn', async () => {
     const ext = createPiExtension();
-    const first = await ext.handleBeforeAgentStart({}, ctx, makeApi().api);
-    expect(first?.message?.customType).toBe('bp-workflow-state');
-    expect(first?.message?.display).toBe(false);
-    expect(first?.message?.content).toContain('m1: First milestone [ACTIVE]');
-    const second = await ext.handleBeforeAgentStart({}, ctx, makeApi().api);
-    expect(second).toBeUndefined();
+    const ctx: PiExtensionContext = { cwd: testDir };
+
+    const msgs = [{ role: 'user', content: 'hello' }];
+    const result = await ext.handleContext({ messages: msgs }, ctx, makeApi().api);
+    expect(result?.messages).toHaveLength(2);
+    expect(result!.messages[1].customType).toBe('bp-workflow-state');
+    expect(result!.messages[1].display).toBe(false);
+    expect(result!.messages[1].content).toContain('m1: First milestone [ACTIVE]');
   });
 
-  it('returns undefined under BP_HOOKS=0', async () => {
-    const prev = process.env.BP_DISABLE_HOOKS;
-    process.env.BP_DISABLE_HOOKS = '1';
-    try {
-      const ext = createPiExtension();
-      const result = await ext.handleBeforeAgentStart({}, { cwd: testDir }, makeApi().api);
-      expect(result).toBeUndefined();
-    } finally {
-      if (prev === undefined) delete process.env.BP_DISABLE_HOOKS;
-      else process.env.BP_DISABLE_HOOKS = prev;
+  it('does not inject on tool-execution turns (last message not user)', async () => {
+    const ext = createPiExtension();
+    const ctx: PiExtensionContext = { cwd: testDir };
+
+    for (const last of [{ role: 'assistant', content: 'calling a tool' }, { role: 'toolResult', content: 'ok' }]) {
+      const msgs = [{ role: 'user', content: 'hi' }, last];
+      const result = await ext.handleContext({ messages: msgs }, ctx, makeApi().api);
+      expect(result?.messages).toHaveLength(2);
+      expect(result!.messages.some((m) => m.customType === 'bp-workflow-state')).toBe(false);
     }
   });
 
-  it('returns undefined when bp/config.yaml is missing', async () => {
-    const bareDir = join(testDir, 'bare2');
-    mkdirSync(bareDir, { recursive: true });
-    const ext = createPiExtension();
-    const result = await ext.handleBeforeAgentStart({}, { cwd: bareDir }, makeApi().api);
-    expect(result).toBeUndefined();
-  });
-});
-
-describe('handleContext (T-4)', () => {
-  it('re-injects bp-workflow-state when absent and leaves messages unchanged when present', async () => {
+  it('does not inject twice when the state message is already present', async () => {
     const ext = createPiExtension();
     const ctx: PiExtensionContext = { cwd: testDir };
 
-    const absent = await ext.handleContext({ messages: [] }, ctx, makeApi().api);
-    expect(absent?.messages).toHaveLength(1);
-    expect(absent!.messages[0].customType).toBe('bp-workflow-state');
-    expect(absent!.messages[0].display).toBe(false);
-    expect(absent!.messages[0].content).toContain('m1: First milestone [ACTIVE]');
-
-    const present = await ext.handleContext({ messages: absent!.messages }, ctx, makeApi().api);
-    expect(present?.messages).toHaveLength(1);
-    expect(present!.messages[0].customType).toBe('bp-workflow-state');
+    // [user, state] from a previous turn, then a new user turn.
+    const msgs = [
+      { role: 'user', content: 'first' },
+      { role: 'custom', customType: 'bp-workflow-state', content: 'stale', display: false, timestamp: 1 },
+      { role: 'user', content: 'second' },
+    ];
+    const result = await ext.handleContext({ messages: msgs }, ctx, makeApi().api);
+    expect(result?.messages).toHaveLength(3);
   });
 
   it('returns undefined under bypass and missing config', async () => {
@@ -329,7 +318,7 @@ describe('handleContext (T-4)', () => {
     process.env.BP_HOOKS = '0';
     try {
       const ext = createPiExtension();
-      expect(await ext.handleContext({ messages: [] }, { cwd: testDir }, makeApi().api)).toBeUndefined();
+      expect(await ext.handleContext({ messages: [{ role: 'user', content: 'hi' }] }, { cwd: testDir }, makeApi().api)).toBeUndefined();
     } finally {
       if (prev === undefined) delete process.env.BP_HOOKS;
       else process.env.BP_HOOKS = prev;
@@ -338,7 +327,7 @@ describe('handleContext (T-4)', () => {
     const bareDir = join(testDir, 'bare3');
     mkdirSync(bareDir, { recursive: true });
     const ext = createPiExtension();
-    expect(await ext.handleContext({ messages: [] }, { cwd: bareDir }, makeApi().api)).toBeUndefined();
+    expect(await ext.handleContext({ messages: [{ role: 'user', content: 'hi' }] }, { cwd: bareDir }, makeApi().api)).toBeUndefined();
   });
 });
 

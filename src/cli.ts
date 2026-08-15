@@ -35,8 +35,14 @@ import { register as registerLock } from './commands/bp-lock.js';
 import { register as registerUnarchive } from './commands/bp-unarchive.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
-const version: string = pkg.version;
+let version = '0.0.0';
+try {
+  const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
+  version = pkg.version;
+} catch {
+  // package.json missing/unreadable — fall back so the CLI still boots
+}
+
 
 program
   .name('bp')
