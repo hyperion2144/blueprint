@@ -14,22 +14,24 @@ import { generateAll } from '../../src/generators/index.js';
 import { STEP_DEFS } from '../../src/integrations/omp/commands.js';
 import { SKILL_DEFS } from '../../src/integrations/omp/skills.js';
 import { CODEX_SKILL_DEFS } from '../../src/integrations/codex/skills.js';
+import { DSH_SKILL_DEFS } from '../../src/integrations/dsh/skills.js';
 import type { ProjectConfig } from '../../src/types/index.js';
 
 function config(platforms: string[]): ProjectConfig {
   return { platform: platforms } as unknown as ProjectConfig;
 }
 
-const ALL_PLATFORMS = ['omp', 'claude-code', 'agent', 'codex', 'opencode'];
+const ALL_PLATFORMS = ['omp', 'claude-code', 'agent', 'codex', 'opencode', 'dsh'];
 
 describe('platform step generators rename (review -> check)', () => {
   it('every configured platform emits a bp-check path and no bp-review path', () => {
     const files = generateAll(config(ALL_PLATFORMS));
     const paths = files.map((f) => f.path);
-    // omp and claude-code emit command files; agent/codex emit skills
+    // omp and claude-code emit command files; agent/codex/dsh emit skills
     expect(paths.some((p) => p.endsWith('.omp/commands/bp-check.md'))).toBe(true);
     expect(paths.some((p) => p.endsWith('.claude/commands/bp-check.md'))).toBe(true);
     expect(paths.some((p) => p.endsWith('.agents/skills/bp-check/SKILL.md'))).toBe(true);
+    expect(paths.some((p) => p.endsWith('.dsh/skills/bp-check/SKILL.md'))).toBe(true);
     expect(paths.some((p) => p.endsWith('.opencode/commands/bp-check.md'))).toBe(true);
     for (const p of paths) {
       // bp-reviewer agent files are intentionally unchanged; the step file
@@ -50,5 +52,9 @@ describe('platform step generators rename (review -> check)', () => {
     const codexSteps = CODEX_SKILL_DEFS.map((d) => d.step);
     expect(codexSteps).toContain('check');
     expect(codexSteps).not.toContain('review');
+
+    const dshSteps = DSH_SKILL_DEFS.map((d) => d.step);
+    expect(dshSteps).toContain('check');
+    expect(dshSteps).not.toContain('review');
   });
 });

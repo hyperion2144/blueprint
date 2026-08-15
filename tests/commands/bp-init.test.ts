@@ -64,15 +64,23 @@ describe('bp init — Codex platform support (T-5)', () => {
     expect(config).not.toMatch(/^\s*-\s*codex\s*$/m);
   });
 
-  it('generated .gitignore contains `.codex/` and `.agents/` (and NOT `.agent/`)', () => {
+  it('generated .gitignore contains `.codex/`, `.agents/`, and `.dsh/` (and NOT `.agent/`)', () => {
     const gitignorePath = join(testDir, '.gitignore');
     expect(existsSync(gitignorePath)).toBe(true);
     const content = readFileSync(gitignorePath, 'utf-8');
     expect(content).toContain('.codex/');
     expect(content).toContain('.agents/');
+    expect(content).toContain('.dsh/');
     // The legacy `.agent/` directory is no longer generated after the
     // merge into `.agents/` and must not appear in the gitignore.
     expect(content).not.toContain('.agent/');
+  });
+  it('init wizard exposes a DeepSeek Harness option in the platform picker', () => {
+    const dshOpt = PLATFORM_OPTIONS.find((o) => o.value === 'dsh');
+    expect(dshOpt).toBeDefined();
+    expect(dshOpt!.label).toContain('DeepSeek');
+    // Description must identify the generated .dsh/skills surface
+    expect(dshOpt!.hint).toContain('.dsh/skills/');
   });
   it('init wizard exposes a Pi Coding Agent option in the platform picker', () => {
     const piOpt = PLATFORM_OPTIONS.find((o) => o.value === 'pi');
@@ -93,7 +101,7 @@ describe('bp init — Codex platform support (T-5)', () => {
 
   it('every registered platform is selectable in the wizard', () => {
     const values = PLATFORM_OPTIONS.map((o) => o.value).sort();
-    expect(values).toEqual(['agent', 'claude-code', 'codex', 'omp', 'opencode', 'pi']);
+    expect(values).toEqual(['agent', 'claude-code', 'codex', 'dsh', 'omp', 'opencode', 'pi']);
   });
 
 

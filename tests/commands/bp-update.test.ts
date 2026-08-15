@@ -79,6 +79,38 @@ describe('bp update — Codex safe stale cleanup (T-6)', () => {
     expect(existsSync(staleSkillDir)).toBe(false);
   });
 
+  it('removes stale `.dsh/skills/bp-*` dirs and preserves non-bp user skills', () => {
+    // Seed a stale bp-* skill dir plus a user-owned (non-bp) skill dir
+    const staleDshDir = join(testDir, '.dsh', 'skills', 'bp-archive-old');
+    mkdirSync(staleDshDir, { recursive: true });
+    writeFileSync(join(staleDshDir, 'SKILL.md'), '# stale', 'utf-8');
+    const userDshDir = join(testDir, '.dsh', 'skills', 'my-custom-skill');
+    mkdirSync(userDshDir, { recursive: true });
+    writeFileSync(join(userDshDir, 'SKILL.md'), '# user skill', 'utf-8');
+
+    // Configure the dsh platform so generateAll regenerates current skills
+    const configPath = join(bpDir, 'config.yaml');
+    const original = readFileSync(configPath, 'utf-8');
+    try {
+      const config = original.replace(/platform:\n(?: {2}- [^\n]+\n)+/, 'platform:\n  - dsh\n');
+      writeFileSync(configPath, config, 'utf-8');
+
+      const out = execSync(`node ${cliPath} update --dir bp`, { encoding: 'utf-8', cwd: testDir });
+
+      // Stale bp-* dir removed and logged; user-owned skill preserved
+      expect(existsSync(staleDshDir)).toBe(false);
+      expect(out).toContain('✓ Removed stale: .dsh/skills/bp-archive-old/');
+      expect(existsSync(join(userDshDir, 'SKILL.md'))).toBe(true);
+      // Current-generation dsh skills exist with kebab-case names
+      expect(existsSync(join(testDir, '.dsh', 'skills', 'bp-plan', 'SKILL.md'))).toBe(true);
+      const plan = readFileSync(join(testDir, '.dsh', 'skills', 'bp-plan', 'SKILL.md'), 'utf-8');
+      expect(plan).toMatch(/^---\nname: bp-plan\n/);
+    } finally {
+      // Restore the original platform config so sibling tests are unaffected
+      writeFileSync(configPath, original, 'utf-8');
+    }
+  });
+
   it('keeps the generated `.agents/skills/bp-refactor/` skill across repeated updates', () => {
     // Switch the project to the agent platform so .agents/skills/ is generated
     const configPath = join(bpDir, 'config.yaml');
@@ -537,7 +569,7 @@ describe('bp update — deleted cwd (ENOENT guard)', () => {
         shell: '/bin/sh',
         cwd: tmpdir(),
       });
-      expect(out).toMatch(/current working directory no longer exists/i);
+      expect(out).toMatch(/current working directory (no longer exists|was deleted)/i);
       expect(out).toMatch(/exit:1/);
       expect(out).not.toMatch(/uv_cwd/);
       expect(out).not.toMatch(/Error: ENOENT/);

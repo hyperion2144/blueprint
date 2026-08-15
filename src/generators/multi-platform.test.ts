@@ -1,5 +1,5 @@
 /**
- * multi-platform.test.ts — Golden-file tests for all three platform providers
+ * multi-platform.test.ts — Golden-file tests for all platform providers
  */
 
 import { describe, it, expect } from 'vitest';
@@ -35,14 +35,26 @@ describe('multi-platform generation', () => {
     }
   });
 
-  it('all three platforms generate concurrently', () => {
-    const files = generateAll(config(['omp', 'claude-code', 'agent']));
+  it('dsh platform generates expected files at .dsh/skills/ with kebab-case names', () => {
+    const files = generateAll(config(['dsh']));
+    expect(files.length).toBe(16);
+    for (const f of files) {
+      expect(f.path).toMatch(/^\.dsh\/skills\/bp-[a-z-]+\/SKILL\.md$/);
+      expect(f.content).toMatch(/^---\nname: bp-[a-z-]+\n/);
+      expect(f.content).not.toMatch(/name: bp:/);
+    }
+  });
+
+  it('all platforms generate concurrently', () => {
+    const files = generateAll(config(['omp', 'claude-code', 'agent', 'dsh']));
     const ompFiles = files.filter((f) => f.path.startsWith('.omp/'));
     const claudeFiles = files.filter((f) => f.path.startsWith('.claude/'));
     const agentFiles = files.filter((f) => f.path.startsWith('.agents/'));
+    const dshFiles = files.filter((f) => f.path.startsWith('.dsh/'));
     expect(ompFiles.length).toBeGreaterThan(0);
     expect(claudeFiles.length).toBeGreaterThan(0);
     expect(agentFiles.length).toBeGreaterThan(0);
+    expect(dshFiles.length).toBe(16);
   });
 
   it('empty platform defaults to omp', () => {
@@ -52,8 +64,8 @@ describe('multi-platform generation', () => {
     }
   });
 
-  it('refactor step generates across all five platforms', () => {
-    const files = generateAll(config(['omp', 'claude-code', 'opencode', 'agent', 'codex']));
+  it('refactor step generates across all six platforms', () => {
+    const files = generateAll(config(['omp', 'claude-code', 'opencode', 'agent', 'codex', 'dsh']));
     const content: Record<string, string> = {};
     for (const f of files) content[f.path] = f.content;
 
@@ -62,12 +74,15 @@ describe('multi-platform generation', () => {
     expect(content['.opencode/commands/bp-refactor.md']).toBeDefined();
     // agent + codex share `.agents/skills/bp-refactor/SKILL.md` (unified)
     expect(content['.agents/skills/bp-refactor/SKILL.md']).toBeDefined();
+    // dsh renders the same body with kebab-case frontmatter
+    expect(content['.dsh/skills/bp-refactor/SKILL.md']).toBeDefined();
 
     expect(content['.omp/commands/bp-refactor.md']).toContain('name: bp:refactor');
     expect(content['.omp/commands/bp-refactor.md']).toContain('argument-hint: "<target>"');
     expect(content['.claude/commands/bp-refactor.md']).toContain('name: bp:refactor');
     expect(content['.claude/commands/bp-refactor.md']).toContain('argument-hint: "<target>"');
     expect(content['.agents/skills/bp-refactor/SKILL.md']).toContain('name: bp:refactor');
+    expect(content['.dsh/skills/bp-refactor/SKILL.md']).toContain('name: bp-refactor');
   });
 
   it('refactorer agent generates across all four agent platforms', () => {
@@ -105,7 +120,7 @@ describe('multi-platform generation', () => {
   });
 
   it('all-platform golden-file snapshot', () => {
-    const files = generateAll(config(['omp', 'claude-code', 'agent']));
+    const files = generateAll(config(['omp', 'claude-code', 'agent', 'dsh']));
     const snapshot: Record<string, string> = {};
     for (const f of files) {
       snapshot[f.path] = f.content;
