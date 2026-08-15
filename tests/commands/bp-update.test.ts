@@ -79,8 +79,8 @@ describe('bp update — Codex safe stale cleanup (T-6)', () => {
     expect(existsSync(staleSkillDir)).toBe(false);
   });
 
-  it('keeps the generated `.agent/skills/bp-refactor/` skill across repeated updates', () => {
-    // Switch the project to the agent platform so .agent/skills/ is generated
+  it('keeps the generated `.agents/skills/bp-refactor/` skill across repeated updates', () => {
+    // Switch the project to the agent platform so .agents/skills/ is generated
     const configPath = join(bpDir, 'config.yaml');
     const original = readFileSync(configPath, 'utf-8');
     try {
@@ -88,18 +88,18 @@ describe('bp update — Codex safe stale cleanup (T-6)', () => {
       writeFileSync(configPath, config, 'utf-8');
 
       execSync(`node ${cliPath} update --dir bp`, { encoding: 'utf-8', cwd: testDir });
-      expect(existsSync(join(testDir, '.agent', 'skills', 'bp-refactor', 'SKILL.md'))).toBe(true);
+      expect(existsSync(join(testDir, '.agents', 'skills', 'bp-refactor', 'SKILL.md'))).toBe(true);
 
       // A second update must NOT treat the generated refactor skill as stale
       execSync(`node ${cliPath} update --dir bp`, { encoding: 'utf-8', cwd: testDir });
-      expect(existsSync(join(testDir, '.agent', 'skills', 'bp-refactor', 'SKILL.md'))).toBe(true);
+      expect(existsSync(join(testDir, '.agents', 'skills', 'bp-refactor', 'SKILL.md'))).toBe(true);
     } finally {
       // Restore the original platform config so sibling tests are unaffected
       writeFileSync(configPath, original, 'utf-8');
     }
   });
 
-  it('keeps the five design `.agent/skills/bp-*` dirs across `bp update` (R1 regression)', () => {
+  it('keeps the five design `.agents/skills/bp-*` dirs across `bp update` (R1 regression)', () => {
     // The design-track steps must survive the stale-cleanup whitelist —
     // `bp update` writes them, then cleanup must not delete them as stale.
     const configPath = join(bpDir, 'config.yaml');
@@ -112,10 +112,58 @@ describe('bp update — Codex safe stale cleanup (T-6)', () => {
 
       const designSteps = ['design', 'design-html', 'design-review', 'design-shotgun', 'plan-design-review'];
       for (const step of designSteps) {
-        expect(existsSync(join(testDir, '.agent', 'skills', `bp-${step}`, 'SKILL.md'))).toBe(true);
+        expect(existsSync(join(testDir, '.agents', 'skills', `bp-${step}`, 'SKILL.md'))).toBe(true);
       }
       // Cleanup must not have logged the design skills as removed stale
-      expect(out).not.toContain('Removed stale: .agent/skills/bp-design');
+      expect(out).not.toContain('Removed stale: .agents/skills/bp-design');
+    } finally {
+      // Restore the original platform config so sibling tests are unaffected
+      writeFileSync(configPath, original, 'utf-8');
+    }
+  });
+
+  it('one-shot migration: legacy `.agent/skills/bp-*` and `.agent/agents/bp-*.md` are removed and logged on first `bp update`', () => {
+    // Seed legacy outputs as if the user upgraded from the pre-merge codex/agent
+    // platform split. The migration runs once and removes everything bp- prefixed.
+    const oldSkillsDir = join(testDir, '.agent', 'skills');
+    const oldAgentsDir = join(testDir, '.agent', 'agents');
+    mkdirSync(join(oldSkillsDir, 'bp-archive-old'), { recursive: true });
+    writeFileSync(join(oldSkillsDir, 'bp-archive-old', 'SKILL.md'), '# legacy', 'utf-8');
+    mkdirSync(join(oldSkillsDir, 'bp-refactor'), { recursive: true });
+    writeFileSync(join(oldSkillsDir, 'bp-refactor', 'SKILL.md'), '# legacy', 'utf-8');
+    mkdirSync(oldAgentsDir, { recursive: true });
+    writeFileSync(join(oldAgentsDir, 'bp-planner.md'), '# legacy', 'utf-8');
+    writeFileSync(join(oldAgentsDir, 'bp-reviewer.md'), '# legacy', 'utf-8');
+    // Seed a user-owned file at .agent root that must be preserved
+    writeFileSync(join(testDir, '.agent', 'user-notes.md'), 'user data', 'utf-8');
+
+    // Configure the agent platform so generateAll also writes `.agents/`
+    const configPath = join(bpDir, 'config.yaml');
+    const original = readFileSync(configPath, 'utf-8');
+    try {
+      const config = original.replace(/platform:\n(?: {2}- [^\n]+\n)+/, 'platform:\n  - agent\n');
+      writeFileSync(configPath, config, 'utf-8');
+
+      const out = execSync(`node ${cliPath} update --dir bp`, { encoding: 'utf-8', cwd: testDir });
+
+      // Migration logged the removed legacy entries
+      expect(out).toContain('Removed stale (migrated to .agents/): .agent/skills/bp-archive-old/');
+      expect(out).toContain('Removed stale (migrated to .agents/): .agent/skills/bp-refactor/');
+      expect(out).toContain('Removed stale (migrated to .agents/): .agent/agents/bp-planner.md');
+      expect(out).toContain('Removed stale (migrated to .agents/): .agent/agents/bp-reviewer.md');
+
+      // Legacy directories are gone (the bp- entries were the only content)
+      expect(existsSync(join(oldSkillsDir, 'bp-archive-old'))).toBe(false);
+      expect(existsSync(join(oldSkillsDir, 'bp-refactor'))).toBe(false);
+      expect(existsSync(join(oldAgentsDir, 'bp-planner.md'))).toBe(false);
+      expect(existsSync(join(oldAgentsDir, 'bp-reviewer.md'))).toBe(false);
+
+      // New outputs exist under .agents/
+      expect(existsSync(join(testDir, '.agents', 'skills', 'bp-refactor', 'SKILL.md'))).toBe(true);
+      expect(existsSync(join(testDir, '.agents', 'agents', 'bp-planner.md'))).toBe(true);
+
+      // User-owned file at the .agent root is preserved
+      expect(existsSync(join(testDir, '.agent', 'user-notes.md'))).toBe(true);
     } finally {
       // Restore the original platform config so sibling tests are unaffected
       writeFileSync(configPath, original, 'utf-8');

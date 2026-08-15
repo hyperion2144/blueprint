@@ -10,6 +10,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { generateAll } from './index.js';
 import { registerCodexProvider } from '../integrations/codex/index.js';
+import { registerAgentProvider } from '../integrations/agent/index.js';
 import { setPlatformRegistry, createDefaultRegistry } from '../core/platform-registry.js';
 import type { ProjectConfig } from '../types/index.js';
 
@@ -47,5 +48,31 @@ describe('codex platform generation', () => {
   it('duplicate registration is a no-op (does not throw)', () => {
     expect(() => registerCodexProvider()).not.toThrow();
     expect(() => registerCodexProvider()).not.toThrow();
+  });
+});
+
+describe('agent + codex skills deduplication', () => {
+  beforeEach(() => {
+    setPlatformRegistry(createDefaultRegistry());
+    registerAgentProvider();
+    registerCodexProvider();
+  });
+
+  it('when both platforms are configured, each .agents/skills/<step>/SKILL.md appears exactly once with byte-identical content', () => {
+    const files = generateAll(config(['agent', 'codex']));
+    const skillFiles = files.filter((f) => f.path.startsWith('.agents/skills/'));
+
+    // Map<path, content> — overwrites with identical content are harmless
+    const deduped = new Map<string, string>();
+    for (const f of skillFiles) {
+      const prev = deduped.get(f.path);
+      if (prev !== undefined) expect(prev).toBe(f.content); // byte-identical
+      deduped.set(f.path, f.content);
+    }
+    expect(deduped.size).toBe(16);
+    for (const [path, content] of deduped) {
+      expect(path).toMatch(/^\.agents\/skills\/bp-[a-z-]+\/SKILL\.md$/);
+      expect(content).toMatch(/^---\nname: bp:[a-z-]+\n/);
+    }
   });
 });

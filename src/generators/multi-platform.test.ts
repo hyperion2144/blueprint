@@ -27,11 +27,11 @@ describe('multi-platform generation', () => {
     }
   });
 
-  it('agent platform generates expected files', () => {
+  it('agent platform generates expected files at .agents/', () => {
     const files = generateAll(config(['agent']));
     expect(files.length).toBeGreaterThan(0);
     for (const f of files) {
-      expect(f.path).toMatch(/^\.agent\//);
+      expect(f.path).toMatch(/^\.agents\//);
     }
   });
 
@@ -39,7 +39,7 @@ describe('multi-platform generation', () => {
     const files = generateAll(config(['omp', 'claude-code', 'agent']));
     const ompFiles = files.filter((f) => f.path.startsWith('.omp/'));
     const claudeFiles = files.filter((f) => f.path.startsWith('.claude/'));
-    const agentFiles = files.filter((f) => f.path.startsWith('.agent/'));
+    const agentFiles = files.filter((f) => f.path.startsWith('.agents/'));
     expect(ompFiles.length).toBeGreaterThan(0);
     expect(claudeFiles.length).toBeGreaterThan(0);
     expect(agentFiles.length).toBeGreaterThan(0);
@@ -60,7 +60,7 @@ describe('multi-platform generation', () => {
     expect(content['.omp/commands/bp-refactor.md']).toBeDefined();
     expect(content['.claude/commands/bp-refactor.md']).toBeDefined();
     expect(content['.opencode/commands/bp-refactor.md']).toBeDefined();
-    expect(content['.agent/skills/bp-refactor/SKILL.md']).toBeDefined();
+    // agent + codex share `.agents/skills/bp-refactor/SKILL.md` (unified)
     expect(content['.agents/skills/bp-refactor/SKILL.md']).toBeDefined();
 
     expect(content['.omp/commands/bp-refactor.md']).toContain('name: bp:refactor');
@@ -79,7 +79,7 @@ describe('multi-platform generation', () => {
       '.omp/agents/bp-refactorer.md',
       '.claude/agents/bp-refactorer.md',
       '.opencode/agents/bp-refactorer.md',
-      '.agent/agents/bp-refactorer.md',
+      '.agents/agents/bp-refactorer.md',
     ]) {
       expect(content[path]).toBeDefined();
       expect(content[path]).toContain('Behavior-preserving consolidation + spec sync per assigned module');
@@ -96,7 +96,7 @@ describe('multi-platform generation', () => {
       '.omp/agents/bp-fixer.md',
       '.claude/agents/bp-fixer.md',
       '.opencode/agents/bp-fixer.md',
-      '.agent/agents/bp-fixer.md',
+      '.agents/agents/bp-fixer.md',
     ]) {
       expect(content[path]).toBeDefined();
       expect(content[path]).toContain('Fix proposal/design/implementation per reviewer report');

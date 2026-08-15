@@ -29,7 +29,6 @@ describe('platform step generators rename (review -> check)', () => {
     // omp and claude-code emit command files; agent/codex emit skills
     expect(paths.some((p) => p.endsWith('.omp/commands/bp-check.md'))).toBe(true);
     expect(paths.some((p) => p.endsWith('.claude/commands/bp-check.md'))).toBe(true);
-    expect(paths.some((p) => p.endsWith('.agent/skills/bp-check/SKILL.md'))).toBe(true);
     expect(paths.some((p) => p.endsWith('.agents/skills/bp-check/SKILL.md'))).toBe(true);
     expect(paths.some((p) => p.endsWith('.opencode/commands/bp-check.md'))).toBe(true);
     for (const p of paths) {

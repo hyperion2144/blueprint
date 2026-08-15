@@ -2,7 +2,7 @@
 
 exports[`multi-platform generation > all-platform golden-file snapshot 1`] = `
 {
-  ".agent/agents/bp-codebase-scanner.md": "---
+  ".agents/agents/bp-codebase-scanner.md": "---
 name: bp-codebase-scanner
 description: Brownfield codebase scan - extract behavioral contracts into specs
 ---
@@ -83,7 +83,7 @@ Check before finishing: each spec has \`## Purpose\`; each requirement uses SHAL
 5. **Ignoring tests** — tests are the best source of behavioral contracts.
 6. **Hallucinating behavior** — only write requirements you can trace to code; mark confidence LOW if unsure.
 ",
-  ".agent/agents/bp-designer.md": "---
+  ".agents/agents/bp-designer.md": "---
 name: bp-designer
 description: Design consultation, HTML generation, visual audit, and variant exploration
 ---
@@ -155,7 +155,7 @@ Report a diff/artifact summary back to the orchestrator — what was written, wh
 - All output in English.
 - If an input artifact is missing, stop and report it — do not invent content.
 ",
-  ".agent/agents/bp-executor.md": "---
+  ".agents/agents/bp-executor.md": "---
 name: bp-executor
 description: Code implementation
 ---
@@ -324,7 +324,7 @@ When all items pass: type:behavior tasks have RED->GREEN->REFACTOR commits; all 
 6. **Large commits** — 200+ lines per task means the task is too coarse.
 7. **Not reading specs** — the spec_ref tells you exactly what behavior to implement.
 ",
-  ".agent/agents/bp-fixer.md": "---
+  ".agents/agents/bp-fixer.md": "---
 name: bp-fixer
 description: Fix proposal/design/implementation per reviewer report
 ---
@@ -372,7 +372,7 @@ Report a diff summary of every artifact you touched at the end.
 - Do NOT re-review the change yourself; after you finish, the orchestrator re-dispatches the reviewer for a full triple review.
 - Keep tests green at every step; revert a fix that breaks the suite.
 ",
-  ".agent/agents/bp-planner.md": "---
+  ".agents/agents/bp-planner.md": "---
 name: bp-planner
 description: Change design
 ---
@@ -574,7 +574,7 @@ Check before finishing:
 - No contradictions with existing decisions; all files in the correct change directory; every Design Item has \`Source: PR-{id}\`.
 - **Implementability self-check** (the #1 rejection reason): for each DS-N, confirm the Detailed Design gives the executor everything — complete interface signatures, state/data paths, Props/events/states for UI, validation/response/error codes for API/CLI, error paths and side effects, detail beyond Key Interfaces, and Requirements, Constraints, and Acceptance Criteria (binary pass/fail) present. If any DS-N fails, expand it before returning.
 ",
-  ".agent/agents/bp-refactorer.md": "---
+  ".agents/agents/bp-refactorer.md": "---
 name: bp-refactorer
 description: Behavior-preserving consolidation + spec sync per assigned module
 ---
@@ -640,7 +640,7 @@ Print \`git diff --stat\` plus the list of changed spec files at the end.
 - NEVER introduce new dependencies or format/lint changes.
 - STOP after ONE module — after your assigned module is consolidated and the diff is summarized, return control to the orchestrator. Do not dispatch further refactors.
 ",
-  ".agent/agents/bp-reviewer.md": "---
+  ".agents/agents/bp-reviewer.md": "---
 name: bp-reviewer
 description: Triple review
 ---
@@ -801,10 +801,9 @@ bp commit -m "docs(review): triple review for <change-name>" --files bp/changes/
 6. **Not checking removed behavior** — verify actual removal from code.
 7. **Not checking modified behavior** — verify callers of old behavior are updated.
 ",
-  ".agent/skills/bp-apply/SKILL.md": "---
-name: bp-apply
-description: Code implementation
-hide: false
+  ".agents/skills/bp-apply/SKILL.md": "---
+name: bp:apply
+description: Dispatch executor sub-agents (implement tasks per wave)
 ---
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
@@ -925,10 +924,9 @@ Implementation complete for $1
 - Budget awareness: track dispatch count against \`config.budget.max_subagent_runs\` and wall time against \`config.budget.max_wall_time_min\` (default 60); warn if token usage approaches \`config.budget.estimated_token_cap\` (default 500000). These are advisory — stop and report if exceeded.
 - Level-aware execution: Trivial = inline (no sub-agent); Light = single agent, TDD optional; Standard = waves + TDD; Critical = waves + TDD + security audit checkpoint.
 ",
-  ".agent/skills/bp-archive/SKILL.md": "---
-name: bp-archive
-description: Verify and archive
-hide: false
+  ".agents/skills/bp-archive/SKILL.md": "---
+name: bp:archive
+description: Archive a change (merge delta specs, archive dir, update roadmap)
 ---
 
 ## Input
@@ -1020,10 +1018,9 @@ Archived $1
 - CI mode (\`--ci\`): skip working-tree warnings and post-archive suggestions; exit 0 on success, 1 on any failure.
 - Commit is the orchestrator's job — the archive command does not commit.
 ",
-  ".agent/skills/bp-check/SKILL.md": "---
-name: bp-check
-description: Triple check
-hide: false
+  ".agents/skills/bp-check/SKILL.md": "---
+name: bp:check
+description: Triple check of a change - full verify + fixer loopback + full re-review
 ---
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
@@ -1115,10 +1112,9 @@ bp commit -m "docs(review): triple review for $1" --files bp/changes/$1/review.m
 - CI mode (\`--ci\`): skip human-confirmation steps; exit 1 immediately if the verdict is not PASS.
 - Do NOT run \`bp archive\` automatically — the user approves archiving.
 ",
-  ".agent/skills/bp-continue/SKILL.md": "---
-name: bp-continue
+  ".agents/skills/bp-continue/SKILL.md": "---
+name: bp:continue
 description: Check progress and suggest next step
-hide: false
 ---
 
 ## Input
@@ -1149,10 +1145,9 @@ bp continue $ARGUMENTS
 - If multiple active changes exist, the CLI lists them — pick one and re-run \`bp continue <name>\`.
 - If the CLI says \`Next: bp <step> <name>\`, run the workflow instructions it outputs.
 ",
-  ".agent/skills/bp-design-html/SKILL.md": "---
-name: bp-design-html
+  ".agents/skills/bp-design-html/SKILL.md": "---
+name: bp:design-html
 description: Design to production HTML/CSS - implement DESIGN.md against the detected project framework
-hide: false
 ---
 
 ## Input
@@ -1218,10 +1213,9 @@ If none exists and the user expected prior design work, suggest \`bp design\` fi
 - If browser capability is unavailable, the preview step degrades to a written description of the intended visuals.
 - All output in English.
 ",
-  ".agent/skills/bp-design-review/SKILL.md": "---
-name: bp-design-review
+  ".agents/skills/bp-design-review/SKILL.md": "---
+name: bp:design-review
 description: Designer's-eye QA audit - full visual and UX audit against DESIGN.md
-hide: false
 ---
 
 ## Input
@@ -1285,10 +1279,9 @@ Pick the audit depth (ask the user when unsure):
 - If browser capability is unavailable, audit the written UI description and note the degraded scope.
 - All output in English.
 ",
-  ".agent/skills/bp-design-shotgun/SKILL.md": "---
-name: bp-design-shotgun
+  ".agents/skills/bp-design-shotgun/SKILL.md": "---
+name: bp:design-shotgun
 description: Multi-variant design exploration - generate, compare, and approve design variants
-hide: false
 ---
 
 ## Input
@@ -1355,10 +1348,9 @@ Write \`design/approved.json\`: winner, rationale, and the extracted tokens (col
 - If browser capability is unavailable, generate HTML previews or written mockup descriptions instead.
 - All output in English.
 ",
-  ".agent/skills/bp-design/SKILL.md": "---
-name: bp-design
+  ".agents/skills/bp-design/SKILL.md": "---
+name: bp:design
 description: Design system consultation - complete design proposal written to root DESIGN.md
-hide: false
 ---
 
 ## Input
@@ -1437,10 +1429,9 @@ For any area that remains ambiguous after Step 3 (unusual components, edge state
 - If browser capability is unavailable, the preview step degrades to a written description of intended visuals.
 - All output in English.
 ",
-  ".agent/skills/bp-ff/SKILL.md": "---
-name: bp-ff
-description: Fast-forward - auto-advance through all steps
-hide: false
+  ".agents/skills/bp-ff/SKILL.md": "---
+name: bp:ff
+description: Fast-forward - auto-advance through all steps by calling bp continue after each
 ---
 
 ## Input
@@ -1475,10 +1466,9 @@ bp continue $ARGUMENTS
 - You MAY ask the user clarifying questions if truly blocked, but default to proceeding with the most reasonable interpretation.
 - If a step is unclear or the output is unexpected, stop and ask the user.
 ",
-  ".agent/skills/bp-init/SKILL.md": "---
-name: bp-init
-description: Initialize bp project structure and generate platform files
-hide: false
+  ".agents/skills/bp-init/SKILL.md": "---
+name: bp:init
+description: Initialize blueprint project structure and generate platform files
 ---
 
 ## Input
@@ -1536,10 +1526,9 @@ Project initialized. Run \`bp continue\` to check project status and discover ne
 - Greenfield: write coding conventions into bp/conventions/coding.md and verify specs exist.
 - ALWAYS suggest \`bp continue\`.
 ",
-  ".agent/skills/bp-loop/SKILL.md": "---
-name: bp-loop
-description: Autonomous loop - auto-advance with no user interaction
-hide: false
+  ".agents/skills/bp-loop/SKILL.md": "---
+name: bp:loop
+description: Autonomous loop - same as ff but skip all user interaction until roadmap complete
 ---
 
 ## Input
@@ -1575,10 +1564,9 @@ bp continue $ARGUMENTS
 - Do NOT auto-archive if the review verdict is FAIL or NEEDS_REVISION.
 - Only stop on hard errors (test failures that cannot be fixed in 1 attempt, unrecoverable build errors).
 ",
-  ".agent/skills/bp-plan-design-review/SKILL.md": "---
-name: bp-plan-design-review
+  ".agents/skills/bp-plan-design-review/SKILL.md": "---
+name: bp:plan-design-review
 description: Plan-phase UI audit - UI scope detection and 0-10 rating before implementation
-hide: false
 ---
 
 ## Input
@@ -1641,10 +1629,9 @@ For each item: conforming / deviation (with note) / no evidence yet.
 - NEVER edit source code or \`DESIGN.md\` — the audit produces notes only.
 - All output in English.
 ",
-  ".agent/skills/bp-plan/SKILL.md": "---
-name: bp-plan
-description: Change design
-hide: false
+  ".agents/skills/bp-plan/SKILL.md": "---
+name: bp:plan
+description: Dispatch planner sub-agent (produce design, tasks, delta specs)
 ---
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
@@ -1798,10 +1785,9 @@ Planner completed for $1
 - Task granularity is advisory, not blocking — warn on tasks>20/files>15/waves>5/per-wave>8, then let the user decide.
 - Level-aware dispatch: Trivial/Light may skip the planner (orchestrator fills templates directly); Standard/Critical MUST dispatch it; Critical adds a security dimension to the design.
 ",
-  ".agent/skills/bp-propose/SKILL.md": "---
-name: bp-propose
+  ".agents/skills/bp-propose/SKILL.md": "---
+name: bp:propose
 description: Create a change folder with proposal.md
-hide: false
 ---
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
@@ -1933,10 +1919,9 @@ Created bp/changes/$1/proposal.md
 - Do NOT run bp plan automatically — let the user review the proposal first (they can run bp plan $1 directly to skip).
 - Architecture decisions and technical design come from the planner, not from propose.
 ",
-  ".agent/skills/bp-refactor/SKILL.md": "---
-name: bp-refactor
+  ".agents/skills/bp-refactor/SKILL.md": "---
+name: bp:refactor
 description: Run deterministic refactor analyzer and dispatch refactorer sub-agents per module
-hide: false
 ---
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
@@ -2018,10 +2003,9 @@ After all dispatches complete, print \`git diff --stat\` plus the list of change
 - Dispatch exactly ONE module per refactorer call; do not batch modules.
 - Spec sync stays inside the affected domains listed in the report.
 ",
-  ".agent/skills/bp-roadmap/SKILL.md": "---
-name: bp-roadmap
-description: Roadmap definition
-hide: false
+  ".agents/skills/bp-roadmap/SKILL.md": "---
+name: bp:roadmap
+description: View or modify roadmap.md
 ---
 
 ## Input

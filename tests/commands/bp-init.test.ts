@@ -41,9 +41,20 @@ describe('bp init — Codex platform support (T-5)', () => {
     const codexOpt = PLATFORM_OPTIONS.find((o) => o.value === 'codex');
     expect(codexOpt).toBeDefined();
     expect(codexOpt!.label).toContain('Codex');
-    // Description must identify the generated Skills + hooks surfaces
-    expect(codexOpt!.hint).toContain('.agents/skills/');
+    // Description must identify the generated hooks surfaces (skills are
+    // now owned by the `agent` platform under the shared `.agents/`)
     expect(codexOpt!.hint).toContain('.codex/hooks.json');
+  });
+
+  it('init wizard exposes the generic agent option pointing at `.agents/`', () => {
+    const agentOpt = PLATFORM_OPTIONS.find((o) => o.value === 'agent');
+    expect(agentOpt).toBeDefined();
+    // After the merge to .agents/, the agent platform emits
+    // .agents/skills/ + .agents/agents/ — NOT .agent/
+    expect(agentOpt!.hint).toContain('.agents/skills/');
+    expect(agentOpt!.hint).toContain('.agents/agents/');
+    expect(agentOpt!.hint).not.toContain('.agent/skills/');
+    expect(agentOpt!.hint).not.toContain('.agent/agents/');
   });
 
   it('non-interactive `--yes` defaults remain OMP', () => {
@@ -53,12 +64,15 @@ describe('bp init — Codex platform support (T-5)', () => {
     expect(config).not.toMatch(/^\s*-\s*codex\s*$/m);
   });
 
-  it('generated .gitignore contains `.codex/` and `.agents/`', () => {
+  it('generated .gitignore contains `.codex/` and `.agents/` (and NOT `.agent/`)', () => {
     const gitignorePath = join(testDir, '.gitignore');
     expect(existsSync(gitignorePath)).toBe(true);
     const content = readFileSync(gitignorePath, 'utf-8');
     expect(content).toContain('.codex/');
     expect(content).toContain('.agents/');
+    // The legacy `.agent/` directory is no longer generated after the
+    // merge into `.agents/` and must not appear in the gitignore.
+    expect(content).not.toContain('.agent/');
   });
   it('init wizard exposes a Pi Coding Agent option in the platform picker', () => {
     const piOpt = PLATFORM_OPTIONS.find((o) => o.value === 'pi');

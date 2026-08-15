@@ -57,7 +57,7 @@ describe('design-step platform generation (T-5)', () => {
     expect(agentFiles).toHaveLength(16);
     for (const step of DESIGN_STEPS) {
       expect(claudeFiles.some((f) => f.path === `.claude/commands/bp-${step}.md`)).toBe(true);
-      expect(agentFiles.some((f) => f.path === `.agent/skills/bp-${step}/SKILL.md`)).toBe(true);
+      expect(agentFiles.some((f) => f.path === `.agents/skills/bp-${step}/SKILL.md`)).toBe(true);
     }
   });
 
@@ -91,7 +91,7 @@ describe('design-step platform generation (T-5)', () => {
 
       expect(piFiles.find((f) => f.path === `.pi/skills/bp-${step}/SKILL.md`)!.content.endsWith(skillInstr)).toBe(true);
       expect(codexFiles.find((f) => f.path === `.agents/skills/bp-${step}/SKILL.md`)!.content.endsWith(skillInstr)).toBe(true);
-      expect(agentFiles.find((f) => f.path === `.agent/skills/bp-${step}/SKILL.md`)!.content.endsWith(skillInstr)).toBe(true);
+      expect(agentFiles.find((f) => f.path === `.agents/skills/bp-${step}/SKILL.md`)!.content.endsWith(skillInstr)).toBe(true);
       expect(claudeFiles.find((f) => f.path === `.claude/commands/bp-${step}.md`)!.content.endsWith(commandContent)).toBe(true);
       // omp skills wrap the body in a template literal: frontmatter + '\n\n' + body + file-terminator '\n'
       expect(ompSkillFiles.find((f) => f.path === `.omp/skills/bp-${step}/SKILL.md`)!.content.endsWith(skillInstr + '\n')).toBe(true);
