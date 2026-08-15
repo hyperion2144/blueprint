@@ -3,9 +3,8 @@
 exports[`generateAgentSkills > generates matching snapshot 1`] = `
 {
   "apply": "---
-name: bp-apply
-description: Code implementation
-hide: false
+name: bp:apply
+description: Dispatch executor sub-agents (implement tasks per wave)
 ---
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
@@ -127,9 +126,8 @@ Implementation complete for $1
 - Level-aware execution: Trivial = inline (no sub-agent); Light = single agent, TDD optional; Standard = waves + TDD; Critical = waves + TDD + security audit checkpoint.
 ",
   "archive": "---
-name: bp-archive
-description: Verify and archive
-hide: false
+name: bp:archive
+description: Archive a change (merge delta specs, archive dir, update roadmap)
 ---
 
 ## Input
@@ -222,9 +220,8 @@ Archived $1
 - Commit is the orchestrator's job — the archive command does not commit.
 ",
   "check": "---
-name: bp-check
-description: Triple check
-hide: false
+name: bp:check
+description: Triple check of a change - full verify + fixer loopback + full re-review
 ---
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
@@ -317,9 +314,8 @@ bp commit -m "docs(review): triple review for $1" --files bp/changes/$1/review.m
 - Do NOT run \`bp archive\` automatically — the user approves archiving.
 ",
   "continue": "---
-name: bp-continue
+name: bp:continue
 description: Check progress and suggest next step
-hide: false
 ---
 
 ## Input
@@ -351,9 +347,8 @@ bp continue $ARGUMENTS
 - If the CLI says \`Next: bp <step> <name>\`, run the workflow instructions it outputs.
 ",
   "design": "---
-name: bp-design
+name: bp:design
 description: Design system consultation - complete design proposal written to root DESIGN.md
-hide: false
 ---
 
 ## Input
@@ -433,9 +428,8 @@ For any area that remains ambiguous after Step 3 (unusual components, edge state
 - All output in English.
 ",
   "design-html": "---
-name: bp-design-html
+name: bp:design-html
 description: Design to production HTML/CSS - implement DESIGN.md against the detected project framework
-hide: false
 ---
 
 ## Input
@@ -502,9 +496,8 @@ If none exists and the user expected prior design work, suggest \`bp design\` fi
 - All output in English.
 ",
   "design-review": "---
-name: bp-design-review
+name: bp:design-review
 description: Designer's-eye QA audit - full visual and UX audit against DESIGN.md
-hide: false
 ---
 
 ## Input
@@ -569,9 +562,8 @@ Pick the audit depth (ask the user when unsure):
 - All output in English.
 ",
   "design-shotgun": "---
-name: bp-design-shotgun
+name: bp:design-shotgun
 description: Multi-variant design exploration - generate, compare, and approve design variants
-hide: false
 ---
 
 ## Input
@@ -639,9 +631,8 @@ Write \`design/approved.json\`: winner, rationale, and the extracted tokens (col
 - All output in English.
 ",
   "ff": "---
-name: bp-ff
-description: Fast-forward - auto-advance through all steps
-hide: false
+name: bp:ff
+description: Fast-forward - auto-advance through all steps by calling bp continue after each
 ---
 
 ## Input
@@ -677,9 +668,8 @@ bp continue $ARGUMENTS
 - If a step is unclear or the output is unexpected, stop and ask the user.
 ",
   "init": "---
-name: bp-init
-description: Initialize bp project structure and generate platform files
-hide: false
+name: bp:init
+description: Initialize blueprint project structure and generate platform files
 ---
 
 ## Input
@@ -738,9 +728,8 @@ Project initialized. Run \`bp continue\` to check project status and discover ne
 - ALWAYS suggest \`bp continue\`.
 ",
   "loop": "---
-name: bp-loop
-description: Autonomous loop - auto-advance with no user interaction
-hide: false
+name: bp:loop
+description: Autonomous loop - same as ff but skip all user interaction until roadmap complete
 ---
 
 ## Input
@@ -777,9 +766,8 @@ bp continue $ARGUMENTS
 - Only stop on hard errors (test failures that cannot be fixed in 1 attempt, unrecoverable build errors).
 ",
   "plan": "---
-name: bp-plan
-description: Change design
-hide: false
+name: bp:plan
+description: Dispatch planner sub-agent (produce design, tasks, delta specs)
 ---
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
@@ -934,9 +922,8 @@ Planner completed for $1
 - Level-aware dispatch: Trivial/Light may skip the planner (orchestrator fills templates directly); Standard/Critical MUST dispatch it; Critical adds a security dimension to the design.
 ",
   "plan-design-review": "---
-name: bp-plan-design-review
+name: bp:plan-design-review
 description: Plan-phase UI audit - UI scope detection and 0-10 rating before implementation
-hide: false
 ---
 
 ## Input
@@ -1000,9 +987,8 @@ For each item: conforming / deviation (with note) / no evidence yet.
 - All output in English.
 ",
   "propose": "---
-name: bp-propose
+name: bp:propose
 description: Create a change folder with proposal.md
-hide: false
 ---
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
@@ -1135,9 +1121,8 @@ Created bp/changes/$1/proposal.md
 - Architecture decisions and technical design come from the planner, not from propose.
 ",
   "refactor": "---
-name: bp-refactor
+name: bp:refactor
 description: Run deterministic refactor analyzer and dispatch refactorer sub-agents per module
-hide: false
 ---
 
 **You are the orchestrator — dispatch sub-agents; do not do their work yourself.**
@@ -1220,9 +1205,8 @@ After all dispatches complete, print \`git diff --stat\` plus the list of change
 - Spec sync stays inside the affected domains listed in the report.
 ",
   "roadmap": "---
-name: bp-roadmap
-description: Roadmap definition
-hide: false
+name: bp:roadmap
+description: View or modify roadmap.md
 ---
 
 ## Input

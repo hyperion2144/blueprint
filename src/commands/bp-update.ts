@@ -51,6 +51,49 @@ function stripStaleHookConfig(baseDir: string, relPath: string, marker: string):
 
 /** Remove stale generated files that no longer exist in the current v2 generation set. */
 
+/**
+ * One-shot migration: removes legacy `.agent/skills/bp-*` directories and
+ * `.agent/agents/bp-*.md` files left over from before the merge of the
+ * generic `agent` platform output into the shared `.agents/` directory.
+ * Non-bp entries under `.agent/` (if any) are preserved; the parent
+ * directories are removed only when empty after the migration.
+ */
+function migrateLegacyAgentDir(baseDir: string): void {
+  const oldAgentSkillsDir = join(baseDir, '.agent', 'skills');
+  if (existsSync(oldAgentSkillsDir)) {
+    for (const entry of readdirSync(oldAgentSkillsDir)) {
+      if (!entry.startsWith('bp-')) continue;
+      rmSync(join(oldAgentSkillsDir, entry), { recursive: true, force: true });
+      console.log(`  ✓ Removed stale (migrated to .agents/): .agent/skills/${entry}/`);
+    }
+    // Best-effort: remove the now-empty directory; suppress ENOTEMPTY.
+    try { rmSync(oldAgentSkillsDir, { recursive: true, force: true }); } catch { /* keep */ }
+  }
+
+  const oldAgentAgentsDir = join(baseDir, '.agent', 'agents');
+  if (existsSync(oldAgentAgentsDir)) {
+    for (const file of readdirSync(oldAgentAgentsDir)) {
+      if (!file.startsWith('bp-')) continue;
+      rmSync(join(oldAgentAgentsDir, file), { force: true });
+      console.log(`  ✓ Removed stale (migrated to .agents/): .agent/agents/${file}`);
+    }
+    try { rmSync(oldAgentAgentsDir, { recursive: true, force: true }); } catch { /* keep */ }
+  }
+
+  // Drop the now-empty `.agent/` parent; if the directory still holds any
+  // non-bp entries (user-owned files at its root), it is left intact so
+  // the user does not lose data. We probe by reading the directory — a
+  // portable approach that works under both node and bun (whose `rmSync`
+  // does not reliably throw ENOTEMPTY for non-empty dirs).
+  const oldAgentDir = join(baseDir, '.agent');
+  if (existsSync(oldAgentDir)) {
+    const remaining = readdirSync(oldAgentDir);
+    if (remaining.length === 0) {
+      rmSync(oldAgentDir, { recursive: true, force: true });
+    }
+  }
+}
+
 function cleanupStaleFiles(baseDir: string, generatedPaths: string[]): void {
   const generatedSet = new Set(generatedPaths.map(p => p.replace(/^\.\//, '')));
 
@@ -106,29 +149,11 @@ function cleanupStaleFiles(baseDir: string, generatedPaths: string[]): void {
     }
   }
 
-  // .agent/skills/ — entries are directories like bp-<step>/; non-bp skill
-  // directories must remain untouched.
-  const agentSkillsDir = join(baseDir, '.agent', 'skills');
-  if (existsSync(agentSkillsDir)) {
-    for (const entry of readdirSync(agentSkillsDir)) {
-      const match = /^bp-(.+)$/.exec(entry);
-      if (!match) continue; // skip non-bp skills
-      // Stale = bp- directory not part of current generation set
-      const isCurrent = generatedSet.has(`.agent/skills/${entry}/SKILL.md`);
-      if (!isCurrent) {
-        rmSync(join(agentSkillsDir, entry), { recursive: true, force: true });
-        console.log(`  ✓ Removed stale: .agent/skills/${entry}/`);
-      }
-    }
-  }
-
-  // .agent/agents/
-  const agentAgentDir = join(baseDir, '.agent', 'agents');
-  if (existsSync(agentAgentDir)) {
-    for (const file of readdirSync(agentAgentDir)) {
-      checkRemove(agentAgentDir, '.agent/agents', file);
-    }
-  }
+  // One-shot migration: legacy `.agent/` outputs (from before the merge
+  // to the shared `.agents/` directory) are removed and the migration
+  // is logged. Only bp- prefixed entries are touched; user-owned files
+  // under `.agent/` (if any) are preserved.
+  migrateLegacyAgentDir(baseDir);
 
   // .codex/hooks.json — when codex is no longer configured, strip bp-owned
   // hook groups and keep any user-owned hooks/settings (backed up first).

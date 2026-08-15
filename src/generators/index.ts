@@ -1,8 +1,11 @@
 /**
  * 生成器入口 — dispatches to PlatformProviders via PlatformRegistry.
  *
- * OMP is registered on first import. Additional providers (claude-code, agent,
- * codex) register themselves when their integration module is loaded.
+ * OMP is registered on first import. Additional providers (claude-code,
+ * agent, codex, opencode, pi) register themselves when their integration
+ * module is loaded. The `agent` and `codex` platforms share
+ * `.agents/skills/bp-<step>/SKILL.md` (byte-identical output) via
+ * `src/integrations/shared/agents-skills.ts`.
  */
 
 import { PlatformRegistry } from '../core/platform-registry.js';

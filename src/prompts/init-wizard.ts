@@ -15,8 +15,8 @@ interface WizardOptions {
 export const PLATFORM_OPTIONS: ReadonlyArray<{ value: string; label: string; hint: string }> = [
   { value: 'omp', label: 'Oh My Pi', hint: 'generates .omp/commands/, .omp/agents/, and hooks' },
   { value: 'claude-code', label: 'Claude Code', hint: 'generates .claude/commands/ + .claude/agents/' },
-  { value: 'agent', label: 'Agent (generic)', hint: 'generates .agent/skills/ + .agent/agents/ with [BP:xxx] params' },
-  { value: 'codex', label: 'Codex CLI', hint: 'generates .agents/skills/bp-*/ and .codex/hooks.json' },
+  { value: 'agent', label: 'Agent (generic)', hint: 'generates .agents/skills/ + .agents/agents/ (Agent Skills standard)' },
+  { value: 'codex', label: 'Codex CLI', hint: 'generates .codex/hooks.json + .codex/hooks/bp-handler.mjs (skills shared with agent)' },
   { value: 'pi', label: 'Pi Coding Agent', hint: 'generates .pi/skills/, .pi/agents/, and .pi/extensions/bp/' },
   { value: 'opencode', label: 'OpenCode', hint: 'generates .opencode/commands/ + .opencode/agents/' },
 ];

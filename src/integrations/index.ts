@@ -4,8 +4,8 @@
  * Currently supported:
  * - omp: OMP coding agent (commands, skills, agents, hooks)
  * - claude-code: Claude Code (commands, agents)
- * - agent: Generic .agent (skills, agents)
- * - codex: OpenAI Codex CLI (skills, hooks) — added in add-codex-support
+ * - agent: Generic `.agents/` platform (skills + sub-agents)
+ * - codex: OpenAI Codex CLI (hooks + handler; skills shared with `agent`)
  * - pi: Pi Coding Agent (skills, agents, extension) — added in add-pi-platform
  */
 

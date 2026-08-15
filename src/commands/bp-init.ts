@@ -161,7 +161,7 @@ async function initHandler(options: {
   // Auto-create .gitignore when commitDocs is false (bp/ files should not be tracked)
   if (!wizard.commitDocs) {
     const gitignorePath = join(baseDir, '.gitignore');
-    const gitignoreEntries = ['bp/', '.omp/', '.claude/', '.agent/', '.codex/', '.agents/', '.pi/', '.opencode/'];
+    const gitignoreEntries = ['bp/', '.omp/', '.claude/', '.codex/', '.agents/', '.pi/', '.opencode/'];
 
     if (existsSync(gitignorePath)) {
       // Append missing entries

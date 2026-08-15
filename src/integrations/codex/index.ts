@@ -4,8 +4,9 @@
  * Registers `codex` with PlatformRegistry. The provider surfaces these
  * capability groups:
  *
- *   - Skills  (T-1): ten `.agents/skills/bp-<step>/SKILL.md` files from
- *                    the shared WORKFLOW_REGISTRY.
+ *   - Skills  (T-1): sixteen `.agents/skills/bp-<step>/SKILL.md` files
+ *                    from the shared `agents-skills` module (shared with
+ *                    the generic `agent` platform).
  *   - Hooks   (T-3): `.codex/hooks.json` wiring the five Codex lifecycle
  *                    events to the shared handler script.
  *   - Handler (T-4): `.codex/hooks/bp-handler.mjs` — byte-deterministic

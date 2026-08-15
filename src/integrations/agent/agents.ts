@@ -1,7 +1,10 @@
 /**
- * agent/agents.ts — .agent/ agent file generator
+ * agent/agents.ts — `.agents/agents/` sub-agent file generator
  *
- * Generates .agent/agents/bp-<role>.md files with generic frontmatter.
+ * Generates `.agents/agents/bp-<role>.md` files with generic frontmatter.
+ * Pairs with `.agents/skills/bp-<step>/SKILL.md` (see `skills.ts` /
+ * `shared/agents-skills.ts`) to form the generic-agent platform output
+ * under the shared `.agents/` directory.
  */
 
 import type { ProjectConfig } from '../../types/index.js';
@@ -43,7 +46,7 @@ export function generateAgentAgents(config: ProjectConfig): { path: string; cont
   return AGENT_DEFS.map((def) => {
     const model = config.models?.[def.role];
     return {
-      path: `.agent/agents/bp-${def.role}.md`,
+      path: `.agents/agents/bp-${def.role}.md`,
       content: generateAgentAgent(model ? { ...def, model } : def, config.prompt_profile),
     };
   });

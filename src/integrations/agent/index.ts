@@ -10,6 +10,8 @@ export function registerAgentProvider(): void {
     name: 'Agent Platform',
     capabilities: { supportsCommands: false },
     generate(config) {
+      // `.agents/skills/` is shared with the `codex` platform — the file
+      // writer overwrites with identical content when both are configured.
       return [
         ...generateAgentSkills(config),
         ...generateAgentAgents(config),
