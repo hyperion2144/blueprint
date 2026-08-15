@@ -192,6 +192,14 @@ function cleanupStaleFiles(baseDir: string, generatedPaths: string[]): void {
       }
     }
   }
+
+  // .dsh/agents/ — file-based, bp- prefix guard (only bp-generated agents)
+  const dshAgentsDir = join(baseDir, '.dsh', 'agents');
+  if (existsSync(dshAgentsDir)) {
+    for (const file of readdirSync(dshAgentsDir)) {
+      checkRemove(dshAgentsDir, '.dsh/agents', file);
+    }
+  }
   // .pi/skills/bp-* — directory-based cleanup; non-bp skill directories
   // must remain untouched (mirror of the .agents/skills/ block).
   const piSkillsDir = join(baseDir, '.pi', 'skills');

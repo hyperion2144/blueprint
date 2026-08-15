@@ -101,7 +101,10 @@ const FORMATS: Record<string, DispatchFormat> = {
     tool: 'subagent',
     params: {
       description: 'bp-<role> sub-agent',
-      prompt: '<prompt>',
+      // DSH has no runtime agent-file discovery — the orchestrator
+      // references the generated prompt file by path; the sub-agent
+      // reads it with its own tools.
+      prompt: 'Read .dsh/agents/bp-<role>.md, then execute: <task>',
     },
   },
 };
