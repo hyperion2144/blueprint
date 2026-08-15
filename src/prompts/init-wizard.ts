@@ -18,6 +18,7 @@ export const PLATFORM_OPTIONS: ReadonlyArray<{ value: string; label: string; hin
   { value: 'agent', label: 'Agent (generic)', hint: 'generates .agent/skills/ + .agent/agents/ with [BP:xxx] params' },
   { value: 'codex', label: 'Codex CLI', hint: 'generates .agents/skills/bp-*/ and .codex/hooks.json' },
   { value: 'pi', label: 'Pi Coding Agent', hint: 'generates .pi/skills/, .pi/agents/, and .pi/extensions/bp/' },
+  { value: 'opencode', label: 'OpenCode', hint: 'generates .opencode/commands/ + .opencode/agents/' },
 ];
 
 /** Thrown when the user aborts the wizard (Ctrl+C cancels the active prompt). */

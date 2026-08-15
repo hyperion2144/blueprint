@@ -70,6 +70,19 @@ describe('bp init — Codex platform support (T-5)', () => {
     expect(piOpt!.hint).toContain('.pi/extensions/bp/');
   });
 
+
+  it('init wizard exposes an OpenCode option in the platform picker', () => {
+    const ocOpt = PLATFORM_OPTIONS.find((o) => o.value === 'opencode');
+    expect(ocOpt).toBeDefined();
+    expect(ocOpt!.hint).toContain('.opencode/commands/');
+  });
+
+  it('every registered platform is selectable in the wizard', () => {
+    const values = PLATFORM_OPTIONS.map((o) => o.value).sort();
+    expect(values).toEqual(['agent', 'claude-code', 'codex', 'omp', 'opencode', 'pi']);
+  });
+
+
   it('generated .gitignore contains `.pi/` and `.opencode/`', () => {
     const gitignorePath = join(testDir, '.gitignore');
     expect(existsSync(gitignorePath)).toBe(true);
