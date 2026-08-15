@@ -78,6 +78,7 @@ Non-PASS review verdicts route through `bp check`: the fixer (`bp dispatch fixer
 | `src/integrations/claude-code/` | Claude Code platform generator (commands, agents, hooks) |
 | `src/integrations/agent/` | Generic `.agents/` platform generator (skills, agents) |
 | `src/integrations/codex/` | OpenAI Codex CLI platform generator (Skills, hooks.json, handler runtime) |
+| `src/integrations/dsh/` | DeepSeek Harness platform generator (`.dsh/skills`, kebab-case names) |
 | `src/prompts/` | Interactive init wizard (`@clack/prompts`) |
 | `tests/core/` | Unit tests for core modules |
 | `tests/integration/` | Integration tests (lifecycle.test.ts, e2e.test.ts, bp.test.ts) |
@@ -187,7 +188,7 @@ node bin/cli.js     # Run CLI in dev mode (no install needed)
 - **CLI**: Commander.js
 - **Prompts**: `@clack/prompts` (interactive wizard)
 - **Lint**: biome (format + lint)
-- **Platform targets**: OMP (primary), Claude Code, .agents
+- **Platform targets**: OMP (primary), Claude Code, .agents, .dsh
 
 ---
 
@@ -209,7 +210,7 @@ tests/parser/         — Parser unit tests (frontmatter, heading-tree, spec-par
 - Integration tests create temp dirs, `git init`, run `execSync('node bin/cli.js ...')`
 - Helper functions: `cli()`, `expectBlocked()`, `expectAdvanced()`, `expectState()`
 - `VALID_*` constants define valid input files
-- Snapshot tests for generated platform files (`.omp/`, `.claude/`, `.codex/`, `.agents/`, `.pi/`, `.opencode/`)
+- Snapshot tests for generated platform files (`.omp/`, `.claude/`, `.codex/`, `.agents/`, `.dsh/`, `.pi/`, `.opencode/`)
 - Run `npx vitest run --update` to update snapshots after intentional generator changes
 
 ### Running tests
@@ -223,7 +224,7 @@ npx vitest run --update  # Update snapshots
 ### Coverage
 - Full test suite: 16 test files
 - Integration lifecycle test covers the full init→archive flow
-- Snapshot tests cover all 3 platform generators
+- Snapshot tests cover all platform generators (OMP, Claude Code, `.agents`, `.dsh`, Pi)
 - No official coverage threshold enforced
 
 ## Context Injection (OMP Extension)

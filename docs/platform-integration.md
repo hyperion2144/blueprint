@@ -156,6 +156,8 @@ exported from `src/integrations/omp/extension-runtime.ts` as
 | `.omp/commands/bp-*.md`          | `src/integrations/omp/commands.ts`               |
 | `.omp/agents/bp-*.md`            | `src/integrations/omp/agents.ts`                 |
 | `.agents/skills/bp-*/SKILL.md`   | `src/integrations/shared/agents-skills.ts` (shared by `codex` and the generic `agent` platform) |
+| `.dsh/skills/bp-*/SKILL.md`      | `src/integrations/dsh/skills.ts` (same step source, kebab-case names) |
+| `.dsh/agents/bp-*.md`            | `src/integrations/dsh/agents.ts` (same prompts as `.agents/agents/`) |
 | `.codex/hooks.json`              | `src/integrations/codex/hooks.ts`                |
 | `.codex/hooks/bp-handler.mjs`    | `src/templates/codex/handler.tmpl.ts`            |
 | `.claude/settings.json`          | `src/integrations/claude-code/hooks.ts`          |
@@ -180,6 +182,7 @@ same instruction body resolved from `WORKFLOW_REGISTRY['refactor']`:
 | Claude Code | `.claude/commands/bp-refactor.md` — frontmatter `name: bp:refactor`, `argument-hint: "<target>"` |
 | OpenCode | `.opencode/commands/bp-refactor.md` — frontmatter `description` only |
 | Agent / Codex | `.agents/skills/bp-refactor/SKILL.md` — frontmatter `name: bp:refactor` (shared by both platforms) |
+| DSH | `.dsh/skills/bp-refactor/SKILL.md` — frontmatter `name: bp-refactor` (kebab-case; DSH rejects colons in skill names) |
 
 The `refactorer` sub-agent role is generated alongside on the platforms that
 ship agents: `.omp/agents/bp-refactorer.md`, `.claude/agents/bp-refactorer.md`,
@@ -275,6 +278,53 @@ worktree primitive) and uses `tool: task` as the dispatch format.
 `bp update` cleanup is conservative: only `.codex/hooks.json` and stale
 `.agents/skills/bp-*` directories are removed; unrelated `.codex` files
 and third-party Skills are preserved.
+
+## DeepSeek Harness (DSH) — Project Skills
+
+The DeepSeek Harness discovers project-scoped skills under the
+`<git-root>/.dsh/skills/<name>/SKILL.md` layout (project root, highest
+project-level precedence) and user-scoped skills under `~/.dsh/skills/`
+and `~/.agents/skills/`. Its skill parser validates the frontmatter
+`name` against the strict kebab-case grammar
+`/^[a-z0-9]+(?:-[a-z0-9]+)*$/` — the Agent Skills colon convention
+(`name: bp:plan`) is **rejected**, so the `dsh` platform renders
+hyphenated names (`name: bp-plan`) at `.dsh/skills/`.
+
+When `platform: [dsh]` is set in `bp/config.yaml`, `bp update` generates:
+
+- **16 Skills** at `.dsh/skills/bp-<step>/SKILL.md` (`name: bp-<step>`,
+  no `argument-hint`, no `hide`) for the canonical sixteen workflow
+  steps. Bodies are byte-identical to the shared `WORKFLOW_REGISTRY`
+  instructions; only the frontmatter name differs from the
+  `.agents/skills/` variant. Step list and descriptions are sourced from
+  `src/integrations/shared/agents-skills.ts` via
+  `src/integrations/dsh/skills.ts`.
+- **7 sub-agent prompt files** at `.dsh/agents/bp-<role>.md`
+  (planner, executor, reviewer, codebase-scanner, refactorer, fixer,
+  designer), byte-identical to the `.agents/agents/` variants. DSH has
+  **no runtime file-discovery for sub-agents**, so these files are not
+  loaded automatically — `bp dispatch <role>` references the file by
+  path inside the `subagent` tool's `prompt` argument:
+
+  ```
+  description: bp-executor sub-agent
+  prompt: Read .dsh/agents/bp-executor.md, then execute: <task>
+  ```
+
+  The spawned sub-agent (a fresh DSH child session with the full tool
+  set) reads the file itself; role instructions therefore stay in one
+  canonical place per platform.
+
+The harness refreshes its model-facing skill catalog per step (digest
+diff), so newly generated skills appear without a restart.
+
+`bp dispatch executor` for DSH prints instructions to create a temporary
+worktree with `git worktree add` (no native isolation primitive) and
+uses the `subagent` tool with `description` + `prompt` parameters.
+
+`bp update` cleanup is conservative for DSH: only stale
+`.dsh/skills/bp-*` directories and `.dsh/agents/bp-*.md` files are
+removed; user-owned files (non-bp prefix) are preserved.
 
 ## Claude Code — Settings and Hooks
 

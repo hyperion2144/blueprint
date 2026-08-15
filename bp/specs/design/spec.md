@@ -87,7 +87,7 @@ The system SHALL generate the five design steps' skill files (and command files 
 - **GIVEN** a ProjectConfig with `platform: [omp, claude-code, agent, codex, pi]`
 - **WHEN** `bp update` runs
 - **THEN** `.pi/skills/bp-design/SKILL.md`, `.pi/skills/bp-design-html/SKILL.md`, `.pi/skills/bp-design-review/SKILL.md`, `.pi/skills/bp-design-shotgun/SKILL.md`, and `.pi/skills/bp-plan-design-review/SKILL.md` all exist
-- **AND** the corresponding skill files exist under `.omp/skills/` and `.agents/skills/` (shared by the generic `agent` and `codex` platforms)
+- **AND** the corresponding skill files exist under `.omp/skills/` and `.agents/skills/` (shared by the generic `agent` and `codex` platforms) and `.dsh/skills/`
 - **AND** command files `bp:design*` exist under `.omp/commands/` and `.claude/commands/`
 - **AND** each generated body is byte-identical to `WORKFLOW_REGISTRY[<step>].skill().instructions` (skills) or `.command().content` (commands)
 

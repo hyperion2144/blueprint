@@ -1,10 +1,13 @@
 # Platform-Gen — Initial Spec
 ## SHALL
-### SHALL support four platforms: omp, claude-code, agent, codex
+### SHALL support platforms: omp, claude-code, agent, codex, dsh
 - SHALL `bp update`: iterate over `project.yml.platform` array and generate files for each listed platform.
   - GIVEN `platform: [omp, agent]`
   - WHEN `bp update` runs
   - THEN `.omp/commands/`, `.omp/agents/`, AND `.agents/skills/`, `.agents/agents/` are all generated
+  - GIVEN `platform: [dsh]`
+  - WHEN `bp update` runs
+  - THEN `.dsh/skills/bp-<step>/SKILL.md` files are generated for all sixteen workflow steps
 
 ### SHALL generate `.agents/skills/` with the Agent Skills standard frontmatter
 - SHALL `.agents/skills/bp-<step>/SKILL.md`: frontmatter uses `name: bp:<step>` (colon slash-command) and `description`; SHALL NOT include `argument-hint` or `hide`.
@@ -13,6 +16,14 @@
   - THEN a single set of sixteen `.agents/skills/bp-<step>/SKILL.md` files is generated with byte-identical content from both providers
   - AND no `argument-hint` field is rendered (Agent Skills standard)
   - AND the `name:` value uses the colon convention (`bp:<step>`)
+
+### SHALL generate `.dsh/skills/` with kebab-case frontmatter names
+- SHALL `.dsh/skills/bp-<step>/SKILL.md`: frontmatter uses `name: bp-<step>` (hyphen, NO colon) and `description`; SHALL NOT include `argument-hint` or `hide`.
+  - GIVEN the DeepSeek Harness skill provider (`@deepseek-ai/dsh-skill-filesystem`) validates skill names against the grammar `/^[a-z0-9]+(?:-[a-z0-9]+)*$/`
+  - WHEN `bp update` runs with `platform: [dsh]`
+  - THEN sixteen `.dsh/skills/bp-<step>/SKILL.md` files are generated
+  - AND every `name:` value matches the kebab-case grammar (`bp-<step>`, no colons)
+  - AND each body is byte-identical to the corresponding `WORKFLOW_REGISTRY` instructions
 
 ### SHALL generate `.agents/agents/` with generic frontmatter
 - SHALL `.agents/agents/bp-<role>.md`: use generic frontmatter fields (name, description, role, tools) instead of OMP-specific fields.
@@ -122,6 +133,48 @@ The system SHALL register `codex` as a first-class platform and, when selected, 
 - **WHEN** generation runs
 - **THEN** the command SHALL exit with code 1 and report the unknown platform
 - **AND** SHALL NOT write a partial Codex output set
+
+
+### Requirement: dsh-platform-support
+The system SHALL register `dsh` as a first-class platform and, when selected, generate sixteen project-scoped Skills under `.dsh/skills/bp-<step>/SKILL.md` with kebab-case frontmatter names (`name: bp-<step>`), compatible with the DeepSeek Harness skill provider's name grammar (`/^[a-z0-9]+(?:-[a-z0-9]+)*$/`), AND seven sub-agent system-prompt files under `.dsh/agents/bp-<role>.md` whose content SHALL be byte-identical to the `.agents/agents/` variants. The `dsh` platform SHALL be offered in the interactive init platform picker, SHALL add `.dsh/` to the generated `.gitignore`, and SHALL clean up stale `.dsh/skills/bp-*` directories and `.dsh/agents/bp-*.md` files during `bp update` while preserving non-bp user files. `bp dispatch <role>` for the `dsh` platform SHALL emit a `subagent` tool call whose `prompt` references the generated agent file by path (`Read .dsh/agents/bp-<role>.md, then execute: <task>`).
+#### Scenario: Generate DSH platform files
+- **GIVEN** a valid project configuration with `platform: [dsh]`
+- **WHEN** `bp update` runs
+- **THEN** sixteen Skill files SHALL be generated under `.dsh/skills/bp-<step>/SKILL.md`
+- **AND** each Skill SHALL use kebab-case `name: bp-<step>` frontmatter (no colon, no `argument-hint`, no `hide`)
+- **AND** each body SHALL be byte-identical to the corresponding workflow registry instructions
+- **AND** seven agent prompt files SHALL be generated under `.dsh/agents/bp-<role>.md` (`planner`, `executor`, `reviewer`, `codebase-scanner`, `refactorer`, `fixer`, `designer`)
+- **AND** each agent file's content SHALL be byte-identical to the corresponding `.agents/agents/bp-<role>.md` variant
+
+#### Scenario: DSH dispatch references the agent file by path
+- **GIVEN** a project configured with `platform: [dsh]`
+- **WHEN** `bp dispatch executor --change <name>` runs
+- **THEN** output SHALL instruct calling the `subagent` tool
+- **AND** the `prompt` parameter SHALL reference `.dsh/agents/bp-executor.md` by path
+- **AND** the `description` parameter SHALL be `bp-executor sub-agent`
+
+#### Scenario: Design steps are generated for DSH
+- **GIVEN** a valid project configuration with `platform: [dsh]`
+- **WHEN** `bp update` runs
+- **THEN** `.dsh/skills/bp-design/SKILL.md`, `.dsh/skills/bp-design-html/SKILL.md`, `.dsh/skills/bp-design-review/SKILL.md`, `.dsh/skills/bp-design-shotgun/SKILL.md`, and `.dsh/skills/bp-plan-design-review/SKILL.md` SHALL all exist
+
+#### Scenario: Select DSH in init
+- **GIVEN** the interactive init wizard is displayed
+- **WHEN** platform options are listed
+- **THEN** a `DeepSeek Harness` option SHALL be available
+- **AND** its description SHALL identify the generated `.dsh/skills/` surface
+- **AND** the generated `.gitignore` SHALL contain `.dsh/`
+
+#### Scenario: DSH stale cleanup preserves user files
+- **GIVEN** `.dsh/skills/bp-archive-old/` (stale), `.dsh/agents/bp-old-planner.md` (stale), `.dsh/skills/my-custom-skill/` (user-owned), and `.dsh/agents/my-custom-agent.md` (user-owned) exist
+- **WHEN** `bp update` runs with `dsh` configured
+- **THEN** the stale `.dsh/skills/bp-archive-old/` directory and `.dsh/agents/bp-old-planner.md` SHALL be removed and logged
+- **AND** the user-owned files SHALL remain unchanged
+
+#### Scenario: Preserve deterministic output
+- **GIVEN** the same ProjectConfig and workflow sources
+- **WHEN** DSH generation runs twice
+- **THEN** every generated path and content byte SHALL be identical
 
 
 ### Requirement: codex-hook-runtime
@@ -272,13 +325,14 @@ The system SHALL register a `refactor` workflow step in `WORKFLOW_REGISTRY` and 
 - `.claude/commands/bp-refactor.md` — frontmatter `name: bp:refactor`, `description`, `argument-hint: "<target>"`, body = same content.
 - `.opencode/commands/bp-refactor.md` — frontmatter `description`, body = same content.
 - `.agents/skills/bp-refactor/SKILL.md` — frontmatter `name: bp:refactor`, `description`, body = `WORKFLOW_REGISTRY['refactor'].skill().instructions`. Emitted by both the generic `agent` and `codex` platforms (single byte-identical file per step).
+- `.dsh/skills/bp-refactor/SKILL.md` — frontmatter `name: bp-refactor` (kebab-case for DSH discovery), `description`, body = same content.
 
 The body emitted on every platform SHALL be byte-identical to `WORKFLOW_REGISTRY['refactor'].command().content` and SHALL contain the section headers `## Input`, `## Steps`, `## Output`, `## Guardrails` in English-only prose.
-#### Scenario: refactor step generates across all five platforms
-- **GIVEN** a ProjectConfig with `platform: [omp, claude-code, opencode, agent, codex]`
+#### Scenario: refactor step generates across all six platforms
+- **GIVEN** a ProjectConfig with `platform: [omp, claude-code, opencode, agent, codex, dsh]`
 - **WHEN** `bp update` runs
-- **THEN** `.omp/commands/bp-refactor.md`, `.claude/commands/bp-refactor.md`, `.opencode/commands/bp-refactor.md`, AND `.agents/skills/bp-refactor/SKILL.md` are all generated
-- **AND** each generated file's body is byte-identical to the other three (modulo frontmatter wrapping).
+- **THEN** `.omp/commands/bp-refactor.md`, `.claude/commands/bp-refactor.md`, `.opencode/commands/bp-refactor.md`, `.agents/skills/bp-refactor/SKILL.md`, AND `.dsh/skills/bp-refactor/SKILL.md` are all generated
+- **AND** each generated file's body is byte-identical to the other four (modulo frontmatter wrapping).
 
 #### Scenario: bp refactor CLI prints step instructions
 - **GIVEN** an initialized bp project at any directory
