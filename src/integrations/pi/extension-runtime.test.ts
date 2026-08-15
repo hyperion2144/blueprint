@@ -274,62 +274,7 @@ describe('handleSessionStart (T-4)', () => {
   });
 });
 
-describe('handleContext (T-4)', () => {
-  it('injects bp-workflow-state on a fresh user turn', async () => {
-    const ext = createPiExtension();
-    const ctx: PiExtensionContext = { cwd: testDir };
 
-    const msgs = [{ role: 'user', content: 'hello' }];
-    const result = await ext.handleContext({ messages: msgs }, ctx, makeApi().api);
-    expect(result?.messages).toHaveLength(2);
-    expect(result!.messages[1].customType).toBe('bp-workflow-state');
-    expect(result!.messages[1].display).toBe(false);
-    expect(result!.messages[1].content).toContain('m1: First milestone [ACTIVE]');
-  });
-
-  it('does not inject on tool-execution turns (last message not user)', async () => {
-    const ext = createPiExtension();
-    const ctx: PiExtensionContext = { cwd: testDir };
-
-    for (const last of [{ role: 'assistant', content: 'calling a tool' }, { role: 'toolResult', content: 'ok' }]) {
-      const msgs = [{ role: 'user', content: 'hi' }, last];
-      const result = await ext.handleContext({ messages: msgs }, ctx, makeApi().api);
-      expect(result?.messages).toHaveLength(2);
-      expect(result!.messages.some((m) => m.customType === 'bp-workflow-state')).toBe(false);
-    }
-  });
-
-  it('does not inject twice when the state message is already present', async () => {
-    const ext = createPiExtension();
-    const ctx: PiExtensionContext = { cwd: testDir };
-
-    // [user, state] from a previous turn, then a new user turn.
-    const msgs = [
-      { role: 'user', content: 'first' },
-      { role: 'custom', customType: 'bp-workflow-state', content: 'stale', display: false, timestamp: 1 },
-      { role: 'user', content: 'second' },
-    ];
-    const result = await ext.handleContext({ messages: msgs }, ctx, makeApi().api);
-    expect(result?.messages).toHaveLength(3);
-  });
-
-  it('returns undefined under bypass and missing config', async () => {
-    const prev = process.env.BP_HOOKS;
-    process.env.BP_HOOKS = '0';
-    try {
-      const ext = createPiExtension();
-      expect(await ext.handleContext({ messages: [{ role: 'user', content: 'hi' }] }, { cwd: testDir }, makeApi().api)).toBeUndefined();
-    } finally {
-      if (prev === undefined) delete process.env.BP_HOOKS;
-      else process.env.BP_HOOKS = prev;
-    }
-
-    const bareDir = join(testDir, 'bare3');
-    mkdirSync(bareDir, { recursive: true });
-    const ext = createPiExtension();
-    expect(await ext.handleContext({ messages: [{ role: 'user', content: 'hi' }] }, { cwd: bareDir }, makeApi().api)).toBeUndefined();
-  });
-});
 
 describe('runtime ↔ template lockstep (T-4)', () => {
   it('re-exports EXTENSION_SOURCE byte-identical to the template', () => {

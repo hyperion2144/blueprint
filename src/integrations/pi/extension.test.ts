@@ -16,21 +16,21 @@ import { EXTENSION_SOURCE } from '../../templates/pi/extension.tmpl.js';
 import type { ProjectConfig } from '../../types/index.js';
 
 describe('pi extension template source (T-3)', () => {
-  it('registers the context handlers and the bp_subagent tool (no before_agent_start)', () => {
+  it('registers session_start and the bp_subagent tool only (no per-LLM lifecycle hooks)', () => {
     expect(EXTENSION_SOURCE).toContain('api.on("session_start"');
-    expect(EXTENSION_SOURCE).toContain('api.on("context"');
-    expect(EXTENSION_SOURCE).not.toContain('before_agent_start');
+    expect(EXTENSION_SOURCE).not.toContain('api.on("context"');
+    expect(EXTENSION_SOURCE).not.toContain('api.on("before_agent_start"');
     expect(EXTENSION_SOURCE).toContain('name: "bp_subagent"');
   });
 
-  it('injects workflow state only on fresh user turns (never tool-execution turns)', () => {
-    expect(EXTENSION_SOURCE).toContain('last.role !== "user"');
-    expect(EXTENSION_SOURCE).toContain('customType: "bp-workflow-state"');
+  it('sends no bp-workflow-state message (no per-LLM-call injection)', () => {
+    expect(EXTENSION_SOURCE).not.toContain('bp-workflow-state');
+    expect(EXTENSION_SOURCE).toContain('bp-context');
   });
 
-  it('contains the env-bypass check, workflow-state customType, and pi package imports', () => {
+  it('contains the env-bypass check, bp-context customType, and pi package imports', () => {
     expect(EXTENSION_SOURCE).toContain('process.env.BP_HOOKS === "0"');
-    expect(EXTENSION_SOURCE).toContain('customType: "bp-workflow-state"');
+    expect(EXTENSION_SOURCE).toContain('buildStateMessage("bp-context"');
     expect(EXTENSION_SOURCE).toContain('@earendil-works/pi-coding-agent');
   });
 

@@ -464,7 +464,7 @@ The system SHALL emit the bp extension at `.pi/extensions/bp/index.ts` whose con
 
 
 ### Requirement: pi-extension-context-contract
-The generated pi extension SHALL port the OMP context contract onto pi's extension events: (1) at `session_start`, SHALL append a `bp-context` custom message whose body is a compact context block, augmented per detected agent type; (2) at `before_agent_start`, SHALL inject a `bp-workflow-state` message at most once per session; (3) at `context`, SHALL re-inject a `bp-workflow-state` message into the message list whenever no message with that custom type is present. Agent type SHALL be detected from the effective system prompt text.
+The generated pi extension SHALL inject project context exactly once per session: at `session_start`, SHALL append a `bp-context` custom message whose body is a compact context block, augmented per detected agent type. The extension SHALL register no per-LLM-call lifecycle hooks (`before_agent_start` / `context`) and SHALL NOT emit any `bp-workflow-state` message. Agent type SHALL be detected from the effective system prompt text.
 #### Scenario: Planner session receives roadmap augmentation
 - **GIVEN** a configured project whose active change has a milestone and phase, and a session whose system prompt contains the planner role marker
 - **WHEN** the `session_start` handler runs
@@ -491,18 +491,6 @@ The generated pi extension SHALL port the OMP context contract onto pi's extensi
 - **GIVEN** a configured project and a session whose system prompt contains none of the role markers
 - **WHEN** the `session_start` handler runs
 - **THEN** the emitted body is the paths-only compact context block with no augmentation
-
-#### Scenario: Workflow state is injected once per session
-- **GIVEN** a configured project
-- **WHEN** the `before_agent_start` handler runs twice in the same session
-- **THEN** the first invocation returns a `bp-workflow-state` message containing a state summary
-- **AND** the second invocation returns no message
-
-#### Scenario: Workflow state is re-injected after compaction
-- **GIVEN** a configured project and a `context` event whose message list contains no `bp-workflow-state` custom message
-- **WHEN** the `context` handler runs
-- **THEN** a `bp-workflow-state` message is pushed into the returned message list
-- **AND** when the message list already contains one, the handler returns the list unchanged
 
 
 ### Requirement: pi-extension-subagent-tool
@@ -533,17 +521,17 @@ The generated pi extension SHALL register a `bp_subagent` tool that discovers ag
 
 
 ### Requirement: pi-extension-bypass-and-config-skip
-When `BP_HOOKS=0` or `BP_DISABLE_HOOKS=1` is set in the environment, every pi extension handler (`session_start`, `before_agent_start`, `context`) SHALL return immediately without appending or returning any message. When `bp/config.yaml` is absent at the working directory, every handler SHALL behave identically.
+When `BP_HOOKS=0` or `BP_DISABLE_HOOKS=1` is set in the environment, the pi `session_start` handler SHALL return immediately without sending any message. When `bp/config.yaml` is absent at the working directory, the handler SHALL behave identically.
 #### Scenario: Environment bypass short-circuits handlers
 - **GIVEN** `BP_HOOKS=0` in the environment and a configured project
-- **WHEN** any of the three handlers runs
-- **THEN** no message is appended and no message is returned
+- **WHEN** the `session_start` handler runs
+- **THEN** no message is sent
 - **AND** no bp runtime data is read
 
 #### Scenario: Missing config skips handlers
 - **GIVEN** a working directory without `bp/config.yaml`
-- **WHEN** any of the three handlers runs
-- **THEN** no message is appended and no message is returned
+- **WHEN** the `session_start` handler runs
+- **THEN** no message is sent
 
 
 ### Requirement: pi-update-cleanup
