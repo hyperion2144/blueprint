@@ -91,20 +91,26 @@ export function deriveState(bpDir: string): StateResult {
     ? { id: mileMatch.groups!.id, name: mileMatch.groups!.name.trim(), status: mileMatch.groups!.status }
     : null;
 
-  // Match phases under the active milestone
-  // Walk headings in order; find the first non-completed phase under the active milestone
-  const phaseMatches = roadmap.matchAll(PHASE_HEADING_RE);
-  const phases = Array.from(phaseMatches).map((m) => ({
-    id: m.groups!.id,
-    name: m.groups!.name.trim(),
-    status: m.groups!.status,
-    startLine: m.index ?? 0,
-  }));
+  // Match phases under the ACTIVE milestone only — slice from the milestone
+  // heading to the next `## Milestone:` heading. Without the slice, a fully
+  // completed milestone (e.g. M1 with all P1.x done) wrongly pairs with the
+  // first non-completed phase of a LATER milestone (M3's P3.1).
+  let activePhase: StateResult['phase'] = null;
+  if (milestone) {
+    const mileStart = mileMatch!.index ?? 0;
+    const nextMile = roadmap.indexOf('\n## Milestone:', mileStart + 1);
+    const section = nextMile > mileStart ? roadmap.slice(mileStart, nextMile) : roadmap.slice(mileStart);
+    const phaseMatches = section.matchAll(PHASE_HEADING_RE);
+    const phases = Array.from(phaseMatches).map((m) => ({
+      id: m.groups!.id,
+      name: m.groups!.name.trim(),
+      status: m.groups!.status,
+      startLine: mileStart + (m.index ?? 0),
+    }));
 
-  // Find the first phase that isn't DONE/COMPLETED
-  const activePhase = phases.find(
-    (p) => p.status !== 'DONE' && p.status !== 'COMPLETED',
-  ) ?? null;
+    // Find the first phase that isn't DONE/COMPLETED
+    activePhase = phases.find((p) => p.status !== 'DONE' && p.status !== 'COMPLETED') ?? null;
+  }
 
   // Parse pending changes for the active phase
   const pendingChanges: Array<{ name: string; status: string }> = [];
