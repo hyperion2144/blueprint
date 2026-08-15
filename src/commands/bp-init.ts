@@ -15,7 +15,7 @@ import type { Command } from 'commander';
 import type { Profile, ProjectConfig } from '../types/index.js';
 import { createBlueprintStructure, isInitialized } from '../core/file-tree.js';
 import { DEFAULT_REFACTOR_THRESHOLDS } from '../core/config.js';
-import { runInitWizard } from '../prompts/init-wizard.js';
+import { runInitWizard, WizardCancelledError } from '../prompts/init-wizard.js';
 import { detectProjectInfo, runBrownfieldInit } from '../core/brownfield.js';
 import { generateCodebaseMap, writeCodebaseMap } from '../core/codebase-map.js';
 import { generateAll } from '../generators/index.js';
@@ -52,7 +52,13 @@ async function initHandler(options: {
     process.exit(0);
   }
 
-  const wizard = await runInitWizard({ profile: options.profile, yes: options.yes });
+  const wizard = await runInitWizard({ profile: options.profile, yes: options.yes }).catch((err: unknown) => {
+    if (err instanceof WizardCancelledError) {
+      console.log('Init cancelled.');
+      process.exit(130);
+    }
+    throw err;
+  });
   const profile = wizard.profile;
   const platform = wizard.platform;
   const isBrownfield = options.brownfield || wizard.brownfield;
@@ -155,7 +161,7 @@ async function initHandler(options: {
   // Auto-create .gitignore when commitDocs is false (bp/ files should not be tracked)
   if (!wizard.commitDocs) {
     const gitignorePath = join(baseDir, '.gitignore');
-    const gitignoreEntries = ['bp/', '.omp/', '.claude/', '.agent/', '.codex/', '.agents/'];
+    const gitignoreEntries = ['bp/', '.omp/', '.claude/', '.agent/', '.codex/', '.agents/', '.pi/', '.opencode/'];
 
     if (existsSync(gitignorePath)) {
       // Append missing entries
@@ -167,7 +173,7 @@ async function initHandler(options: {
       }
     } else {
       writeFileSync(gitignorePath, gitignoreEntries.join('\n') + '\n', 'utf-8');
-      console.log('✓ .gitignore created (bp/, .omp/, .claude/, .agent/, .codex/, .agents/ ignored)');
+      console.log(`✓ .gitignore created (${gitignoreEntries.join(', ')} ignored)`);
     }
   }
 

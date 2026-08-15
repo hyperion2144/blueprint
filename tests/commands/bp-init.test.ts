@@ -60,6 +60,24 @@ describe('bp init — Codex platform support (T-5)', () => {
     expect(content).toContain('.codex/');
     expect(content).toContain('.agents/');
   });
+  it('init wizard exposes a Pi Coding Agent option in the platform picker', () => {
+    const piOpt = PLATFORM_OPTIONS.find((o) => o.value === 'pi');
+    expect(piOpt).toBeDefined();
+    expect(piOpt!.label).toContain('Pi');
+    // Description must identify the generated skills + agents + extension surfaces
+    expect(piOpt!.hint).toContain('.pi/skills/');
+    expect(piOpt!.hint).toContain('.pi/agents/');
+    expect(piOpt!.hint).toContain('.pi/extensions/bp/');
+  });
+
+  it('generated .gitignore contains `.pi/` and `.opencode/`', () => {
+    const gitignorePath = join(testDir, '.gitignore');
+    expect(existsSync(gitignorePath)).toBe(true);
+    const content = readFileSync(gitignorePath, 'utf-8');
+    expect(content).toContain('.pi/');
+    expect(content).toContain('.opencode/');
+  });
+
 
   it('appends missing gitignore entries without disturbing existing ones', () => {
     // Create a fresh temp dir with a pre-existing .gitignore that already

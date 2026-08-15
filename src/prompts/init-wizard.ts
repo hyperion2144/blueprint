@@ -17,8 +17,16 @@ export const PLATFORM_OPTIONS: ReadonlyArray<{ value: string; label: string; hin
   { value: 'claude-code', label: 'Claude Code', hint: 'generates .claude/commands/ + .claude/agents/' },
   { value: 'agent', label: 'Agent (generic)', hint: 'generates .agent/skills/ + .agent/agents/ with [BP:xxx] params' },
   { value: 'codex', label: 'Codex CLI', hint: 'generates .agents/skills/bp-*/ and .codex/hooks.json' },
-  { value: 'opencode', label: 'OpenCode', hint: 'generates .opencode/commands/ + .opencode/agents/' },
+  { value: 'pi', label: 'Pi Coding Agent', hint: 'generates .pi/skills/, .pi/agents/, and .pi/extensions/bp/' },
 ];
+
+/** Thrown when the user aborts the wizard (Ctrl+C cancels the active prompt). */
+export class WizardCancelledError extends Error {
+  constructor() {
+    super('wizard cancelled');
+    this.name = 'WizardCancelledError';
+  }
+}
 
 export async function runInitWizard(defaults: { profile: string; yes: boolean }): Promise<WizardOptions> {
   if (defaults.yes) {
@@ -26,6 +34,12 @@ export async function runInitWizard(defaults: { profile: string; yes: boolean })
   }
   try {
     const clack = await import('@clack/prompts');
+
+    /** Aborts the whole wizard when the user presses Ctrl+C on any prompt. */
+    const guard = (v: unknown): void => {
+      if (clack.isCancel(v)) throw new WizardCancelledError();
+    };
+
 
     // 1. Workflow profile
     const val = await clack.select({
@@ -36,6 +50,7 @@ export async function runInitWizard(defaults: { profile: string; yes: boolean })
       ],
       initialValue: defaults.profile,
     });
+    guard(val);
     const profile = (typeof val === 'string' ? val : defaults.profile) as Profile;
 
     // 2. Project context
@@ -43,6 +58,7 @@ export async function runInitWizard(defaults: { profile: string; yes: boolean })
       message: 'Project context — brief description of tech stack, domain, constraints:',
       placeholder: 'Tech stack: TypeScript, Node.js, Commander.js. A CLI tool for...',
     });
+    guard(ctxVal);
     const context = typeof ctxVal === 'string' ? ctxVal : '';
 
     // 3. Platform
@@ -51,6 +67,7 @@ export async function runInitWizard(defaults: { profile: string; yes: boolean })
       options: [...PLATFORM_OPTIONS],
       initialValues: ['omp'],
     });
+    guard(pfVal);
     const platform = Array.isArray(pfVal) ? pfVal as string[] : ['omp'];
 
     // 4. Brownfield
@@ -58,6 +75,7 @@ export async function runInitWizard(defaults: { profile: string; yes: boolean })
       message: 'Is this an existing (brownfield) project? — detects existing code and bootstraps specs from it',
       initialValue: false,
     });
+    guard(bfVal);
     const brownfield = typeof bfVal === 'boolean' ? bfVal : false;
 
     // 5. Spec stack — skip for brownfield (auto-detected in bp-init)
@@ -72,6 +90,7 @@ export async function runInitWizard(defaults: { profile: string; yes: boolean })
         })),
         initialValue: 'generic',
       });
+      guard(stackVal);
       specStack = typeof stackVal === 'string' ? stackVal : 'generic';
     }
 
@@ -85,6 +104,7 @@ export async function runInitWizard(defaults: { profile: string; yes: boolean })
       ],
       initialValue: 'standard',
     });
+    guard(relVal);
     const releaseTemplate = typeof relVal === 'string' ? relVal : 'standard';
 
     // 7. Commit docs
@@ -92,10 +112,12 @@ export async function runInitWizard(defaults: { profile: string; yes: boolean })
       message: 'Auto-commit documentation files with code changes? — if yes, spec/design/task docs are committed alongside code',
       initialValue: false,
     });
+    guard(cdVal);
     const commitDocs = typeof cdVal === 'boolean' ? cdVal : false;
 
     return { profile, context, platform, brownfield, specStack, releaseTemplate, commitDocs };
-  } catch {
+  } catch (err) {
+    if (err instanceof WizardCancelledError) throw err;
     console.log('(@clack/prompts not installed, using default config)');
     return { profile: defaults.profile as Profile, context: '', platform: ['omp'], brownfield: false, specStack: 'generic', releaseTemplate: 'standard', commitDocs: false };
   }
