@@ -5,7 +5,11 @@
 
 import { join } from 'node:path';
 import { existsSync } from 'node:fs';
-import { z } from 'zod';
+// Default-import form of zod — bun + vitest's Vite transformer fails to
+// resolve the `import { z } from 'zod'` named-export shape (`z` becomes
+// undefined at module evaluation). The default export is the same
+// `z` namespace, and `z.object` / `z.string` / etc. work identically.
+import z from 'zod';
 import { readYamlDoc, writeYamlDoc } from '../parser/yaml.js';
 import { PROFILE_MODEL_MAP } from '../types/config.js';
 import type { ProjectConfig, Profile, ModelMap, RefactorThresholds } from '../types/index.js';

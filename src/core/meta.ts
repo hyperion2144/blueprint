@@ -1,6 +1,7 @@
 import { join, dirname } from 'node:path';
 import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync } from 'node:fs';
-import { z } from 'zod';
+// Default-import form of zod — see src/core/config.ts for why.
+import z from 'zod';
 
 export interface RunMeta {
   role: string;          // planner | executor | reviewer

@@ -7,7 +7,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve, sep } from 'node:path';
 import { parse } from 'yaml';
-import { z } from 'zod';
+// Default-import form of zod — see src/core/config.ts for why.
+import z from 'zod';
 import { loadConfig } from './config.js';
 
 /** Strict regex for schema names — prevents path traversal via `config.schema`. */

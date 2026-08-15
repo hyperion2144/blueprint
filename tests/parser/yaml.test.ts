@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { readYaml, readYamlDoc, writeYamlDoc, updateYaml, parseYaml } from '../../src/parser/yaml.js';
-import { z } from 'zod';
+// Default-import form of zod — see src/core/config.ts for why.
+import z from 'zod';
 
 const tmpDir = join(process.cwd(), 'tests/tmp-yaml');
 const testFile = join(tmpDir, 'test.yml');

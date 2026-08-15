@@ -4,7 +4,8 @@
  */
 import { join } from 'node:path';
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
-import { z } from 'zod';
+// Default-import form of zod — see src/core/config.ts for why.
+import z from 'zod';
 
 const DEGRADATION_LOG = 'degradation-log.json';
 

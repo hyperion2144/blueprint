@@ -1,4 +1,5 @@
-import { z } from 'zod';
+// Default-import form of zod — see src/core/config.ts for why.
+import z from 'zod';
 
 export const CONTEXT_PHASES = ['plan', 'apply', 'check', 'archive', 'all'] as const;
 const CONTEXT_READ_MODES = ['full', 'range'] as const;
