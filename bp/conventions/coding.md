@@ -31,7 +31,7 @@
 - **Commands** (`src/commands/`): CLI handlers — gate + output workflow instructions
 - **Templates** (`src/templates/`): String constants for workflow instructions, artifact templates, agent prompts
 - **Parsers** (`src/parser/`): Markdown/YAML parsing primitives
-- **Integrations** (`src/integrations/`): Platform-specific file generators (OMP, Claude Code, .agent)
+- **Integrations** (`src/integrations/`): Platform-specific file generators (OMP, Claude Code, .agents)
 - **Generators** (`src/generators/`): Multi-platform generation coordination
 
 ## Error Handling
@@ -48,7 +48,7 @@
 - Test files: `*.test.ts`, co-located with source
 - TDD: type:behavior tasks must follow RED→GREEN→REFACTOR
 - Integration tests: temp dir + `execSync` + CLI invocation
-- Snapshot tests for generated platform files (`.omp/`, `.claude/`, `.agent/`)
+- Snapshot tests for generated platform files (`.omp/`, `.claude/`, `.codex/`, `.agents/`, `.pi/`, `.opencode/`)
 - Run `npx vitest run --update` to update snapshots after intentional generator changes
 
 ## Git
@@ -64,7 +64,7 @@
 | `commands` | `bp-*.ts` command implementations |
 | `templates` | Workflow instructions, artifact templates, agent prompts, spec-stacks |
 | `parser` | frontmatter, heading-tree, spec-parser, yaml parsers |
-| `integrations` | OMP, Claude Code, .agent platform generators |
+| `integrations` | OMP, Claude Code, `.agents` (agent + codex), Pi, OpenCode platform generators |
 | `generators` | Multi-platform generation coordination |
 | `test` | Test files, test infrastructure, test utilities |
 | `docs` | Documentation, `bp/` planning files, specs, summaries |

@@ -3,7 +3,6 @@ dist/
 bin/
 .omp/
 .serena/
-.agent/
 .claude/
 .meta/
 .codex/

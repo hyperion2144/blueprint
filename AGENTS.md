@@ -19,7 +19,7 @@ src/cli.ts (Commander entry)
   → src/commands/bp-*.ts (13 subcommands; 8 core)
   → src/core/*.ts (schema, artifact validation, config, continue engine)
   → src/templates/ (workflow instructions, artifact definitions, agent prompts)
-  → src/integrations/*/ (platform-specific generators: OMP, Claude Code, .agent)
+  → src/integrations/*/ (platform-specific generators: OMP, Claude Code, .agents)
 ```
 
 ### Core modules
@@ -76,7 +76,7 @@ Non-PASS review verdicts route through `bp check`: the fixer (`bp dispatch fixer
 | `src/templates/spec-stacks/` | Tech-stack-specific spec templates (typescript-cli, react-web, python-api, etc.) |
 | `src/integrations/omp/` | OMP platform generator (commands, skills, agents, hooks) |
 | `src/integrations/claude-code/` | Claude Code platform generator (commands, agents, hooks) |
-| `src/integrations/agent/` | Generic .agent platform generator (skills, agents) |
+| `src/integrations/agent/` | Generic `.agents/` platform generator (skills, agents) |
 | `src/integrations/codex/` | OpenAI Codex CLI platform generator (Skills, hooks.json, handler runtime) |
 | `src/prompts/` | Interactive init wizard (`@clack/prompts`) |
 | `tests/core/` | Unit tests for core modules |
@@ -187,7 +187,7 @@ node bin/cli.js     # Run CLI in dev mode (no install needed)
 - **CLI**: Commander.js
 - **Prompts**: `@clack/prompts` (interactive wizard)
 - **Lint**: biome (format + lint)
-- **Platform targets**: OMP (primary), Claude Code, .agent
+- **Platform targets**: OMP (primary), Claude Code, .agents
 
 ---
 
@@ -209,7 +209,7 @@ tests/parser/         — Parser unit tests (frontmatter, heading-tree, spec-par
 - Integration tests create temp dirs, `git init`, run `execSync('node bin/cli.js ...')`
 - Helper functions: `cli()`, `expectBlocked()`, `expectAdvanced()`, `expectState()`
 - `VALID_*` constants define valid input files
-- Snapshot tests for generated platform files (`.omp/`, `.claude/`, `.agent/`, `.codex/`, `.agents/`)
+- Snapshot tests for generated platform files (`.omp/`, `.claude/`, `.codex/`, `.agents/`, `.pi/`, `.opencode/`)
 - Run `npx vitest run --update` to update snapshots after intentional generator changes
 
 ### Running tests

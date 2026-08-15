@@ -28,7 +28,7 @@
 
 **Goal**: Refactor Blueprint from v1 (state machine, 25 commands, PEG grammars) to v2 (artifact-based, 8 commands, YAML schema) while preserving engineering rigor.
 **What**: Three phases — core engine rewrite; commands & templates; platform integration & testing.
-**Deliverables**: v2 CLI with 8 core commands, YAML schema validation, 3 sub-agent prompts, 4 platform generators (OMP, Claude Code, .agent, Codex).
+**Deliverables**: v2 CLI with 8 core commands, YAML schema validation, 3 sub-agent prompts, 4 platform generators (OMP, Claude Code, `.agents` (agent + codex), Codex).
 **Outcomes**: User can run `bp init` → `bp propose` → `bp plan` → `bp apply` → `bp check` → `bp archive` end-to-end with artifact-based progress detection.
 **Status**: ACTIVE
 
@@ -93,8 +93,8 @@
 
 ### Phase: P1.3 - Platform Integration & Testing [COMPLETED]
 
-- **Goal**: Update integrations (OMP, Claude Code, .agent, Codex), fix test suite, update docs
-- **What**: Migrate OMP/Claude/.agent generators to v2 platform-registry; add Codex generator; add Claude Code hooks; wire OMP extension for auto-context-injection.
+- **Goal**: Update integrations (OMP, Claude Code, `.agents`, Codex), fix test suite, update docs
+- **What**: Migrate OMP/Claude/`.agents` generators to v2 platform-registry; add Codex generator; add Claude Code hooks; wire OMP extension for auto-context-injection.
 - **Deliverables**: src/integrations/{omp,claude-code,agent,codex}/, full test suite under tests/
 - **Outcomes**: `bp init --platform <p>` generates correct platform files; `npm test` passes with 324+ tests across unit/integration/parser/command suites.
 - **Depends on**: P1.2
@@ -110,7 +110,7 @@
 
 - [x] v2-platform-tests (archived 2026-07-16)
   - **Goal**: Migrate platform generators to v2 platform-registry and fix test suite
-  - **What**: OMP, Claude Code, .agent generators + test suite migration
+  - **What**: OMP, Claude Code, `.agents` generators + test suite migration
   - **Deliverables**: src/integrations/{omp,claude-code,agent}/, tests/
   - **Outcomes**: All 3 platform generators produce byte-deterministic output pinned by snapshots
   - **Depends on**: v2-commands-templates

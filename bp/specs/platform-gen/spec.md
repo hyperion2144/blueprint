@@ -4,19 +4,20 @@
 - SHALL `bp update`: iterate over `project.yml.platform` array and generate files for each listed platform.
   - GIVEN `platform: [omp, agent]`
   - WHEN `bp update` runs
-  - THEN `.omp/commands/`, `.omp/agents/`, AND `.agent/skills/`, `.agent/agents/` are all generated
+  - THEN `.omp/commands/`, `.omp/agents/`, AND `.agents/skills/`, `.agents/agents/` are all generated
 
-### SHALL generate `.agent/skills/` with [BP:xxx] parameter format
-- SHALL `.agent/skills/bp-<step>/SKILL.md`: use `[BP:MILESTONE_ID]`, `[BP:CHANGE_NAME]`, etc. instead of `$1`/`$ARGUMENTS`.
-  - GIVEN a workflow step template with `$1` in body
-  - WHEN generating the `.agent/skills/` version
-  - THEN `$1` is replaced by `[BP:CHANGE_NAME]` (or appropriate `[BP:xxx]` key)
-  - AND `[BP:xxx]` parameters are substituted by `expandTemplateVars()` at runtime
+### SHALL generate `.agents/skills/` with the Agent Skills standard frontmatter
+- SHALL `.agents/skills/bp-<step>/SKILL.md`: frontmatter uses `name: bp:<step>` (colon slash-command) and `description`; SHALL NOT include `argument-hint` or `hide`.
+  - GIVEN the same agent Skills path is shared by both the generic `agent` platform and the `codex` platform
+  - WHEN `bp update` runs with either or both platforms configured
+  - THEN a single set of sixteen `.agents/skills/bp-<step>/SKILL.md` files is generated with byte-identical content from both providers
+  - AND no `argument-hint` field is rendered (Agent Skills standard)
+  - AND the `name:` value uses the colon convention (`bp:<step>`)
 
-### SHALL generate `.agent/agents/` with generic frontmatter
-- SHALL `.agent/agents/bp-<role>.md`: use generic frontmatter fields (name, description, role, tools) instead of OMP-specific fields.
+### SHALL generate `.agents/agents/` with generic frontmatter
+- SHALL `.agents/agents/bp-<role>.md`: use generic frontmatter fields (name, description, role, tools) instead of OMP-specific fields.
   - GIVEN the same agent definition
-  - WHEN generating the `.agent/` version
+  - WHEN generating the `.agents/agents/` version
   - THEN frontmatter does NOT include OMP-specific fields like `modelRoles` or `thinkingLevel`
   - AND tools are listed as a simple YAML array
 
@@ -32,7 +33,7 @@
 - MUST `bp update`: handle both single-platform and multi-platform `platform` arrays.
   - GIVEN `platform: [agent]`
   - WHEN `bp update` runs
-  - THEN only `.agent/` files are generated
+  - THEN only `.agents/` files are generated
   - GIVEN `platform: [omp, claude-code, agent]`
   - WHEN `bp update` runs
   - THEN all three platforms' files are generated
@@ -270,15 +271,14 @@ The system SHALL register a `refactor` workflow step in `WORKFLOW_REGISTRY` and 
 - `.omp/commands/bp-refactor.md` — frontmatter `name: bp:refactor`, `description`, `argument-hint: "<target>"`, body = `WORKFLOW_REGISTRY['refactor'].command().content`.
 - `.claude/commands/bp-refactor.md` — frontmatter `name: bp:refactor`, `description`, `argument-hint: "<target>"`, body = same content.
 - `.opencode/commands/bp-refactor.md` — frontmatter `description`, body = same content.
-- `.agent/skills/bp-refactor/SKILL.md` — frontmatter `name: bp-refactor`, `description`, `hide: false`, body = `WORKFLOW_REGISTRY['refactor'].skill().instructions`.
-- `.agents/skills/bp-refactor/SKILL.md` — Codex variant; frontmatter `name: bp:refactor`, `description`, body = same content.
+- `.agents/skills/bp-refactor/SKILL.md` — frontmatter `name: bp:refactor`, `description`, body = `WORKFLOW_REGISTRY['refactor'].skill().instructions`. Emitted by both the generic `agent` and `codex` platforms (single byte-identical file per step).
 
 The body emitted on every platform SHALL be byte-identical to `WORKFLOW_REGISTRY['refactor'].command().content` and SHALL contain the section headers `## Input`, `## Steps`, `## Output`, `## Guardrails` in English-only prose.
 #### Scenario: refactor step generates across all five platforms
 - **GIVEN** a ProjectConfig with `platform: [omp, claude-code, opencode, agent, codex]`
 - **WHEN** `bp update` runs
-- **THEN** `.omp/commands/bp-refactor.md`, `.claude/commands/bp-refactor.md`, `.opencode/commands/bp-refactor.md`, `.agent/skills/bp-refactor/SKILL.md`, AND `.agents/skills/bp-refactor/SKILL.md` are all generated
-- **AND** each generated file's body is byte-identical to the other four (modulo frontmatter wrapping).
+- **THEN** `.omp/commands/bp-refactor.md`, `.claude/commands/bp-refactor.md`, `.opencode/commands/bp-refactor.md`, AND `.agents/skills/bp-refactor/SKILL.md` are all generated
+- **AND** each generated file's body is byte-identical to the other three (modulo frontmatter wrapping).
 
 #### Scenario: bp refactor CLI prints step instructions
 - **GIVEN** an initialized bp project at any directory

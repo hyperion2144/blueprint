@@ -155,7 +155,7 @@ exported from `src/integrations/omp/extension-runtime.ts` as
 | `.omp/hooks/pre/bp.ts`           | `src/templates/omp/legacy-shim.tmpl.ts`          |
 | `.omp/commands/bp-*.md`          | `src/integrations/omp/commands.ts`               |
 | `.omp/agents/bp-*.md`            | `src/integrations/omp/agents.ts`                 |
-| `.agents/skills/bp-*/SKILL.md`   | `src/integrations/codex/skills.ts`               |
+| `.agents/skills/bp-*/SKILL.md`   | `src/integrations/shared/agents-skills.ts` (shared by `codex` and the generic `agent` platform) |
 | `.codex/hooks.json`              | `src/integrations/codex/hooks.ts`                |
 | `.codex/hooks/bp-handler.mjs`    | `src/templates/codex/handler.tmpl.ts`            |
 | `.claude/settings.json`          | `src/integrations/claude-code/hooks.ts`          |
@@ -179,12 +179,11 @@ same instruction body resolved from `WORKFLOW_REGISTRY['refactor']`:
 | OMP | `.omp/commands/bp-refactor.md` — frontmatter `name: bp:refactor`, `argument-hint: "<target>"` |
 | Claude Code | `.claude/commands/bp-refactor.md` — frontmatter `name: bp:refactor`, `argument-hint: "<target>"` |
 | OpenCode | `.opencode/commands/bp-refactor.md` — frontmatter `description` only |
-| Agent | `.agent/skills/bp-refactor/SKILL.md` — frontmatter `name: bp-refactor`, `hide: false` |
-| Codex | `.agents/skills/bp-refactor/SKILL.md` — frontmatter `name: bp:refactor` |
+| Agent / Codex | `.agents/skills/bp-refactor/SKILL.md` — frontmatter `name: bp:refactor` (shared by both platforms) |
 
 The `refactorer` sub-agent role is generated alongside on the platforms that
 ship agents: `.omp/agents/bp-refactorer.md`, `.claude/agents/bp-refactorer.md`,
-`.opencode/agents/bp-refactorer.md`, and `.agent/agents/bp-refactorer.md`, all
+`.opencode/agents/bp-refactorer.md`, and `.agents/agents/bp-refactorer.md`, all
 rendering the same `REFACTORER_PROMPT` body.
 
 ### Analyzer metrics and thresholds
@@ -251,10 +250,15 @@ events (`SessionStart`, `SessionStop`, `UserPromptSubmit`, `PreToolUse`,
 
 When `platform: [codex]` is set in `bp/config.yaml`, `bp update` generates:
 
-- **10 Skills** at `.agents/skills/bp-<step>/SKILL.md` (`name: bp:<step>`)
-  for `init`, `roadmap`, `propose`, `plan`, `apply`, `review`, `archive`,
-  `continue`, `ff`, `loop`. Bodies are sourced from the shared
-  `WORKFLOW_REGISTRY` so all platforms stay semantically identical.
+- **16 Skills** at `.agents/skills/bp-<step>/SKILL.md` (`name: bp:<step>`)
+  for the canonical sixteen workflow steps (init, roadmap, propose, plan,
+  apply, check, archive, continue, ff, loop, refactor, design,
+  design-html, design-review, design-shotgun, plan-design-review). Bodies
+  are sourced from the shared `WORKFLOW_REGISTRY` so all platforms stay
+  semantically identical. The same files are also emitted by the
+  generic `agent` platform from `src/integrations/shared/agents-skills.ts` —
+  enabling both `codex` and `agent` together produces one byte-identical
+  skill set, not two.
 - **`.codex/hooks.json`** wiring all 5 lifecycle events to a single
   `node .codex/hooks/bp-handler.mjs <event>` invocation.
 - **`.codex/hooks/bp-handler.mjs`** compiled from
