@@ -8,7 +8,7 @@
  * THEN it follows the grilling skill (design tree + frontier + rounds, whole
  *      frontier asked per round with numbered questions and recommended answers)
  *      and appears before the proposal template fetch
- * AND the template notes grilling may be skipped for trivial/light changes
+ * AND no level may bypass the grill — trivial/light changes are grilled too
  */
 
 import { describe, expect, it } from 'vitest';
@@ -46,10 +46,15 @@ describe('propose workflow grilling-first contract (T-17, grilling-skill aligned
     expect(content).toMatch(/from the grilling output/i);
   });
 
-  it('grilling may be skipped for trivial/light changes', () => {
+  it('no level bypasses the grill — trivial/light changes are grilled too', () => {
     const content = getProposeCommandTemplate().content;
-    expect(content).toMatch(/skip/i);
-    expect(content).toMatch(/trivial/i);
-    expect(content).toMatch(/light/i);
+    // The old grill skip gate is gone: no level is told to go straight from
+    // Step 0 to writing, and the grill section explicitly applies to every
+    // change. (Step 1b technical-research cost gating for standard/critical
+    // remains — that is not the grill.)
+    expect(content).not.toMatch(/Skip for trivial\/light changes/i);
+    expect(content).not.toMatch(/no interview/i);
+    expect(content).toMatch(/No level bypasses the grill/i);
+    expect(content).toMatch(/EVERY change is grilled/i);
   });
 });

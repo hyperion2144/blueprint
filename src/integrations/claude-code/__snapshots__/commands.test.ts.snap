@@ -1038,11 +1038,11 @@ Assess risk and assign a level:
 - **Standard**: cross-module, new behavior, medium risk (DEFAULT) → planner + wave executor + triple review.
 - **Critical**: auth/payment/data-consistency/core-path → full flow + security audit + human approval gate.
 
-Auto-assess from the user's described scope (or use \`--level <X>\` if provided) and write it to proposal.md's \`## Level\` section. Trivial/light may skip Step 1; standard/critical proceed to grill; critical is flagged for a security audit in design.md.
+Auto-assess from the user's described scope (or use \`--level <X>\` if provided) and write it to proposal.md's \`## Level\` section. **Every change is grilled in Step 1 — the level scales grilling depth, never whether it happens** (a trivial change is one frontier round, not zero); critical is flagged for a security audit in design.md.
 
 ### Step 1: Grill the user (grilling skill — design tree, frontier, rounds)
 
-> **Skip for trivial/light changes** (Step 0): go directly to Step 2 and fill the template from the user's one-line description — no interview.
+> **No level bypasses the grill.** Trivial/light changes are not written from a one-line description — their frontier is small but never empty. The level only tells you how deep the design tree goes.
 
 Follow the **grilling skill**: map the change as a **design tree** — every decision branches into the decisions that hang off it (problem, scope in/out, deliverables, approach + alternatives, research needed, edge cases, dependencies, constraints, roadmap context). Work the tree in **rounds**:
 
