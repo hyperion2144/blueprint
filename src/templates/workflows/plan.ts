@@ -34,50 +34,27 @@ If \`$ARGUMENTS\` is empty: list \`bp/changes/\` (exclude \`archive/\`) for acti
 
 ### Step 4: Review planner output for design quality
 
-Before committing, review the design across FIVE content-quality dimensions (not format — Step 5 handles format). If ANY dimension fails, re-dispatch the planner with structured feedback (dimension + specific problem + expected state) and re-review.
+Before committing, review the design against FIVE content-quality dimensions (substance, not format — Step 5 handles format). If ANY dimension fails, re-dispatch the planner with structured feedback (dimension + specific problem + expected state) and re-review.
 
-#### Dimension 1: Implementability (can the executor build it without guessing?)
+#### Dimension 1: Implementability
 
-- Are interface signatures complete (parameters, return types, types)?
-- Are state transitions, data structures, and read/write paths described for data/state components; Props, events, and all states for UI; validation rules, response format, and error codes for API/CLI?
-- Are error paths and side effects described (not just the happy path)?
-- Does Detailed Design add detail beyond Key Interfaces, or just repeat them?
-- Do Requirements, Constraints, and Acceptance Criteria exist for every DS-N (a binary pass/fail acceptance bar)?
+The executor must be able to implement from the design alone — no guessing, no ambiguous decisions left open.
 
-FAIL example: DS-N says only "Implement ThemeContext class" with no state fields, toggle logic, or persistence strategy — the executor would have to guess everything.
+#### Dimension 2: Verifiable acceptance
 
-#### Dimension 2: Design Correctness (is the architecture internally consistent?)
+Every acceptance criterion must be something that can actually be checked against the implemented result.
 
-- Do DS-N dependencies match the Architecture Diagram's arrows?
-- Does Data Flow cover every DS-N in the flow?
-- Do the diagram's [NEW]/[MODIFIED]/[EXISTING] annotations match the File Manifest's Action column?
-- Do Core Data Structures match the DS-N Key Interfaces? Any circular dependencies or missing intermediates?
+#### Dimension 3: Detailed design depth
 
-FAIL example: the diagram shows DS-2 depends on DS-1, but DS-2 references an export DS-1 does not provide.
+The Detailed Design sections must carry real implementation depth — the specifics that make the design executable, not restatements of the key interfaces.
 
-#### Dimension 3: Decision Completeness (are all real technical choices recorded?)
+#### Dimension 4: Failure coverage
 
-- Does every technical choice with genuine alternatives have a D-N record (state management, error handling, persistence, async/concurrency, new dependencies)?
-- Does each D-N's Reason state the driving constraint/tradeoff, with genuinely considered alternatives?
+The design must cover error paths, boundary conditions, and failure modes — not just the happy path.
 
-FAIL example: the design uses localStorage persistence but has no D-N deciding "why not cookie/IndexedDB" or "sync vs debounced write".
+#### Dimension 5: Proposal alignment
 
-#### Dimension 4: Impact Completeness (did the planner find all downstream effects?)
-
-- Did the planner run \`bp map impact <module>\` for each modified module?
-- Does every File Manifest "Modify" entry appear in Direct Impacts?
-- Are callers/dependents listed in Indirect Impacts? A changed public export with empty Indirect Impacts is a red flag.
-- Are existing tests that may break identified in Test Impacts?
-
-FAIL example: File Manifest modifies login()'s signature but Indirect Impacts is empty.
-
-#### Dimension 5: File Manifest Consistency (does every file trace to a component?)
-
-- Does every DS-N have at least one File Manifest entry with \`Source: DS-N\`?
-- Does every row's Source point to an existing DS-N? No orphan files or orphan components?
-- No "etc." / "and other files" / "..." vague references (must be exhaustive)?
-
-FAIL example: DS-3 claims responsibility for ThemePersistence but no File Manifest row has \`Source: DS-3\`.
+The design must match the proposal's requirements — fully covered, nothing deviated or dropped.
 
 #### If problems found
 

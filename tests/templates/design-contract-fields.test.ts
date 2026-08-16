@@ -30,15 +30,24 @@ describe('DS-N contract fields (T-18)', () => {
     expect(PLANNER_PROMPT).toMatch(/binary pass\/fail/i);
   });
 
-  it('plan Step-4 Dimension 1 asks whether every DS-N carries the three fields', () => {
+  it('plan Step-4 reviews content quality with five effect-oriented dimensions (no format checklists)', () => {
     const content = getPlanCommandTemplate().content;
     const dim1Start = content.indexOf('#### Dimension 1:');
-    const dim2Start = content.indexOf('#### Dimension 2:');
+    const dim5Start = content.indexOf('#### Dimension 5:');
     expect(dim1Start).toBeGreaterThan(-1);
-    expect(dim2Start).toBeGreaterThan(dim1Start);
-    const dim1 = content.slice(dim1Start, dim2Start);
-    expect(dim1).toMatch(/Requirements/i);
-    expect(dim1).toMatch(/Constraints/i);
-    expect(dim1).toMatch(/Acceptance Criteria/i);
+    expect(dim5Start).toBeGreaterThan(dim1Start);
+    const dims = content.slice(dim1Start, dim5Start);
+    // Effect-oriented substance checks — the executor must be able to
+    // implement without guessing; acceptance must be verifiable.
+    expect(dims).toMatch(/implement from the design alone/i);
+    expect(dims).toMatch(/no guessing/i);
+    expect(dims).toMatch(/acceptance criterion/i);
+    expect(dims).toMatch(/can actually be checked/i);
+    expect(dims).toMatch(/error paths, boundary conditions, and failure modes/i);
+    // No structural/format checklists: the old dimensions demanded
+    // specific fields, annotations, and exact wording — none of that
+    // belongs in the content-quality review.
+    expect(dims).not.toMatch(/\[NEW\]\/\[MODIFIED\]\/\[EXISTING\]/);
+    expect(dims).not.toMatch(/File Manifest.*Action column/);
   });
 });
