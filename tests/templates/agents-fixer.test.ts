@@ -21,9 +21,14 @@ describe('FIXER_PROMPT (T-8)', () => {
     expect(prompt).toContain('design.md');
   });
 
-  it('forbids the fixer from marking review issues resolved (reviewer verifies in full re-review)', () => {
+  it('fixer checks off resolved issues in review.md within the same fix commit', () => {
     const prompt = AGENT_PROMPTS['fixer'];
-    expect(prompt).toMatch(/Do NOT mark/i);
+    // Issue marking must ride along with the fixing commit — never a
+    // separate "mark resolved" commit.
+    expect(prompt).toMatch(/SAME commit/i);
+    expect(prompt).toMatch(/never commit the marking separately/i);
+    // The reviewer's full re-review still confirms resolution.
+    expect(prompt).toMatch(/re-review confirms/i);
   });
 
   it('FIXER_PROMPT is reference-identical to AGENT_PROMPTS["fixer"]', () => {

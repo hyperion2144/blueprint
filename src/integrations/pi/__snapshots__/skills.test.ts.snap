@@ -86,7 +86,7 @@ After all rounds complete:
 
 ### Step 5: Lightweight mode (if classified as lightweight)
 
-Implement the non-behavior tasks yourself, one by one — after each task run its tests and commit, marking \`[x]\` with the commit hash. After all tasks, run the full test suite and mark the Pre-Archive Checklist as in Step 4.
+Implement the non-behavior tasks yourself, one by one — after each task run its tests and commit, then mark it \`[x]\` with the commit hash in tasks.md (the marking edits are committed once at the end, not per task). After all tasks, run the full test suite and mark the Pre-Archive Checklist as in Step 4.
 
 ### Step 6: Commit and suggest next step
 

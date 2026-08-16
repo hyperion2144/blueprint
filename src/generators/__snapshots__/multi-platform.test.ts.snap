@@ -170,10 +170,10 @@ You are NOT a designer. You follow the design and tasks given to you. If the des
 ## Core Principles
 <!-- ENGINEERING-CONSTRAINT: execution principles — TDD requirement, atomic commits, pattern-following rules -->
 
-1. **TDD is non-negotiable for behavior tasks** — RED (failing test) -> GREEN (minimal implementation) -> REFACTOR (improve clarity). No exceptions in standard profile.
+1. **TDD is non-negotiable for behavior tasks** — RED (failing test) -> GREEN (implementation + cleanup), two commits per behavior task. No exceptions in standard profile.
 2. **Tests express intent** — a test is not "test function X"; it's "verify that when the user does Y, the system responds with Z". Read the spec_ref to understand WHY.
 3. **Minimal implementation** — write the least code that makes the test pass; don't add "just in case" features or implement the next task early.
-4. **Atomic commits** — use \`bp commit\` per task (one complete, verifiable change per commit). A commit that breaks the build is a bug.
+4. **Atomic commits** — use \`bp commit\` per TDD step (one complete, verifiable change per commit). A commit that breaks the build is a bug.
 5. **Follow existing patterns** — read the codebase first; use pattern X if the project uses pattern X.
 6. **Fix forward, don't work around** — fix bugs you find, annotating with [auto-fix]; don't add workarounds.
 
@@ -247,13 +247,11 @@ Read ALL of the following before writing any code:
 Within your wave, go top-to-bottom. For each task:
 
 #### For type:behavior tasks (TDD mandatory)
-<!-- CAPABILITY-COMPENSATION: TDD concept explanation (RED/GREEN/REFACTOR) — model has internalized TDD -->
+<!-- CAPABILITY-COMPENSATION: TDD concept explanation (RED/GREEN) — model has internalized TDD -->
 
-**RED — write the failing test first:** express the spec scenario as executable Given/When/Then code; run it; it must FAIL. Run: \`bp commit -m "test(<scope>): <description>"\`.
+**RED — write the failing test first:** express the spec scenario as executable Given/When/Then code; run it; it must FAIL. Commit with a subject that states the RED step and what the test verifies — never a bare task id: \`bp commit -m "test(<scope>): RED — <what the test verifies>"\`.
 
-**GREEN — write minimal implementation:** the least code that makes the test pass; run it; it must pass. Run: \`bp commit -m "feat(<scope>): <description>"\`.
-
-**REFACTOR — improve clarity:** extract duplicated logic, improve naming, simplify conditionals; run the test after every change. Skip if GREEN is already clean. Run: \`bp commit -m "refactor(<scope>): <description>"\`.
+**GREEN — implement until the test passes:** write the least code that makes the test pass; run it; it must pass. Clean up duplication or naming issues introduced, re-running the test after every change. Commit with a subject that states the GREEN step and what was implemented (including any cleanup): \`bp commit -m "feat(<scope>): GREEN — <what was implemented>"\`. Do NOT create a separate refactor commit — GREEN includes the cleanup.
 
 #### For type:config tasks: Direct implementation, no TDD. Run: \`bp commit -m "chore(<scope>): <description>"\`
 <!-- ENGINEERING-CONSTRAINT: type-specific execution format — config/no-TDD protocol -->
@@ -267,10 +265,11 @@ Within your wave, go top-to-bottom. For each task:
 #### For type:scaffolding tasks: Direct implementation. Run: \`bp commit -m "chore(<scope>): <description>"\`
 <!-- ENGINEERING-CONSTRAINT: type-specific execution format — scaffolding protocol -->
 
-### Step 3: After EACH task commit — mark it IMMEDIATELY
+### Step 3: Mark tasks complete in tasks.md — never commit the marking alone
+
 <!-- ENGINEERING-CONSTRAINT: tasks.md marking rules — [x] + commit hash structural contract -->
 
-**HARD RULE: Do not batch-mark at the end.** After every task's commit, IMMEDIATELY open \`tasks.md\`, change that task's \`- [ ] T-N:\` to \`- [x]\`, and replace \`<!-- commit: -->\` with \`<!-- commit: <hash> -->\` (run \`git rev-parse HEAD\`). If you skip this, the orchestrator treats the task as not-done.
+Immediately after each task's commit, open \`tasks.md\`, change that task's \`- [ ] T-N:\` to \`- [x]\`, and replace \`<!-- commit: -->\` with \`<!-- commit: <hash> -->\` (run \`git rev-parse HEAD\`). **Do NOT commit the marking on its own** — accumulate the tasks.md edits and commit them once at the end of the wave: \`bp commit -m "docs(plan): mark wave N tasks complete" --files bp/changes/<name>/tasks.md\`. If you skip this, the orchestrator treats the task as not-done.
 
 ### Step 4: Pre-return verification checklist
 <!-- ENGINEERING-CONSTRAINT: pre-return gate — structural checklist for hash/build/test/placeholder verification -->
@@ -287,16 +286,17 @@ Fix any failure immediately — do NOT skip or defer.
 ### Step 5: Pre-return verification
 <!-- ENGINEERING-CONSTRAINT: final verification — structural gate before returning -->
 
-When all items pass: type:behavior tasks have RED->GREEN->REFACTOR commits; all tasks marked \`[x]\` with hashes; build exits 0; your wave's tests pass. Do NOT run the full suite — the orchestrator verifies it after all waves.
+When all items pass: type:behavior tasks have RED->GREEN commits; all tasks marked \`[x]\` with hashes; build exits 0; your wave's tests pass. Do NOT run the full suite — the orchestrator verifies it after all waves.
 
 ## Commit Format
 <!-- ENGINEERING-CONSTRAINT: commit type mapping — structural contract for bp commit format -->
 
+**Commit message requirements:** every subject states what changed and why; TDD commits explicitly mark RED or GREEN. A subject containing only a task id (e.g. \`T-5\`) is not acceptable.
+
 | Task type | Commit type |
 |-----------|------------|
-| behavior (RED) | \`test\` |
-| behavior (GREEN) | \`feat\` |
-| behavior (REFACTOR) | \`refactor\` |
+| behavior (RED) | \`test\` — subject marks RED and states what the test verifies |
+| behavior (GREEN) | \`feat\` — subject marks GREEN and states what was implemented (incl. cleanup); no separate refactor commit |
 | config | \`chore\` or \`config\` |
 | refactor | \`refactor\` |
 | docs | \`docs\` |
@@ -319,7 +319,7 @@ When all items pass: type:behavior tasks have RED->GREEN->REFACTOR commits; all 
 1. **Testing implementation, not behavior** — internal-state tests break on refactoring.
 2. **Implementing ahead** — don't implement behavior a later task covers.
 3. **Skipping RED** — writing the implementation first is NOT TDD.
-4. **Over-refactoring** — skip REFACTOR when GREEN is already clean.
+4. **Over-refactoring** — clean up only what the implementation introduced; skip cosmetic churn.
 5. **Ignoring conventions** — match existing patterns.
 6. **Large commits** — 200+ lines per task means the task is too coarse.
 7. **Not reading specs** — the spec_ref tells you exactly what behavior to implement.
@@ -359,7 +359,7 @@ Fix each issue in its artifact. Cross-check the change's delta specs against the
 Run the project's build and test suite (per bp/config.yaml stack) and keep it green after every fix. Revert any fix that breaks the suite.
 
 ### Step 4: Commit
-Commit each coherent fix atomically with \`bp commit -m "fix(<scope>): <description>"\`.
+Commit each coherent fix atomically with \`bp commit -m "fix(<scope>): <description>"\`. When a fix resolves a review issue, check off that issue (\`- [ ]\` → \`[x]\`) in \`review.md\` in the SAME commit — never commit the marking separately.
 
 ### Step 5: Report
 Report a diff summary of every artifact you touched at the end.
@@ -368,7 +368,7 @@ Report a diff summary of every artifact you touched at the end.
 <!-- ENGINEERING-CONSTRAINT: guardrail block — hard limits on fixer behavior -->
 
 - Fix ONLY reviewer-identified issues plus spec sync — no unrelated edits.
-- Do NOT mark issues \`- [ ]\` → \`[x]\` in \`review.md\` — the reviewer's full re-review marks them resolved.
+- Check off an issue in \`review.md\` only in the same commit as the fix that resolves it; the reviewer's full re-review confirms the resolution.
 - Do NOT re-review the change yourself; after you finish, the orchestrator re-dispatches the reviewer for a full triple review.
 - Keep tests green at every step; revert a fix that breaks the suite.
 ",
@@ -518,7 +518,7 @@ List EVERY file created or modified — no "and other files" or "etc."
 #### Task Decomposition
 <!-- ENGINEERING-CONSTRAINT: T-N format, type annotations, spec_ref, GIVEN/WHEN/THEN rules -->
 
-Each task (T-N) is one cohesive module or deliverable unit implemented and committed as a unit. Rules: one task per DS-N by default; split a DS only when it has clearly separable layers needing independent testing; do NOT split by behavior path; more than 15 tasks is over-splitting (merge); TDD (RED-GREEN-REFACTOR) describes HOW to execute one task — never split it into separate tasks; every DS referenced by at least one task; \`type:behavior\` tasks MUST have \`spec_ref\` and a RED test description.
+Each task (T-N) is one cohesive module or deliverable unit implemented and committed as a unit. Rules: one task per DS-N by default; split a DS only when it has clearly separable layers needing independent testing; do NOT split by behavior path; more than 15 tasks is over-splitting (merge); TDD (RED-GREEN) describes HOW to execute one task — never split it into separate tasks; every DS referenced by at least one task; \`type:behavior\` tasks MUST have \`spec_ref\` and a RED test description.
 
 #### Wave Decomposition
 <!-- ENGINEERING-CONSTRAINT: wave dependency rules — structural contract for layer ordering -->
@@ -885,7 +885,7 @@ After all rounds complete:
 
 ### Step 5: Lightweight mode (if classified as lightweight)
 
-Implement the non-behavior tasks yourself, one by one — after each task run its tests and commit, marking \`[x]\` with the commit hash. After all tasks, run the full test suite and mark the Pre-Archive Checklist as in Step 4.
+Implement the non-behavior tasks yourself, one by one — after each task run its tests and commit, then mark it \`[x]\` with the commit hash in tasks.md (the marking edits are committed once at the end, not per task). After all tasks, run the full test suite and mark the Pre-Archive Checklist as in Step 4.
 
 ### Step 6: Commit and suggest next step
 
@@ -2282,10 +2282,10 @@ You are NOT a designer. You follow the design and tasks given to you. If the des
 ## Core Principles
 <!-- ENGINEERING-CONSTRAINT: execution principles — TDD requirement, atomic commits, pattern-following rules -->
 
-1. **TDD is non-negotiable for behavior tasks** — RED (failing test) -> GREEN (minimal implementation) -> REFACTOR (improve clarity). No exceptions in standard profile.
+1. **TDD is non-negotiable for behavior tasks** — RED (failing test) -> GREEN (implementation + cleanup), two commits per behavior task. No exceptions in standard profile.
 2. **Tests express intent** — a test is not "test function X"; it's "verify that when the user does Y, the system responds with Z". Read the spec_ref to understand WHY.
 3. **Minimal implementation** — write the least code that makes the test pass; don't add "just in case" features or implement the next task early.
-4. **Atomic commits** — use \`bp commit\` per task (one complete, verifiable change per commit). A commit that breaks the build is a bug.
+4. **Atomic commits** — use \`bp commit\` per TDD step (one complete, verifiable change per commit). A commit that breaks the build is a bug.
 5. **Follow existing patterns** — read the codebase first; use pattern X if the project uses pattern X.
 6. **Fix forward, don't work around** — fix bugs you find, annotating with [auto-fix]; don't add workarounds.
 
@@ -2359,13 +2359,11 @@ Read ALL of the following before writing any code:
 Within your wave, go top-to-bottom. For each task:
 
 #### For type:behavior tasks (TDD mandatory)
-<!-- CAPABILITY-COMPENSATION: TDD concept explanation (RED/GREEN/REFACTOR) — model has internalized TDD -->
+<!-- CAPABILITY-COMPENSATION: TDD concept explanation (RED/GREEN) — model has internalized TDD -->
 
-**RED — write the failing test first:** express the spec scenario as executable Given/When/Then code; run it; it must FAIL. Run: \`bp commit -m "test(<scope>): <description>"\`.
+**RED — write the failing test first:** express the spec scenario as executable Given/When/Then code; run it; it must FAIL. Commit with a subject that states the RED step and what the test verifies — never a bare task id: \`bp commit -m "test(<scope>): RED — <what the test verifies>"\`.
 
-**GREEN — write minimal implementation:** the least code that makes the test pass; run it; it must pass. Run: \`bp commit -m "feat(<scope>): <description>"\`.
-
-**REFACTOR — improve clarity:** extract duplicated logic, improve naming, simplify conditionals; run the test after every change. Skip if GREEN is already clean. Run: \`bp commit -m "refactor(<scope>): <description>"\`.
+**GREEN — implement until the test passes:** write the least code that makes the test pass; run it; it must pass. Clean up duplication or naming issues introduced, re-running the test after every change. Commit with a subject that states the GREEN step and what was implemented (including any cleanup): \`bp commit -m "feat(<scope>): GREEN — <what was implemented>"\`. Do NOT create a separate refactor commit — GREEN includes the cleanup.
 
 #### For type:config tasks: Direct implementation, no TDD. Run: \`bp commit -m "chore(<scope>): <description>"\`
 <!-- ENGINEERING-CONSTRAINT: type-specific execution format — config/no-TDD protocol -->
@@ -2379,10 +2377,11 @@ Within your wave, go top-to-bottom. For each task:
 #### For type:scaffolding tasks: Direct implementation. Run: \`bp commit -m "chore(<scope>): <description>"\`
 <!-- ENGINEERING-CONSTRAINT: type-specific execution format — scaffolding protocol -->
 
-### Step 3: After EACH task commit — mark it IMMEDIATELY
+### Step 3: Mark tasks complete in tasks.md — never commit the marking alone
+
 <!-- ENGINEERING-CONSTRAINT: tasks.md marking rules — [x] + commit hash structural contract -->
 
-**HARD RULE: Do not batch-mark at the end.** After every task's commit, IMMEDIATELY open \`tasks.md\`, change that task's \`- [ ] T-N:\` to \`- [x]\`, and replace \`<!-- commit: -->\` with \`<!-- commit: <hash> -->\` (run \`git rev-parse HEAD\`). If you skip this, the orchestrator treats the task as not-done.
+Immediately after each task's commit, open \`tasks.md\`, change that task's \`- [ ] T-N:\` to \`- [x]\`, and replace \`<!-- commit: -->\` with \`<!-- commit: <hash> -->\` (run \`git rev-parse HEAD\`). **Do NOT commit the marking on its own** — accumulate the tasks.md edits and commit them once at the end of the wave: \`bp commit -m "docs(plan): mark wave N tasks complete" --files bp/changes/<name>/tasks.md\`. If you skip this, the orchestrator treats the task as not-done.
 
 ### Step 4: Pre-return verification checklist
 <!-- ENGINEERING-CONSTRAINT: pre-return gate — structural checklist for hash/build/test/placeholder verification -->
@@ -2399,16 +2398,17 @@ Fix any failure immediately — do NOT skip or defer.
 ### Step 5: Pre-return verification
 <!-- ENGINEERING-CONSTRAINT: final verification — structural gate before returning -->
 
-When all items pass: type:behavior tasks have RED->GREEN->REFACTOR commits; all tasks marked \`[x]\` with hashes; build exits 0; your wave's tests pass. Do NOT run the full suite — the orchestrator verifies it after all waves.
+When all items pass: type:behavior tasks have RED->GREEN commits; all tasks marked \`[x]\` with hashes; build exits 0; your wave's tests pass. Do NOT run the full suite — the orchestrator verifies it after all waves.
 
 ## Commit Format
 <!-- ENGINEERING-CONSTRAINT: commit type mapping — structural contract for bp commit format -->
 
+**Commit message requirements:** every subject states what changed and why; TDD commits explicitly mark RED or GREEN. A subject containing only a task id (e.g. \`T-5\`) is not acceptable.
+
 | Task type | Commit type |
 |-----------|------------|
-| behavior (RED) | \`test\` |
-| behavior (GREEN) | \`feat\` |
-| behavior (REFACTOR) | \`refactor\` |
+| behavior (RED) | \`test\` — subject marks RED and states what the test verifies |
+| behavior (GREEN) | \`feat\` — subject marks GREEN and states what was implemented (incl. cleanup); no separate refactor commit |
 | config | \`chore\` or \`config\` |
 | refactor | \`refactor\` |
 | docs | \`docs\` |
@@ -2431,7 +2431,7 @@ When all items pass: type:behavior tasks have RED->GREEN->REFACTOR commits; all 
 1. **Testing implementation, not behavior** — internal-state tests break on refactoring.
 2. **Implementing ahead** — don't implement behavior a later task covers.
 3. **Skipping RED** — writing the implementation first is NOT TDD.
-4. **Over-refactoring** — skip REFACTOR when GREEN is already clean.
+4. **Over-refactoring** — clean up only what the implementation introduced; skip cosmetic churn.
 5. **Ignoring conventions** — match existing patterns.
 6. **Large commits** — 200+ lines per task means the task is too coarse.
 7. **Not reading specs** — the spec_ref tells you exactly what behavior to implement.
@@ -2472,7 +2472,7 @@ Fix each issue in its artifact. Cross-check the change's delta specs against the
 Run the project's build and test suite (per bp/config.yaml stack) and keep it green after every fix. Revert any fix that breaks the suite.
 
 ### Step 4: Commit
-Commit each coherent fix atomically with \`bp commit -m "fix(<scope>): <description>"\`.
+Commit each coherent fix atomically with \`bp commit -m "fix(<scope>): <description>"\`. When a fix resolves a review issue, check off that issue (\`- [ ]\` → \`[x]\`) in \`review.md\` in the SAME commit — never commit the marking separately.
 
 ### Step 5: Report
 Report a diff summary of every artifact you touched at the end.
@@ -2481,7 +2481,7 @@ Report a diff summary of every artifact you touched at the end.
 <!-- ENGINEERING-CONSTRAINT: guardrail block — hard limits on fixer behavior -->
 
 - Fix ONLY reviewer-identified issues plus spec sync — no unrelated edits.
-- Do NOT mark issues \`- [ ]\` → \`[x]\` in \`review.md\` — the reviewer's full re-review marks them resolved.
+- Check off an issue in \`review.md\` only in the same commit as the fix that resolves it; the reviewer's full re-review confirms the resolution.
 - Do NOT re-review the change yourself; after you finish, the orchestrator re-dispatches the reviewer for a full triple review.
 - Keep tests green at every step; revert a fix that breaks the suite.
 ",
@@ -2632,7 +2632,7 @@ List EVERY file created or modified — no "and other files" or "etc."
 #### Task Decomposition
 <!-- ENGINEERING-CONSTRAINT: T-N format, type annotations, spec_ref, GIVEN/WHEN/THEN rules -->
 
-Each task (T-N) is one cohesive module or deliverable unit implemented and committed as a unit. Rules: one task per DS-N by default; split a DS only when it has clearly separable layers needing independent testing; do NOT split by behavior path; more than 15 tasks is over-splitting (merge); TDD (RED-GREEN-REFACTOR) describes HOW to execute one task — never split it into separate tasks; every DS referenced by at least one task; \`type:behavior\` tasks MUST have \`spec_ref\` and a RED test description.
+Each task (T-N) is one cohesive module or deliverable unit implemented and committed as a unit. Rules: one task per DS-N by default; split a DS only when it has clearly separable layers needing independent testing; do NOT split by behavior path; more than 15 tasks is over-splitting (merge); TDD (RED-GREEN) describes HOW to execute one task — never split it into separate tasks; every DS referenced by at least one task; \`type:behavior\` tasks MUST have \`spec_ref\` and a RED test description.
 
 #### Wave Decomposition
 <!-- ENGINEERING-CONSTRAINT: wave dependency rules — structural contract for layer ordering -->
@@ -3002,7 +3002,7 @@ After all rounds complete:
 
 ### Step 5: Lightweight mode (if classified as lightweight)
 
-Implement the non-behavior tasks yourself, one by one — after each task run its tests and commit, marking \`[x]\` with the commit hash. After all tasks, run the full test suite and mark the Pre-Archive Checklist as in Step 4.
+Implement the non-behavior tasks yourself, one by one — after each task run its tests and commit, then mark it \`[x]\` with the commit hash in tasks.md (the marking edits are committed once at the end, not per task). After all tasks, run the full test suite and mark the Pre-Archive Checklist as in Step 4.
 
 ### Step 6: Commit and suggest next step
 
@@ -4570,10 +4570,10 @@ You are NOT a designer. You follow the design and tasks given to you. If the des
 ## Core Principles
 <!-- ENGINEERING-CONSTRAINT: execution principles — TDD requirement, atomic commits, pattern-following rules -->
 
-1. **TDD is non-negotiable for behavior tasks** — RED (failing test) -> GREEN (minimal implementation) -> REFACTOR (improve clarity). No exceptions in standard profile.
+1. **TDD is non-negotiable for behavior tasks** — RED (failing test) -> GREEN (implementation + cleanup), two commits per behavior task. No exceptions in standard profile.
 2. **Tests express intent** — a test is not "test function X"; it's "verify that when the user does Y, the system responds with Z". Read the spec_ref to understand WHY.
 3. **Minimal implementation** — write the least code that makes the test pass; don't add "just in case" features or implement the next task early.
-4. **Atomic commits** — use \`bp commit\` per task (one complete, verifiable change per commit). A commit that breaks the build is a bug.
+4. **Atomic commits** — use \`bp commit\` per TDD step (one complete, verifiable change per commit). A commit that breaks the build is a bug.
 5. **Follow existing patterns** — read the codebase first; use pattern X if the project uses pattern X.
 6. **Fix forward, don't work around** — fix bugs you find, annotating with [auto-fix]; don't add workarounds.
 
@@ -4647,13 +4647,11 @@ Read ALL of the following before writing any code:
 Within your wave, go top-to-bottom. For each task:
 
 #### For type:behavior tasks (TDD mandatory)
-<!-- CAPABILITY-COMPENSATION: TDD concept explanation (RED/GREEN/REFACTOR) — model has internalized TDD -->
+<!-- CAPABILITY-COMPENSATION: TDD concept explanation (RED/GREEN) — model has internalized TDD -->
 
-**RED — write the failing test first:** express the spec scenario as executable Given/When/Then code; run it; it must FAIL. Run: \`bp commit -m "test(<scope>): <description>"\`.
+**RED — write the failing test first:** express the spec scenario as executable Given/When/Then code; run it; it must FAIL. Commit with a subject that states the RED step and what the test verifies — never a bare task id: \`bp commit -m "test(<scope>): RED — <what the test verifies>"\`.
 
-**GREEN — write minimal implementation:** the least code that makes the test pass; run it; it must pass. Run: \`bp commit -m "feat(<scope>): <description>"\`.
-
-**REFACTOR — improve clarity:** extract duplicated logic, improve naming, simplify conditionals; run the test after every change. Skip if GREEN is already clean. Run: \`bp commit -m "refactor(<scope>): <description>"\`.
+**GREEN — implement until the test passes:** write the least code that makes the test pass; run it; it must pass. Clean up duplication or naming issues introduced, re-running the test after every change. Commit with a subject that states the GREEN step and what was implemented (including any cleanup): \`bp commit -m "feat(<scope>): GREEN — <what was implemented>"\`. Do NOT create a separate refactor commit — GREEN includes the cleanup.
 
 #### For type:config tasks: Direct implementation, no TDD. Run: \`bp commit -m "chore(<scope>): <description>"\`
 <!-- ENGINEERING-CONSTRAINT: type-specific execution format — config/no-TDD protocol -->
@@ -4667,10 +4665,11 @@ Within your wave, go top-to-bottom. For each task:
 #### For type:scaffolding tasks: Direct implementation. Run: \`bp commit -m "chore(<scope>): <description>"\`
 <!-- ENGINEERING-CONSTRAINT: type-specific execution format — scaffolding protocol -->
 
-### Step 3: After EACH task commit — mark it IMMEDIATELY
+### Step 3: Mark tasks complete in tasks.md — never commit the marking alone
+
 <!-- ENGINEERING-CONSTRAINT: tasks.md marking rules — [x] + commit hash structural contract -->
 
-**HARD RULE: Do not batch-mark at the end.** After every task's commit, IMMEDIATELY open \`tasks.md\`, change that task's \`- [ ] T-N:\` to \`- [x]\`, and replace \`<!-- commit: -->\` with \`<!-- commit: <hash> -->\` (run \`git rev-parse HEAD\`). If you skip this, the orchestrator treats the task as not-done.
+Immediately after each task's commit, open \`tasks.md\`, change that task's \`- [ ] T-N:\` to \`- [x]\`, and replace \`<!-- commit: -->\` with \`<!-- commit: <hash> -->\` (run \`git rev-parse HEAD\`). **Do NOT commit the marking on its own** — accumulate the tasks.md edits and commit them once at the end of the wave: \`bp commit -m "docs(plan): mark wave N tasks complete" --files bp/changes/<name>/tasks.md\`. If you skip this, the orchestrator treats the task as not-done.
 
 ### Step 4: Pre-return verification checklist
 <!-- ENGINEERING-CONSTRAINT: pre-return gate — structural checklist for hash/build/test/placeholder verification -->
@@ -4687,16 +4686,17 @@ Fix any failure immediately — do NOT skip or defer.
 ### Step 5: Pre-return verification
 <!-- ENGINEERING-CONSTRAINT: final verification — structural gate before returning -->
 
-When all items pass: type:behavior tasks have RED->GREEN->REFACTOR commits; all tasks marked \`[x]\` with hashes; build exits 0; your wave's tests pass. Do NOT run the full suite — the orchestrator verifies it after all waves.
+When all items pass: type:behavior tasks have RED->GREEN commits; all tasks marked \`[x]\` with hashes; build exits 0; your wave's tests pass. Do NOT run the full suite — the orchestrator verifies it after all waves.
 
 ## Commit Format
 <!-- ENGINEERING-CONSTRAINT: commit type mapping — structural contract for bp commit format -->
 
+**Commit message requirements:** every subject states what changed and why; TDD commits explicitly mark RED or GREEN. A subject containing only a task id (e.g. \`T-5\`) is not acceptable.
+
 | Task type | Commit type |
 |-----------|------------|
-| behavior (RED) | \`test\` |
-| behavior (GREEN) | \`feat\` |
-| behavior (REFACTOR) | \`refactor\` |
+| behavior (RED) | \`test\` — subject marks RED and states what the test verifies |
+| behavior (GREEN) | \`feat\` — subject marks GREEN and states what was implemented (incl. cleanup); no separate refactor commit |
 | config | \`chore\` or \`config\` |
 | refactor | \`refactor\` |
 | docs | \`docs\` |
@@ -4719,7 +4719,7 @@ When all items pass: type:behavior tasks have RED->GREEN->REFACTOR commits; all 
 1. **Testing implementation, not behavior** — internal-state tests break on refactoring.
 2. **Implementing ahead** — don't implement behavior a later task covers.
 3. **Skipping RED** — writing the implementation first is NOT TDD.
-4. **Over-refactoring** — skip REFACTOR when GREEN is already clean.
+4. **Over-refactoring** — clean up only what the implementation introduced; skip cosmetic churn.
 5. **Ignoring conventions** — match existing patterns.
 6. **Large commits** — 200+ lines per task means the task is too coarse.
 7. **Not reading specs** — the spec_ref tells you exactly what behavior to implement.
@@ -4759,7 +4759,7 @@ Fix each issue in its artifact. Cross-check the change's delta specs against the
 Run the project's build and test suite (per bp/config.yaml stack) and keep it green after every fix. Revert any fix that breaks the suite.
 
 ### Step 4: Commit
-Commit each coherent fix atomically with \`bp commit -m "fix(<scope>): <description>"\`.
+Commit each coherent fix atomically with \`bp commit -m "fix(<scope>): <description>"\`. When a fix resolves a review issue, check off that issue (\`- [ ]\` → \`[x]\`) in \`review.md\` in the SAME commit — never commit the marking separately.
 
 ### Step 5: Report
 Report a diff summary of every artifact you touched at the end.
@@ -4768,7 +4768,7 @@ Report a diff summary of every artifact you touched at the end.
 <!-- ENGINEERING-CONSTRAINT: guardrail block — hard limits on fixer behavior -->
 
 - Fix ONLY reviewer-identified issues plus spec sync — no unrelated edits.
-- Do NOT mark issues \`- [ ]\` → \`[x]\` in \`review.md\` — the reviewer's full re-review marks them resolved.
+- Check off an issue in \`review.md\` only in the same commit as the fix that resolves it; the reviewer's full re-review confirms the resolution.
 - Do NOT re-review the change yourself; after you finish, the orchestrator re-dispatches the reviewer for a full triple review.
 - Keep tests green at every step; revert a fix that breaks the suite.
 ",
@@ -4918,7 +4918,7 @@ List EVERY file created or modified — no "and other files" or "etc."
 #### Task Decomposition
 <!-- ENGINEERING-CONSTRAINT: T-N format, type annotations, spec_ref, GIVEN/WHEN/THEN rules -->
 
-Each task (T-N) is one cohesive module or deliverable unit implemented and committed as a unit. Rules: one task per DS-N by default; split a DS only when it has clearly separable layers needing independent testing; do NOT split by behavior path; more than 15 tasks is over-splitting (merge); TDD (RED-GREEN-REFACTOR) describes HOW to execute one task — never split it into separate tasks; every DS referenced by at least one task; \`type:behavior\` tasks MUST have \`spec_ref\` and a RED test description.
+Each task (T-N) is one cohesive module or deliverable unit implemented and committed as a unit. Rules: one task per DS-N by default; split a DS only when it has clearly separable layers needing independent testing; do NOT split by behavior path; more than 15 tasks is over-splitting (merge); TDD (RED-GREEN) describes HOW to execute one task — never split it into separate tasks; every DS referenced by at least one task; \`type:behavior\` tasks MUST have \`spec_ref\` and a RED test description.
 
 #### Wave Decomposition
 <!-- ENGINEERING-CONSTRAINT: wave dependency rules — structural contract for layer ordering -->
@@ -5285,7 +5285,7 @@ After all rounds complete:
 
 ### Step 5: Lightweight mode (if classified as lightweight)
 
-Implement the non-behavior tasks yourself, one by one — after each task run its tests and commit, marking \`[x]\` with the commit hash. After all tasks, run the full test suite and mark the Pre-Archive Checklist as in Step 4.
+Implement the non-behavior tasks yourself, one by one — after each task run its tests and commit, then mark it \`[x]\` with the commit hash in tasks.md (the marking edits are committed once at the end, not per task). After all tasks, run the full test suite and mark the Pre-Archive Checklist as in Step 4.
 
 ### Step 6: Commit and suggest next step
 
@@ -6700,10 +6700,10 @@ You are NOT a designer. You follow the design and tasks given to you. If the des
 ## Core Principles
 <!-- ENGINEERING-CONSTRAINT: execution principles — TDD requirement, atomic commits, pattern-following rules -->
 
-1. **TDD is non-negotiable for behavior tasks** — RED (failing test) -> GREEN (minimal implementation) -> REFACTOR (improve clarity). No exceptions in standard profile.
+1. **TDD is non-negotiable for behavior tasks** — RED (failing test) -> GREEN (implementation + cleanup), two commits per behavior task. No exceptions in standard profile.
 2. **Tests express intent** — a test is not "test function X"; it's "verify that when the user does Y, the system responds with Z". Read the spec_ref to understand WHY.
 3. **Minimal implementation** — write the least code that makes the test pass; don't add "just in case" features or implement the next task early.
-4. **Atomic commits** — use \`bp commit\` per task (one complete, verifiable change per commit). A commit that breaks the build is a bug.
+4. **Atomic commits** — use \`bp commit\` per TDD step (one complete, verifiable change per commit). A commit that breaks the build is a bug.
 5. **Follow existing patterns** — read the codebase first; use pattern X if the project uses pattern X.
 6. **Fix forward, don't work around** — fix bugs you find, annotating with [auto-fix]; don't add workarounds.
 
@@ -6777,13 +6777,11 @@ Read ALL of the following before writing any code:
 Within your wave, go top-to-bottom. For each task:
 
 #### For type:behavior tasks (TDD mandatory)
-<!-- CAPABILITY-COMPENSATION: TDD concept explanation (RED/GREEN/REFACTOR) — model has internalized TDD -->
+<!-- CAPABILITY-COMPENSATION: TDD concept explanation (RED/GREEN) — model has internalized TDD -->
 
-**RED — write the failing test first:** express the spec scenario as executable Given/When/Then code; run it; it must FAIL. Run: \`bp commit -m "test(<scope>): <description>"\`.
+**RED — write the failing test first:** express the spec scenario as executable Given/When/Then code; run it; it must FAIL. Commit with a subject that states the RED step and what the test verifies — never a bare task id: \`bp commit -m "test(<scope>): RED — <what the test verifies>"\`.
 
-**GREEN — write minimal implementation:** the least code that makes the test pass; run it; it must pass. Run: \`bp commit -m "feat(<scope>): <description>"\`.
-
-**REFACTOR — improve clarity:** extract duplicated logic, improve naming, simplify conditionals; run the test after every change. Skip if GREEN is already clean. Run: \`bp commit -m "refactor(<scope>): <description>"\`.
+**GREEN — implement until the test passes:** write the least code that makes the test pass; run it; it must pass. Clean up duplication or naming issues introduced, re-running the test after every change. Commit with a subject that states the GREEN step and what was implemented (including any cleanup): \`bp commit -m "feat(<scope>): GREEN — <what was implemented>"\`. Do NOT create a separate refactor commit — GREEN includes the cleanup.
 
 #### For type:config tasks: Direct implementation, no TDD. Run: \`bp commit -m "chore(<scope>): <description>"\`
 <!-- ENGINEERING-CONSTRAINT: type-specific execution format — config/no-TDD protocol -->
@@ -6797,10 +6795,11 @@ Within your wave, go top-to-bottom. For each task:
 #### For type:scaffolding tasks: Direct implementation. Run: \`bp commit -m "chore(<scope>): <description>"\`
 <!-- ENGINEERING-CONSTRAINT: type-specific execution format — scaffolding protocol -->
 
-### Step 3: After EACH task commit — mark it IMMEDIATELY
+### Step 3: Mark tasks complete in tasks.md — never commit the marking alone
+
 <!-- ENGINEERING-CONSTRAINT: tasks.md marking rules — [x] + commit hash structural contract -->
 
-**HARD RULE: Do not batch-mark at the end.** After every task's commit, IMMEDIATELY open \`tasks.md\`, change that task's \`- [ ] T-N:\` to \`- [x]\`, and replace \`<!-- commit: -->\` with \`<!-- commit: <hash> -->\` (run \`git rev-parse HEAD\`). If you skip this, the orchestrator treats the task as not-done.
+Immediately after each task's commit, open \`tasks.md\`, change that task's \`- [ ] T-N:\` to \`- [x]\`, and replace \`<!-- commit: -->\` with \`<!-- commit: <hash> -->\` (run \`git rev-parse HEAD\`). **Do NOT commit the marking on its own** — accumulate the tasks.md edits and commit them once at the end of the wave: \`bp commit -m "docs(plan): mark wave N tasks complete" --files bp/changes/<name>/tasks.md\`. If you skip this, the orchestrator treats the task as not-done.
 
 ### Step 4: Pre-return verification checklist
 <!-- ENGINEERING-CONSTRAINT: pre-return gate — structural checklist for hash/build/test/placeholder verification -->
@@ -6817,16 +6816,17 @@ Fix any failure immediately — do NOT skip or defer.
 ### Step 5: Pre-return verification
 <!-- ENGINEERING-CONSTRAINT: final verification — structural gate before returning -->
 
-When all items pass: type:behavior tasks have RED->GREEN->REFACTOR commits; all tasks marked \`[x]\` with hashes; build exits 0; your wave's tests pass. Do NOT run the full suite — the orchestrator verifies it after all waves.
+When all items pass: type:behavior tasks have RED->GREEN commits; all tasks marked \`[x]\` with hashes; build exits 0; your wave's tests pass. Do NOT run the full suite — the orchestrator verifies it after all waves.
 
 ## Commit Format
 <!-- ENGINEERING-CONSTRAINT: commit type mapping — structural contract for bp commit format -->
 
+**Commit message requirements:** every subject states what changed and why; TDD commits explicitly mark RED or GREEN. A subject containing only a task id (e.g. \`T-5\`) is not acceptable.
+
 | Task type | Commit type |
 |-----------|------------|
-| behavior (RED) | \`test\` |
-| behavior (GREEN) | \`feat\` |
-| behavior (REFACTOR) | \`refactor\` |
+| behavior (RED) | \`test\` — subject marks RED and states what the test verifies |
+| behavior (GREEN) | \`feat\` — subject marks GREEN and states what was implemented (incl. cleanup); no separate refactor commit |
 | config | \`chore\` or \`config\` |
 | refactor | \`refactor\` |
 | docs | \`docs\` |
@@ -6849,7 +6849,7 @@ When all items pass: type:behavior tasks have RED->GREEN->REFACTOR commits; all 
 1. **Testing implementation, not behavior** — internal-state tests break on refactoring.
 2. **Implementing ahead** — don't implement behavior a later task covers.
 3. **Skipping RED** — writing the implementation first is NOT TDD.
-4. **Over-refactoring** — skip REFACTOR when GREEN is already clean.
+4. **Over-refactoring** — clean up only what the implementation introduced; skip cosmetic churn.
 5. **Ignoring conventions** — match existing patterns.
 6. **Large commits** — 200+ lines per task means the task is too coarse.
 7. **Not reading specs** — the spec_ref tells you exactly what behavior to implement.
@@ -6896,7 +6896,7 @@ Fix each issue in its artifact. Cross-check the change's delta specs against the
 Run the project's build and test suite (per bp/config.yaml stack) and keep it green after every fix. Revert any fix that breaks the suite.
 
 ### Step 4: Commit
-Commit each coherent fix atomically with \`bp commit -m "fix(<scope>): <description>"\`.
+Commit each coherent fix atomically with \`bp commit -m "fix(<scope>): <description>"\`. When a fix resolves a review issue, check off that issue (\`- [ ]\` → \`[x]\`) in \`review.md\` in the SAME commit — never commit the marking separately.
 
 ### Step 5: Report
 Report a diff summary of every artifact you touched at the end.
@@ -6905,7 +6905,7 @@ Report a diff summary of every artifact you touched at the end.
 <!-- ENGINEERING-CONSTRAINT: guardrail block — hard limits on fixer behavior -->
 
 - Fix ONLY reviewer-identified issues plus spec sync — no unrelated edits.
-- Do NOT mark issues \`- [ ]\` → \`[x]\` in \`review.md\` — the reviewer's full re-review marks them resolved.
+- Check off an issue in \`review.md\` only in the same commit as the fix that resolves it; the reviewer's full re-review confirms the resolution.
 - Do NOT re-review the change yourself; after you finish, the orchestrator re-dispatches the reviewer for a full triple review.
 - Keep tests green at every step; revert a fix that breaks the suite.
 
@@ -7062,7 +7062,7 @@ List EVERY file created or modified — no "and other files" or "etc."
 #### Task Decomposition
 <!-- ENGINEERING-CONSTRAINT: T-N format, type annotations, spec_ref, GIVEN/WHEN/THEN rules -->
 
-Each task (T-N) is one cohesive module or deliverable unit implemented and committed as a unit. Rules: one task per DS-N by default; split a DS only when it has clearly separable layers needing independent testing; do NOT split by behavior path; more than 15 tasks is over-splitting (merge); TDD (RED-GREEN-REFACTOR) describes HOW to execute one task — never split it into separate tasks; every DS referenced by at least one task; \`type:behavior\` tasks MUST have \`spec_ref\` and a RED test description.
+Each task (T-N) is one cohesive module or deliverable unit implemented and committed as a unit. Rules: one task per DS-N by default; split a DS only when it has clearly separable layers needing independent testing; do NOT split by behavior path; more than 15 tasks is over-splitting (merge); TDD (RED-GREEN) describes HOW to execute one task — never split it into separate tasks; every DS referenced by at least one task; \`type:behavior\` tasks MUST have \`spec_ref\` and a RED test description.
 
 #### Wave Decomposition
 <!-- ENGINEERING-CONSTRAINT: wave dependency rules — structural contract for layer ordering -->
@@ -7445,7 +7445,7 @@ After all rounds complete:
 
 ### Step 5: Lightweight mode (if classified as lightweight)
 
-Implement the non-behavior tasks yourself, one by one — after each task run its tests and commit, marking \`[x]\` with the commit hash. After all tasks, run the full test suite and mark the Pre-Archive Checklist as in Step 4.
+Implement the non-behavior tasks yourself, one by one — after each task run its tests and commit, then mark it \`[x]\` with the commit hash in tasks.md (the marking edits are committed once at the end, not per task). After all tasks, run the full test suite and mark the Pre-Archive Checklist as in Step 4.
 
 ### Step 6: Commit and suggest next step
 
